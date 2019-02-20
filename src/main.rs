@@ -1,86 +1,119 @@
 use env_logger::{Builder, Env};
-use futures::executor::block_on;
-use log::debug;
-use riker::actors::*;
-use riker_default::DefaultModel;
-use riker_patterns::ask::ask;
+use log::{debug, error, info, trace, warn, Level};
 use structopt::StructOpt;
+
+mod process {
+    use log::{info, trace};
+    use std::process::{Child, Command, Stdio};
+    use std::sync::mpsc::{channel, Receiver, Sender};
+    use std::thread::{spawn, Builder, JoinHandle};
+
+    pub struct Process {
+        channel: (Sender<u32>, Receiver<u32>),
+        handler: JoinHandle<()>,
+        // child: Child,
+    }
+
+    impl Process {
+        pub fn new(name: &str) -> Process {
+            let channel = channel();
+            let builder = Builder::new().name(name.to_owned());
+            let tx = channel.0.clone();
+            let handler = builder
+                .spawn(move || {
+                    tx.send(10).unwrap();
+                })
+                .unwrap();
+            let rx = &channel.1;
+            trace!("{}", rx.recv().unwrap());
+            Process { channel, handler }
+        }
+
+        pub fn dump(&self) {
+            trace!(target: self.handler.thread().name().unwrap_or(""),
+                "{} running in thread: {:?}",
+                self.handler.thread().name().unwrap_or(""),
+                self.handler.thread().id()
+            );
+        }
+    }
+}
+
+mod plugin {
+    use crate::process;
+    use log::trace;
+    use std::{str::FromStr, string::ParseError};
+
+    #[derive(Debug)]
+    pub struct PluginConfig {
+        name: String,
+    }
+    impl FromStr for PluginConfig {
+        type Err = ParseError;
+
+        fn from_str(s: &str) -> Result<PluginConfig, ParseError> {
+            Ok(PluginConfig { name: s.to_owned() })
+        }
+    }
+
+    pub struct Plugin {
+        config: PluginConfig,
+        process: process::Process,
+    }
+
+    impl Plugin {
+        pub fn init(&self) {
+            trace!("Init plugin {}", self.config.name);
+            self.process.dump();
+        }
+    }
+
+    impl From<PluginConfig> for Plugin {
+        fn from(config: PluginConfig) -> Plugin {
+            Plugin {
+                process: process::Process::new(&config.name),
+                config,
+            }
+        }
+    }
+}
 
 #[derive(Debug, StructOpt)]
 struct Opt {
-    /// Activate debug mode
-    #[structopt(short = "d", long = "debug")]
-    debug: bool,
-    /// Operators configuration
-    #[structopt(
-        short = "o",
-        long = "operator",
-        raw(required = "false", min_values = "0")
-    )]
-    operators: Vec<String>,
-}
-
-struct EchoActor;
-
-impl EchoActor {
-    fn new() -> BoxActor<String> {
-        Box::new(EchoActor)
-    }
-}
-
-impl Actor for EchoActor {
-    type Msg = String;
-    fn pre_start(&mut self, ctx: &Context<Self::Msg>) {
-        debug!("starting {:?}", ctx.myself());
-    }
-
-    fn post_start(&mut self, ctx: &Context<Self::Msg>) {
-        debug!("started {:?}", ctx.myself());
-    }
-    fn post_stop(&mut self) {
-        debug!("stopped");
-    }
-
-    fn receive(
-        &mut self,
-        ctx: &Context<Self::Msg>,
-        msg: Self::Msg,
-        sender: Option<ActorRef<Self::Msg>>,
-    ) {
-        sender
-            .try_tell(String::from("Pong"), Some(ctx.myself()))
-            .unwrap();
-    }
-    fn system_receive(
-        &mut self,
-        ctx: &Context<Self::Msg>,
-        msg: SystemMsg<Self::Msg>,
-        sender: Option<ActorRef<Self::Msg>>,
-    ) {
-        debug!("{:?}", msg);
-    }
+    /// Set logging verbosity to <loglevel>, which must be trace, debug,
+    /// info, warn or error.
+    #[structopt(short = "l", long = "loglevel", group = "log")]
+    loglevel: Option<Level>,
+    /// Plugin configurations.
+    #[structopt(raw(required = "true", min_values = "1"), parse(try_from_str))]
+    plugins: Vec<plugin::PluginConfig>,
 }
 
 fn main() -> Result<(), ()> {
-    Builder::from_env(Env::default().default_filter_or("debug")).init();
-
     let opt = Opt::from_args();
-    // dbg!(&opt);
+    dbg!(&opt);
 
-    let model: DefaultModel<String> = DefaultModel::new();
-    let sys = ActorSystem::new(&model).unwrap();
+    // Setup logger
+    Builder::from_env(
+        Env::default().default_filter_or(opt.loglevel.unwrap_or(Level::Debug).to_string()),
+    )
+    .init();
 
-    let props = Props::new(Box::new(EchoActor::new));
-    let actor = sys.actor_of(props, "me").unwrap();
+    // Test log levels
+    trace!("trace");
+    debug!("debug");
+    info!("info");
+    warn!("warn");
+    error!("error");
 
-    let msg = "Ping".to_string();
-    debug!("Sending Ping.");
-    let res = ask(&sys, &actor, msg.clone());
-    let res = block_on(res);
-    debug!("{}", res);
+    // Create plugins from PluginConfigs
+    let plugins: Vec<plugin::Plugin> = opt
+        .plugins
+        .into_iter()
+        .map(|config| plugin::Plugin::from(config))
+        .collect();
 
-    debug!("Shutting down system after {}s uptime", sys.uptime());
-    block_on(sys.shutdown());
-    debug!("System down.");
+    plugins.iter().for_each(|plugin| plugin.init());
+
     Ok(())
 }
