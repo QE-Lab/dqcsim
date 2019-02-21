@@ -1,6 +1,6 @@
-use dqcsim_core::{plugin, process};
-use env_logger::{Builder, Env};
+use dqcsim_core::plugin;
 use log::{debug, error, info, trace, warn, Level};
+use slog::Drain;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -19,10 +19,15 @@ fn main() -> Result<(), ()> {
     dbg!(&opt);
 
     // Setup logger
-    Builder::from_env(
-        Env::default().default_filter_or(opt.loglevel.unwrap_or(Level::Debug).to_string()),
-    )
-    .init();
+    let decorator = slog_term::TermDecorator::new().build();
+    let drain = slog_term::CompactFormat::new(decorator).build().fuse();
+    let drain = slog_async::Async::new(drain).build().fuse();
+    let logger = slog::Logger::root(drain, slog::slog_o!("version" => env!("CARGO_PKG_VERSION")));
+    // let log = slog::Logger::root(drain, slog::o!());
+    let _scope_guard = slog_scope::set_global_logger(logger);
+    let _log_guard = slog_stdlog::init().unwrap();
+
+    // slog::info!(logger, "Logging ready!");
 
     // Test log levels
     trace!("trace");

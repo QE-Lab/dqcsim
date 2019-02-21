@@ -7,7 +7,12 @@ edition = "2018"
 [dependencies]
 dqcsim-core = { path = "../dqcsim-core" }
 
+slog = "2.4"
+slog-term = "2.4"
+slog-async = "2.3"
+slog-scope = "4.1"
+slog-stdlog = "3.0"
+
 log = "0.4"
-env_logger = "0.6"
 structopt = "0.2"
 clap = "2.32"

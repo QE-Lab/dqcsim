@@ -1,6 +1,6 @@
 # DQCsim-rs
 
-DQCsim-rs: Delft Quantum Classical Simulator - the Rust version
+DQCsim-rs: Delft Quantum Classical Simulator - the Rust edition
 
 ## Build
 
