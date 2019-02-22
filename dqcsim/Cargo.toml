@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 dqcsim-core = { path = "../dqcsim-core" }
+dqcsim-log = { path = "../dqcsim-log" }
 
 slog = "2.4"
 slog-term = "2.4"

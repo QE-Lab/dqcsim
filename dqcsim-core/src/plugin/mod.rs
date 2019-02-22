@@ -1,9 +1,11 @@
 use crate::{ipc::message::PluginControl, plugin::config::PluginConfig};
+use crossbeam_channel::unbounded;
+use dqcsim_log::LogThread;
 use ipc_channel::ipc::{IpcOneShotServer, IpcReceiver, IpcSender};
-use log::{info, trace, warn};
+use log::{error, info, trace, warn};
 use std::{
+    error::Error,
     process::{Child, Command, Stdio},
-    sync::mpsc,
     thread::{Builder, JoinHandle},
 };
 
@@ -17,61 +19,40 @@ pub struct Plugin {
     /// The thread handler.
     handler: Option<JoinHandle<()>>,
     /// The sender part of the control channel.
-    controller: mpsc::Sender<PluginControl>,
+    controller: crossbeam_channel::Sender<PluginControl>,
 }
 
 /// The plugin thread control function.
 
 impl Plugin {
-    /// Initialize the plugin.
-    /// This starts the plugin thread, and initializes the control channel.
-    pub fn init(&self) -> Result<(), ()> {
-        trace!("Init plugin {}", self.config.name);
-
-        self.controller.send(PluginControl::Start).unwrap();
-        self.controller.send(PluginControl::Abort).unwrap();
-
-        Ok(())
-    }
-
-    pub fn wait(mut self) {
-        self.handler.unwrap().join().expect("Plugin thread failed.");
-        self.handler = None;
-    }
-}
-
-// impl Drop for Plugin {
-//     fn drop(&mut self) {
-//         warn!("Shutting down...");
-//         // let result = self.child.wait();
-//         // trace!("{:?}", result);
-//         warn!("Down...");
-//     }
-// }
-
-impl From<PluginConfig> for Plugin {
-    fn from(config: PluginConfig) -> Plugin {
+    pub fn new(config: PluginConfig, logger: &LogThread) -> Plugin {
         // Create a channel to control the plugin thread.
-        let (controller, rx) = mpsc::channel();
+        let (controller, rx) = crossbeam_channel::unbounded();
 
         // Spawn thread for the plugin.
         let name = config.name.clone();
         let handler = Builder::new()
             .name(config.name.to_owned())
             .spawn(move || {
-                // warn!("[{}] Plugin thread started.", name);
-                for msg in rx.iter() {
-                    match msg {
-                        PluginControl::Start => {
-                            // trace!("start");
-                        }
-                        PluginControl::Abort => {
-                            // trace!("abort");
+                info!("[{}] Plugin thread started.", name);
+                loop {
+                    match rx.recv() {
+                        Ok(msg) => match msg {
+                            PluginControl::Start => {
+                                trace!("start");
+                            }
+                            PluginControl::Abort => {
+                                trace!("abort");
+                                break;
+                            }
+                        },
+                        Err(x) => {
+                            error!("{:?}", x.description());
                             break;
                         }
                     }
                 }
-                // info!("[{}] Plugin thread stopping.", name);
+                info!("[{}] Plugin thread stopping.", name);
             })
             .ok();
         // let builder = Builder::new().name(config.name.to_owned());
@@ -147,4 +128,32 @@ impl From<PluginConfig> for Plugin {
             controller,
         }
     }
+    /// Initialize the plugin.
+    /// This starts the plugin thread, and initializes the control channel.
+    pub fn init(&self) -> Result<(), ()> {
+        trace!("Init plugin {}", self.config.name);
+        self.controller.send(PluginControl::Start).unwrap();
+        Ok(())
+    }
+
+    pub fn wait(mut self) {
+        info!("Waiting for plugin to stop");
+        self.controller.send(PluginControl::Abort).unwrap();
+        self.handler.unwrap().join().expect("Plugin thread failed.");
+        info!("Plugin stopped");
+        self.handler = None;
+    }
 }
+
+// impl Drop for Plugin {
+//     fn drop(&mut self) {
+//         warn!("Shutting down...");
+//         // let result = self.child.wait();
+//         // trace!("{:?}", result);
+//         warn!("Down...");
+//     }
+// }
+//
+// impl From<PluginConfig> for Plugin {
+//     fn from(config: PluginConfig) -> Plugin {}
+// }

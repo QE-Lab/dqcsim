@@ -1,4 +1,5 @@
 use dqcsim_core::plugin;
+use dqcsim_log::{init, LogMetadata, LogRecord, LogThread};
 use log::debug;
 use slog::{Drain, Level};
 use std::error::Error;
@@ -52,20 +53,30 @@ fn main() -> Result<(), ()> {
     let opt = Opt::from_args();
 
     // Setup logger
-    let logger = slog::Logger::root(
-        slog_async::Async::new(
-            slog_term::CompactFormat::new(slog_term::TermDecorator::new().build())
-                .build()
-                .fuse(),
-        )
-        .build()
-        // Default to Trace logging for now
-        .filter_level(opt.loglevel.unwrap_or(slog::Level::Trace))
-        .fuse(),
-        slog::slog_o!("name" => env!("CARGO_PKG_NAME"), "version" => env!("CARGO_PKG_VERSION")),
-    );
-    let _scope_guard = slog_scope::set_global_logger(logger);
-    let _log_guard = slog_stdlog::init().unwrap();
+    let logger = LogThread::new();
+
+    // Init log proxy
+    dqcsim_log::init(logger.get_sender().unwrap()).expect("Log init failed.");
+
+    // let drain = slog_async::Async::new(
+    //     slog_term::CompactFormat::new(slog_term::TermDecorator::new().build())
+    //         .build()
+    //         .fuse(),
+    // )
+    // .build();
+    // Default to Trace logging for now
+    // drain.filter_level(opt.loglevel.unwrap_or(slog::Level::Trace))
+    // .fuse();
+    // let logger = slog::Logger::root(
+    //     drain
+    //         .filter_level(opt.loglevel.unwrap_or(slog::Level::Trace))
+    //         .fuse(),
+    //     slog::slog_o!("name" => env!("CARGO_PKG_NAME"), "version" => env!("CARGO_PKG_VERSION")),
+    // );
+    // let _scope_guard = slog_scope::set_global_logger(logger.clone());
+    // let _log_guard = slog_stdlog::init().unwrap();
+
+    // dqcsim_log::init().unwrap();
 
     // Debug message with parsed Opt struct
     debug!("Parsed arguments: {:#?}", &opt);
@@ -74,12 +85,17 @@ fn main() -> Result<(), ()> {
     let plugins: Vec<plugin::Plugin> = opt
         .plugins
         .into_iter()
-        .map(|config| plugin::Plugin::from(config))
+        .map(|config| plugin::Plugin::new(config, &logger))
         .collect();
 
-    plugins
-        .into_iter()
-        .for_each(|mut plugin| plugin.init().expect("Plugin init failed."));
+    for plugin in &plugins {
+        plugin.init().expect("init failed");
+    }
+    for plugin in plugins {
+        plugin.wait();
+    }
+
+    logger.wait();
 
     Ok(())
 }
