@@ -1,4 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub enum PluginControl {}
+pub enum PluginControl {
+    Start,
+    Abort,
+}

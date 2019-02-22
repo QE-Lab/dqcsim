@@ -1,6 +1,6 @@
 use std::{str::FromStr, string::ParseError};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PluginConfig {
     pub name: String,
 }

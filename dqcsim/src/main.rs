@@ -77,7 +77,9 @@ fn main() -> Result<(), ()> {
         .map(|config| plugin::Plugin::from(config))
         .collect();
 
-    plugins.iter().for_each(|plugin| plugin.init());
+    plugins
+        .into_iter()
+        .for_each(|mut plugin| plugin.init().expect("Plugin init failed."));
 
     Ok(())
 }
