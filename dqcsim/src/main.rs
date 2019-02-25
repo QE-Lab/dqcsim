@@ -1,5 +1,5 @@
 use dqcsim_core::plugin;
-use dqcsim_log::{init, LogMetadata, LogRecord, LogThread};
+use dqcsim_log::{init, set_thread_logger, LogThread, LogProxy};
 use log::debug;
 use slog::{Drain, Level};
 use std::error::Error;
@@ -53,10 +53,12 @@ fn main() -> Result<(), ()> {
     let opt = Opt::from_args();
 
     // Setup logger
-    let logger = LogThread::new();
 
     // Init log proxy
-    dqcsim_log::init(logger.get_sender().unwrap()).expect("Log init failed.");
+    // dqcsim_log::init(logger.get_sender().unwrap()).expect("Log init failed.");
+    dqcsim_log::init();
+    let logger = LogThread::new();
+    dqcsim_log::set_thread_logger(Box::new(LogProxy { sender: logger.get_sender() }));
 
     // let drain = slog_async::Async::new(
     //     slog_term::CompactFormat::new(slog_term::TermDecorator::new().build())
@@ -81,19 +83,21 @@ fn main() -> Result<(), ()> {
     // Debug message with parsed Opt struct
     debug!("Parsed arguments: {:#?}", &opt);
 
-    // Create plugins from PluginConfigs
-    let plugins: Vec<plugin::Plugin> = opt
+
+    {
+        // Create plugins from PluginConfigs
+        let plugins: Vec<plugin::Plugin> = opt
         .plugins
         .into_iter()
         .map(|config| plugin::Plugin::new(config, &logger))
         .collect();
-
-    for plugin in &plugins {
-        plugin.init().expect("init failed");
+        for plugin in &plugins {
+            plugin.init().expect("init failed");
+        }
     }
-    for plugin in plugins {
-        plugin.wait();
-    }
+    // for plugin in plugins {
+    //     plugin.wait();
+    // }
 
     logger.wait();
 

@@ -1,45 +1,58 @@
+use std::sync::Arc;
 use crossbeam_channel::{Receiver, Sender};
 use log::{Level, LevelFilter, Metadata, Record, SetLoggerError};
 use serde::{Deserialize, Serialize};
-use std::thread::JoinHandle;
+use std::{cell::RefCell, thread::JoinHandle};
 
-// thread_local! {
-//     static LOGGER: LogProxy = LogProxy::new();
+thread_local! {
+    static LOGGER: RefCell<Option<Box<log::Log>>> = RefCell::new(None);
+}
+
+pub fn set_thread_logger(log: Box<log::Log>) {
+    LOGGER.with(|logger| {
+        *logger.borrow_mut() = Some(log);
+    })
+}
+
+pub fn drop_thread_logger() {
+    LOGGER.with(|logger| {
+        *logger.borrow_mut() = None;
+    })
+}
+
+pub fn init() -> Result<(), SetLoggerError> {
+    log::set_boxed_logger(Box::new(ThreadLocalLogger))
+        .map(|()| log::set_max_level(LevelFilter::Trace))
+}
+
+// #[derive(Serialize, Deserialize)]
+// pub struct LogMetadata {
+//     level: Level,
+//     target: String,
+// }
+//
+// #[derive(Serialize, Deserialize)]
+// pub struct LogRecord {
+//     metadata: LogMetadata,
+//     args: String,
+//     module_path: String,
+//     file: String,
+//     line: u32,
 // }
 
-pub fn init(sender: Sender<LogRecord>) -> Result<(), SetLoggerError> {
-    log::set_boxed_logger(Box::new(LogProxy { sender }))
-        .map(|()| log::set_max_level(LevelFilter::Trace))
-    // LOGGER.set_sender(sender);
-    // log::set_logger(&LOGGER).map(|()| log::set_max_level(LevelFilter::Trace))
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct LogMetadata {
-    level: Level,
-    target: String,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct LogRecord {
-    metadata: LogMetadata,
-    args: String,
-    module_path: String,
-    file: String,
-    line: u32,
-}
-
 pub struct LogThread {
-    sender: Option<Sender<LogRecord>>,
+    sender: Sender<String>,
     handler: JoinHandle<()>,
 }
 
 impl LogThread {
     pub fn new() -> LogThread {
-        let (sender, receiver): (_, Receiver<LogRecord>) = crossbeam_channel::unbounded();
+        let (sender, receiver): (_, Receiver<String>) = crossbeam_channel::unbounded();
         let handler = std::thread::spawn(move || loop {
             match receiver.recv() {
-                Ok(record) => println!("[{}] - {}", record.metadata.level, record.args),
+                Ok(record) => {
+                    println!("[logger]: {}", record);
+                },
                 Err(_) => {
                     println!("stopping log thread");
                     break;
@@ -47,23 +60,49 @@ impl LogThread {
             }
         });
         LogThread {
-            sender: Some(sender),
+            sender,
             handler,
         }
     }
-    pub fn get_sender(&self) -> Option<Sender<LogRecord>> {
+    pub fn get_sender(&self) -> Sender<String> {
         self.sender.clone()
     }
     pub fn wait(mut self) {
         println!("waiting for log thread");
-        self.sender = None;
+        drop(self.receiver);
         self.handler.join().unwrap();
         ()
     }
 }
 
+struct ThreadLocalLogger;
+
+impl log::Log for ThreadLocalLogger {
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        LOGGER.with(|logger| {
+            match *logger.borrow() {
+                Some(ref logger) => logger.enabled(metadata),
+                None => false
+            }
+        })
+    }
+
+    fn log(&self, record: &Record) {
+        LOGGER.with(|logger| {
+            match *logger.borrow_mut() {
+                Some(ref mut logger) => logger.log(record),
+                None => {
+                    println!("Please set a logger.")
+                }
+            }
+        });
+    }
+
+    fn flush(&self) {}
+}
+
 pub struct LogProxy {
-    sender: Sender<LogRecord>,
+    pub sender: Sender<String>,
 }
 
 impl log::Log for LogProxy {
@@ -73,19 +112,21 @@ impl log::Log for LogProxy {
     }
 
     fn log(&self, record: &Record) {
-        println!("tid logging record: {:?}", std::thread::current().id());
+        // println!("[{:?}] {:?}", std::thread::current().id(), record);
         self.sender
-            .send(LogRecord {
-                metadata: LogMetadata {
-                    level: record.metadata().level(),
-                    target: record.metadata().target().to_owned(),
-                },
-                args: record.args().to_owned().to_string(),
-                module_path: record.module_path().unwrap_or_default().to_owned(),
-                file: record.file().unwrap_or_default().to_owned(),
-                line: record.line().unwrap_or_default().to_owned(),
-            })
-            .unwrap();
+            .send(record.args().to_string())
+            .unwrap()
+            //  {
+            //     metadata: LogMetadata {
+            //         level: record.metadata().level(),
+            //         target: record.metadata().target().to_owned(),
+            //     },
+            //     args: record.args().to_owned().to_string(),
+            //     module_path: record.module_path().unwrap_or_default().to_owned(),
+            //     file: record.file().unwrap_or_default().to_owned(),
+            //     line: record.line().unwrap_or_default().to_owned(),
+            // })
+            // .unwrap();
         // self.tx.send(record.clone());
         // if self.enabled(record.metadata()) {
         // println!("{} - {}", record.level(), record.args());

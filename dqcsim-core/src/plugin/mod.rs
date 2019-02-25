@@ -1,6 +1,6 @@
 use crate::{ipc::message::PluginControl, plugin::config::PluginConfig};
 use crossbeam_channel::unbounded;
-use dqcsim_log::LogThread;
+use dqcsim_log::{set_thread_logger, LogThread, LogProxy};
 use ipc_channel::ipc::{IpcOneShotServer, IpcReceiver, IpcSender};
 use log::{error, info, trace, warn};
 use std::{
@@ -31,9 +31,12 @@ impl Plugin {
 
         // Spawn thread for the plugin.
         let name = config.name.clone();
+        let sender = logger.get_sender();
         let handler = Builder::new()
             .name(config.name.to_owned())
             .spawn(move || {
+                // dqcsim_log::init();
+                dqcsim_log::set_thread_logger(Box::new(LogProxy { sender }));
                 info!("[{}] Plugin thread started.", name);
                 loop {
                     match rx.recv() {
@@ -136,23 +139,23 @@ impl Plugin {
         Ok(())
     }
 
-    pub fn wait(mut self) {
-        info!("Waiting for plugin to stop");
-        self.controller.send(PluginControl::Abort).unwrap();
-        self.handler.unwrap().join().expect("Plugin thread failed.");
-        info!("Plugin stopped");
-        self.handler = None;
-    }
+    // pub fn wait(mut self) {
+    //     info!("Waiting for plugin to stop");
+    //     self.controller.send(PluginControl::Abort).unwrap();
+    //     info!("Plugin stopped");
+    //     self.handler.unwrap().join().expect("Plugin thread failed.");
+    //     self.handler = None;
+    // }
 }
 
-// impl Drop for Plugin {
-//     fn drop(&mut self) {
-//         warn!("Shutting down...");
-//         // let result = self.child.wait();
-//         // trace!("{:?}", result);
-//         warn!("Down...");
-//     }
-// }
+impl Drop for Plugin {
+    fn drop(&mut self) {
+        warn!("Shutting down...");
+        // let result = self.child.wait();
+        // trace!("{:?}", result);
+        warn!("Down...");
+    }
+}
 //
 // impl From<PluginConfig> for Plugin {
 //     fn from(config: PluginConfig) -> Plugin {}
