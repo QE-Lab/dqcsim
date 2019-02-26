@@ -1,44 +1,73 @@
-use dqcsim_core::{plugin, process};
-use env_logger::{Builder, Env};
-use log::{debug, error, info, trace, warn, Level};
+use dqcsim_core::plugin;
+use dqcsim_log::{init, set_thread_logger, LogProxy, LogThread};
+use log::debug;
+use slog::{Drain, Level};
+use std::error::Error;
+use std::str::FromStr;
 use structopt::StructOpt;
+
+#[derive(Debug)]
+pub struct ParseLevelError;
+impl std::fmt::Display for ParseLevelError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.description())
+    }
+}
+impl Error for ParseLevelError {
+    fn description(&self) -> &str {
+        "invalid log level. [Off, Critical, Error, Warning, Info, Debug, Trace]"
+    }
+}
+
+fn parse_filterlevel(arg: &str) -> Result<Level, ParseLevelError> {
+    match Level::from_str(arg) {
+        Ok(level) => Ok(level),
+        Err(_) => match usize::from_str(arg) {
+            Ok(level) => match Level::from_usize(level) {
+                Some(level) => Ok(level),
+                None => Err(ParseLevelError),
+            },
+            Err(_) => Err(ParseLevelError),
+        },
+    }
+}
 
 #[derive(Debug, StructOpt)]
 struct Opt {
-    /// Set logging verbosity to <loglevel>, which must be trace, debug,
-    /// info, warn or error.
-    #[structopt(short = "l", long = "loglevel", group = "log")]
+    /// Set logging verbosity to <loglevel>
+    /// [Off, Critical, Error, Warning, Info, Debug, Trace]
+    #[structopt(
+        short = "l",
+        long = "loglevel",
+        parse(try_from_str = "parse_filterlevel")
+    )]
     loglevel: Option<Level>,
+
     /// Plugin configurations.
-    #[structopt(raw(required = "true", min_values = "1"), parse(try_from_str))]
-    plugins: Vec<plugin::PluginConfig>,
+    #[structopt(raw(required = "true", min_values = "1"))]
+    plugins: Vec<plugin::config::PluginConfig>,
 }
 
 fn main() -> Result<(), ()> {
+    // Parse arguments
     let opt = Opt::from_args();
-    dbg!(&opt);
 
-    // Setup logger
-    Builder::from_env(
-        Env::default().default_filter_or(opt.loglevel.unwrap_or(Level::Debug).to_string()),
-    )
-    .init();
+    // Setup logging
+    dqcsim_log::init(log::LevelFilter::Trace).expect("Failed to initialize logger.");
+    let logger = LogThread::new();
 
-    // Test log levels
-    trace!("trace");
-    debug!("debug");
-    info!("info");
-    warn!("warn");
-    error!("error");
+    // Debug message with parsed Opt struct
+    debug!("Parsed arguments: {:#?}", &opt);
 
     // Create plugins from PluginConfigs
     let plugins: Vec<plugin::Plugin> = opt
         .plugins
         .into_iter()
-        .map(|config| plugin::Plugin::from(config))
+        .map(|config| plugin::Plugin::new(config, &logger))
         .collect();
-
-    plugins.iter().for_each(|plugin| plugin.init());
+    for plugin in &plugins {
+        plugin.init().expect("init failed");
+    }
 
     Ok(())
 }
