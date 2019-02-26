@@ -2,6 +2,5 @@
 
 members = [
   "dqcsim-core",
-  "dqcsim-plugin",
   "dqcsim"
 ]
