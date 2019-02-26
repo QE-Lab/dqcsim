@@ -1,4 +1,5 @@
-use crate::{ipc::message::PluginControl, plugin::config::PluginConfig};
+use crate::{ipc::message, plugin::config::PluginConfig};
+use crossbeam_channel::{Receiver, Sender};
 use dqcsim_log::{LogProxy, LogThread};
 use ipc_channel::ipc::{IpcOneShotServer, IpcReceiver};
 use log::{error, info, trace};
@@ -19,14 +20,17 @@ pub struct Plugin {
     /// The thread handler.
     handler: Option<JoinHandle<()>>,
     /// The sender part of the control channel.
-    controller: crossbeam_channel::Sender<PluginControl>,
+    controller: crossbeam_channel::Sender<message::DQCsimToPlugin>,
 }
 
 /// The plugin thread control function.
 impl Plugin {
     pub fn new(config: PluginConfig, logger: &LogThread) -> Plugin {
         // Create a channel to control the plugin thread.
-        let (controller, rx) = crossbeam_channel::unbounded();
+        let (controller, rx): (
+            Sender<message::DQCsimToPlugin>,
+            Receiver<message::DQCsimToPlugin>,
+        ) = crossbeam_channel::unbounded();
 
         // Spawn thread for the plugin.
         let name = config.name.clone();
@@ -44,8 +48,8 @@ impl Plugin {
                 );
                 loop {
                     match rx.recv() {
-                        Ok(msg) => match msg {
-                            PluginControl::Start => {
+                        Ok(msg) => match msg.command {
+                            message::D2Punion::D2Pinit(ref init) => {
                                 info!("start");
                                 // Setup control channel
                                 let (server, server_name): (
@@ -65,7 +69,7 @@ impl Plugin {
 
                                 // Wait for child process to connect and send the receiver.
                                 let (_, receiver): (_, IpcReceiver<String>) =
-                                    server.accept().unwrap();
+                                    server.accept().expect("Unable to connect.");
 
                                 // Get a message.
                                 trace!("message from client: {}", receiver.recv().unwrap());
@@ -91,9 +95,10 @@ impl Plugin {
                                 trace!("{}", stdout);
                                 trace!("{}", stderr);
                             }
-                            PluginControl::Abort => {
+                            message::D2Punion::D2Pfini(ref fini) => {
                                 break;
                             }
+                            _ => break,
                         },
                         Err(x) => {
                             error!("{:?}", x.description());
@@ -115,14 +120,28 @@ impl Plugin {
     /// This starts the plugin thread, and initializes the control channel.
     pub fn init(&self) -> Result<(), ()> {
         trace!("Init plugin {}", self.config.name);
-        self.controller.send(PluginControl::Start).unwrap();
+        self.controller
+            .send(message::DQCsimToPlugin {
+                command: message::D2Punion::D2Pinit(message::D2Pinit {
+                    downPushURI: "downPush".to_owned(),
+                    downPullURI: "downPull".to_owned(),
+                    arbCmds: Vec::new(),
+                    loggerPrefix: self.config.name.to_owned(),
+                    logLevel: message::LogLevel::critical,
+                }),
+            })
+            .unwrap();
         Ok(())
     }
 }
 
 impl Drop for Plugin {
     fn drop(&mut self) {
-        self.controller.send(PluginControl::Abort).unwrap();
+        self.controller
+            .send(message::DQCsimToPlugin {
+                command: message::D2Punion::D2Pfini(message::D2Pfini { graceful: true }),
+            })
+            .unwrap();
         self.handler
             .take()
             .expect("Plugin failed.")

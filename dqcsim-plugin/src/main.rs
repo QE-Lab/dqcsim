@@ -16,7 +16,7 @@ fn main() {
     // Create channel
     let (tx, rx) = channel().unwrap();
     // Send receiver to host.
-    connect.send(rx).unwrap();
+    connect.send(rx).expect("Unable to send receiver to host.");
 
     // Send a test message over the established ipc connection
     tx.send(format!("client connected to {}", server)).unwrap();
