@@ -1,5 +1,5 @@
 use dqcsim_core::plugin;
-use dqcsim_log::{init, set_thread_logger, LogThread, LogProxy};
+use dqcsim_log::{init, set_thread_logger, LogProxy, LogThread};
 use log::debug;
 use slog::{Drain, Level};
 use std::error::Error;
@@ -52,54 +52,22 @@ fn main() -> Result<(), ()> {
     // Parse arguments
     let opt = Opt::from_args();
 
-    // Setup logger
-
-    // Init log proxy
-    // dqcsim_log::init(logger.get_sender().unwrap()).expect("Log init failed.");
-    dqcsim_log::init();
+    // Setup logging
+    dqcsim_log::init(log::LevelFilter::Trace).expect("Failed to initialize logger.");
     let logger = LogThread::new();
-    dqcsim_log::set_thread_logger(Box::new(LogProxy { sender: logger.get_sender() }));
-
-    // let drain = slog_async::Async::new(
-    //     slog_term::CompactFormat::new(slog_term::TermDecorator::new().build())
-    //         .build()
-    //         .fuse(),
-    // )
-    // .build();
-    // Default to Trace logging for now
-    // drain.filter_level(opt.loglevel.unwrap_or(slog::Level::Trace))
-    // .fuse();
-    // let logger = slog::Logger::root(
-    //     drain
-    //         .filter_level(opt.loglevel.unwrap_or(slog::Level::Trace))
-    //         .fuse(),
-    //     slog::slog_o!("name" => env!("CARGO_PKG_NAME"), "version" => env!("CARGO_PKG_VERSION")),
-    // );
-    // let _scope_guard = slog_scope::set_global_logger(logger.clone());
-    // let _log_guard = slog_stdlog::init().unwrap();
-
-    // dqcsim_log::init().unwrap();
 
     // Debug message with parsed Opt struct
     debug!("Parsed arguments: {:#?}", &opt);
 
-
-    {
-        // Create plugins from PluginConfigs
-        let plugins: Vec<plugin::Plugin> = opt
+    // Create plugins from PluginConfigs
+    let plugins: Vec<plugin::Plugin> = opt
         .plugins
         .into_iter()
         .map(|config| plugin::Plugin::new(config, &logger))
         .collect();
-        for plugin in &plugins {
-            plugin.init().expect("init failed");
-        }
+    for plugin in &plugins {
+        plugin.init().expect("init failed");
     }
-    // for plugin in plugins {
-    //     plugin.wait();
-    // }
-
-    logger.wait();
 
     Ok(())
 }

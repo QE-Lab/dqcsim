@@ -1,6 +1,6 @@
 use crate::{ipc::message::PluginControl, plugin::config::PluginConfig};
 use crossbeam_channel::unbounded;
-use dqcsim_log::{set_thread_logger, LogThread, LogProxy};
+use dqcsim_log::{set_thread_logger, LogProxy, LogThread};
 use ipc_channel::ipc::{IpcOneShotServer, IpcReceiver, IpcSender};
 use log::{error, info, trace, warn};
 use std::{
@@ -35,17 +35,17 @@ impl Plugin {
         let handler = Builder::new()
             .name(config.name.to_owned())
             .spawn(move || {
-                // dqcsim_log::init();
                 dqcsim_log::set_thread_logger(Box::new(LogProxy { sender }));
-                info!("[{}] Plugin thread started.", name);
+                info!(
+                    "[{}] Plugin running in thread: {:?}",
+                    name,
+                    std::thread::current().id()
+                );
                 loop {
                     match rx.recv() {
                         Ok(msg) => match msg {
-                            PluginControl::Start => {
-                                trace!("start");
-                            }
+                            PluginControl::Start => {}
                             PluginControl::Abort => {
-                                trace!("abort");
                                 break;
                             }
                         },
@@ -138,25 +138,15 @@ impl Plugin {
         self.controller.send(PluginControl::Start).unwrap();
         Ok(())
     }
-
-    // pub fn wait(mut self) {
-    //     info!("Waiting for plugin to stop");
-    //     self.controller.send(PluginControl::Abort).unwrap();
-    //     info!("Plugin stopped");
-    //     self.handler.unwrap().join().expect("Plugin thread failed.");
-    //     self.handler = None;
-    // }
 }
 
 impl Drop for Plugin {
     fn drop(&mut self) {
-        warn!("Shutting down...");
-        // let result = self.child.wait();
-        // trace!("{:?}", result);
-        warn!("Down...");
+        self.controller.send(PluginControl::Abort).unwrap();
+        self.handler
+            .take()
+            .expect("Plugin failed.")
+            .join()
+            .expect("Plugin failed.");
     }
 }
-//
-// impl From<PluginConfig> for Plugin {
-//     fn from(config: PluginConfig) -> Plugin {}
-// }
