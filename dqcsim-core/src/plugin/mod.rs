@@ -30,11 +30,13 @@ impl Plugin {
 
         // Spawn thread for the plugin.
         let name = config.name.clone();
-        let sender = logger.get_sender();
+        let sender = logger
+            .get_sender()
+            .expect("Unable to get sender side of log channel.");
         let handler = Builder::new()
             .name(config.name.to_owned())
             .spawn(move || {
-                dqcsim_log::set_thread_logger(Box::new(LogProxy { sender }));
+                dqcsim_log::set_thread_logger(Box::new(LogProxy::new(sender, None)));
                 info!(
                     "[{}] Plugin running in thread: {:?}",
                     &name,
@@ -86,8 +88,8 @@ impl Plugin {
                                     .unwrap()
                                     .read_to_string(&mut stderr)
                                     .expect("stderr read failed.");
-                                trace!("stdout: {}", stdout);
-                                trace!("stderr: {}", stderr);
+                                trace!("{}", stdout);
+                                trace!("{}", stderr);
                             }
                             PluginControl::Abort => {
                                 break;

@@ -1,7 +1,8 @@
 use crossbeam_channel::{Receiver, Sender};
-use log::{Level, LevelFilter, Metadata, SetLoggerError};
+use log::{trace, Level, LevelFilter, Metadata, SetLoggerError};
 use serde::{Deserialize, Serialize};
 use std::{cell::RefCell, fmt, thread::JoinHandle};
+use term::stderr;
 
 thread_local! {
     /// The thread local logger. Can be anything which implements log::Log.
@@ -28,7 +29,7 @@ impl log::Log for ThreadLocalLogger {
     fn log(&self, record: &log::Record) {
         LOGGER.with(|logger| match *logger.borrow_mut() {
             Some(ref mut logger) => logger.log(record),
-            // Default to logger
+            // Defaults to initialized logger (or log::NopLogger if uninitialized)
             None => log::logger().log(record),
         });
     }
@@ -60,6 +61,7 @@ pub fn drop_thread_logger() {
 pub struct Record {
     level: Level,
     args: String,
+    target: String,
     // module_path: String,
     // file: String,
     // line: u32,
@@ -70,6 +72,10 @@ impl<'a> From<&log::Record<'a>> for Record {
         Record {
             level: log.level(),
             args: log.args().to_string(),
+            target: std::thread::current()
+                .name()
+                .unwrap_or_default()
+                .to_string(),
         }
     }
 }
@@ -103,13 +109,14 @@ impl LogThread {
 
         // Spawn the log thread.
         let handler = std::thread::spawn(move || {
-            let mut t = term::stderr().expect("Unable to wrap terminal.");
+            let mut t = stderr().expect("Unable to wrap terminal.");
             while let Ok(record) = receiver.recv() {
                 writeln!(
                     t,
-                    "{} [{:<5}] {}",
-                    chrono::Local::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+                    "[{} {:<5} {}] {}",
+                    humantime::format_rfc3339_seconds(std::time::SystemTime::now()),
                     record.level,
+                    record.target,
                     record
                 )
                 .unwrap();
@@ -117,9 +124,7 @@ impl LogThread {
         });
 
         // Start a LogProxy for the current thread.
-        set_thread_logger(Box::new(LogProxy {
-            sender: Some(sender.clone()),
-        }));
+        set_thread_logger(Box::new(LogProxy::new(sender.clone(), None)));
 
         LogThread {
             sender: Some(sender),
@@ -128,6 +133,7 @@ impl LogThread {
     }
 
     /// Returns a copy of the sender side of the log channel.
+    /// Use this sender side of the log channel to pass Records to the logger thread.
     pub fn get_sender(&self) -> Option<Sender<Record>> {
         self.sender.clone()
     }
@@ -137,13 +143,15 @@ impl LogThread {
 /// Drops the sender side of the log channel and wait for the log thread to drop.
 impl Drop for LogThread {
     fn drop(&mut self) {
+        trace!("Shutting down logger thread.");
+
         // Disconnect the LogProxy running in the main thread.
         drop_thread_logger();
 
         // Drop the owned sender side to disconnect the log channel.
         self.sender = None;
 
-        // Wait for the thread to be dropped.
+        // Wait for the logger thread to be dropped.
         self.handler
             .take()
             .expect("LogThread failed.")
@@ -154,23 +162,32 @@ impl Drop for LogThread {
 
 /// A LogProxy is a logger implementation (log::Log) which sends log records to a LogThread.
 pub struct LogProxy {
-    pub sender: Option<Sender<Record>>,
+    level: log::LevelFilter,
+    sender: Sender<Record>,
+}
+
+impl LogProxy {
+    pub fn new(sender: Sender<Record>, level_filter: Option<log::LevelFilter>) -> LogProxy {
+        LogProxy {
+            sender,
+            level: level_filter.unwrap_or(LevelFilter::max()),
+        }
+    }
+    pub fn level(mut self, level_filter: log::LevelFilter) -> LogProxy {
+        self.level = level_filter;
+        self
+    }
 }
 
 impl log::Log for LogProxy {
-    fn enabled(&self, _metadata: &Metadata) -> bool {
-        // metadata.level() <= Level::Error
-        true
+    fn enabled(&self, metadata: &Metadata) -> bool {
+        metadata.level() <= self.level
     }
 
     fn log(&self, record: &log::Record) {
-        match self.sender {
-            Some(ref sender) => sender
-                .try_send(Record::from(record))
-                // record.args().to_string())
-                .expect("LogProxy failed."),
-            None => log::logger().log(record),
-        };
+        self.sender
+            .try_send(Record::from(record))
+            .expect("LogProxy failed.");
     }
 
     fn flush(&self) {}
