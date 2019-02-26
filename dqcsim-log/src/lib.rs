@@ -1,5 +1,5 @@
 use crossbeam_channel::{Receiver, Sender};
-use log::{log, Level, LevelFilter, Metadata, SetLoggerError};
+use log::{Level, LevelFilter, Metadata, SetLoggerError};
 use serde::{Deserialize, Serialize};
 use std::{cell::RefCell, fmt, thread::JoinHandle};
 
@@ -88,6 +88,12 @@ pub struct LogThread {
     handler: Option<JoinHandle<()>>,
 }
 
+impl Default for LogThread {
+    fn default() -> LogThread {
+        LogThread::new()
+    }
+}
+
 impl LogThread {
     /// Starts a new log thread.
     /// Also starts a LogProxy for the thread starting the log thread.
@@ -96,15 +102,17 @@ impl LogThread {
         let (sender, receiver): (_, Receiver<Record>) = crossbeam_channel::unbounded();
 
         // Spawn the log thread.
-        let handler = std::thread::spawn(move || loop {
-            match receiver.recv() {
-                Ok(record) => {
-                    println!("[{}]: {}", record.level, record.args);
-                }
-                Err(_) => {
-                    println!("Log channel disconnected: dropping log thread");
-                    break;
-                }
+        let handler = std::thread::spawn(move || {
+            let mut t = term::stderr().expect("Unable to wrap terminal.");
+            while let Ok(record) = receiver.recv() {
+                writeln!(
+                    t,
+                    "{} [{:<5}] {}",
+                    chrono::Local::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+                    record.level,
+                    record
+                )
+                .unwrap();
             }
         });
 
@@ -150,7 +158,7 @@ pub struct LogProxy {
 }
 
 impl log::Log for LogProxy {
-    fn enabled(&self, metadata: &Metadata) -> bool {
+    fn enabled(&self, _metadata: &Metadata) -> bool {
         // metadata.level() <= Level::Error
         true
     }

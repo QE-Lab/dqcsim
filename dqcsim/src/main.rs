@@ -1,7 +1,7 @@
 use dqcsim_core::plugin;
-use dqcsim_log::{init, set_thread_logger, LogProxy, LogThread};
+use dqcsim_log::LogThread;
 use log::debug;
-use slog::{Drain, Level};
+use slog::Level;
 use std::error::Error;
 use std::str::FromStr;
 use structopt::StructOpt;
@@ -54,7 +54,7 @@ fn main() -> Result<(), ()> {
 
     // Setup logging
     dqcsim_log::init(log::LevelFilter::Trace).expect("Failed to initialize logger.");
-    let logger = LogThread::new();
+    let logger = LogThread::default();
 
     // Debug message with parsed Opt struct
     debug!("Parsed arguments: {:#?}", &opt);

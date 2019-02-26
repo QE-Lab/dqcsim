@@ -1,11 +1,11 @@
 use crate::{ipc::message::PluginControl, plugin::config::PluginConfig};
-use crossbeam_channel::unbounded;
-use dqcsim_log::{set_thread_logger, LogProxy, LogThread};
-use ipc_channel::ipc::{IpcOneShotServer, IpcReceiver, IpcSender};
-use log::{error, info, trace, warn};
+use dqcsim_log::{LogProxy, LogThread};
+use ipc_channel::ipc::{IpcOneShotServer, IpcReceiver};
+use log::{error, info, trace};
 use std::{
     error::Error,
-    process::{Child, Command, Stdio},
+    io::Read,
+    process::{Command, Stdio},
     thread::{Builder, JoinHandle},
 };
 
@@ -23,7 +23,6 @@ pub struct Plugin {
 }
 
 /// The plugin thread control function.
-
 impl Plugin {
     pub fn new(config: PluginConfig, logger: &LogThread) -> Plugin {
         // Create a channel to control the plugin thread.
@@ -38,13 +37,58 @@ impl Plugin {
                 dqcsim_log::set_thread_logger(Box::new(LogProxy { sender }));
                 info!(
                     "[{}] Plugin running in thread: {:?}",
-                    name,
+                    &name,
                     std::thread::current().id()
                 );
                 loop {
                     match rx.recv() {
                         Ok(msg) => match msg {
-                            PluginControl::Start => {}
+                            PluginControl::Start => {
+                                info!("start");
+                                // Setup control channel
+                                let (server, server_name): (
+                                    IpcOneShotServer<IpcReceiver<String>>,
+                                    String,
+                                ) = IpcOneShotServer::new().unwrap();
+                                trace!("Server for {}: {}", &name, server_name);
+
+                                let mut child = Command::new("target/debug/dqcsim-plugin")
+                                    .arg(server_name)
+                                    .stderr(Stdio::piped())
+                                    .stdout(Stdio::piped())
+                                    .spawn()
+                                    .expect("Failed to start echo process");
+
+                                trace!("Started child process for {}: {}", &name, &child.id());
+
+                                // Wait for child process to connect and send the receiver.
+                                let (_, receiver): (_, IpcReceiver<String>) =
+                                    server.accept().unwrap();
+
+                                // Get a message.
+                                trace!("message from client: {}", receiver.recv().unwrap());
+
+                                // Wait for child to finish
+                                trace!("child stopped: {}", child.wait().expect("child failed."));
+
+                                // Dump stdout
+                                let mut stdout = String::new();
+                                child
+                                    .stdout
+                                    .take()
+                                    .unwrap()
+                                    .read_to_string(&mut stdout)
+                                    .expect("stdout read failed.");
+                                let mut stderr = String::new();
+                                child
+                                    .stderr
+                                    .take()
+                                    .unwrap()
+                                    .read_to_string(&mut stderr)
+                                    .expect("stderr read failed.");
+                                trace!("stdout: {}", stdout);
+                                trace!("stderr: {}", stderr);
+                            }
                             PluginControl::Abort => {
                                 break;
                             }
@@ -58,73 +102,7 @@ impl Plugin {
                 info!("[{}] Plugin thread stopping.", name);
             })
             .ok();
-        // let builder = Builder::new().name(config.name.to_owned());
-        // let handler = builder
-        //     .spawn(move || {
-        //         warn!("Plugin thread started.");
-        //         for msg in rx.into_iter() {
-        //             match msg {
-        //                 PluginControl::Start => {
-        //                     trace!("start");
-        //                 }
-        //                 PluginControl::Abort => {
-        //                     trace!("abort");
-        //                     break;
-        //                 }
-        //             }
-        //         }
-        //         info!("Plugin thread stopping.");
-        //     })
-        //     .expect("Spawning plugin thread failed.");
 
-        // tx.send(PluginControl::Start).unwrap();
-        // tx.send(PluginControl::Abort).unwrap();
-        // // drop(tx);
-        // handler.join().expect("Plugin thread failed.");
-
-        // // Setup control channel
-        // let (server, server_name): (IpcOneShotServer<IpcReceiver<u32>>, String) =
-        //     IpcOneShotServer::new().unwrap();
-        // trace!("Server for {}: {}", &config.name, server_name);
-        //
-        // let mut child = Command::new("cargo")
-        //     .arg("run")
-        //     .arg("-p")
-        //     .arg("dqcsim-plugin")
-        //     .arg("--")
-        //     .arg(server_name)
-        //     .stderr(Stdio::null())
-        //     .stdout(Stdio::null())
-        //     .spawn()
-        //     .expect("Failed to start echo process");
-        // trace!(
-        //     "Started child process for {}: {}",
-        //     &config.name,
-        //     &child.id()
-        // );
-        //
-        // // Wait for child process to connect and send the receiver.
-        // let (_, receiver): (_, IpcReceiver<u32>) = server.accept().unwrap();
-        //
-        // // Get some messages over the new channel.
-        // trace!("{}", receiver.recv().unwrap());
-        // trace!("{}", receiver.recv().unwrap());
-
-        // let (tx, receiver) = ipc::channel().unwrap();
-        //
-        // let builder = Builder::new().name(config.name.to_owned());
-        // let handler = builder
-        //     .spawn(move || {
-        //         tx.send(10).unwrap();
-        //         std::thread::sleep(std::time::Duration::from_micros(1));
-        //         warn!("warning from thread");
-        //     })
-        //     .unwrap();
-        // trace!("{}", receiver.recv().unwrap());
-        // handler.join();
-
-        // let (_, data): (_, u32) = server.accept().unwrap();
-        // info!("data from child: {}", data);
         Plugin {
             config,
             handler,

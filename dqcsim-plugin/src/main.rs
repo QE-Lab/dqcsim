@@ -1,16 +1,15 @@
-use ipc_channel::ipc::{channel, IpcOneShotServer, IpcReceiver, IpcSender};
-use log::{info, trace, warn};
-use std::{
-    env,
-    process::{Child, Command, Stdio},
-    thread::{Builder, JoinHandle},
-};
+use ipc_channel::ipc::{channel, IpcSender};
+use log::trace;
+use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
 
     let server = &args[1];
     trace!("{}", &server);
+
+    println!("stdout from  {}", std::process::id());
+    eprintln!("stderr from {}", std::process::id());
 
     let connect = IpcSender::connect(server.to_owned()).unwrap();
 
@@ -19,7 +18,6 @@ fn main() {
     // Send receiver to host.
     connect.send(rx).unwrap();
 
-    // Send some test messages over the established ipc connection
-    tx.send(1234).unwrap();
-    tx.send(12345).unwrap();
+    // Send a test message over the established ipc connection
+    tx.send(format!("client connected to {}", server)).unwrap();
 }
