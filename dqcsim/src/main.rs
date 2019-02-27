@@ -57,7 +57,7 @@ fn main() -> Result<(), ()> {
     let logger = LogThread::default();
 
     // Debug message with parsed Opt struct
-    debug!("Parsed arguments: {:#?}", &opt);
+    debug!("Parsed arguments: {:?}", &opt);
 
     // Create plugins from PluginConfigs
     let plugins: Vec<plugin::Plugin> = opt
