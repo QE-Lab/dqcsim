@@ -34,13 +34,14 @@ impl Plugin {
 
         // Spawn thread for the plugin.
         let name = config.name.clone();
+        let loglevel = config.loglevel;
         let sender = logger
             .get_sender()
             .expect("Unable to get sender side of log channel.");
         let handler = Builder::new()
             .name(config.name.to_owned())
             .spawn(move || {
-                dqcsim_log::set_thread_logger(Box::new(LogProxy::new(sender, None)));
+                dqcsim_log::set_thread_logger(Box::new(LogProxy::new(sender, loglevel)));
                 info!(
                     "[{}] Plugin running in thread: {:?}",
                     &name,

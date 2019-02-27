@@ -8,8 +8,9 @@ thread_local! {
 /// Initialize the logger.
 /// This starts the ThreadLocalLogger which implements log::Log.
 /// The ThreadLocalLogger forwards log records to the thread local logger.
-pub fn init(level: log::LevelFilter) -> Result<(), log::SetLoggerError> {
-    log::set_logger(&ThreadLocalLogger).map(|()| log::set_max_level(level))
+pub fn init(level: Option<log::LevelFilter>) -> Result<(), log::SetLoggerError> {
+    log::set_logger(&ThreadLocalLogger)
+        .map(|()| log::set_max_level(level.unwrap_or(log::LevelFilter::Info)))
 }
 
 struct ThreadLocalLogger;

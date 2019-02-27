@@ -13,7 +13,7 @@ pub struct LogThread {
 
 impl Default for LogThread {
     fn default() -> LogThread {
-        LogThread::new()
+        LogThread::new(Some(log::LevelFilter::Info))
     }
 }
 
@@ -30,7 +30,7 @@ fn level_to_color(level: log::Level) -> term::color::Color {
 impl LogThread {
     /// Starts a new log thread.
     /// Also starts a LogProxy for the thread starting the log thread.
-    pub fn new() -> LogThread {
+    pub fn new(level_filter: Option<log::LevelFilter>) -> LogThread {
         // Create the log channel.
         let (sender, receiver): (_, Receiver<Record>) = crossbeam_channel::unbounded();
 
@@ -39,7 +39,7 @@ impl LogThread {
             let mut t = stderr().expect("Unable to wrap terminal.");
             while let Ok(record) = receiver.recv() {
                 t.reset()?;
-                t.fg(term::color::WHITE)?;
+                t.attr(term::Attr::Dim)?;
                 write!(
                     t,
                     "{} ",
@@ -49,20 +49,35 @@ impl LogThread {
 
                 t.attr(term::Attr::Standout(true))?;
                 t.fg(level_to_color(*record.level()))?;
-                write!(t, "{:<5}", record.level())?;
+                write!(t, "{:5}", record.level())?;
                 t.reset()?;
 
-                t.fg(term::color::BRIGHT_WHITE)?;
-                write!(t, " {:<4} ", record.target())?;
+                t.attr(term::Attr::Dim)?;
+                let target = record.target();
+                if target.len() >= 8 {
+                    write!(t, " {:8}", unsafe { target.get_unchecked(0..7) })?;
+                } else {
+                    write!(t, " {:8}", target)?;
+                }
                 t.reset()?;
 
+                // Main thread log messages are bold
+                if record.target() == "main" {
+                    t.attr(term::Attr::Bold)?;
+                }
+                match record.target() {
+                    "main" => t.attr(term::Attr::Bold)?,
+                    "backend" => t.fg(term::color::GREEN)?,
+                    "frontend" => t.fg(term::color::BLUE)?,
+                    _ => (),
+                }
                 writeln!(t, "{}", record)?;
             }
             Ok(())
         });
 
         // Start a LogProxy for the current thread.
-        set_thread_logger(Box::new(LogProxy::new(sender.clone(), None)));
+        set_thread_logger(Box::new(LogProxy::new(sender.clone(), level_filter)));
 
         LogThread {
             sender: Some(sender),

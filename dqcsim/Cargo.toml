@@ -8,12 +8,5 @@ edition = "2018"
 dqcsim-core = { path = "../dqcsim-core" }
 dqcsim-log = { path = "../dqcsim-log" }
 
-slog = "2.4"
-slog-term = "2.4"
-slog-async = "2.3"
-slog-scope = "4.1"
-slog-stdlog = "3.0"
-
 log = "0.4"
 structopt = "0.2"
-clap = "2.32"

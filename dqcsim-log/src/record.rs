@@ -12,6 +12,7 @@ pub struct Record {
     level: log::Level,
     args: String,
     target: String,
+    thread_id: u32,
     // module_path: String,
     // file: String,
     // line: u32,
@@ -24,6 +25,9 @@ impl Record {
     pub fn target(&self) -> &str {
         &self.target
     }
+    pub fn thread_id(&self) -> u32 {
+        self.thread_id
+    }
 }
 
 impl<'a> From<&log::Record<'a>> for Record {
@@ -35,6 +39,7 @@ impl<'a> From<&log::Record<'a>> for Record {
                 .name()
                 .unwrap_or_default()
                 .to_string(),
+            thread_id: std::process::id(),
         }
     }
 }

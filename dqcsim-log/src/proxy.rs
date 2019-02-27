@@ -11,7 +11,7 @@ impl LogProxy {
     pub fn new(sender: Sender<Record>, level_filter: Option<log::LevelFilter>) -> LogProxy {
         LogProxy {
             sender,
-            level: level_filter.unwrap_or_else(log::LevelFilter::max),
+            level: level_filter.unwrap_or(log::LevelFilter::Info),
         }
     }
     pub fn level(mut self, level_filter: log::LevelFilter) -> LogProxy {
@@ -26,9 +26,11 @@ impl log::Log for LogProxy {
     }
 
     fn log(&self, record: &log::Record) {
-        self.sender
-            .try_send(Record::from(record))
-            .expect("LogProxy failed.");
+        if self.enabled(record.metadata()) {
+            self.sender
+                .try_send(Record::from(record))
+                .expect("LogProxy failed.");
+        }
     }
 
     fn flush(&self) {}
