@@ -17,7 +17,7 @@ impl Default for LogThread {
     }
 }
 
-fn level_to_color(level: &log::Level) -> term::color::Color {
+fn level_to_color(level: log::Level) -> term::color::Color {
     match level {
         log::Level::Error => 1,
         log::Level::Warn => 3,
@@ -48,7 +48,7 @@ impl LogThread {
                 t.reset()?;
 
                 t.attr(term::Attr::Standout(true))?;
-                t.fg(level_to_color(record.level()))?;
+                t.fg(level_to_color(*record.level()))?;
                 write!(t, "{:<5}", record.level())?;
                 t.reset()?;
 
@@ -94,6 +94,7 @@ impl Drop for LogThread {
             .take()
             .expect("LogThread failed.")
             .join()
+            .expect("LogThread failed.")
             .expect("LogThread failed.");
     }
 }

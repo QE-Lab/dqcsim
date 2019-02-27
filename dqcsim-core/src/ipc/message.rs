@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_json::{Result, Value};
+use serde_json::Value;
 
 #[derive(Serialize, Deserialize)]
 pub enum PluginControl {
@@ -41,13 +41,13 @@ pub enum D2Punion {
 /// Loglevel enumeration
 #[derive(Serialize, Deserialize)]
 pub enum LogLevel {
-    trace = 0,
-    debug = 1,
-    info = 2,
-    warn = 3,
-    err = 4,
-    critical = 5,
-    off = 6,
+    Trace = 0,
+    Debug = 1,
+    Info = 2,
+    Warn = 3,
+    Err = 4,
+    Critical = 5,
+    Off = 6,
 }
 
 /// Initialization request. This is always the first thing sent by DQCsim.
@@ -58,17 +58,17 @@ pub struct D2Pinit {
     /// URI for downstream link to downstream plugin (front-end and operator
     /// plugins only). The addressed plugin should connect to this to send
     /// GateStreamDown messages.
-    pub downPushURI: String,
+    pub down_push_uri: String,
     /// URI for upstream link from downstream plugin (front-end and operator
     /// plugins only). The addressed plugin should connect to this to receive
     /// GateStreamUp messages.
-    pub downPullURI: String,
+    pub down_pull_uri: String,
     /// Arbitrary data for customizing plugin instantiation.
-    pub arbCmds: Vec<ArbCmd>,
+    pub arb_cmds: Vec<ArbCmd>,
     /// Logger name prefix for the plugin.
-    pub loggerPrefix: String,
+    pub logger_prefix: String,
     /// Loglevel for this plugin.
-    pub logLevel: LogLevel,
+    pub log_level: LogLevel,
 }
 
 /// Initialization response. This is sent in response to the initialization
@@ -80,11 +80,11 @@ pub struct P2Dinit {
     /// URI for downstream link from upstream plugin (back-end and operator
     /// plugins only). The upstream plugin should connect to this to send
     /// GateStreamDown messages.
-    upPullURI: String,
+    up_pull_uri: String,
     /// URI for upstream link from downstream plugin (back-end and operator
     /// plugins only). The upstream plugin should connect to this to receive
     /// GateStreamUp messages.
-    upPushURI: String,
+    up_push_uri: String,
 }
 
 /// Termination request. This is sent when DQCsim wants to shut the plugin
@@ -106,7 +106,7 @@ pub struct D2Prun {
     /// Accelerator call start marker (queued by DQCsim::start()).
     start: bool,
     /// Arbitrary commands/data to pass to the accelerator start function.
-    startData: Vec<ArbCmd>,
+    start_data: Vec<ArbCmd>,
     /// Messages to push into the host-to-accelerator queue (queued by
     /// DQCsim::send()).
     queue: Vec<ArbData>,
@@ -119,7 +119,7 @@ pub struct P2Drun {
     /// Accelerator call completion marker (unblocks DQCsim::wait()).
     exited: bool,
     /// Exit code, set only if exited is set.
-    exitCode: Option<i32>,
+    exit_code: Option<i32>,
     /// Messages to push into the accelerator-to-host queue (unblocks
     /// DQCsim::recv()).
     queue: Vec<ArbData>,
@@ -151,11 +151,11 @@ pub struct ArbCmd {
     /// Identifies the interface that this command addresses. If an endpoint
     /// receives a command for an unsupported interface, it should treat the
     /// command as no-op.
-    interfaceIdentifier: String,
+    interface_identifier: String,
     /// Identifies the name of the command within the specified interface.
     /// If the interface is recognized but the operation is not, an error
     /// should be thrown.
-    operationIdentifier: String,
+    operation_identifier: String,
     /// Arbitrary data to go along with the command.
     data: ArbData,
 }

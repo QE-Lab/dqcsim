@@ -49,7 +49,7 @@ impl Plugin {
                 loop {
                     match rx.recv() {
                         Ok(msg) => match msg.command {
-                            message::D2Punion::D2Pinit(ref init) => {
+                            message::D2Punion::D2Pinit(ref _init) => {
                                 info!("start");
                                 // Setup control channel
                                 let (server, server_name): (
@@ -95,7 +95,7 @@ impl Plugin {
                                 trace!("{}", stdout);
                                 trace!("{}", stderr);
                             }
-                            message::D2Punion::D2Pfini(ref fini) => {
+                            message::D2Punion::D2Pfini(ref _fini) => {
                                 break;
                             }
                             _ => break,
@@ -123,11 +123,11 @@ impl Plugin {
         self.controller
             .send(message::DQCsimToPlugin {
                 command: message::D2Punion::D2Pinit(message::D2Pinit {
-                    downPushURI: "downPush".to_owned(),
-                    downPullURI: "downPull".to_owned(),
-                    arbCmds: Vec::new(),
-                    loggerPrefix: self.config.name.to_owned(),
-                    logLevel: message::LogLevel::critical,
+                    down_push_uri: "downPush".to_owned(),
+                    down_pull_uri: "downPull".to_owned(),
+                    arb_cmds: Vec::new(),
+                    logger_prefix: self.config.name.to_owned(),
+                    log_level: message::LogLevel::Critical,
                 }),
             })
             .unwrap();

@@ -11,7 +11,7 @@ impl LogProxy {
     pub fn new(sender: Sender<Record>, level_filter: Option<log::LevelFilter>) -> LogProxy {
         LogProxy {
             sender,
-            level: level_filter.unwrap_or(log::LevelFilter::max()),
+            level: level_filter.unwrap_or_else(log::LevelFilter::max),
         }
     }
     pub fn level(mut self, level_filter: log::LevelFilter) -> LogProxy {
