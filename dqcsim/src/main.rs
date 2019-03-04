@@ -32,11 +32,13 @@ fn main() -> Result<(), ()> {
     // Debug message with parsed Opt struct
     debug!("Parsed arguments: {:?}", &opt);
 
+    let simulator = dqcsim_core::simulator::Simulation::new();
+
     // Create plugins from PluginConfigs
     let plugins: Vec<plugin::Plugin> = opt
         .plugins
         .into_iter()
-        .map(|config| plugin::Plugin::new(config, &logger))
+        .map(|config| plugin::Plugin::new(config, &logger, None))
         .collect();
     for plugin in &plugins {
         plugin.init().expect("init failed");

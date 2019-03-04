@@ -10,7 +10,9 @@ use log::{error, info, trace};
 use std::{
     error::Error,
     process::{Child, Command, Stdio},
+    sync::{Arc, Condvar, Mutex},
     thread::{Builder, JoinHandle},
+    time::Duration,
 };
 
 /// The Plugin configuration.
@@ -24,11 +26,19 @@ pub struct Plugin {
     handler: Option<JoinHandle<()>>,
     /// The sender part of the control channel.
     controller: crossbeam_channel::Sender<message::DQCsimToPlugin>,
+    /// IPC connect timeout
+    ipc_connect_timeout: Option<Duration>,
 }
+
+const IPC_CONNECT_TIMEOUT_SECS: u64 = 5;
 
 /// The plugin thread control function.
 impl Plugin {
-    pub fn new(config: PluginConfig, logger: &LogThread) -> Plugin {
+    pub fn new(
+        config: PluginConfig,
+        logger: &LogThread,
+        ipc_connect_timeout: Option<Duration>,
+    ) -> Plugin {
         // Create a channel to control the plugin thread.
         let (controller, rx): (
             Sender<message::DQCsimToPlugin>,
@@ -78,28 +88,70 @@ impl Plugin {
                                         .expect("Failed to start echo process"),
                                 );
 
-                                // trace!(
-                                //     "Started child process for {}: {}",
-                                //     &name,
-                                //     &child.unwrap().id()
-                                // );
+                                let pair = Arc::new((Mutex::new(false), Condvar::new()));
+                                let pair2 = pair.clone();
 
-                                // Wait for child process to connect and get the receiver.
-                                let (_, receiver): (_, IpcReceiver<Record>) =
-                                    server.accept().expect("Unable to connect.");
-
-                                // Forward log messages from child to log thread.
-                                ROUTER.route_ipc_receiver_to_crossbeam_sender(
-                                    receiver,
-                                    sender.clone(),
+                                // Setup connection in separate thread as
+                                // ipc-channel setup has no support for timeouts.
+                                let handle: JoinHandle<IpcReceiver<Record>> =
+                                    std::thread::spawn(move || {
+                                        {
+                                            let (ref lock, _) = *pair2;
+                                            let mut started = lock.lock().unwrap();
+                                            *started = true;
+                                            log::debug!("connect thread started");
+                                        }
+                                        // Wait for child process to connect and get the receiver.
+                                        let (_, receiver): (_, IpcReceiver<Record>) =
+                                            server.accept().expect("Unable to connect.");
+                                        {
+                                            let (_, ref cvar) = *pair2;
+                                            log::debug!(
+                                                "Connect thread finished; notifying waiting thread"
+                                            );
+                                            cvar.notify_one();
+                                        }
+                                        receiver
+                                    });
+                                let (ref lock, ref cvar) = *pair;
+                                let timeout = ipc_connect_timeout
+                                    .unwrap_or(Duration::from_secs(IPC_CONNECT_TIMEOUT_SECS));
+                                log::debug!(
+                                    "Waiting on connect thread for {} secs",
+                                    timeout.as_secs()
                                 );
+                                let (started, wait_result) = cvar
+                                    .wait_timeout(
+                                        lock.lock().expect("IPC connection startup lock poisoned"),
+                                        timeout,
+                                    )
+                                    .expect("IPC connection startup lock poisoned");
+
+                                if *started && !wait_result.timed_out() {
+                                    let receiver = handle.join().unwrap();
+                                    // Forward log messages from child to log thread.
+                                    ROUTER.route_ipc_receiver_to_crossbeam_sender(
+                                        receiver,
+                                        sender.clone(),
+                                    );
+                                } else {
+                                    log::error!(
+                                        "Timeout exceeded waiting for IPC connection (started: {})",
+                                        *started
+                                    );
+                                }
                             }
-                            message::D2Punion::D2Pfini(ref _fini) => {
-                                // Wait for child to finish
-                                trace!(
-                                    "child stopped: {}",
-                                    child.unwrap().wait().expect("child failed.")
-                                );
+                            message::D2Punion::D2Pfini(ref fini) => {
+                                if fini.graceful {
+                                    // Wait for child to finish
+                                    trace!(
+                                        "child stopped: {}",
+                                        child.unwrap().wait().expect("child failed.")
+                                    );
+                                } else {
+                                    trace!("Killing child process");
+                                    child.unwrap().kill().expect("kill failed.");
+                                }
 
                                 // TODO: pipestream reader which dumps lines as they come in.
                                 // https://gist.github.com/ArtemGr/db40ae04b431a95f2b78
@@ -131,7 +183,7 @@ impl Plugin {
                         }
                     }
                 }
-                info!("[{}] Plugin thread stopping.", name);
+                info!("Plugin thread stopping.");
             })
             .ok();
 
@@ -139,6 +191,7 @@ impl Plugin {
             config,
             handler,
             controller,
+            ipc_connect_timeout,
         }
     }
     /// Initialize the plugin.
