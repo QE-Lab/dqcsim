@@ -1,23 +1,12 @@
-use ipc_channel::ipc::{channel, IpcSender};
-use log::trace;
-use std::env;
+use std::{env, error::Error};
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
+    let server = args[1].as_ref();
 
-    let server = &args[1];
-    trace!("{}", &server);
+    dqcsim_log::connect(server, Some(log::LevelFilter::Trace))?;
 
-    println!("stdout from  {}", std::process::id());
-    eprintln!("stderr from {}", std::process::id());
+    log::warn!("Warning from child process: {}", std::process::id());
 
-    let connect = IpcSender::connect(server.to_owned()).unwrap();
-
-    // Create channel
-    let (tx, rx) = channel().unwrap();
-    // Send receiver to host.
-    connect.send(rx).expect("Unable to send receiver to host.");
-
-    // Send a test message over the established ipc connection
-    tx.send(format!("client connected to {}", server)).unwrap();
+    Ok(())
 }

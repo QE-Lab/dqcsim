@@ -1,20 +1,13 @@
 use crate::{drop_thread_logger, set_thread_logger, LogProxy, Record};
-use crossbeam_channel::{Receiver, Sender};
 use std::thread::JoinHandle;
 use term::stderr;
 
 /// A thread dedicated to logging.
-/// The log thread provides producers with a copy of the sender side of the log channel.
+/// The log thread provides log producers with a copy of the sender side of the log channel.
 /// Producers can use this sender side of the log channel to forward their log records.
 pub struct LogThread {
-    sender: Option<Sender<Record>>,
+    sender: Option<crossbeam_channel::Sender<Record>>,
     handler: Option<JoinHandle<Result<(), term::Error>>>,
-}
-
-impl Default for LogThread {
-    fn default() -> LogThread {
-        LogThread::new(Some(log::LevelFilter::Info))
-    }
 }
 
 fn level_to_color(level: log::Level) -> term::color::Color {
@@ -32,11 +25,13 @@ impl LogThread {
     /// Also starts a LogProxy for the thread starting the log thread.
     pub fn new(level_filter: Option<log::LevelFilter>) -> LogThread {
         // Create the log channel.
-        let (sender, receiver): (_, Receiver<Record>) = crossbeam_channel::unbounded();
+        let (sender, receiver): (_, crossbeam_channel::Receiver<Record>) =
+            crossbeam_channel::unbounded();
 
-        // Spawn the log thread.
+        // Spawn the local channel log thread.
         let handler = std::thread::spawn(move || {
             let mut t = stderr().expect("Unable to wrap terminal.");
+
             while let Ok(record) = receiver.recv() {
                 t.reset()?;
                 t.attr(term::Attr::Dim)?;
@@ -54,24 +49,21 @@ impl LogThread {
 
                 t.attr(term::Attr::Dim)?;
                 let target = record.target();
-                if target.len() >= 8 {
-                    write!(t, " {:8}", unsafe { target.get_unchecked(0..7) })?;
+                if target.len() >= 15 {
+                    write!(t, " {:15}", unsafe { target.get_unchecked(0..14) })?;
                 } else {
-                    write!(t, " {:8}", target)?;
+                    write!(t, " {:15}", target)?;
                 }
                 t.reset()?;
 
-                // Main thread log messages are bold
-                if record.target() == "main" {
+                if std::process::id() != record.process() {
+                    t.fg(record.process() % 6 + 1)?;
+                } else if record.thread() == "main" {
+                    // DQCsim main thread log messages are bold
                     t.attr(term::Attr::Bold)?;
                 }
-                match record.target() {
-                    "main" => t.attr(term::Attr::Bold)?,
-                    "backend" => t.fg(term::color::GREEN)?,
-                    "frontend" => t.fg(term::color::BLUE)?,
-                    _ => (),
-                }
                 writeln!(t, "{}", record)?;
+                t.reset()?;
             }
             Ok(())
         });
@@ -87,7 +79,7 @@ impl LogThread {
 
     /// Returns a copy of the sender side of the log channel.
     /// Use this sender side of the log channel to pass Records to the logger thread.
-    pub fn get_sender(&self) -> Option<Sender<Record>> {
+    pub fn get_sender(&self) -> Option<crossbeam_channel::Sender<Record>> {
         self.sender.clone()
     }
 }
