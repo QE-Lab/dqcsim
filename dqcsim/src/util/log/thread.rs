@@ -70,7 +70,7 @@ impl LogThread {
         });
 
         // Start a LogProxy for the current thread.
-        set_thread_logger(Box::new(LogProxy::new(sender.clone(), level_filter)));
+        set_thread_logger(LogProxy::boxed(sender.clone(), level_filter));
 
         LogThread {
             sender: Some(sender),

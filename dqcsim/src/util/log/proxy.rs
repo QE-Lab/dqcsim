@@ -14,6 +14,9 @@ unsafe impl<T: Sender> Send for LogProxy<T> {}
 unsafe impl<T: Sender> Sync for LogProxy<T> {}
 
 impl<T: Sender> LogProxy<T> {
+    pub fn boxed(sender: T, level_filter: Option<log::LevelFilter>) -> Box<LogProxy<T>> {
+        Box::new(LogProxy::new(sender, level_filter))
+    }
     pub fn new(sender: T, level_filter: Option<log::LevelFilter>) -> LogProxy<T> {
         LogProxy {
             sender,
@@ -26,7 +29,7 @@ impl<T: Sender> LogProxy<T> {
     }
 }
 
-impl<T: Sender + std::fmt::Debug> log::Log for LogProxy<T>
+impl<T: Sender> log::Log for LogProxy<T>
 where
     for<'a> T::Item: From<&'a log::Record<'a>>,
 {

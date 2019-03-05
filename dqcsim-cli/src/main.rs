@@ -1,4 +1,5 @@
 use dqcsim::{plugin, util::log::LogThread, util::signal};
+use failure::Error;
 use log::{debug, info, LevelFilter};
 use structopt::StructOpt;
 
@@ -14,7 +15,7 @@ struct Opt {
     plugins: Vec<plugin::config::PluginConfig>,
 }
 
-fn main() -> Result<(), ()> {
+fn main() -> Result<(), Error> {
     // Parse arguments
     let opt = Opt::from_args();
 
@@ -42,13 +43,13 @@ fn main() -> Result<(), ()> {
     let simulator = dqcsim::simulator::Simulation::new();
 
     // Create plugins from PluginConfigs
-    let plugins: Vec<plugin::Plugin> = opt
+    let plugins: Vec<Result<plugin::Plugin, Error>> = opt
         .plugins
         .into_iter()
         .map(|config| plugin::Plugin::new(config, &logger, None))
         .collect();
-    for plugin in &plugins {
-        plugin.init().expect("init failed");
+    for plugin in plugins {
+        plugin?.init().expect("init failed");
     }
 
     Ok(())

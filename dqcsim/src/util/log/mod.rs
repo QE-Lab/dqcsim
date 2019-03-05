@@ -55,7 +55,6 @@ pub fn connect<'a>(
 
     // Create log channel
     let (tx, rx): (ipc::IpcSender<Record>, _) = ipc::channel()?;
-
     // Send receiver to host.
     connect.send(rx)?;
 
@@ -63,7 +62,7 @@ pub fn connect<'a>(
     init(level).expect("Unable to set thread local logger.");
 
     // Setup log proxy.
-    set_thread_logger(Box::new(LogProxy::new(tx, level)));
+    set_thread_logger(LogProxy::boxed(tx, level));
 
     log::trace!("Connected to log channel via ipc");
     Ok(())

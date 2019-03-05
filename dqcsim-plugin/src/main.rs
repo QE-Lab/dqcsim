@@ -1,23 +1,18 @@
-// use dqcsim::plugin::config::PluginConfig;
-use std::{env, error::Error};
-// use structopt::StructOpt;
+use failure::Error;
+use std::env;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    // Parse arguments
-    // let opt = PluginConfig::from_args();
-    // panic!("Asdf");
+fn main() -> Result<(), Error> {
     let args: Vec<String> = env::args().collect();
     let server = args[1].as_ref();
 
-    dqcsim::util::log::connect(server, None).unwrap();
-    // opt.server.expect("Missing server name"), opt.loglevel)?;
+    std::thread::sleep(std::time::Duration::from_secs(1));
 
-    log::info!("child process: {}", std::process::id());
-    log::error!("Error from child process");
+    let channel = dqcsim::protocol::channel::connect(server, Some(log::LevelFilter::Trace))?;
 
-    // std::thread::sleep(std::time::Duration::from_secs(1));
+    log::info!("Connected.");
 
-    // log::error!("Awake.");
+    std::thread::sleep(std::time::Duration::from_secs(1));
+    log::info!("Done.");
 
     Ok(())
 }

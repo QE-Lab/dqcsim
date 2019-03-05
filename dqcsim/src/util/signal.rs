@@ -1,14 +1,6 @@
+use crate::protocol::message::Signal;
 use signal_hook::iterator::Signals;
 use std::{error::Error, os::raw::c_int, thread};
-
-/// Enum with supported signal variants.
-pub enum Signal {
-    SIGTERM,
-    SIGINT,
-    SIGKILL,
-    SIGQUIT,
-    Other(c_int),
-}
 
 /// Setup a signal hook for the provided signals.
 /// Returns a Receiver channel which receives arrived signals.

@@ -23,3 +23,6 @@ humantime = "1.2"
 
 # config
 structopt = "0.2"
+
+# error handling
+failure = "0.1"
