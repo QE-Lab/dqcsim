@@ -1,8 +1,9 @@
-use crate::log::{drop_thread_logger, set_thread_logger, LogProxy, Record};
+use crate::util::log::{drop_thread_logger, set_thread_logger, LogProxy, Record};
 use std::thread::JoinHandle;
 use term::stderr;
 
 /// A thread dedicated to logging.
+///
 /// The log thread provides log producers with a copy of the sender side of the log channel.
 /// Producers can use this sender side of the log channel to forward their log records.
 pub struct LogThread {

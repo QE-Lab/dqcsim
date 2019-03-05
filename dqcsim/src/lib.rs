@@ -1,7 +1,11 @@
-/// This module defines the combination of a `LogThread` and `LogProxy` both implementing `log::Log` to start a dedicated logger thread and logger proxies forwarding their log records to the dedicated logger thread via a channel.
-pub mod log;
-
-pub mod ipc;
+/// Plugin control structure and configuration.
 pub mod plugin;
+
+/// Defines the protocols for all forms of communication.
+pub mod protocol;
+
+/// Simulator instance.
 pub mod simulator;
+
+/// Utility functions and modules.
 pub mod util;

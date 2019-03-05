@@ -6,7 +6,7 @@ DQCsim-rs: Delft Quantum Classical Simulator - the Rust edition
 
 Requirements:
 
-- [Rust](https://rustup.rs/) 1.32 or later.
+- [Rust](https://rustup.rs/) 1.33 or later.
 
 Optional:
 
@@ -34,7 +34,7 @@ cargo check
 ## Run
 
 ```bash
-cargo run -- <args>
+cargo run -p <bin> -- <args>
 ```
 
 ## Test
@@ -58,5 +58,5 @@ cargo fmt
 ## Docs
 
 ```bash
-cargo doc --open
+cargo doc -p <crate> --open
 ```

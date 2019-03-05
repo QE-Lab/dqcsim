@@ -9,7 +9,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
     let server = args[1].as_ref();
 
-    dqcsim::log::connect(server, None).unwrap();
+    dqcsim::util::log::connect(server, None).unwrap();
     // opt.server.expect("Missing server name"), opt.loglevel)?;
 
     log::info!("child process: {}", std::process::id());

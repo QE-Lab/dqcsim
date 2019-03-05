@@ -1,4 +1,4 @@
-use crate::log::Sender;
+use crate::util::log::Sender;
 
 /// A LogProxy is a logger implementation (log::Log) which sends log records using its Sender side of a Channel.
 pub struct LogProxy<T: Sender> {

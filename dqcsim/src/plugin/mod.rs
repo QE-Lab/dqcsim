@@ -1,7 +1,7 @@
 use crate::{
-    ipc::message,
-    log::{LogProxy, LogThread, Record},
     plugin::config::PluginConfig,
+    protocol::message,
+    util::log::{LogProxy, LogThread, Record},
 };
 use crossbeam_channel::{Receiver, Sender};
 use ipc_channel::{
@@ -28,8 +28,6 @@ pub struct Plugin {
     handler: Option<JoinHandle<()>>,
     /// The sender part of the control channel.
     controller: crossbeam_channel::Sender<message::DQCsimToPlugin>,
-    /// IPC connect timeout
-    ipc_connect_timeout: Option<Duration>,
 }
 
 const IPC_CONNECT_TIMEOUT_SECS: u64 = 5;
@@ -57,7 +55,10 @@ impl Plugin {
         let handler = Builder::new()
             .name(config.name.to_owned())
             .spawn(move || {
-                crate::log::set_thread_logger(Box::new(LogProxy::new(sender.clone(), loglevel)));
+                crate::util::log::set_thread_logger(Box::new(LogProxy::new(
+                    sender.clone(),
+                    loglevel,
+                )));
                 info!(
                     "[{}] Plugin running in thread: {:?}",
                     &name,
@@ -193,7 +194,6 @@ impl Plugin {
             config,
             handler,
             controller,
-            ipc_connect_timeout,
         }
     }
     /// Initialize the plugin.

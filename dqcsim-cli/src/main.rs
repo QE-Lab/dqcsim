@@ -1,4 +1,4 @@
-use dqcsim::{log::LogThread, plugin, util::signal};
+use dqcsim::{plugin, util::log::LogThread, util::signal};
 use log::{debug, info, LevelFilter};
 use structopt::StructOpt;
 
@@ -19,7 +19,7 @@ fn main() -> Result<(), ()> {
     let opt = Opt::from_args();
 
     // Setup logging
-    dqcsim::log::init(opt.loglevel).expect("Failed to initialize logger.");
+    dqcsim::util::log::init(opt.loglevel).expect("Failed to initialize logger.");
     let logger = LogThread::new(opt.loglevel);
 
     // Setup signal hook
