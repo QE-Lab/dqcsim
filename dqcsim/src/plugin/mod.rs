@@ -1,7 +1,9 @@
-use crate::{ipc::message, plugin::config::PluginConfig};
+use crate::{
+    ipc::message,
+    log::{LogProxy, LogThread, Record},
+    plugin::config::PluginConfig,
+};
 use crossbeam_channel::{Receiver, Sender};
-use dqcsim_log::Record;
-use dqcsim_log::{LogProxy, LogThread};
 use ipc_channel::{
     ipc::{IpcOneShotServer, IpcReceiver},
     router::ROUTER,
@@ -55,7 +57,7 @@ impl Plugin {
         let handler = Builder::new()
             .name(config.name.to_owned())
             .spawn(move || {
-                dqcsim_log::set_thread_logger(Box::new(LogProxy::new(sender.clone(), loglevel)));
+                crate::log::set_thread_logger(Box::new(LogProxy::new(sender.clone(), loglevel)));
                 info!(
                     "[{}] Plugin running in thread: {:?}",
                     &name,

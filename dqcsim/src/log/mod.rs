@@ -9,7 +9,7 @@ pub use record::*;
 pub use sender::*;
 pub use thread::*;
 
-use crate::local::ThreadLocalLogger;
+use crate::log::local::ThreadLocalLogger;
 use ipc_channel::ipc;
 use std::{cell::RefCell, error::Error};
 

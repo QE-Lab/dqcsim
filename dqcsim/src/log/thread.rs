@@ -1,4 +1,4 @@
-use crate::{drop_thread_logger, set_thread_logger, LogProxy, Record};
+use crate::log::{drop_thread_logger, set_thread_logger, LogProxy, Record};
 use std::thread::JoinHandle;
 use term::stderr;
 

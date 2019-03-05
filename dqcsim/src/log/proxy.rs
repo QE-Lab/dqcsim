@@ -1,4 +1,4 @@
-use crate::Sender;
+use crate::log::Sender;
 
 /// A LogProxy is a logger implementation (log::Log) which sends log records using its Sender side of a Channel.
 pub struct LogProxy<T: Sender> {
@@ -6,6 +6,10 @@ pub struct LogProxy<T: Sender> {
     sender: T,
 }
 
+/// The log::Log trait requires the type implementing the trait to be Send + Sync.
+/// Not all LogProxy Sender types are Send + Sync (ipc_channel).
+/// However as the intended use of the LogProxy is in a ThreadLocalLogger this
+/// is not a problem.
 unsafe impl<T: Sender> Send for LogProxy<T> {}
 unsafe impl<T: Sender> Sync for LogProxy<T> {}
 

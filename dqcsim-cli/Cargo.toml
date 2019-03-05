@@ -1,5 +1,5 @@
 [package]
-name = "dqcsim-plugin"
+name = "dqcsim-cli"
 version = "0.1.0"
 authors = ["Matthijs Brobbel <m1brobbel@gmail.com>"]
 edition = "2018"
@@ -9,5 +9,4 @@ dqcsim = { path = "../dqcsim" }
 
 log = "0.4"
 structopt = "0.2"
-serde = { version = "1.0", features = ["derive"] }
-ipc-channel = { version = "0.11", features = ["async"] }
+signal-hook = "0.1"

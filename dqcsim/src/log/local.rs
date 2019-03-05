@@ -1,4 +1,4 @@
-use crate::LOGGER;
+use crate::log::LOGGER;
 
 pub struct ThreadLocalLogger;
 
