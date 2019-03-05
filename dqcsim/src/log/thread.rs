@@ -30,7 +30,7 @@ impl LogThread {
 
         // Spawn the local channel log thread.
         let handler = std::thread::spawn(move || {
-            let mut t = stderr().expect("Unable to wrap terminal.");
+            let mut t = stderr().expect("Unable to wrap terminal");
 
             while let Ok(record) = receiver.recv() {
                 t.reset()?;
@@ -99,9 +99,9 @@ impl Drop for LogThread {
         // Wait for the logger thread to be dropped.
         self.handler
             .take()
-            .expect("LogThread failed.")
+            .expect("LogThread failed to start")
             .join()
-            .expect("LogThread failed.")
-            .expect("LogThread failed.");
+            .expect("LogThread failed to terminate")
+            .expect("LogThread failed");
     }
 }
