@@ -6,9 +6,6 @@ fn main() -> Result<(), Error> {
     let args: Vec<String> = env::args().collect();
     let server = args[1].as_ref();
 
-    // Some delay. Remove later for performance improvement.
-    std::thread::sleep(std::time::Duration::from_secs(1));
-
     // Connect to simulator. Get PluginChannel.
     let mut channel = dqcsim::protocol::channel::connect(server)?;
 
@@ -23,7 +20,9 @@ fn main() -> Result<(), Error> {
 
     log::info!("Connected.");
 
-    std::thread::sleep(std::time::Duration::from_secs(2));
+    eprintln!("stderr");
+    println!("stdout");
+
     log::info!("Done.");
 
     std::process::exit(1234);

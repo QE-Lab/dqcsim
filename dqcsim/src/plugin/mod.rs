@@ -43,6 +43,7 @@ impl Plugin {
     /// Initialize the plugin.
     pub fn init(&mut self) -> Result<(), ()> {
         trace!("Init plugin {}", self.config.name);
+        self.process.init();
         Ok(())
     }
 }

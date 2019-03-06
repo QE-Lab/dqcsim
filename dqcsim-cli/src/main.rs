@@ -24,7 +24,7 @@ fn main() -> Result<(), Error> {
     let logger = LogThread::new(opt.loglevel);
 
     // Setup signal hook
-    let signal = signal::notify(&[
+    let _signal = signal::notify(&[
         signal_hook::SIGTERM,
         signal_hook::SIGINT,
         signal_hook::SIGQUIT,
@@ -40,7 +40,7 @@ fn main() -> Result<(), Error> {
     // Debug message with parsed Opt struct
     debug!("Parsed arguments: {:?}", &opt);
 
-    let simulator = dqcsim::simulator::Simulation::new();
+    let _simulator = dqcsim::simulator::Simulation::new();
 
     // Create plugins from PluginConfigs
     let plugins: Vec<Result<plugin::Plugin, Error>> = opt

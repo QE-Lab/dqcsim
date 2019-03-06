@@ -43,25 +43,13 @@ impl LogThread {
                 )?;
                 t.reset()?;
 
-                t.attr(term::Attr::Standout(true))?;
+                // t.attr(term::Attr::Standout(true))?;
                 t.fg(level_to_color(*record.level()))?;
-                write!(t, "{:5}", record.level())?;
-                t.reset()?;
-
-                t.attr(term::Attr::Dim)?;
-                let target = record.target();
-                if target.len() >= 15 {
-                    write!(t, " {:15}", unsafe { target.get_unchecked(0..14) })?;
-                } else {
-                    write!(t, " {:15}", target)?;
-                }
+                write!(t, "{:>5} ", record.level())?;
                 t.reset()?;
 
                 if std::process::id() != record.process() {
                     t.fg(record.process() % 6 + 1)?;
-                } else if record.thread() == "main" {
-                    // DQCsim main thread log messages are bold
-                    t.attr(term::Attr::Bold)?;
                 }
                 writeln!(t, "{}", record)?;
                 t.reset()?;

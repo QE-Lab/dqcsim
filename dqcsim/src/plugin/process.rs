@@ -1,7 +1,7 @@
 use crate::{
     plugin::PluginError,
     protocol::channel::{setup, SimulatorChannel},
-    util::log::Record,
+    util::log::{stdio_to_log, Record},
 };
 use crossbeam_channel::Sender;
 use failure::Error;
@@ -30,25 +30,37 @@ impl PluginProcess {
         sender: Sender<Record>,
         ipc_connect_timeout: Option<Duration>,
     ) -> Result<PluginProcess, Error> {
-        let command = self.command.take().ok_or(PluginError::ProcessError(
-            "Process in broken state.".to_string(),
-        ))?;
-        let (child, mut channel) = setup(command, ipc_connect_timeout)?;
+        let command = self
+            .command
+            .take()
+            .ok_or_else(|| PluginError::ProcessError("Process in broken state.".to_string()))?;
+        let (mut child, mut channel) = setup(command, ipc_connect_timeout)?;
         ROUTER.route_ipc_receiver_to_crossbeam_sender(
             channel.log().expect("Unable to get log channel"),
-            sender,
+            sender.clone(),
         );
+
+        // Log piped stdout/stderr
+        stdio_to_log(
+            Box::new(child.stderr.take().expect("stderr")),
+            sender.clone(),
+            log::Level::Error,
+        );
+        stdio_to_log(
+            Box::new(child.stdout.take().expect("stdout")),
+            sender,
+            log::Level::Info,
+        );
+
         self.child = Some(child);
         self.channel = Some(channel);
         Ok(self)
     }
-    pub fn kill(&mut self) -> Result<(), std::io::Error> {
-        self.child.as_mut().unwrap().kill()
-    }
+    pub fn init(&self) {}
+    // pub fn kill(&mut self) -> Result<(), std::io::Error> {
+    //     self.child.as_mut().unwrap().kill()
+    // }
 }
-
-// TODO: pipestream reader which dumps lines as they come in.
-//                 // https://gist.github.com/ArtemGr/db40ae04b431a95f2b78
 
 impl Drop for PluginProcess {
     fn drop(&mut self) {
@@ -60,8 +72,15 @@ impl Drop for PluginProcess {
             .wait()
             .expect("Child process failed");
         match status.code() {
-            Some(code) => log::info!("Exited with status code: {}", code),
+            Some(code) => {
+                let msg = format!("Exited with status code: {}", code);
+                if code > 0 {
+                    log::warn!("{}", msg)
+                } else {
+                    log::info!("{}", msg)
+                }
+            }
             None => log::error!("Process terminated by signal"),
-        }
+        };
     }
 }

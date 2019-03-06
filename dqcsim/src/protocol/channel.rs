@@ -1,8 +1,7 @@
 use crate::{
-    protocol::message::{Control, Log, Reply},
-    util::log::{init, set_thread_logger, LogProxy, LogThread, Record},
+    protocol::message::{Control, Reply},
+    util::log::Record,
 };
-use crossbeam_channel::Sender;
 use failure::{Error, Fail};
 use ipc_channel::{
     ipc,
@@ -11,7 +10,7 @@ use ipc_channel::{
 use serde::{Deserialize, Serialize};
 use std::{
     io,
-    process::{Child, Command},
+    process::{Child, Command, Stdio},
     sync::{Arc, Condvar, Mutex},
     thread,
     time::Duration,
@@ -94,16 +93,21 @@ pub fn connect(server: impl Into<String>) -> Result<PluginChannel, Error> {
 const IPC_CONNECT_TIMEOUT_SECS: u64 = 5;
 
 pub fn setup(
-    command: Command,
+    mut command: Command,
     ipc_connect_timeout: Option<Duration>,
 ) -> Result<(Child, SimulatorChannel), Error> {
     // Setup channel
     let (server, server_name) = IpcOneShotServer::new()?;
 
     // Spawn child process
-    let child = Command::from(command).arg(server_name).spawn()?;
+    let child = command
+        .arg(server_name)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()?;
 
     // Make sure child connects within timeout
+    #[cfg_attr(feature = "cargo-clippy", allow(clippy::mutex_atomic))]
     let pair = Arc::new((Mutex::new(false), Condvar::new()));
     let pair2 = pair.clone();
     let handle: thread::JoinHandle<SimulatorChannel> = thread::spawn(move || {

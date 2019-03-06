@@ -15,9 +15,10 @@ impl log::Log for ThreadLocalLogger {
     }
 
     fn log(&self, record: &log::Record) {
-        LOGGER.with(|logger| match *logger.borrow() {
-            Some(ref logger) => logger.log(record),
-            None => {} // no thread-local logger set.
+        LOGGER.with(|logger| {
+            if let Some(ref logger) = *logger.borrow() {
+                logger.log(record)
+            }
         });
     }
 

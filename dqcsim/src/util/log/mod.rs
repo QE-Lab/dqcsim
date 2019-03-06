@@ -2,11 +2,13 @@ mod local;
 mod proxy;
 mod record;
 mod sender;
+mod stdio;
 mod thread;
 
 pub use proxy::*;
 pub use record::*;
 pub use sender::*;
+pub use stdio::*;
 pub use thread::*;
 
 use crate::util::log::local::ThreadLocalLogger;
@@ -46,7 +48,7 @@ pub fn init(level: Option<log::LevelFilter>) -> Result<(), log::SetLoggerError> 
 /// the log thread.
 /// The connect function also initializes the thread local logger system and creates
 /// a proxy instance which gets the sender side of the IPC channel.
-pub fn connect<'a>(
+pub fn connect(
     server: impl Into<String>,
     level: Option<log::LevelFilter>,
 ) -> Result<(), Box<dyn Error>> {
