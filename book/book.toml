@@ -1,0 +1,5 @@
+[book]
+authors = ["Matthijs Brobbel", "Jeroen van Straten"]
+multilingual = false
+src = "src"
+title = "DQCsim"

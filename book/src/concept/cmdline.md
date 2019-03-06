@@ -1,7 +1,7 @@
 
 DQCsim binary command line feature requirements
 ===============================================
-
+```bash
 Usage:
 
     dqcsim [dqcsim switches] \
@@ -10,6 +10,7 @@ Usage:
         [<operator 2> [operator 2 plugin switches]] \
         ...
         [<backend> [backend plugin switches]]
+```
 
 DQCsim switches
 ---------------
@@ -46,7 +47,7 @@ DQCsim contains a number of features to reproduce an earlier simulation without 
 ### Logging
 
 Log message distribution works as follows:
-
+```bash
                     Source filters                         Output filters
     .----------.         ,-.                            .-.    ,-.
     | Plugin A |---o--->( < )-------------------------->| |--->( < )---> stderr
@@ -68,7 +69,7 @@ Log message distribution works as follows:
     '----------'         `-'   ,------------.           '-'
                           ^---( DQCsim level )
                                `------------'
-
+```
 These switches control the production of log messages.
 
  - `-l <level>`/`--level <level>`: sets the verbosity for the source filters. The plugin source filters can later be overridden. `level` should be `off`/`o`, `error`/`e`, `warn`/`w`, `info`/`i`, `debug`/`d`, or `trace`/`t`. Defaults to `info`.
@@ -125,20 +126,19 @@ ArbData and ArbCmd syntax
 -------------------------
 
 ArbData objects can be specified on the command line as follows:
-
+```bash
     <<arb_data>> := '<json>,<arg1>,<arg2>,[...]'
-
+```
 `<json>` must be a valid JSON object, surrounded and delimited by `{}`. Zero or more comma-separated strings then follow to specify the unstructured arguments. The following escape characters are available in these argument strings:
-
+```bash
     \,    ->  ,
     \\    ->  \
     \x##  ->  hexadecimal character ##
-
+```
 ArbCmd objects are expressed as follows:
-
+```bash
     <<arb_cmd>> := <interface-id>.<operation-id>
                  | <interface-id>.<operation-id>.<arg1>,<arg2>,[...]
                  | <interface-id>.<operation-id>:<<arb_data>>
-
+```
 where `<interface-id>` and `<operation-id>` are the interface and operation identifier strings. If `<<arb_data>>` is not specified, it defaults to `{}` with no arguments. If the unstructured data consists of simple strings and the JSON object is not used, the second format can be used, where the JSON object is implicitly `{}`.
-

@@ -1,62 +1,18 @@
 # DQCsim-rs
 
+[![Build Status](https://travis-ci.com/mbrobbel/dqcsim-rs.svg?token=kqmepcprqUJV8x3zhy5x&branch=master)](https://travis-ci.com/mbrobbel/dqcsim-rs)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/mbrobbel/dqcsim-rs/blob/master/LICENSE)
+
 DQCsim-rs: Delft Quantum Classical Simulator - the Rust edition
 
 ## Build
 
 Requirements:
 
-- [Rust](https://rustup.rs/) 1.33 or later.
+- [Rust](https://rustup.rs/)
 
 Optional:
 
 - [Clippy](https://github.com/rust-lang/rust-clippy)
 - [Rustfmt](https://github.com/rust-lang/rustfmt)
-
-### Debug
-
-```bash
-cargo build
-```
-
-### Release
-
-```bash
-cargo build --release
-```
-
-## Check
-
-```bash
-cargo check
-```
-
-## Run
-
-```bash
-cargo run -p <bin> -- <args>
-```
-
-## Test
-
-```bash
-cargo test
-```
-
-## Lint
-
-```bash
-cargo clippy
-```
-
-## Format
-
-```bash
-cargo fmt
-```
-
-## Docs
-
-```bash
-cargo doc -p <crate> --open
-```
+- [mdBook](https://github.com/rust-lang-nursery/mdBook)

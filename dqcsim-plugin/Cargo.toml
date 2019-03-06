@@ -1,7 +1,7 @@
 [package]
 name = "dqcsim-plugin"
 version = "0.1.0"
-authors = ["Matthijs Brobbel <m1brobbel@gmail.com>"]
+authors = ["Matthijs Brobbel <m1brobbel@gmail.com>", "Jeroen van Straten"]
 edition = "2018"
 
 [dependencies]
