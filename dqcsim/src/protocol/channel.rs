@@ -82,7 +82,7 @@ impl PluginChannel {
 /// The server argument is provided by the simulator instance.
 pub fn connect(server: impl Into<String>) -> Result<PluginChannel, Error> {
     let connect = IpcSender::connect(server.into())?;
-    let (simulator, mut plugin) = channel()?;
+    let (simulator, plugin) = channel()?;
     connect.send(simulator)?;
     Ok(plugin)
 }

@@ -2,21 +2,17 @@
 pub mod config;
 
 mod process;
-mod thread;
 
 use crate::{
-    plugin::{config::PluginConfig, thread::PluginThread},
-    protocol::message,
+    plugin::{config::PluginConfig, process::PluginProcess},
     util::log::LogThread,
 };
 use failure::{Error, Fail};
 use log::trace;
-use std::time::Duration;
+use std::{process::Command, time::Duration};
 
 #[derive(Debug, Fail)]
 pub enum PluginError {
-    #[fail(display = "plugin thread failed: {}", _0)]
-    ThreadError(String),
     #[fail(display = "plugin process failed: {}", _0)]
     ProcessError(String),
 }
@@ -25,31 +21,28 @@ pub enum PluginError {
 pub struct Plugin {
     /// The Plugin configuration.
     config: PluginConfig,
-    /// The Plugin thread.
-    thread: PluginThread,
+    /// The Plugin process.
+    process: PluginProcess,
 }
 
 impl Plugin {
     /// Construct a new Plugin instance.
     ///
-    /// Create a Plugin instance. Starts a PluginThread controlling a
-    /// PluginProcess.
+    /// Create a Plugin instance. Starts a PluginProcess.
     pub fn new(
         config: PluginConfig,
         logger: &LogThread,
         ipc_connect_timeout: Option<Duration>,
     ) -> Result<Plugin, Error> {
-        // Create the plugin thread.
-        let thread = PluginThread::new(&config, logger, ipc_connect_timeout)?;
-        Ok(Plugin { config, thread })
+        // Create the PluginProcess.
+        let process = PluginProcess::new(Command::new("target/debug/dqcsim-plugin"))
+            .connect(logger.get_sender().unwrap(), ipc_connect_timeout)?;
+        Ok(Plugin { config, process })
     }
 
     /// Initialize the plugin.
-    ///
-    /// This starts the plugin thread, and initializes the control channel.
-    pub fn init(&self) -> Result<(), ()> {
+    pub fn init(&mut self) -> Result<(), ()> {
         trace!("Init plugin {}", self.config.name);
-        self.thread.controller.send("Start".to_string()).unwrap();
         Ok(())
     }
 }

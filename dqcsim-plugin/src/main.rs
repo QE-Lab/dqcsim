@@ -23,8 +23,10 @@ fn main() -> Result<(), Error> {
 
     log::info!("Connected.");
 
-    std::thread::sleep(std::time::Duration::from_secs(1));
+    std::thread::sleep(std::time::Duration::from_secs(2));
     log::info!("Done.");
 
-    Ok(())
+    std::process::exit(1234);
+
+    // Ok(())
 }
