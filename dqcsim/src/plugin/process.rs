@@ -8,7 +8,10 @@ use crate::{
 };
 use crossbeam_channel::Sender;
 use failure::Error;
-use ipc_channel::ipc::{IpcOneShotServer, IpcReceiver, IpcSender};
+use ipc_channel::{
+    ipc::{IpcOneShotServer, IpcReceiver, IpcSender},
+    router::ROUTER,
+};
 use log::trace;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -36,7 +39,13 @@ impl PluginProcess {
         let command = self.command.take().ok_or(PluginError::ProcessError(
             "Process in broken state.".to_string(),
         ))?;
-        setup(command, sender, None)?;
+        let (child, mut channel) = setup(command, None)?;
+        ROUTER.route_ipc_receiver_to_crossbeam_sender(
+            channel.log().expect("Unable to get log channel"),
+            sender,
+        );
+        self.child = Some(child);
+        self.channel = Some(channel);
         Ok(self)
     }
 }

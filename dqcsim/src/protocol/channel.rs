@@ -7,7 +7,6 @@ use failure::{Error, Fail};
 use ipc_channel::{
     ipc,
     ipc::{IpcOneShotServer, IpcReceiver, IpcSender},
-    router::ROUTER,
 };
 use serde::{Deserialize, Serialize};
 use std::{
@@ -54,6 +53,9 @@ impl SimulatorChannel {
             reply: Some(reply),
         }
     }
+    pub fn log(&mut self) -> Option<IpcReceiver<Record>> {
+        self.log.take()
+    }
 }
 
 impl PluginChannel {
@@ -68,6 +70,9 @@ impl PluginChannel {
             reply: Some(reply),
         }
     }
+    pub fn log(&mut self) -> Option<IpcSender<Record>> {
+        self.log.take()
+    }
 }
 
 /// This function initializes the channel between simulator and plugin.
@@ -75,20 +80,10 @@ impl PluginChannel {
 /// Normally this function is used in the plugin wrapper.
 ///
 /// The server argument is provided by the simulator instance.
-pub fn connect(
-    server: impl Into<String>,
-    level: Option<log::LevelFilter>,
-) -> Result<PluginChannel, Error> {
+pub fn connect(server: impl Into<String>) -> Result<PluginChannel, Error> {
     let connect = IpcSender::connect(server.into())?;
     let (simulator, mut plugin) = channel()?;
     connect.send(simulator)?;
-    // Initialize thread local logger.
-    init(level).expect("Unable to set thread local logger.");
-
-    // Setup log proxy.
-    let log_sender = plugin.log.take().unwrap();
-    set_thread_logger(LogProxy::boxed(log_sender, level));
-
     Ok(plugin)
 }
 
@@ -100,14 +95,13 @@ const IPC_CONNECT_TIMEOUT_SECS: u64 = 5;
 
 pub fn setup(
     command: Command,
-    sender: Sender<Record>,
     ipc_connect_timeout: Option<Duration>,
 ) -> Result<(Child, SimulatorChannel), Error> {
     // Setup channel
     let (server, server_name) = IpcOneShotServer::new()?;
 
     // Spawn child process
-    let mut child = Command::from(command).arg(server_name).spawn()?;
+    let child = Command::from(command).arg(server_name).spawn()?;
 
     // Make sure child connects within timeout
     let pair = Arc::new((Mutex::new(false), Condvar::new()));
@@ -135,9 +129,7 @@ pub fn setup(
         )
         .expect("IPC connection startup lock poisoned");
     if *started && !wait_result.timed_out() {
-        let mut channel = handle.join().expect("Connection thread failed");
-        let log_receiver = channel.log.take().unwrap();
-        ROUTER.route_ipc_receiver_to_crossbeam_sender(log_receiver, sender);
+        let channel = handle.join().expect("Connection thread failed");
         log::trace!("connected.");
         Ok((child, channel))
     } else {
