@@ -1,4 +1,7 @@
-use dqcsim::util::log::{init, set_thread_logger, LogProxy};
+use dqcsim::util::{
+    ipc,
+    log::{init, set_thread_logger, LogProxy},
+};
 use failure::Error;
 use std::env;
 
@@ -7,7 +10,7 @@ fn main() -> Result<(), Error> {
     let server = args[1].as_ref();
 
     // Connect to simulator. Get PluginChannel.
-    let mut channel = dqcsim::protocol::channel::connect(server)?;
+    let mut channel = ipc::connect(server)?;
 
     // Initialize thread local logger.
     let level = Some(log::LevelFilter::Trace);
@@ -18,12 +21,12 @@ fn main() -> Result<(), Error> {
         level,
     ));
 
-    log::info!("Connected.");
+    log::info!("Connected");
 
     eprintln!("stderr");
     println!("stdout");
 
-    log::info!("Done.");
+    log::info!("Done");
 
     std::process::exit(1234);
 

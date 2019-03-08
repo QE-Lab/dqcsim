@@ -1,7 +1,10 @@
 use crate::{
     plugin::PluginError,
-    protocol::channel::{setup, SimulatorChannel},
-    util::log::{stdio_to_log, Record},
+    protocol::ipc::SimulatorChannel,
+    util::{
+        ipc::setup,
+        log::{stdio_to_log, Record},
+    },
 };
 use crossbeam_channel::Sender;
 use failure::Error;

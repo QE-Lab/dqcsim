@@ -1,3 +1,38 @@
+//! Delft Quantum Classical Simulator
+//!
+//! The `dqcsim` crate provides all the required components to build and run
+//! quantum classical simulations.
+//!
+//! # Use
+//!
+//! ## Simulation
+//!
+//! The `dqcsim` library can be used to build and drive a simulation, however,
+//! it may be more convenient to use the provided binary crate, `dqcsim-cli`,
+//! which provides an advanced command-line interface wrapper for this crate.
+//!
+//! ## Rust crates
+//!
+//! Rust crates can directly use the `dqcsim` crate to implement simulator
+//! plugins, i.e. by implementing the [`TODO`] trait.
+//!
+//! ## Other languages
+//!
+//! ...
+//!
+//! # Concepts
+//!
+//! A quantum classical [`Simulation`].
+//!
+//! ...
+//!
+//! A simulation [`Plugin`].
+//!
+//! ...
+//!
+//! [`Plugin`]: ./plugin/struct.Plugin.html
+//! [`Simulation`]: ./simulator/struct.Simulation.html
+
 /// Plugin control structure and configuration.
 pub mod plugin;
 

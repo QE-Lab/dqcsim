@@ -3,7 +3,9 @@ use std::fmt::Debug;
 
 /// Marker trait for to support multiple send channels in LogProxy.
 pub trait Sender {
+    /// The message type of the channel.
     type Item;
+    /// The error type of the Result returned by the send function.
     type Error: Debug;
     fn send(&self, item: Self::Item) -> Result<(), Self::Error>;
 }
@@ -18,8 +20,8 @@ impl<T> Sender for crossbeam_channel::Sender<T> {
     }
 }
 
-/// ipc_channel::ipc::IpcSender<T> requires T to be Serialize.
-/// Implements Sender with a blocking send.
+/// ipc_channel::ipc::IpcSender<T> requires T to be Serialize. Implements Sender
+/// with a blocking send.
 impl<T: Serialize> Sender for ipc_channel::ipc::IpcSender<T> {
     type Item = T;
     type Error = ipc_channel::Error;

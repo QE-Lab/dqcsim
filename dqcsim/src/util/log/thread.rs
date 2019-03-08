@@ -1,5 +1,5 @@
 use crate::util::log::{drop_thread_logger, set_thread_logger, LogProxy, Record};
-use std::thread::JoinHandle;
+use std::thread;
 use term::stderr;
 
 /// A thread dedicated to logging.
@@ -8,9 +8,10 @@ use term::stderr;
 /// Producers can use this sender side of the log channel to forward their log records.
 pub struct LogThread {
     sender: Option<crossbeam_channel::Sender<Record>>,
-    handler: Option<JoinHandle<Result<(), term::Error>>>,
+    handler: Option<thread::JoinHandle<Result<(), term::Error>>>,
 }
 
+/// Convert log::Level to term::color::Color
 fn level_to_color(level: log::Level) -> term::color::Color {
     match level {
         log::Level::Error => 1,
@@ -23,14 +24,15 @@ fn level_to_color(level: log::Level) -> term::color::Color {
 
 impl LogThread {
     /// Starts a new log thread.
-    /// Also starts a LogProxy for the thread starting the log thread.
+    ///
+    /// Also starts a LogProxy for the current thread.
     pub fn new(level_filter: Option<log::LevelFilter>) -> LogThread {
         // Create the log channel.
         let (sender, receiver): (_, crossbeam_channel::Receiver<Record>) =
             crossbeam_channel::unbounded();
 
         // Spawn the local channel log thread.
-        let handler = std::thread::spawn(move || {
+        let handler = thread::spawn(move || {
             let mut t = stderr().expect("Unable to wrap terminal");
 
             while let Ok(record) = receiver.recv() {
@@ -43,7 +45,6 @@ impl LogThread {
                 )?;
                 t.reset()?;
 
-                // t.attr(term::Attr::Standout(true))?;
                 t.fg(level_to_color(*record.level()))?;
                 write!(t, "{:>5} ", record.level())?;
                 t.reset()?;
@@ -73,7 +74,6 @@ impl LogThread {
     }
 }
 
-/// When the LogThread goes out of scope:
 /// Drops the sender side of the log channel and wait for the log thread to drop.
 impl Drop for LogThread {
     fn drop(&mut self) {

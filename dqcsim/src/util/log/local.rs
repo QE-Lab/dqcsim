@@ -1,9 +1,11 @@
 use crate::util::log::LOGGER;
 
-/// A ThreadLocalLogger instance implements log::Log to proxy log messages to
+/// A ThreadLocalLogger instance implements `log::Log` to proxy log messages to
 /// an initialized logger.
 ///
-/// Normally the instance is created by the `[dqcsim::util::log::init]` function.
+/// Normally the instance is created by the [`init`] function.
+///
+/// [`init`]: ./fn.init.html
 pub struct ThreadLocalLogger;
 
 impl log::Log for ThreadLocalLogger {

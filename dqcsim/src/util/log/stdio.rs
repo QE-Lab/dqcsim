@@ -5,6 +5,13 @@ use std::{
     thread::{spawn, JoinHandle},
 };
 
+/// Forward standard i/o to log channel.
+///
+/// Spawns a thread which takes a readable stream and forwards lines as log
+/// records to the log thread until it matches EOF. The log record level is
+/// set to the level argument of the function.
+///
+/// Returns a thread::JoinHandle to the spawned thread.
 pub fn stdio_to_log(
     mut stream: Box<Read + Send>,
     sender: Sender<Record>,
@@ -17,7 +24,7 @@ pub fn stdio_to_log(
         loop {
             match stream.read(&mut byte) {
                 Ok(0) => {
-                    log::trace!("Closing LogPipe: EOF");
+                    log::trace!("EOF: closing stdio forwarding channel");
                     break;
                 }
                 Ok(_) => {
