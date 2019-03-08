@@ -1,7 +1,7 @@
 
 DQCsim binary command line feature requirements
 ===============================================
-```bash
+```nohighlight
 Usage:
 
     dqcsim [dqcsim switches] \
@@ -47,7 +47,7 @@ DQCsim contains a number of features to reproduce an earlier simulation without 
 ### Logging
 
 Log message distribution works as follows:
-```bash
+```nohighlight
                     Source filters                         Output filters
     .----------.         ,-.                            .-.    ,-.
     | Plugin A |---o--->( < )-------------------------->| |--->( < )---> stderr
@@ -126,17 +126,17 @@ ArbData and ArbCmd syntax
 -------------------------
 
 ArbData objects can be specified on the command line as follows:
-```bash
+```nohighlight
     <<arb_data>> := '<json>,<arg1>,<arg2>,[...]'
 ```
 `<json>` must be a valid JSON object, surrounded and delimited by `{}`. Zero or more comma-separated strings then follow to specify the unstructured arguments. The following escape characters are available in these argument strings:
-```bash
+```nohighlight
     \,    ->  ,
     \\    ->  \
     \x##  ->  hexadecimal character ##
 ```
 ArbCmd objects are expressed as follows:
-```bash
+```nohighlight
     <<arb_cmd>> := <interface-id>.<operation-id>
                  | <interface-id>.<operation-id>.<arg1>,<arg2>,[...]
                  | <interface-id>.<operation-id>:<<arb_data>>
