@@ -26,23 +26,23 @@ pub enum EnumVariantError {
 /// use std::str::FromStr;
 ///
 /// #[derive(EnumVariants, Clone, PartialEq, Debug)]
-/// enum MyEnum {
+/// enum TestEnum {
 ///     Foo,
 ///     Bar,
 ///     Baz
 /// }
 ///
 /// // Type name as string:
-/// assert_eq!(MyEnum::type_name(), "MyEnum");
+/// assert_eq!(TestEnum::type_name(), "TestEnum");
 ///
 /// // To and from string:
-/// assert_eq!(MyEnum::Foo.to_string(), "Foo");
-/// assert_eq!(MyEnum::from_str("Foo").unwrap(), MyEnum::Foo);
+/// assert_eq!(TestEnum::Foo.to_string(), "Foo");
+/// assert_eq!(TestEnum::from_str("Foo").unwrap(), TestEnum::Foo);
 ///
 /// // Fuzzy matching for UX:
-/// assert_eq!(MyEnum::from_str("f").unwrap(), MyEnum::Foo); // Abbreviated
-/// MyEnum::from_str("ba").unwrap_err();                     // Ambiguous
-/// MyEnum::from_str("foobar").unwrap_err();                 // Unknown
+/// assert_eq!(TestEnum::from_str("f").unwrap(), TestEnum::Foo); // Abbreviated
+/// TestEnum::from_str("ba").unwrap_err();                       // Ambiguous
+/// TestEnum::from_str("foobar").unwrap_err();                   // Unknown
 /// ```
 pub trait EnumVariants
 where
@@ -177,25 +177,25 @@ where
     /// use enum_variants::{EnumVariants, EnumVariantError};
     ///
     /// #[derive(EnumVariants, Clone, PartialEq, Debug)]
-    /// enum MyEnum {
+    /// enum TestEnum {
     ///     Foo,
     ///     Bar,
     ///     Baz
     /// }
     ///
-    /// assert_eq!(MyEnum::variant_from_str_fuzzy("Foo"), Ok(MyEnum::Foo));
-    /// assert_eq!(MyEnum::variant_from_str_fuzzy("f"), Ok(MyEnum::Foo));
+    /// assert_eq!(TestEnum::variant_from_str_fuzzy("Foo"), Ok(TestEnum::Foo));
+    /// assert_eq!(TestEnum::variant_from_str_fuzzy("f"), Ok(TestEnum::Foo));
     /// assert_eq!(
-    ///     MyEnum::variant_from_str_fuzzy("ba"),
+    ///     TestEnum::variant_from_str_fuzzy("ba"),
     ///     Err(EnumVariantError::ParseError(
-    ///         "ba is an ambiguous MyEnum. Did you mean bar or baz?"
+    ///         "ba is an ambiguous test enum. Did you mean bar or baz?"
     ///         .to_string()
     ///     ))
     /// );
     /// assert_eq!(
-    ///     MyEnum::variant_from_str_fuzzy("banana"),
+    ///     TestEnum::variant_from_str_fuzzy("banana"),
     ///     Err(EnumVariantError::ParseError(
-    ///         "banana is not a valid MyEnum. Valid values are foo, bar, or baz."
+    ///         "banana is not a valid test enum. Valid values are foo, bar, or baz."
     ///         .to_string()
     ///     ))
     /// );
@@ -219,18 +219,67 @@ where
             0 => Err(EnumVariantError::ParseError(format!(
                 "{} is not a valid {}. Valid values are {}.",
                 s,
-                Self::type_name(),
+                friendly_name(Self::type_name()),
                 friendly_enumerate(Self::variants_lower().into_iter(), Some("or"))
             ))),
             1 => Ok(unsafe { matches.get_unchecked(0) }.1.clone()),
             _ => Err(EnumVariantError::ParseError(format!(
                 "{} is an ambiguous {}. Did you mean {}?",
                 s,
-                Self::type_name(),
+                friendly_name(Self::type_name()),
                 friendly_enumerate(matches.into_iter().map(|x| x.0), Some("or"))
             ))),
         }
     }
+}
+
+/// Splits a CamelCase name into space-separated lowercase words.
+///
+/// Abbreviations remain uppercase, as shown in the examples below.
+///
+/// # Examples
+///
+/// ```rust
+/// use enum_variants::friendly_name;
+///
+/// assert_eq!(friendly_name("String"), "string");
+/// assert_eq!(friendly_name("EnumVariants"), "enum variants");
+/// assert_eq!(friendly_name("TestABC"), "test ABC");
+/// assert_eq!(friendly_name("TestABCtestTest"), "test ABCtest test");
+/// assert_eq!(friendly_name("TestABC_TestTest"), "test ABC test test");
+/// ```
+pub fn friendly_name(name: impl AsRef<str>) -> String {
+    let name: &str = name.as_ref();
+    let mut output = "".to_string();
+    let mut prev_upper = false;
+    let mut abbreviation = false;
+    for c in name.chars() {
+        let upper = c.is_ascii_uppercase();
+        if upper && prev_upper {
+            abbreviation = true;
+            let prev = output.pop().unwrap().to_ascii_uppercase();
+            output.push(prev);
+        }
+        if abbreviation && !upper {
+            abbreviation = false;
+        }
+        if abbreviation {
+            output.push(c.to_ascii_uppercase());
+        } else if upper {
+            if let Some(prev) = output.chars().last() {
+                if prev != ' ' {
+                    output.push(' ');
+                }
+            }
+            output.push(c.to_ascii_lowercase());
+        } else if c == '_' {
+            output.push(' ');
+        } else {
+            output.push(c);
+        }
+        prev_upper = upper;
+    }
+    output
 }
 
 /// Turns a string list into its natural language equivalent.
