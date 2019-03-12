@@ -34,9 +34,14 @@ impl LogThread {
         let handler = thread::spawn(move || {
             let mut t = stderr().expect("Unable to wrap terminal");
 
+            let supports_dim = t.supports_attr(term::Attr::Dim);
+            let supports_colors = t.supports_attr(term::Attr::ForegroundColor(9));
+
             while let Ok(record) = receiver.recv() {
                 t.reset()?;
-                t.attr(term::Attr::Dim)?;
+                if supports_dim {
+                    t.attr(term::Attr::Dim)?;
+                }
                 write!(
                     t,
                     "{} ",
@@ -44,12 +49,16 @@ impl LogThread {
                 )?;
                 t.reset()?;
 
-                t.fg(level_to_color(record.level()))?;
+                let color = level_to_color(record.level());
+
+                if supports_colors {
+                    t.fg(color)?;
+                }
                 write!(t, "{:>5} ", format!("{}", record.level()))?;
                 t.reset()?;
 
-                if record.level() == Level::Trace {
-                    t.fg(level_to_color(record.level()))?;
+                if supports_colors && record.level() == Level::Trace {
+                    t.fg(color)?;
                 }
                 // if std::process::id() != record.process() {
                 //     t.fg(record.process() % 6 + 1)?;
