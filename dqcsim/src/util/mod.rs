@@ -1,5 +1,5 @@
 /// Defines a thread local logger system.
-pub mod log;
+pub use dqcsim_log as log;
 
 /// Provides a function to setup a signal hook.
 pub mod signal;

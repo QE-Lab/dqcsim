@@ -1,26 +1,22 @@
 [package]
-name = "dqcsim"
+name = "dqcsim-log"
 version = "0.1.0"
 authors = ["Matthijs Brobbel", "Jeroen van Straten"]
 edition = "2018"
 
 [dependencies]
-# logging
-dqcsim-log = { path = "../dqcsim-log" }
+enum-variants = { path = "../enum-variants" }
+
+# error management
+failure = "0.1"
 
 # serialize/deserialize
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
 
 # channels
 crossbeam-channel = "0.3"
 ipc-channel = "0.11"
 
-# utils
-signal-hook = "0.1"
-
-# config
-structopt = "0.2"
-
-# error handling
-failure = "0.1"
+# output
+term = "0.5"
+humantime = "1.2"

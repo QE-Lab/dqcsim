@@ -1,6 +1,6 @@
 use dqcsim::util::{
-    ipc,
-    log::{init, set_thread_logger, LogProxy},
+    ipc, log,
+    log::{init, proxy::LogProxy},
 };
 use failure::Error;
 use std::env;
@@ -14,12 +14,12 @@ fn main() -> Result<(), Error> {
 
     // Initialize thread local logger.
     let level = Some(log::LevelFilter::Trace);
-    init(level).expect("Unable to set thread local logger");
     // Setup log proxy.
-    set_thread_logger(LogProxy::boxed(
-        channel.log().expect("Unable to get log channel"),
-        level,
-    ));
+    init(
+        LogProxy::boxed(channel.log().expect("Unable to get log channel"), level),
+        level.unwrap(),
+    )
+    .expect("Unable to set thread local logger");
 
     log::info!("Connected");
 

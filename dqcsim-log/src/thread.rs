@@ -1,32 +1,30 @@
-use crate::util::log::{drop_thread_logger, set_thread_logger, LogProxy, Record};
+use crate::{deinit, init, proxy::LogProxy, trace, Level, LevelFilter, Record};
 use std::thread;
 use term::stderr;
 
-/// A thread dedicated to logging.
-///
-/// The log thread provides log producers with a copy of the sender side of the log channel.
-/// Producers can use this sender side of the log channel to forward their log records.
 pub struct LogThread {
     sender: Option<crossbeam_channel::Sender<Record>>,
     handler: Option<thread::JoinHandle<Result<(), term::Error>>>,
 }
 
-/// Convert log::Level to term::color::Color
-fn level_to_color(level: log::Level) -> term::color::Color {
+/// Convert a Level to term::color::Color
+fn level_to_color(level: Level) -> term::color::Color {
     match level {
-        log::Level::Error => 1,
-        log::Level::Warn => 3,
-        log::Level::Info => 2,
-        log::Level::Debug => 6,
-        log::Level::Trace => 4,
+        Level::Fatal => 9,
+        Level::Error => 1,
+        Level::Warn => 3,
+        Level::Note => 7,
+        Level::Info => 4,
+        Level::Debug => 6,
+        Level::Trace => 8,
     }
 }
 
 impl LogThread {
-    /// Starts a new log thread.
-    ///
-    /// Also starts a LogProxy for the current thread.
-    pub fn new(level_filter: Option<log::LevelFilter>) -> LogThread {
+    pub fn get_sender(&self) -> Option<crossbeam_channel::Sender<Record>> {
+        self.sender.clone()
+    }
+    pub fn spawn(level: LevelFilter) -> LogThread {
         // Create the log channel.
         let (sender, receiver): (_, crossbeam_channel::Receiver<Record>) =
             crossbeam_channel::unbounded();
@@ -45,13 +43,16 @@ impl LogThread {
                 )?;
                 t.reset()?;
 
-                t.fg(level_to_color(*record.level()))?;
-                write!(t, "{:>5} ", record.level())?;
+                t.fg(level_to_color(record.level()))?;
+                write!(t, "{:>5} ", format!("{}", record.level()))?;
                 t.reset()?;
 
-                if std::process::id() != record.process() {
-                    t.fg(record.process() % 6 + 1)?;
+                if record.level() == Level::Trace {
+                    t.fg(level_to_color(record.level()))?;
                 }
+                // if std::process::id() != record.process() {
+                //     t.fg(record.process() % 6 + 1)?;
+                // }
                 writeln!(t, "{}", record)?;
                 t.reset()?;
             }
@@ -59,28 +60,22 @@ impl LogThread {
         });
 
         // Start a LogProxy for the current thread.
-        set_thread_logger(LogProxy::boxed(sender.clone(), level_filter));
+        init(LogProxy::boxed(sender.clone(), Some(level)), level).unwrap();
 
         LogThread {
             sender: Some(sender),
             handler: Some(handler),
         }
     }
-
-    /// Returns a copy of the sender side of the log channel.
-    /// Use this sender side of the log channel to pass Records to the logger thread.
-    pub fn get_sender(&self) -> Option<crossbeam_channel::Sender<Record>> {
-        self.sender.clone()
-    }
 }
 
 /// Drops the sender side of the log channel and wait for the log thread to drop.
 impl Drop for LogThread {
     fn drop(&mut self) {
-        log::trace!("Shutting down logger thread.");
+        trace!("Shutting down logger thread");
 
         // Disconnect the LogProxy running in the main thread.
-        drop_thread_logger();
+        deinit().unwrap();
 
         // Drop the owned sender side to disconnect the log channel.
         self.sender = None;

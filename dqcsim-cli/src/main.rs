@@ -1,6 +1,9 @@
-use dqcsim::{plugin, util::log::LogThread, util::signal};
+use dqcsim::util::{
+    log,
+    log::{debug, info, LevelFilter},
+};
+use dqcsim::{plugin, util::log::thread::LogThread, util::signal};
 use failure::Error;
-use log::{debug, info, LevelFilter};
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -20,8 +23,7 @@ fn main() -> Result<(), Error> {
     let opt = Opt::from_args();
 
     // Setup logging
-    dqcsim::util::log::init(opt.loglevel).expect("Failed to initialize logger.");
-    let logger = LogThread::new(opt.loglevel);
+    let logger = LogThread::spawn(opt.loglevel.unwrap_or(LevelFilter::Trace));
 
     // Setup signal hook
     let _signal = signal::notify(&[
@@ -39,6 +41,14 @@ fn main() -> Result<(), Error> {
 
     // Debug message with parsed Opt struct
     debug!("Parsed arguments: {:?}", &opt);
+
+    log::fatal!("fatal");
+    log::error!("error");
+    log::warn!("warn");
+    log::note!("note");
+    log::info!("info");
+    log::debug!("debug");
+    log::trace!("trace");
 
     let _simulator = dqcsim::simulator::Simulation::new();
 

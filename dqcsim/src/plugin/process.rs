@@ -3,7 +3,8 @@ use crate::{
     protocol::ipc::SimulatorChannel,
     util::{
         ipc::setup,
-        log::{stdio_to_log, Record},
+        log,
+        log::{stdio::proxy_stdio, Record},
     },
 };
 use crossbeam_channel::Sender;
@@ -44,12 +45,12 @@ impl PluginProcess {
         );
 
         // Log piped stdout/stderr
-        stdio_to_log(
+        proxy_stdio(
             Box::new(child.stderr.take().expect("stderr")),
             sender.clone(),
             log::Level::Error,
         );
-        stdio_to_log(
+        proxy_stdio(
             Box::new(child.stdout.take().expect("stdout")),
             sender,
             log::Level::Info,

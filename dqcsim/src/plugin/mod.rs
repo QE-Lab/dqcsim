@@ -5,10 +5,9 @@ mod process;
 
 use crate::{
     plugin::{config::PluginConfig, process::PluginProcess},
-    util::log::LogThread,
+    util::log::{thread::LogThread, trace},
 };
 use failure::{Error, Fail};
-use log::trace;
 use std::{process::Command, time::Duration};
 
 #[derive(Debug, Fail)]

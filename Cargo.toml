@@ -4,6 +4,7 @@ members = [
   "dqcsim",
   "dqcsim-cli",
   "dqcsim-plugin",
+  "dqcsim-log",
   "enum-variants",
   "enum-variants-derive",
   # Not part of the workspace yet as it requires rust nightly:

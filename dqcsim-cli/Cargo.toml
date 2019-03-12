@@ -1,13 +1,12 @@
 [package]
 name = "dqcsim-cli"
 version = "0.1.0"
-authors = ["Matthijs Brobbel <m1brobbel@gmail.com>", "Jeroen van Straten"]
+authors = ["Matthijs Brobbel", "Jeroen van Straten"]
 edition = "2018"
 
 [dependencies]
 dqcsim = { path = "../dqcsim" }
 
-log = "0.4"
 structopt = "0.2"
 signal-hook = "0.1"
 failure = "0.1"

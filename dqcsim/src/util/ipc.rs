@@ -1,4 +1,7 @@
-use crate::protocol::ipc::{ChannelError, PluginChannel, SimulatorChannel};
+use crate::{
+    protocol::ipc::{ChannelError, PluginChannel, SimulatorChannel},
+    util::log,
+};
 use failure::Error;
 use ipc_channel::{
     ipc,

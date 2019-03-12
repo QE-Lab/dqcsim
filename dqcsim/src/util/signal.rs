@@ -1,4 +1,4 @@
-use crate::protocol::message::Signal;
+use crate::{protocol::message::Signal, util::log::trace};
 use failure::Error;
 use signal_hook::iterator::Signals;
 use std::{os::raw::c_int, thread};
@@ -23,6 +23,6 @@ pub fn notify(signals: &[c_int]) -> Result<crossbeam_channel::Receiver<Signal>, 
             .expect("Unable to forward signal");
         }
     });
-    log::trace!("Signal hook running");
+    trace!("Signal hook running");
     Ok(rx)
 }
