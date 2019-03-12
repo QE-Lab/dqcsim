@@ -16,6 +16,7 @@ use crate::{Level, LevelFilter, Log, Record, Sender};
 /// using its Sender side of a Channel.
 ///
 /// [`LogProxy`]: ./struct.LogProxy.html
+#[derive(Debug)]
 pub struct LogProxy<T: Sender> {
     level: LevelFilter,
     sender: T,

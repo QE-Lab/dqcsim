@@ -2,6 +2,7 @@ use crate::{deinit, init, proxy::LogProxy, trace, Level, LevelFilter, Record};
 use std::thread;
 use term::stderr;
 
+#[derive(Debug)]
 pub struct LogThread {
     sender: Option<crossbeam_channel::Sender<Record>>,
     handler: Option<thread::JoinHandle<Result<(), term::Error>>>,

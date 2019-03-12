@@ -69,7 +69,7 @@ thread_local! {
     pub static LOGLEVEL: RefCell<LevelFilter> = RefCell::new(LevelFilter::Off);
 }
 
-#[derive(Copy, Clone, PartialEq, PartialOrd, Serialize, Deserialize, EnumVariants)]
+#[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize, EnumVariants)]
 pub enum Level {
     /// This loglevel is to be used for reporting a fatal error, resulting from
     /// the owner of the logger getting into an illegal state from which it
@@ -152,7 +152,7 @@ impl From<Level> for LevelFilter {
 /// The log metadata attached to a [`Record`].
 ///
 /// [`Record`]: ./struct.Record.html
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Metadata {
     /// Level of the log record.
     level: Level,
@@ -164,7 +164,7 @@ pub struct Metadata {
 /// A log record.
 ///
 /// A log record consists of some metadata and a payload.
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Record {
     payload: String,
     metadata: Metadata,
