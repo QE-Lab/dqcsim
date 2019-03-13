@@ -1,4 +1,4 @@
-use crate::{deinit, init, proxy::LogProxy, trace, Level, LevelFilter, Record};
+use crate::{deinit, init, proxy::LogProxy, trace, Level, LevelFilter, Record, PID};
 use std::thread;
 use term::stderr;
 
@@ -45,7 +45,16 @@ impl LogThread {
                 write!(
                     t,
                     "{} ",
-                    humantime::format_rfc3339_seconds(std::time::SystemTime::now())
+                    humantime::format_rfc3339_seconds(record.timestamp()),
+                )?;
+                t.reset()?;
+                if supports_colors {
+                    t.fg(8)?;
+                }
+                write!(
+                    t,
+                    "{:<6}",
+                    format!("+{}ms", record.timestamp().elapsed().unwrap().as_millis())
                 )?;
                 t.reset()?;
 
@@ -57,12 +66,18 @@ impl LogThread {
                 write!(t, "{:>5} ", format!("{}", record.level()))?;
                 t.reset()?;
 
+                if supports_colors && *PID != record.process() {
+                    t.fg(record.process() % 7 + 1)?;
+                }
+                if supports_dim {
+                    t.attr(term::Attr::Dim)?;
+                }
+                write!(t, "{:>5}:{:<2} ", record.process(), record.thread())?;
+                t.reset()?;
+
                 if supports_colors && record.level() == Level::Trace {
                     t.fg(color)?;
                 }
-                // if std::process::id() != record.process() {
-                //     t.fg(record.process() % 6 + 1)?;
-                // }
                 writeln!(t, "{}", record)?;
                 t.reset()?;
             }
@@ -70,7 +85,7 @@ impl LogThread {
         });
 
         // Start a LogProxy for the current thread.
-        init(LogProxy::boxed(sender.clone(), Some(level)), level).unwrap();
+        init(LogProxy::boxed(sender.clone()), level).unwrap();
 
         LogThread {
             sender: Some(sender),

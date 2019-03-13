@@ -4,7 +4,7 @@ use crate::{init, proxy::LogProxy, trace, LevelFilter, Record};
 use failure::Error;
 use ipc_channel::ipc;
 
-pub fn connect(server: impl Into<String>, level: Option<LevelFilter>) -> Result<(), Error> {
+pub fn connect(server: impl Into<String>, level: LevelFilter) -> Result<(), Error> {
     // Connect to the server.
     let connect = ipc::IpcSender::connect(server.into())?;
 
@@ -14,7 +14,7 @@ pub fn connect(server: impl Into<String>, level: Option<LevelFilter>) -> Result<
     connect.send(rx)?;
 
     // Initialize thread local logger.
-    init(LogProxy::boxed(tx, level), level.unwrap())?;
+    init(LogProxy::boxed(tx), level)?;
 
     trace!("Connected to log channel via ipc");
     Ok(())

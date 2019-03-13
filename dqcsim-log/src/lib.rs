@@ -19,7 +19,7 @@
 //! let log_endpoint = log_thread.get_sender().unwrap();
 //!
 //! std::thread::spawn(move || {
-//!     let proxy = LogProxy::boxed(log_endpoint, Some(LevelFilter::Trace));
+//!     let proxy = LogProxy::boxed(log_endpoint);
 //!     init(proxy, LevelFilter::Trace);
 //!
 //!     warn!("Warning from thread");
@@ -43,15 +43,19 @@ pub mod proxy;
 pub mod stdio;
 pub mod thread;
 
+#[doc(hidden)]
+pub use ref_thread_local as _ref_thread_local;
+
 use crate::channel::Sender;
 use enum_variants::EnumVariants;
 use failure::Fail;
+use lazy_static::lazy_static;
+use ref_thread_local::ref_thread_local;
 use serde::{Deserialize, Serialize};
 use std::{cell::RefCell, fmt};
 
 /// The Log trait.
 pub trait Log {
-    fn enabled(&self, level: Level) -> bool;
     fn log(&self, record: Record);
 }
 
@@ -69,7 +73,23 @@ thread_local! {
     pub static LOGLEVEL: RefCell<LevelFilter> = RefCell::new(LevelFilter::Off);
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize, EnumVariants)]
+lazy_static! {
+    #[doc(hidden)]
+    pub static ref PID: u32 = std::process::id();
+}
+
+ref_thread_local! {
+    #[doc(hidden)]
+    pub static managed TID: u64 = {
+        // Don't ask.
+        format!("{:?}", std::thread::current().id())
+            .trim_matches(|c: char| !c.is_numeric())
+            .parse::<u64>()
+            .unwrap()
+    };
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Serialize, Deserialize, EnumVariants)]
 pub enum Level {
     /// This loglevel is to be used for reporting a fatal error, resulting from
     /// the owner of the logger getting into an illegal state from which it
@@ -113,7 +133,7 @@ pub enum Level {
     Trace,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, PartialOrd, Serialize, Deserialize, EnumVariants)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Serialize, Deserialize, EnumVariants)]
 pub enum LevelFilter {
     /// A level lower than all log levels.
     Off = 0,
@@ -159,6 +179,9 @@ pub struct Metadata {
     module_path: Option<String>,
     file: Option<String>,
     line: Option<u32>,
+    timestamp: std::time::SystemTime,
+    process: u32,
+    thread: u64,
 }
 
 /// A log record.
@@ -177,6 +200,15 @@ impl Record {
     pub fn level(&self) -> Level {
         self.metadata.level
     }
+    pub fn timestamp(&self) -> std::time::SystemTime {
+        self.metadata.timestamp
+    }
+    pub fn process(&self) -> u32 {
+        self.metadata.process
+    }
+    pub fn thread(&self) -> u64 {
+        self.metadata.thread
+    }
 }
 
 impl Record {
@@ -186,6 +218,8 @@ impl Record {
         module_path: impl Into<String>,
         file: impl Into<String>,
         line: u32,
+        process: u32,
+        thread: u64,
     ) -> Record {
         Record {
             payload: payload.into(),
@@ -194,6 +228,9 @@ impl Record {
                 module_path: Some(module_path.into()),
                 file: Some(file.into()),
                 line: Some(line),
+                timestamp: std::time::SystemTime::now(),
+                process,
+                thread,
             },
         }
     }
@@ -243,6 +280,7 @@ pub fn deinit() -> Result<(), LogError> {
 #[macro_export]
 macro_rules! log {
     (target: $target:expr, $lvl:expr, $($arg:tt)+) => ({
+        use $crate::_ref_thread_local::RefThreadLocal;
         $crate::LOGLEVEL.with(|loglevel| {
             if $crate::LevelFilter::from($lvl) <= *loglevel.borrow() {
                 $crate::Record::log($crate::Record::build(
@@ -250,7 +288,9 @@ macro_rules! log {
                     $lvl,
                     $target,
                     file!(),
-                    line!()
+                    line!(),
+                    *$crate::PID,
+                    *$crate::TID.borrow()
                 ));
             }
         });
@@ -326,4 +366,21 @@ macro_rules! trace {
     ($($arg:tt)+) => (
         $crate::log!($crate::Level::Trace, $($arg)+);
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Level, LevelFilter};
+
+    #[test]
+    fn level_order() {
+        assert!(Level::Debug < Level::Trace);
+        assert!(Level::Info < Level::Debug);
+        assert!(Level::Note < Level::Info);
+        assert!(Level::Warn < Level::Note);
+        assert!(Level::Error < Level::Warn);
+        assert!(Level::Fatal < Level::Error);
+        assert!(LevelFilter::Off < LevelFilter::from(Level::Fatal));
+    }
+
 }

@@ -1,34 +1,39 @@
-use dqcsim::util::{
-    ipc, log,
-    log::{init, proxy::LogProxy},
+use dqcsim::{
+    ipc::connection::Connection,
+    log::{debug, info},
+    plugin::PluginType,
 };
 use failure::Error;
+use ipc_channel::ipc::IpcSelectionResult;
 use std::env;
 
 fn main() -> Result<(), Error> {
     let args: Vec<String> = env::args().collect();
-    let server = args[1].as_ref();
 
-    // Connect to simulator. Get PluginChannel.
-    let mut channel = ipc::connect(server)?;
+    let name: &str = args[1].as_ref();
+    let server = args[2].as_ref();
 
-    // Initialize thread local logger.
-    let level = Some(log::LevelFilter::Trace);
-    // Setup log proxy.
-    init(
-        LogProxy::boxed(channel.log().expect("Unable to get log channel"), level),
-        level.unwrap(),
-    )
-    .expect("Unable to set thread local logger");
+    let plugin_type = if name.starts_with("frontend") {
+        PluginType::Frontend
+    } else if name.starts_with("backend") {
+        PluginType::Backend
+    } else {
+        PluginType::Operator
+    };
 
-    log::info!("Connected");
+    let mut connection = Connection::init(server, plugin_type)?;
+    let map = connection.map.clone();
 
-    eprintln!("stderr");
-    println!("stdout");
+    connection.recv(|message| match message {
+        IpcSelectionResult::MessageReceived(id, message) => {
+            debug!("[{:?}] {:?}", &map[&id], message);
+        }
+        IpcSelectionResult::ChannelClosed(id) => {
+            debug!("[{:?}] Closed", &map[&id]);
+        }
+    })?;
 
-    log::info!("Done");
+    info!("Plugin down.");
 
-    std::process::exit(1234);
-
-    // Ok(())
+    Ok(())
 }

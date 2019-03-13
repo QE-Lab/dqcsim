@@ -20,11 +20,7 @@ pub fn proxy_stdio(
     level: Level,
 ) -> JoinHandle<()> {
     spawn(move || {
-        init(
-            LogProxy::boxed(sender, Some(LevelFilter::Trace)),
-            LevelFilter::Trace,
-        )
-        .unwrap();
+        init(LogProxy::boxed(sender), LevelFilter::from(level)).unwrap();
         let mut buf = Vec::new();
         let mut byte = [0u8];
         loop {

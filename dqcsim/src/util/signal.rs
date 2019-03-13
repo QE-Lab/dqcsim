@@ -1,7 +1,18 @@
-use crate::{protocol::message::Signal, util::log::trace};
+use crate::log::trace;
 use failure::Error;
+use serde::{Deserialize, Serialize};
 use signal_hook::iterator::Signals;
 use std::{os::raw::c_int, thread};
+
+/// Enum with supported signal variants.
+#[derive(Debug, Serialize, Deserialize)]
+pub enum Signal {
+    SIGTERM,
+    SIGINT,
+    SIGKILL,
+    SIGQUIT,
+    Other(c_int),
+}
 
 /// Setup a signal hook.
 ///

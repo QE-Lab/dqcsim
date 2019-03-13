@@ -1,31 +1,77 @@
+use crate::log::LevelFilter;
+
 use serde::{Deserialize, Serialize};
-use std::os::raw::c_int;
+use serde_json::Value;
 
-#[derive(Serialize, Deserialize)]
-pub enum Log {
-    Record(String),
+/// Simulator to plugin requests.
+#[derive(Debug, Serialize, Deserialize)]
+pub enum Request {
+    /// Request to initialize the plugin.
+    ///
+    /// When requested, the plugin should connect to provided downstream and
+    /// upstream plugin.
+    Init(InitializeRequest),
+    /// Request to abort the simulation and stop the plugin.
+    Abort,
 }
 
-#[derive(Serialize, Deserialize)]
-pub enum Control {
-    Start,
-    Stop(bool),
+/// Plugin to simulator responses.
+#[derive(Debug, Serialize, Deserialize)]
+pub enum Response {
+    /// Initialization response.
+    Init(InitializeResponse),
+    /// Success response.
+    Success,
 }
 
-#[derive(Serialize, Deserialize)]
-pub enum Reply {
-    Yes,
-    No,
+/// Initialization request.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct InitializeRequest {
+    /// Downstream plugin to connect to.
+    pub downstream: Option<String>,
+    /// Arbitrary commmands.
+    pub arb_cmds: Option<Vec<ArbCmd>>,
+    /// Prefix for logging.
+    pub prefix: String,
+    /// LevelFilter for logging.
+    pub level: LevelFilter,
 }
 
-/// Enum with supported signal variants.
-#[derive(Serialize, Deserialize)]
-pub enum Signal {
-    SIGTERM,
-    SIGINT,
-    SIGKILL,
-    SIGQUIT,
-    Other(c_int),
+/// Initialization response.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct InitializeResponse {
+    // Upstream endpoint.
+    pub upstream: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum GateStream {
+    Hello(String),
+    Bye(String),
+}
+
+/// Arbitrary data as part of an arbitrary command.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ArbData {
+    /// JSON object.
+    json: Value,
+    /// Optional unstructured data.
+    args: Option<Vec<Vec<u8>>>,
+}
+
+/// Arbitrary command from one endpoint to another.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ArbCmd {
+    /// Identifies the interface that this command addresses. If an endpoint
+    /// receives a command for an unsupported interface, it should treat the
+    /// command as no-op.
+    interface_identifier: String,
+    /// Identifies the name of the command within the specified interface.
+    /// If the interface is recognized but the operation is not, an error
+    /// should be thrown.
+    operation_identifier: String,
+    /// Arbitrary data to go along with the command.
+    data: ArbData,
 }
 
 // use serde_json::Value;
@@ -164,27 +210,3 @@ pub enum Signal {
 //     pub command: D2Punion,
 // }
 //
-// /// Table for passing arbitrary data between two endpoints without the channel
-// /// knowing what the data looks like.
-// #[derive(Serialize, Deserialize)]
-// pub struct ArbData {
-//     /// JSON object.
-//     json: Value,
-//     /// Optional unstructured data.
-//     args: Option<Vec<Vec<u8>>>,
-// }
-//
-// /// Table for sending an arbitrary command from one endpoint to another.
-// #[derive(Serialize, Deserialize)]
-// pub struct ArbCmd {
-//     /// Identifies the interface that this command addresses. If an endpoint
-//     /// receives a command for an unsupported interface, it should treat the
-//     /// command as no-op.
-//     interface_identifier: String,
-//     /// Identifies the name of the command within the specified interface.
-//     /// If the interface is recognized but the operation is not, an error
-//     /// should be thrown.
-//     operation_identifier: String,
-//     /// Arbitrary data to go along with the command.
-//     data: ArbData,
-// }
