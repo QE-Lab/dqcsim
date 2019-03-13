@@ -332,8 +332,8 @@ pub fn friendly_enumerate(
             let mut c: String = c.into();
             c += " ";
             c
-        },
-        None => "".to_string()
+        }
+        None => "".to_string(),
     };
 
     // Handle the empty list case, and the first word if the list is not
@@ -341,7 +341,7 @@ pub fn friendly_enumerate(
     let mut s: String;
     match items.next() {
         None => return "<nothing>".to_string(),
-        Some(x) => s = x.into()
+        Some(x) => s = x.into(),
     }
 
     // Handle the rest.
@@ -368,8 +368,8 @@ pub fn friendly_enumerate(
                 }
                 let c: String = c.into();
                 s += &c;
-            },
-            None => break
+            }
+            None => break,
         }
         first = false;
     }
