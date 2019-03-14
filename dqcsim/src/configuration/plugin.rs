@@ -2,9 +2,20 @@ use crate::{
     configuration::{arb_cmd::ArbCmd, env_mod::EnvMod, stream_capture_mode::StreamCaptureMode},
     log::{tee_file::TeeFile, Loglevel, LoglevelFilter},
 };
-use failure::Error;
+use failure::{Error, Fail};
 use serde::{Deserialize, Serialize};
+use std::ffi::OsString;
 use std::path::PathBuf;
+use std::env::{current_exe, split_paths, var_os};
+
+/// Error structure used for reporting plugin specification errors.
+#[derive(Debug, Fail, PartialEq)]
+enum PluginSpecificationError {
+    #[fail(display = "{}", 0)]
+    Invalid(String),
+    #[fail(display = "{}", 0)]
+    OsError(String),
+}
 
 /// Enumeration of the three types of plugins.
 #[derive(Debug, Copy, Clone, PartialEq, Deserialize, Serialize)]
@@ -69,16 +80,112 @@ impl PluginSpecification {
     /// Failure to find the plugin executable or script file results in an
     /// error being returned.
     pub fn from_sugar(
-        specification: PathBuf,
+        specification: impl Into<PathBuf>,
         typ: PluginType,
     ) -> Result<PluginSpecification, Error> {
-        // TODO
-        Ok(PluginSpecification {
+        // Generate the default specification. This default assumes that the
+        // specification is a valid path to an executable. We'll fix the
+        // structure later if this assumption turns out to be incorrect.
+        let specification = specification.into();
+        let mut specification = PluginSpecification {
             sugared: Some(specification.clone()),
             executable: specification,
             script: None,
             typ,
-        })
+        };
+
+        // Handle the simple cases, where the specification is a path to an
+        // existing file.
+        if specification.executable.exists() {
+            if specification.executable.extension().is_some() {
+                // The file that we assumed to be the executable is actually a
+                // script file. Set the executable to just the file extension;
+                // we desugar that later.
+                specification.script = Some(specification.executable);
+                specification.executable = specification
+                    .script
+                    .as_ref()
+                    .unwrap()
+                    .extension()
+                    .unwrap()
+                    .into();
+            } else {
+                // Our assumptions appear to be correct.
+                return Ok(specification);
+            }
+        } else {
+            // The executable does not exist. If it doesn't contain slashes,
+            // we interpret it as a sugared plugin name. If it does contain
+            // slashes, the user probably tried to give us an existing path
+            // but made a mistake, so we return an error.
+            if specification
+                .executable
+                .as_os_str()
+                .to_string_lossy()
+                .contains('/')
+            {
+                return Err(PluginSpecificationError::Invalid(format!(
+                    "The plugin specification '{}' appears to be a path, \
+                     but the referenced file does not exist.",
+                    &specification.executable.to_string_lossy()
+                ))
+                .into());
+            }
+        }
+
+        // The executable does not exist (or is just a file extension and
+        // should always be treated as sugar). Before we look for the plugin
+        // elsewhere, add the appropriate prefix.
+        let mut prefix: OsString = match typ {
+            PluginType::Frontend => "dqcsfe",
+            PluginType::Operator => "dqcsop",
+            PluginType::Backend => "dqcsbe",
+        }
+        .into();
+        prefix.push(specification.executable.as_os_str());
+        specification.executable = prefix.into();
+
+        // If the executable exists now, i.e. there is a file with the right
+        // name in the working directory, we're done.
+        if specification.executable.exists() {
+            return Ok(specification);
+        }
+
+        // Look for the file in the directory where DQCsim resides.
+        if let Ok(dqcsim_dir) = current_exe() {
+            let mut exec = dqcsim_dir
+                .parent()
+                .ok_or_else(|| {
+                    PluginSpecificationError::OsError(
+                        "Could not determine path to DQCsim binary.".to_string(),
+                    )
+                })?
+                .to_path_buf();
+            exec.push(&specification.executable);
+            if exec.exists() {
+                specification.executable = exec;
+                return Ok(specification);
+            }
+        }
+
+        // Okay, still not found. Try the system path then.
+        if let Some(sys_path) = var_os("PATH") {
+            for base in split_paths(&sys_path) {
+                let mut exec = base.clone();
+                exec.push(&specification.executable);
+                if exec.exists() {
+                    specification.executable = exec;
+                    return Ok(specification);
+                }
+            }
+        }
+
+        Err(PluginSpecificationError::OsError(format!(
+            "Could not find plugin executable '{}', needed for plugin \
+            specification '{}'.",
+            specification.executable.to_string_lossy(),
+            specification.sugared.unwrap().to_string_lossy(),
+        )).into())
     }
 }
 

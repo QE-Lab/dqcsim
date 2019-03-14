@@ -117,10 +117,8 @@ impl<'a, 'b> PluginConfigParser<'a, 'b> {
             // Push the plugin definition.
             self.defs.push(PluginDefinition {
                 name: opts.name.clone().unwrap_or(default_name),
-                specification: PluginSpecification::from_sugar(specification.into(), plugin_type)
-                    .or_else(|e| {
-                    format_error_ctxt("While interpreting plugin specification", e)
-                })?,
+                specification: PluginSpecification::from_sugar(specification, plugin_type)
+                    .or_else(|e| format_error_ctxt("While interpreting plugin specification", e))?,
                 functional: (&opts).into(),
                 nonfunctional: (&opts).into(),
             });
