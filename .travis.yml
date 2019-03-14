@@ -19,11 +19,15 @@ install:
   - cargo install-update -a
 
 script:
-  - cargo fmt --all -- --check
-  - cargo clippy
+  - cargo fmt -- --check
   - cargo build
   - cargo test
+  - cargo clippy
+
+before_deploy:
+  - cargo doc
   - cd book && mdbook build && mdbook test
+  - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/book/book/doc_
 
 deploy:
   provider: pages
