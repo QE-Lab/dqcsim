@@ -132,6 +132,10 @@ pub struct DQCsimStructOpt {
         case_insensitive = true
     )]
     pub plugin_level: LoglevelFilter,
+
+    /// Shows a more complete help message than --help.
+    #[structopt(long = "long-help")]
+    pub long_help: bool,
 }
 
 /// The plugin StructOpt structure. This encompasses the options that are

@@ -1,4 +1,5 @@
 {before-help}
+
 DQCsim is a framework for simulating quantum accelerators. It exists as both a library and a command-line program.
 You're currently using the latter.
 
@@ -50,7 +51,6 @@ USAGE:
 
 DQCSIM OPTIONS:
 {unified}
-
 PLUGIN SPEC:
     Plugin specifications are used to define what simulation DQCsim will run.
 
@@ -78,7 +78,6 @@ PLUGIN SPEC:
     default (info).
 
 {after-help}
-
 HOST CALL SEQUENCE:
     Since the command line version of DQCsim has no host program, it needs to emulate one. The default is for it to
     just do:
@@ -183,6 +182,30 @@ LOGGING SYSTEM & LOGLEVELS:
 
     Loglevel filters allow you to specify the minimum loglevel that will be reported. For instance, if a filter is set
     to info, debug and trace messages are supressed. You can also specify off, which supresses all messages.
+
+    The filters are connected as follows:
+
+                        Source filters                         Output filters
+        .----------.         ,-.                            .-.     ,-.
+        | Plugin A |---o--->( < )-------------------------->| |--->( < )---> stderr
+        '----------'   |     `-'   ,--------------.         | |     `-'
+                       |      ^---( plugin A level )        | |      ^    ,------------.
+                       |           `--------------'         |B|      '---( stderr level )
+                       |     ,-.                            |r|           `------------'
+                       o--->( < )---> plugin A --tee file   |o|     ,-.
+                       |     `-'   ,------------------.     |a|--->( < )---> DQCsim --tee file
+                       :      ^---( plugin --tee level )    |d|     `-'
+                       '           `------------------'     |c|      ^    ,------------------.
+        .----------.         ,-.                            |a|      '---( DQCsim --tee level )
+        | Plugin B |---o--->( < )-------------------------->|s|           `------------------'
+        '----------'   |     `-'   ,--------------.         |t|  .
+                       :      ^---( plugin B level )        | |  .
+                       '           `--------------'         | |  .
+        .----------.         ,-.                            | |
+        |  DQCsim  |--------( < )-------------------------->| |
+        '----------'         `-'   ,------------.           '-'
+                              ^---( DQCsim level )
+                                   `------------'
 
     DQCsim regards each individual plugin and itself as sources of log messages. Each source has a source filter that
     controls whether a message is forwarded to logging backbone (-l for plugins, --dqcsim-level for DQCsim itself), and

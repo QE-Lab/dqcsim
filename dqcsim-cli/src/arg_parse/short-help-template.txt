@@ -1,0 +1,20 @@
+DQCsim {before-help}
+Delft Quantum & Classical simulator
+
+USAGE:
+    {usage}
+
+DQCSIM OPTIONS:
+{unified}
+PLUGIN SPEC:
+    Plugins are specified from frontend to backend. If no backend is specified, QX is used. The following syntax is
+    allowed:
+
+     - a valid path to the plugin executable;
+     - the basename of the plugin executable with implicit "dqcsfe"/"dqcsop"/"dqcsbe" prefix, searched for in A)
+       DQCsim's working directory, B) the dqcsim binary directory, and C) the system $PATH;
+     - a valid path to a script file with a file extension for which an interpreter exists.
+
+{after-help}
+MORE INFORMATION:
+    This help text is abbreviated. Use --long-help for more information.

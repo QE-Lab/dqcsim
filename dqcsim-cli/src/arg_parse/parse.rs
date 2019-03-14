@@ -14,6 +14,8 @@ use structopt::{clap::AppSettings, StructOpt};
 pub enum CommandLineError {
     #[fail(display = "{}", 0)]
     Unknown(String),
+    #[fail(display = "{}", 0)]
+    LongHelp(String),
 }
 
 /// Utility struct used to parse the plugin part of the command line. Used like
@@ -275,13 +277,24 @@ impl CommandLineConfiguration {
             ])
             .version(version.as_ref())
             .usage(include_str!("usage.txt").trim_end())
-            .template(include_str!("help-template.txt").trim_end())
-            .before_help(ascii_art.trim_end().as_ref())
+            .template(include_str!("short-help-template.txt").trim_end())
+            .before_help(version.as_ref())
             .after_help(plugin_help.as_ref());
 
         // Parse DQCsim's options.
         let dqcsim_matches = dqcsim_clap.clone().get_matches_from_safe(args)?;
         let dqcsim_opts = DQCsimStructOpt::from_clap(&dqcsim_matches);
+
+        // Handle the --long-help switch.
+        if dqcsim_opts.long_help {
+            let mut dqcsim_clap = dqcsim_clap
+                .template(include_str!("long-help-template.txt").trim_end())
+                .before_help(ascii_art.trim_end().as_ref());
+            let mut long_help: Vec<u8> = vec![];
+            dqcsim_clap.write_long_help(&mut long_help).unwrap();
+            let long_help = String::from_utf8(long_help).unwrap();
+            return Err(CommandLineError::LongHelp(long_help).into());
+        }
 
         // Parse the plugin options.
         let mut pcp = PluginConfigParser::new(plugin_clap);
