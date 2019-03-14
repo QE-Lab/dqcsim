@@ -90,7 +90,7 @@ impl Reproduction {
     {
         Ok(Reproduction {
             seed: config.seed.value,
-            host_calls: host_calls.into_iter().map(|x| x.clone()).collect(),
+            host_calls: host_calls.into_iter().cloned().collect(),
             plugins: config
                 .plugins
                 .iter()
@@ -169,9 +169,7 @@ impl Reproduction {
 
     /// Writes a reproduction structure to a file.
     pub fn to_file(&self, file: &Path) -> Result<(), Error> {
-        Ok(serde_yaml::to_writer(
-            &mut std::fs::File::create(file)?,
-            self,
-        )?)
+        serde_yaml::to_writer(&mut std::fs::File::create(file)?, self)?;
+        Ok(())
     }
 }

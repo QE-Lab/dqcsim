@@ -231,7 +231,7 @@ impl ::std::str::FromStr for ArbData {
             json: ArbData::scan_json_arg(&mut iterator)?,
             args: vec![],
         };
-        return match iterator.next() {
+        match iterator.next() {
             Some(',') => {
                 output.args = ArbData::scan_unstructured_args(&mut iterator)?;
                 Ok(output)
@@ -241,7 +241,7 @@ impl ::std::str::FromStr for ArbData {
                 c
             )))?,
             None => Ok(output),
-        };
+        }
     }
 }
 

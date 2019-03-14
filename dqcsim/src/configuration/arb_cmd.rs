@@ -1,7 +1,7 @@
 use failure::{Error, Fail};
 use serde::{Deserialize, Serialize};
 
-use super::arb_data::ArbData;
+use crate::configuration::arb_data::ArbData;
 
 /// Error structure used for reporting ArbCmd errors.
 #[derive(Debug, Fail, PartialEq)]
@@ -52,17 +52,17 @@ impl ArbCmd {
 
     /// Returns a reference to the interface identifier for this ArbCmd.
     pub fn interface_identifier(&self) -> &str {
-        return &self.interface_identifier;
+        &self.interface_identifier
     }
 
     /// Returns a reference to the operation identifier for this ArbCmd.
     pub fn operation_identifier(&self) -> &str {
-        return &self.operation_identifier;
+        &self.operation_identifier
     }
 
     /// Returns a reference to the data for this ArbCmd.
     pub fn data(&self) -> &ArbData {
-        return &self.data;
+        &self.data
     }
 }
 
@@ -79,11 +79,13 @@ impl ::std::str::FromStr for ArbCmd {
     ///    `ArbData::from_str_args_only()`)
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // Split off and validate the interface identifier.
-        let mut x = s.splitn(2, ".");
+        let mut x = s.splitn(2, '.');
         let interface_identifier = ArbCmd::verify_id(x.next().unwrap().to_string())?;
-        let s = x.next().ok_or(ArbCmdError::ParseError(
-            "Expected period after interface identifier while parsing ArbCmd.".to_string(),
-        ))?;
+        let s = x.next().ok_or_else(|| {
+            ArbCmdError::ParseError(
+                "Expected period after interface identifier while parsing ArbCmd.".to_string(),
+            )
+        })?;
         assert_eq!(x.next(), None);
 
         // Figure out where and how to split the operation identifier from the

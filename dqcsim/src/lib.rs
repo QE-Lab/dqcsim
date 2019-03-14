@@ -54,5 +54,4 @@ pub mod util;
 /// IPC functionality.
 pub mod ipc;
 
-/// Logging.
-pub use dqcsim_log as log;
+pub mod log;

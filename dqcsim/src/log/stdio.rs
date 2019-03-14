@@ -1,6 +1,10 @@
 //! Utility function to spawn a log proxy implementation to forward standard i/o streams.
 
-use crate::{error, init, log, proxy::LogProxy, trace, Loglevel, LoglevelFilter, Record};
+use crate::{
+    error, log,
+    log::{init, proxy::LogProxy, Loglevel, LoglevelFilter, Record},
+    trace,
+};
 use crossbeam_channel::Sender;
 use std::{
     io::Read,

@@ -1,4 +1,7 @@
-use crate::{deinit, init, proxy::LogProxy, trace, Loglevel, LoglevelFilter, Record, PID};
+use crate::{
+    log::{deinit, init, proxy::LogProxy, Loglevel, LoglevelFilter, Record, PID},
+    trace,
+};
 use failure::Error;
 use std::thread;
 use term::stderr;

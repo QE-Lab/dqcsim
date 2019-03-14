@@ -1,7 +1,7 @@
-use super::arb_cmd::ArbCmd;
-use super::env_mod::EnvMod;
-use super::stream_capture_mode::StreamCaptureMode;
-use dqcsim_log::{Loglevel, LoglevelFilter, tee_file::TeeFile};
+use crate::{
+    configuration::{arb_cmd::ArbCmd, env_mod::EnvMod, stream_capture_mode::StreamCaptureMode},
+    log::{tee_file::TeeFile, Loglevel, LoglevelFilter},
+};
 use failure::Error;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -77,7 +77,7 @@ impl PluginSpecification {
             sugared: Some(specification.clone()),
             executable: specification,
             script: None,
-            typ: typ,
+            typ,
         })
     }
 }

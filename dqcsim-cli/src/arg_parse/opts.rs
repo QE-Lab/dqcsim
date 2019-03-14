@@ -1,8 +1,5 @@
-use super::plugins::*;
-use dqcsim::configuration::*;
-use dqcsim::log::*;
-use dqcsim::log::tee_file::TeeFile;
-use dqcsim::reproduction::*;
+use crate::arg_parse::plugins::*;
+use dqcsim::{configuration::*, log::tee_file::TeeFile, log::*, reproduction::*};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -210,7 +207,7 @@ pub struct PluginStructOpt {
 impl From<&PluginStructOpt> for PluginNonfunctionalOpts {
     fn from(opts: &PluginStructOpt) -> Self {
         PluginNonfunctionalOpts {
-            verbosity: opts.verbosity.clone(),
+            verbosity: opts.verbosity,
             tee_files: opts.tee_files.clone(),
             stdout_mode: opts.stdout_mode.clone(),
             stderr_mode: opts.stderr_mode.clone(),
@@ -223,7 +220,7 @@ impl From<&PluginStructOpt> for PluginFunctionalConfiguration {
         PluginFunctionalConfiguration {
             init: opts.init.clone(),
             env: opts.env.clone(),
-            work: opts.work.clone().unwrap_or(PathBuf::from(".")),
+            work: opts.work.clone().unwrap_or_else(|| PathBuf::from(".")),
         }
     }
 }

@@ -1,6 +1,4 @@
-//use dqcsim::simulator::{SimulationOpt, Simulator};
 use failure::Error;
-//use structopt::StructOpt;
 
 mod arg_parse;
 use crate::arg_parse::*;

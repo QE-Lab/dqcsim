@@ -3,13 +3,11 @@ use crate::{
         plugin::{connect_simulator, initialize},
         PluginChannel,
     },
+    log::{init, proxy::LogProxy, LoglevelFilter},
     plugin::PluginType,
 };
-use dqcsim_log::{init, proxy::LogProxy, LoglevelFilter};
 use failure::Error;
-use ipc_channel::ipc::IpcSelectionResult;
-
-use ipc_channel::ipc::IpcReceiverSet;
+use ipc_channel::ipc::{IpcReceiverSet, IpcSelectionResult};
 use std::collections::HashMap;
 
 #[derive(Debug, Copy, Clone)]

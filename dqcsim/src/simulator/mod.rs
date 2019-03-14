@@ -1,6 +1,8 @@
 use crate::{
-    log::{debug, fatal, thread::LogThread, trace, LoglevelFilter},
+    debug, fatal,
+    log::{thread::LogThread, LoglevelFilter},
     plugin::{Plugin, PluginConfig},
+    trace,
 };
 use failure::{bail, format_err, Error};
 use structopt::StructOpt;

@@ -1,4 +1,7 @@
-use crate::{init, proxy::LogProxy, trace, LoglevelFilter, Record};
+use crate::{
+    log::{init, proxy::LogProxy, LoglevelFilter, Record},
+    trace,
+};
 use crossbeam_channel::Sender;
 use ipc_channel::ipc::IpcReceiver;
 

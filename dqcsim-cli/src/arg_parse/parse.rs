@@ -1,15 +1,10 @@
-use super::opts::*;
-use super::plugins::*;
-use dqcsim::configuration::*;
-use dqcsim::reproduction::*;
+use crate::arg_parse::{opts::*, plugins::*};
 use ansi_term::Colour;
+use dqcsim::{configuration::*, reproduction::*};
 use failure::{Error, Fail};
 use serde::{Deserialize, Serialize};
-use std::ffi::OsString;
-use std::path::PathBuf;
-use std::str::FromStr;
-use structopt::clap::AppSettings;
-use structopt::StructOpt;
+use std::{ffi::OsString, path::PathBuf, str::FromStr};
+use structopt::{clap::AppSettings, StructOpt};
 
 /// Error structure used for reporting command line errors.
 ///
@@ -93,7 +88,7 @@ impl<'a, 'b> PluginConfigParser<'a, 'b> {
         }
 
         // Switch based on whether this is a definition or a modification.
-        if specification.starts_with("@") {
+        if specification.starts_with('@') {
             // Modifications do not allow renaming the plugin or changing
             // functional arguments. So, report an error if any of these
             // options are present.
@@ -114,9 +109,9 @@ impl<'a, 'b> PluginConfigParser<'a, 'b> {
         } else {
             // Figure out a default name for the plugin based on the type.
             let default_name = match plugin_type {
-                PluginType::Frontend => format!("front"),
+                PluginType::Frontend => "front".to_string(),
                 PluginType::Operator => format!("op{}", self.defs.len()),
-                PluginType::Backend => format!("back"),
+                PluginType::Backend => "back".to_string(),
             };
 
             // Push the plugin definition.
@@ -316,7 +311,7 @@ impl CommandLineConfiguration {
             let file = dqcsim_opts
                 .reproduce
                 .as_ref()
-                .or(dqcsim_opts.reproduce_exactly.as_ref())
+                .or_else(|| dqcsim_opts.reproduce_exactly.as_ref())
                 .unwrap();
 
             // Parse the reproduction file and update the configuration with
@@ -329,27 +324,27 @@ impl CommandLineConfiguration {
             // Update the plugin nonfunctional configurations from the command
             // line.
             for m in plugin_mods {
-                m.apply(&mut config.dqcsim.plugins)
-                    .or_else(|e| format_error(e))?;
+                m.apply(&mut config.dqcsim.plugins).or_else(format_error)?;
             }
         } else {
             // Construct the plugin vector from the plugin definitions.
             config.dqcsim.plugins = pcp
                 .get_defs()?
                 .into_iter()
-                .map(|x| x.to_config(dqcsim_opts.plugin_level.clone()))
+                .map(|x| x.into_config(dqcsim_opts.plugin_level))
                 .collect();
 
             // If the user did not explicitly request a start() host call, add
             // one to the front of the list.
-            let mut running = false;
-            if !dqcsim_opts.host_calls.iter().any(|x| match x {
+            let mut running = if !dqcsim_opts.host_calls.iter().any(|x| match x {
                 HostCall::Start(_) => true,
                 _ => false,
             }) {
                 config.host_calls.push(HostCall::Start(ArbData::default()));
-                running = true;
-            }
+                true
+            } else {
+                false
+            };
 
             // Populate the rest of the call list, inserting wait() calls as
             // late as possible when needed.

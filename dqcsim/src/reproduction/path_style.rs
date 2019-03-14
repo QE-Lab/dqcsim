@@ -1,8 +1,10 @@
 use enum_variants::EnumVariants;
 use serde::{Deserialize, Serialize};
-use std::env::current_dir;
-use std::io;
-use std::path::{Path, PathBuf};
+use std::{
+    env::current_dir,
+    io,
+    path::{Path, PathBuf},
+};
 
 /// Represents the style for storing paths in a reproduction file.
 #[derive(EnumVariants, Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -30,9 +32,10 @@ impl ReproductionPathStyle {
             ReproductionPathStyle::Keep => Ok(path.into()),
             ReproductionPathStyle::Relative => {
                 let workdir = current_dir()?;
-                let path = pathdiff::diff_paths(&path.canonicalize()?, &workdir).ok_or(
-                    io::Error::new(io::ErrorKind::NotFound, "Cannot make path relative"),
-                )?;
+                let path =
+                    pathdiff::diff_paths(&path.canonicalize()?, &workdir).ok_or_else(|| {
+                        io::Error::new(io::ErrorKind::NotFound, "Cannot make path relative")
+                    })?;
                 if path.as_os_str().is_empty() {
                     Ok(PathBuf::from("."))
                 } else {

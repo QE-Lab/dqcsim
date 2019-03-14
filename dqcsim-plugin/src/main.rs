@@ -1,8 +1,4 @@
-use dqcsim::{
-    ipc::connection::Connection,
-    log::{debug, info},
-    plugin::PluginType,
-};
+use dqcsim::{debug, info, ipc::connection::Connection, plugin::PluginType};
 use failure::Error;
 use ipc_channel::ipc::IpcSelectionResult;
 use std::env;

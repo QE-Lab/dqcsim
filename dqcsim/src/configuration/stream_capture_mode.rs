@@ -2,7 +2,7 @@ use enum_variants::EnumVariants;
 use failure::Error;
 use serde::{Deserialize, Serialize};
 
-use dqcsim_log::Loglevel;
+use crate::log::Loglevel;
 
 /// All loglevel options plus pass and null, used to specify how a
 /// stdout/stderr stream should be captured.

@@ -1,11 +1,10 @@
 use crate::{
+    debug, error, fatal, info,
     ipc::{simulator::start, SimulatorChannel},
-    log::{
-        debug, error, fatal, info, router::route, stdio::proxy_stdio, trace, warn, Loglevel,
-        LoglevelFilter, Record,
-    },
+    log::{router::route, stdio::proxy_stdio, Loglevel, LoglevelFilter, Record},
     plugin::Plugin,
     protocol::message::{InitializeRequest, Request, Response},
+    trace, warn,
 };
 use crossbeam_channel::Sender;
 use failure::{bail, Error};

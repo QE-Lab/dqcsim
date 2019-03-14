@@ -1,6 +1,4 @@
-use dqcsim::configuration::*;
-use dqcsim::log::*;
-use dqcsim::log::tee_file::TeeFile;
+use dqcsim::{configuration::*, log::tee_file::TeeFile, log::*};
 use failure::{Error, Fail};
 
 /// Structure containing the NONfunctional options for a plugin, i.e. the
@@ -48,7 +46,10 @@ impl PluginNonfunctionalOpts {
 
     /// Converts this structure to a PluginNonfunctionalConfiguration structure by
     /// replacing unset values with their defaults.
-    pub fn to_config(self, default_verbosity: LoglevelFilter) -> PluginNonfunctionalConfiguration {
+    pub fn into_config(
+        self,
+        default_verbosity: LoglevelFilter,
+    ) -> PluginNonfunctionalConfiguration {
         PluginNonfunctionalConfiguration {
             verbosity: self.verbosity.unwrap_or(default_verbosity),
             tee_files: self.tee_files,
@@ -100,12 +101,12 @@ pub struct PluginDefinition {
 impl PluginDefinition {
     /// Converts this structure to a PluginConfiguration structure by
     /// replacing unset values with their defaults.
-    pub fn to_config(self, default_verbosity: LoglevelFilter) -> PluginConfiguration {
+    pub fn into_config(self, default_verbosity: LoglevelFilter) -> PluginConfiguration {
         PluginConfiguration {
             name: self.name,
             specification: self.specification,
             functional: self.functional,
-            nonfunctional: self.nonfunctional.to_config(default_verbosity),
+            nonfunctional: self.nonfunctional.into_config(default_verbosity),
         }
     }
 }
@@ -139,7 +140,7 @@ impl PluginModification {
     /// An error is returned if the referenced plugin cannot be found in the
     /// vector, otherwise `Ok(())` is returned.
     pub fn apply(self, to: &mut Vec<PluginConfiguration>) -> Result<(), Error> {
-        for ref mut plugin_config in to.iter_mut() {
+        for plugin_config in &mut to.iter_mut() {
             if plugin_config.name == self.name {
                 self.nonfunctional.apply(&mut plugin_config.nonfunctional);
                 return Ok(());

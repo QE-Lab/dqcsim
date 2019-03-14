@@ -1,5 +1,7 @@
-use std::process::{exit, Command};
-use std::str;
+use std::{
+    process::{exit, Command},
+    str,
+};
 
 static CARGOENV: &str = "cargo:rustc-env=";
 

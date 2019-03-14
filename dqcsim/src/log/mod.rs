@@ -13,7 +13,10 @@
 //! # Example
 //!
 //! ```rust
-//! use dqcsim_log::{init, note, warn, LoglevelFilter, proxy::LogProxy, thread::LogThread};
+//! use dqcsim::{
+//!     note, warn,
+//!     log::{init, LoglevelFilter, proxy::LogProxy, thread::LogThread}
+//! };
 //!
 //! let log_thread = LogThread::spawn(LoglevelFilter::Trace).unwrap();
 //! let log_endpoint = log_thread.get_sender().unwrap();
@@ -41,13 +44,13 @@ pub mod channel;
 pub mod proxy;
 pub mod router;
 pub mod stdio;
-pub mod thread;
 pub mod tee_file;
+pub mod thread;
 
 #[doc(hidden)]
 pub use ref_thread_local as _ref_thread_local;
 
-use crate::channel::Sender;
+use crate::log::channel::Sender;
 use enum_variants::EnumVariants;
 use failure::Fail;
 use lazy_static::lazy_static;
@@ -290,17 +293,17 @@ pub fn deinit() -> Result<(), LogError> {
 #[macro_export]
 macro_rules! log {
     (target: $target:expr, $lvl:expr, $($arg:tt)+) => ({
-        use $crate::_ref_thread_local::RefThreadLocal;
-        $crate::LOGLEVEL.with(|loglevel| {
-            if $crate::LoglevelFilter::from($lvl) <= *loglevel.borrow() {
-                $crate::Record::log($crate::Record::build(
+        use $crate::log::_ref_thread_local::RefThreadLocal;
+        $crate::log::LOGLEVEL.with(|loglevel| {
+            if $crate::log::LoglevelFilter::from($lvl) <= *loglevel.borrow() {
+                $crate::log::Record::log($crate::log::Record::build(
                     format!($($arg)+),
                     $lvl,
                     $target,
                     file!(),
                     line!(),
-                    *$crate::PID,
-                    *$crate::TID.borrow()
+                    *$crate::log::PID,
+                    *$crate::log::TID.borrow()
                 ));
             }
         });
@@ -311,70 +314,70 @@ macro_rules! log {
 #[macro_export]
 macro_rules! fatal {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Loglevel::Fatal, $($arg)+);
+        $crate::log!(target: $target, $crate::log::Loglevel::Fatal, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Loglevel::Fatal, $($arg)+);
+        $crate::log!($crate::log::Loglevel::Fatal, $($arg)+);
     )
 }
 
 #[macro_export]
 macro_rules! error {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Loglevel::Error, $($arg)+);
+        $crate::log!(target: $target, $crate::log::Loglevel::Error, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Loglevel::Error, $($arg)+);
+        $crate::log!($crate::log::Loglevel::Error, $($arg)+);
     )
 }
 
 #[macro_export]
 macro_rules! warn {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Loglevel::Warn, $($arg)+);
+        $crate::log!(target: $target, $crate::log::Loglevel::Warn, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Loglevel::Warn, $($arg)+);
+        $crate::log!($crate::log::Loglevel::Warn, $($arg)+);
     )
 }
 
 #[macro_export]
 macro_rules! note {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Loglevel::Note, $($arg)+);
+        $crate::log!(target: $target, $crate::log::Loglevel::Note, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Loglevel::Note, $($arg)+);
+        $crate::log!($crate::log::Loglevel::Note, $($arg)+);
     )
 }
 
 #[macro_export]
 macro_rules! info {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Loglevel::Info, $($arg)+);
+        $crate::log!(target: $target, $crate::log::Loglevel::Info, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Loglevel::Info, $($arg)+);
+        $crate::log!($crate::log::Loglevel::Info, $($arg)+);
     )
 }
 
 #[macro_export]
 macro_rules! debug {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Loglevel::Debug, $($arg)+);
+        $crate::log!(target: $target, $crate::log::Loglevel::Debug, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Loglevel::Debug, $($arg)+);
+        $crate::log!($crate::log::Loglevel::Debug, $($arg)+);
     )
 }
 
 #[macro_export]
 macro_rules! trace {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Loglevel::Trace, $($arg)+);
+        $crate::log!(target: $target, $crate::log::Loglevel::Trace, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Loglevel::Trace, $($arg)+);
+        $crate::log!($crate::log::Loglevel::Trace, $($arg)+);
     )
 }
 

@@ -4,7 +4,6 @@ members = [
   "dqcsim",
   "dqcsim-cli",
   "dqcsim-plugin",
-  "dqcsim-log",
   "enum-variants",
   "enum-variants-derive",
 ]

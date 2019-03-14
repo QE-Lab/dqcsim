@@ -1,7 +1,4 @@
-use crate::{
-    ipc::SimulatorChannel,
-    log::{fatal, trace},
-};
+use crate::{fatal, ipc::SimulatorChannel, trace};
 use failure::{bail, Error};
 use ipc_channel::ipc::IpcOneShotServer;
 use std::{

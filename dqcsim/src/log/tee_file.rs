@@ -1,7 +1,7 @@
+use crate::log::LoglevelFilter;
 use failure::Fail;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use crate::LoglevelFilter;
 
 /// Error structure used for reporting TeeFile errors.
 #[derive(Debug, Fail, PartialEq)]
@@ -38,9 +38,9 @@ impl ::std::str::FromStr for TeeFile {
         let filter = LoglevelFilter::from_str(splitter.next().unwrap())?;
         let file = splitter
             .next()
-            .ok_or(TeeFileError::ParseError(
-                "Expected a colon in tee file description.".to_string(),
-            ))?
+            .ok_or_else(|| {
+                TeeFileError::ParseError("Expected a colon in tee file description.".to_string())
+            })?
             .into();
         Ok(TeeFile { filter, file })
     }
@@ -57,8 +57,8 @@ impl ::std::fmt::Display for TeeFile {
 #[cfg(test)]
 mod test {
 
-    use super::TeeFile;
     use super::super::LoglevelFilter;
+    use super::TeeFile;
     use std::str::FromStr;
 
     #[test]

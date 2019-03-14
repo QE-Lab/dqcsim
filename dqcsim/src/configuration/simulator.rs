@@ -1,6 +1,7 @@
-use super::plugin::PluginConfiguration;
-use super::seed::Seed;
-use dqcsim_log::{LoglevelFilter, tee_file::TeeFile};
+use crate::{
+    configuration::{plugin::PluginConfiguration, seed::Seed},
+    log::{tee_file::TeeFile, LoglevelFilter},
+};
 use serde::{Deserialize, Serialize};
 
 /// The complete configuration for a DQCsim run.
@@ -37,11 +38,11 @@ impl SimulatorConfiguration {
 
         // Clamp the verbosities of the sources.
         if self.dqcsim_level > max_dqcsim_verbosity {
-            self.dqcsim_level = max_dqcsim_verbosity.clone();
+            self.dqcsim_level = max_dqcsim_verbosity;
         }
         for plugin in &mut self.plugins {
             if plugin.nonfunctional.verbosity > max_dqcsim_verbosity {
-                plugin.nonfunctional.verbosity = max_dqcsim_verbosity.clone();
+                plugin.nonfunctional.verbosity = max_dqcsim_verbosity;
             }
         }
     }

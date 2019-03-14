@@ -10,7 +10,7 @@
 //! [`LogProxy`]: ./struct.LogProxy.html
 //! [`Log`]: ../trait.Log.html
 
-use crate::{Log, Record, Sender};
+use crate::log::{Log, Record, Sender};
 
 /// A [`LogProxy`] is a logger implementation (`Log`) which sends log records
 /// using its Sender side of a Channel.

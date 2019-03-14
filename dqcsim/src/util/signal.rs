@@ -1,4 +1,4 @@
-use crate::log::trace;
+use crate::trace;
 use failure::Error;
 use serde::{Deserialize, Serialize};
 use signal_hook::iterator::Signals;
