@@ -7,8 +7,4 @@ members = [
   "dqcsim-log",
   "enum-variants",
   "enum-variants-derive",
-  # Not part of the workspace yet as it requires rust nightly:
-  # https://github.com/PyO3/pyo3/issues/5
-  # https://github.com/PyO3/pyo3/issues/210
-  # "dqcsim-py",
 ]
