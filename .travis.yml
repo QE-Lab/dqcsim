@@ -19,7 +19,7 @@ install:
   - cargo install-update -a
 
 script:
-  - cargo fmt
+  - cargo fmt --all -- --check
   - cargo clippy
   - cargo build
   - cargo test
