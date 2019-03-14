@@ -37,7 +37,13 @@ impl LogThread {
             let supports_dim = t.supports_attr(term::Attr::Dim);
             let supports_colors = t.supports_attr(term::Attr::ForegroundColor(9));
 
+            let trace = level >= LevelFilter::Trace;
+            let debug = level >= LevelFilter::Debug;
+
             while let Ok(record) = receiver.recv() {
+                let color = level_to_color(record.level());
+
+                // Timestamp
                 t.reset()?;
                 if supports_dim {
                     t.attr(term::Attr::Dim)?;
@@ -48,33 +54,52 @@ impl LogThread {
                     humantime::format_rfc3339_seconds(record.timestamp()),
                 )?;
                 t.reset()?;
-                if supports_colors {
-                    t.fg(8)?;
+
+                // Delay
+                if debug {
+                    if supports_colors {
+                        t.fg(8)?;
+                    }
+                    write!(
+                        t,
+                        "{:<6}",
+                        format!("+{}ms", record.timestamp().elapsed().unwrap().as_millis())
+                    )?;
+                    t.reset()?;
                 }
-                write!(
-                    t,
-                    "{:<6}",
-                    format!("+{}ms", record.timestamp().elapsed().unwrap().as_millis())
-                )?;
-                t.reset()?;
 
-                let color = level_to_color(record.level());
-
+                // Record level
                 if supports_colors {
                     t.fg(color)?;
                 }
                 write!(t, "{:>5} ", format!("{}", record.level()))?;
                 t.reset()?;
 
+                // Identifier
                 if supports_colors && *PID != record.process() {
                     t.fg(record.process() % 7 + 1)?;
                 }
                 if supports_dim {
                     t.attr(term::Attr::Dim)?;
                 }
-                write!(t, "{:>5}:{:<2} ", record.process(), record.thread())?;
+                if trace {
+                    // With process + thread identifier
+                    write!(
+                        t,
+                        "{:<35} ",
+                        format!(
+                            "{:>5}:{:<2} {} ",
+                            record.process(),
+                            record.thread(),
+                            record.module_path().unwrap(),
+                        )
+                    )?;
+                } else {
+                    write!(t, "{:<28} ", record.module_path().unwrap())?;
+                }
                 t.reset()?;
 
+                // Record
                 if supports_colors && record.level() == Level::Trace {
                     t.fg(color)?;
                 }
