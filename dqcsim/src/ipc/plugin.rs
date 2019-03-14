@@ -78,7 +78,7 @@ pub fn initialize(
                     downstream_channel = Some(connect_downstream(
                         request
                             .downstream
-                            .ok_or(format_err!("Downstream channel closed"))?,
+                            .ok_or_else(|| format_err!("Downstream channel closed"))?,
                     )?);
                 }
                 PluginType::Backend => {}

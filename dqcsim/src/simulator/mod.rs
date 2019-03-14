@@ -119,7 +119,7 @@ impl Simulation {
         debug!("Initialize plugins.");
         self.pipeline
             .first()
-            .ok_or(format_err!("Plugin missing"))?
+            .ok_or_else(|| format_err!("Plugin missing"))?
             .init(None, self.pipeline.iter().skip(1).by_ref())?;
         debug!("Initialization of plugins succesful.");
         Ok(())

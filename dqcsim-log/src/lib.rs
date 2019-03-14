@@ -15,7 +15,7 @@
 //! ```rust
 //! use dqcsim_log::{init, note, warn, LevelFilter, proxy::LogProxy, thread::LogThread};
 //!
-//! let log_thread = LogThread::spawn(LevelFilter::Trace);
+//! let log_thread = LogThread::spawn(LevelFilter::Trace).unwrap();
 //! let log_endpoint = log_thread.get_sender().unwrap();
 //!
 //! std::thread::spawn(move || {
@@ -38,7 +38,6 @@
 //! [`log`]: https://github.com/rust-lang-nursery/log
 
 pub mod channel;
-pub mod ipc;
 pub mod proxy;
 pub mod router;
 pub mod stdio;
