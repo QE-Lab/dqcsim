@@ -20,9 +20,11 @@ install:
 
 script:
   - cargo fmt -- --check
-  - cargo clippy
   - cargo build
   - cargo test
+  - cargo clippy
+
+before_deploy:
   - cargo doc
   - cd book && mdbook build && mdbook test
   - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/book/book/doc_
