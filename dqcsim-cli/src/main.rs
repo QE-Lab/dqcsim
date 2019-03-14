@@ -1,8 +1,16 @@
-use dqcsim::simulator::{SimulationOpt, Simulator};
+//use dqcsim::simulator::{SimulationOpt, Simulator};
 use failure::Error;
-use structopt::StructOpt;
+//use structopt::StructOpt;
+
+mod arg_parse;
+use crate::arg_parse::*;
 
 fn main() -> Result<(), Error> {
-    Simulator::new(SimulationOpt::from_args())?.abort()?;
+    let cfg = CommandLineConfiguration::parse().unwrap_or_else(|e| {
+        println!("{}", e);
+        std::process::exit(1);
+    });
+    dbg!(cfg);
+    //Simulator::new(SimulationOpt::from_args())?.abort()?;
     Ok(())
 }

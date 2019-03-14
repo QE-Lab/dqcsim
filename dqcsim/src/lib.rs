@@ -33,14 +33,20 @@
 //! [`Plugin`]: ./plugin/struct.Plugin.html
 //! [`Simulation`]: ./simulator/struct.Simulation.html
 
-/// Plugin control structure and configuration.
+/// Plugin control structure.
 pub mod plugin;
-
-/// Defines the protocols for all forms of communication.
-pub mod protocol;
 
 /// Simulator instance.
 pub mod simulator;
+
+/// Configuration structures for the plugins and simulator.
+pub mod configuration;
+
+/// Simulation run reproduction functionality.
+pub mod reproduction;
+
+/// Defines the protocols for all forms of communication.
+pub mod protocol;
 
 /// Utility functions and modules.
 pub mod util;

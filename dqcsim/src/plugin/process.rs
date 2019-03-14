@@ -1,8 +1,8 @@
 use crate::{
     ipc::{simulator::start, SimulatorChannel},
     log::{
-        debug, error, fatal, info, router::route, stdio::proxy_stdio, trace, warn, Level,
-        LevelFilter, Record,
+        debug, error, fatal, info, router::route, stdio::proxy_stdio, trace, warn, Loglevel,
+        LoglevelFilter, Record,
     },
     plugin::Plugin,
     protocol::message::{InitializeRequest, Request, Response},
@@ -30,13 +30,13 @@ impl PluginProcess {
         proxy_stdio(
             Box::new(child.stderr.take().expect("stderr")),
             sender.clone(),
-            Level::Error,
+            Loglevel::Error,
         );
 
         proxy_stdio(
             Box::new(child.stdout.take().expect("stdout")),
             sender,
-            Level::Info,
+            Loglevel::Info,
         );
 
         Ok(PluginProcess { child, channel })
@@ -57,7 +57,7 @@ impl PluginProcess {
             downstream,
             arb_cmds: None,
             prefix: "".to_string(),
-            level: LevelFilter::Trace,
+            level: LoglevelFilter::Trace,
         }))?;
         trace!("Waiting for init reply.");
         match self.wait_for_reply() {

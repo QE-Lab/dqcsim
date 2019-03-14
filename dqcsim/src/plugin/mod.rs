@@ -1,7 +1,7 @@
 pub mod process;
 
 use crate::{
-    log::{debug, thread::LogThread, trace, LevelFilter},
+    log::{debug, thread::LogThread, trace, LoglevelFilter},
     plugin::process::PluginProcess,
 };
 use failure::{bail, Error};
@@ -17,7 +17,7 @@ pub enum PluginType {
 #[derive(Debug)]
 pub struct PluginConfig {
     pub name: String,
-    pub loglevel: Option<LevelFilter>,
+    pub loglevel: Option<LoglevelFilter>,
 }
 
 impl FromStr for PluginConfig {
@@ -25,7 +25,7 @@ impl FromStr for PluginConfig {
     fn from_str(s: &str) -> Result<PluginConfig, ParseError> {
         Ok(PluginConfig {
             name: s.to_owned(),
-            loglevel: Some(LevelFilter::Trace),
+            loglevel: Some(LoglevelFilter::Trace),
         })
     }
 }

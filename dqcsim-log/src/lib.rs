@@ -13,14 +13,14 @@
 //! # Example
 //!
 //! ```rust
-//! use dqcsim_log::{init, note, warn, LevelFilter, proxy::LogProxy, thread::LogThread};
+//! use dqcsim_log::{init, note, warn, LoglevelFilter, proxy::LogProxy, thread::LogThread};
 //!
-//! let log_thread = LogThread::spawn(LevelFilter::Trace).unwrap();
+//! let log_thread = LogThread::spawn(LoglevelFilter::Trace).unwrap();
 //! let log_endpoint = log_thread.get_sender().unwrap();
 //!
 //! std::thread::spawn(move || {
 //!     let proxy = LogProxy::boxed(log_endpoint);
-//!     init(proxy, LevelFilter::Trace);
+//!     init(proxy, LoglevelFilter::Trace);
 //!
 //!     warn!("Warning from thread");
 //!
@@ -42,6 +42,7 @@ pub mod proxy;
 pub mod router;
 pub mod stdio;
 pub mod thread;
+pub mod tee_file;
 
 #[doc(hidden)]
 pub use ref_thread_local as _ref_thread_local;
@@ -70,7 +71,7 @@ thread_local! {
     static LOGGER: RefCell<Option<Box<dyn Log>>> = RefCell::new(None);
     /// The thread-local maximum log level.
     #[doc(hidden)]
-    pub static LOGLEVEL: RefCell<LevelFilter> = RefCell::new(LevelFilter::Off);
+    pub static LOGLEVEL: RefCell<LoglevelFilter> = RefCell::new(LoglevelFilter::Off);
 }
 
 lazy_static! {
@@ -90,7 +91,7 @@ ref_thread_local! {
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Serialize, Deserialize, EnumVariants)]
-pub enum Level {
+pub enum Loglevel {
     /// This loglevel is to be used for reporting a fatal error, resulting from
     /// the owner of the logger getting into an illegal state from which it
     /// cannot recover. Such problems are also reported to the API caller via
@@ -134,7 +135,7 @@ pub enum Level {
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Serialize, Deserialize, EnumVariants)]
-pub enum LevelFilter {
+pub enum LoglevelFilter {
     /// A level lower than all log levels.
     Off = 0,
     /// Corresponds to the `Fatal` log level.
@@ -153,16 +154,16 @@ pub enum LevelFilter {
     Trace,
 }
 
-impl From<Level> for LevelFilter {
-    fn from(level: Level) -> LevelFilter {
+impl From<Loglevel> for LoglevelFilter {
+    fn from(level: Loglevel) -> LoglevelFilter {
         match level {
-            Level::Fatal => LevelFilter::Fatal,
-            Level::Error => LevelFilter::Error,
-            Level::Warn => LevelFilter::Warn,
-            Level::Note => LevelFilter::Note,
-            Level::Info => LevelFilter::Info,
-            Level::Debug => LevelFilter::Debug,
-            Level::Trace => LevelFilter::Trace,
+            Loglevel::Fatal => LoglevelFilter::Fatal,
+            Loglevel::Error => LoglevelFilter::Error,
+            Loglevel::Warn => LoglevelFilter::Warn,
+            Loglevel::Note => LoglevelFilter::Note,
+            Loglevel::Info => LoglevelFilter::Info,
+            Loglevel::Debug => LoglevelFilter::Debug,
+            Loglevel::Trace => LoglevelFilter::Trace,
         }
     }
 }
@@ -174,8 +175,8 @@ impl From<Level> for LevelFilter {
 /// [`Record`]: ./struct.Record.html
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Metadata {
-    /// Level of the log record.
-    level: Level,
+    /// Loglevel of the log record.
+    level: Loglevel,
     module_path: Option<String>,
     file: Option<String>,
     line: Option<u32>,
@@ -197,7 +198,7 @@ impl Record {
     pub fn payload(&self) -> &str {
         &self.payload
     }
-    pub fn level(&self) -> Level {
+    pub fn level(&self) -> Loglevel {
         self.metadata.level
     }
     pub fn module_path(&self) -> Option<&str> {
@@ -223,7 +224,7 @@ impl Record {
 impl Record {
     pub fn build(
         payload: impl Into<String>,
-        level: Level,
+        level: Loglevel,
         module_path: impl Into<String>,
         file: impl Into<String>,
         line: u32,
@@ -260,13 +261,13 @@ impl fmt::Display for Record {
 }
 
 /// Update the thread-local logger.
-fn update(log: Option<Box<dyn Log>>, level: Option<LevelFilter>) -> Result<(), LogError> {
+fn update(log: Option<Box<dyn Log>>, level: Option<LoglevelFilter>) -> Result<(), LogError> {
     LOGGER.with(|logger| match logger.try_borrow_mut() {
         Ok(mut logger) => {
             *logger = log;
             LOGLEVEL.with(|loglevel| match loglevel.try_borrow_mut() {
                 Ok(mut loglevel) => {
-                    *loglevel = level.unwrap_or(LevelFilter::Off);
+                    *loglevel = level.unwrap_or(LoglevelFilter::Off);
                     Ok(())
                 }
                 Err(_) => Err(LogError::ThreadLocalError("log level".to_string())),
@@ -277,7 +278,7 @@ fn update(log: Option<Box<dyn Log>>, level: Option<LevelFilter>) -> Result<(), L
 }
 
 /// Initialize the thread-local logger.
-pub fn init(log: Box<dyn Log>, level: LevelFilter) -> Result<(), LogError> {
+pub fn init(log: Box<dyn Log>, level: LoglevelFilter) -> Result<(), LogError> {
     update(Some(log), Some(level))
 }
 
@@ -291,7 +292,7 @@ macro_rules! log {
     (target: $target:expr, $lvl:expr, $($arg:tt)+) => ({
         use $crate::_ref_thread_local::RefThreadLocal;
         $crate::LOGLEVEL.with(|loglevel| {
-            if $crate::LevelFilter::from($lvl) <= *loglevel.borrow() {
+            if $crate::LoglevelFilter::from($lvl) <= *loglevel.borrow() {
                 $crate::Record::log($crate::Record::build(
                     format!($($arg)+),
                     $lvl,
@@ -310,86 +311,86 @@ macro_rules! log {
 #[macro_export]
 macro_rules! fatal {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Level::Fatal, $($arg)+);
+        $crate::log!(target: $target, $crate::Loglevel::Fatal, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Level::Fatal, $($arg)+);
+        $crate::log!($crate::Loglevel::Fatal, $($arg)+);
     )
 }
 
 #[macro_export]
 macro_rules! error {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Level::Error, $($arg)+);
+        $crate::log!(target: $target, $crate::Loglevel::Error, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Level::Error, $($arg)+);
+        $crate::log!($crate::Loglevel::Error, $($arg)+);
     )
 }
 
 #[macro_export]
 macro_rules! warn {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Level::Warn, $($arg)+);
+        $crate::log!(target: $target, $crate::Loglevel::Warn, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Level::Warn, $($arg)+);
+        $crate::log!($crate::Loglevel::Warn, $($arg)+);
     )
 }
 
 #[macro_export]
 macro_rules! note {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Level::Note, $($arg)+);
+        $crate::log!(target: $target, $crate::Loglevel::Note, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Level::Note, $($arg)+);
+        $crate::log!($crate::Loglevel::Note, $($arg)+);
     )
 }
 
 #[macro_export]
 macro_rules! info {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Level::Info, $($arg)+);
+        $crate::log!(target: $target, $crate::Loglevel::Info, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Level::Info, $($arg)+);
+        $crate::log!($crate::Loglevel::Info, $($arg)+);
     )
 }
 
 #[macro_export]
 macro_rules! debug {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Level::Debug, $($arg)+);
+        $crate::log!(target: $target, $crate::Loglevel::Debug, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Level::Debug, $($arg)+);
+        $crate::log!($crate::Loglevel::Debug, $($arg)+);
     )
 }
 
 #[macro_export]
 macro_rules! trace {
     (target: $target:expr, $($arg:tt)+) => (
-        $crate::log!(target: $target, $crate::Level::Trace, $($arg)+);
+        $crate::log!(target: $target, $crate::Loglevel::Trace, $($arg)+);
     );
     ($($arg:tt)+) => (
-        $crate::log!($crate::Level::Trace, $($arg)+);
+        $crate::log!($crate::Loglevel::Trace, $($arg)+);
     )
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{Level, LevelFilter};
+    use super::{Loglevel, LoglevelFilter};
 
     #[test]
     fn level_order() {
-        assert!(Level::Debug < Level::Trace);
-        assert!(Level::Info < Level::Debug);
-        assert!(Level::Note < Level::Info);
-        assert!(Level::Warn < Level::Note);
-        assert!(Level::Error < Level::Warn);
-        assert!(Level::Fatal < Level::Error);
-        assert!(LevelFilter::Off < LevelFilter::from(Level::Fatal));
+        assert!(Loglevel::Debug < Loglevel::Trace);
+        assert!(Loglevel::Info < Loglevel::Debug);
+        assert!(Loglevel::Note < Loglevel::Info);
+        assert!(Loglevel::Warn < Loglevel::Note);
+        assert!(Loglevel::Error < Loglevel::Warn);
+        assert!(Loglevel::Fatal < Loglevel::Error);
+        assert!(LoglevelFilter::Off < LoglevelFilter::from(Loglevel::Fatal));
     }
 
 }

@@ -11,6 +11,7 @@ dqcsim-log = { path = "../dqcsim-log" }
 # serialize/deserialize
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+serde_yaml = "0.8"
 
 # channels
 crossbeam-channel = "0.3"
@@ -24,3 +25,8 @@ structopt = "0.2"
 
 # error handling
 failure = "0.1"
+
+enum-variants = { path = "../enum-variants" }
+pathdiff = "0.1"
+whoami = "0.1"
+rand = "0.6"

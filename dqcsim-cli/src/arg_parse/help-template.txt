@@ -1,0 +1,192 @@
+{before-help}
+DQCsim is a framework for simulating quantum accelerators. It exists as both a library and a command-line program.
+You're currently using the latter.
+
+DQCsim itself is nothing more than a so-called driver: it just connects external pieces of code together to form the
+simulation. These pieces of code are called the host, the front-end plugin, the operator plugins, and the back-end
+plugin. There is always one host, one front end and one back end, but there can be any number of operators.
+
+The front end handles the classical part of the accelerator (the microarchitecture layer). Whenever it wants to do
+anything in the quantum domain, it defers to the next plugin, which is usually the back end plugin. This plugin is
+purely quantum; it simulates the qubits with some plugin-specific mathematical model.
+
+Operator plugins, when used, are placed between the front end and back end. This allows them to monitor or change the
+quantum gates as the front end generates them, for instance to introduce errors, do statistical stuff, etc.
+
+The host represents the higher-level pure classical program that uses the quantum accelerator, similar to how a
+present-day computer uses a GPU. When you're using DQCsim as a library, your program represents the host. The command
+line version of DQCsim doesn't conceptually have such a program though, so it needs to emulate one. See the "host call
+sequence" section for more information.
+
+EXAMPLES:
+    dqcsim algorithm.cq
+        Run the specified cQASM file using the cQASM frontend and (default) QX backend.
+
+    dqcsim -l debug algorithm.cq
+        As above, but with more extensive logging.
+
+    dqcsim algorithm.cq quantumsim
+        Run the algorithm with the quantumsim backend instead.
+
+    dqcsim algorithm.cq depolarize -i error.rate.0.0001 qx
+        As the first example, but with the addition of a depolarizing channel error model in the form of an operator.
+        Operators edit the stream of gates passing from the algorithm (frontend) to the quantum simulator (backend).
+        Note that "qx" needs to be specified here, otherwise "depolarize" is interpreted as the backend.
+
+    dqcsim --reproduce algorithm.repro
+        The above calls generate a file named "algorithm.repro", which can be used to reproduce a previous simulation.
+        With this syntax, random number generation is still "reseeded", so measurements and errors may still differ
+        from the simulation that is reproduced. This is the equivalent of running the same physical quantum experiment
+        twice.
+
+    dqcsim --reproduce-exactly algorithm.repro -l trace
+        In the context of a simulation, it is also useful to be able to reproduce a run exactly, primarily for
+        debugging purposes. This syntax attempts to do this, by passing the same random seeds to the plugins that were
+        passed initially. Still, exact reproduction will only work if all the plugins are written to be deterministic
+        in this case. The example above tries to rerun the exact same simulation with increased logging verbosity.
+
+USAGE:
+    {usage}
+
+DQCSIM OPTIONS:
+{unified}
+
+PLUGIN SPEC:
+    Plugin specifications are used to define what simulation DQCsim will run.
+
+    Unless --reproduce[-exactly] is active, at least one plugin must be specified, which is treated as the frontend.
+    The backend the defaults to "dqcsbeqx", the DQCsim backend plugin wrapper for the QX simulator. Specifying a second
+    plugin overrides the default backend. If more plugins are specified, the middle plugins are the operators that sit
+    between the frontend and the backend.
+
+    Plugins are defined using a single string, optionally followed by options. The string can be any of the following
+    based on context:
+
+     - a valid path to the plugin executable;
+     - the basename of the plugin executable with implicit "dqcsfe"/"dqcsop"/"dqcsbe" prefix, searched for in A)
+       DQCsim's working directory, B) the dqcsim binary directory, and C) the system $PATH;
+     - a valid path to a script file with a file extension. In this case, the above rule is run for a plugin named by
+       the file extension of the script file. For instance, if "test.py" is specified for the frontend, DQCsim will
+       look for an executable named "dqcsfepy". The script filename is passed to the plugin using an implicit
+       "--init script.filename.<filename>" switch.
+
+    When --reproduce[-exactly] is active, defining new plugins or changing the behavior of existing plugins is illegal.
+    It is however still allowed to change plugin options related to logging. To specify these options without defining
+    a new plugin, a backreference of the form "@<name>" is used instead, where name is the name of the plugin as auto-
+    generated or specified using -n/--name. For example, "dqcsim --reproduce <name.repro> @front -l debug" will set the
+    loglevel for the frontend to debug, while leaving the loglevels for DQCsim itself and the other plugins set to the
+    default (info).
+
+{after-help}
+
+HOST CALL SEQUENCE:
+    Since the command line version of DQCsim has no host program, it needs to emulate one. The default is for it to
+    just do:
+
+        dqcsim.start({})
+        dqcsim.wait()
+
+    The -C or --call options allow you to specify a different sequence. Each time you specify this option, an API call
+    is appended to the list. The following values are allowed:
+
+        start
+        start:<<arb_data>>
+        wait
+        send:<<arb_data>>
+        recv
+        yield
+        arb:<<arb_cmd>>
+
+    These correspond exactly with the host API, with the following exceptions for convenience:
+
+     - "start" calls start() with an empty ArbData structure, i.e. json = {} and zero unstructured arguments.
+     - start() calls are automatically closed by a wait() if no wait command is explicitly requested.
+
+    The return values for wait(), recv(), and arb() are printed by DQCsim using info loglevel and, if requested through
+    the --host-stdout switch, are sent to stdout.
+
+ARB_DATA & ARB_CMD SYNTAX:
+    ArbData and ArbCmd structures are used to specify "arbitrary" data and commands, where "arbitrary" means
+    "implementation specific". That is, DQCsim does not specify what these structures represent; this is up to the
+    implementation of the plugin they are passed to. However, DQCsim does specify the data formats for the underlying
+    structures.
+
+    ArbData objects can be specified on the command line as follows:
+
+        <<arb_data>> := '<json>,<arg1>,<arg2>,[...]'
+
+    json must be a valid JSON object, surrounded and delimited by {}. Zero or more comma-separated strings then follow
+    to specify the unstructured arguments. Note that these strings are binary-safe; it is for instance perfectly legal
+    for an implementation to pass a C structure through one of these strings, although it'd be awkward to say the least
+    to specify such a structure on the command line. The following escape characters are available in these argument
+    strings to allow any binary string to be specified:
+
+        _,    ->  ,
+        __    ->  _
+        _##   ->  raw byte 0x##, where each # matches [0-9a-fA-F]
+
+    _ is used for escaping instead of the usual \ to make specifying escape sequences less confusing in the context of
+    a shell, and to make hex strings at least somewhat readable. Any non-ASCII unicode code points passed here are
+    stored in the string using UTF-8 encoding.
+
+    DQCsim also has to print ArbData structures in log messages occasionaly. It uses the exact same syntax for this as
+    you would on the command line. When an unstructured argument contains at least one non-printable ASCII character,
+    DQCsim assumes that the string is a binary object and prints the entire argument using raw byte escape characters.
+
+    ArbCmd objects are expressed as follows:
+
+        <<arb_cmd>> := <interface-id>.<operation-id>
+                     | <interface-id>.<operation-id>:<<arb_data>>
+                     | <interface-id>.<operation-id>.<arg1>,<arg2>,[...]
+
+    interface-id and operation-id are the interface and operation identifier strings. The first specification method
+    sets the JSON object to {} and passes an empty unstructured argument list. The second method allows the data
+    payload to be set using the ArbData syntax listed above. The third method is a shorthand that sets the JSON object
+    to {} while still allowing unstructured arguments to be passed.
+
+LOGGING SYSTEM & LOGLEVELS:
+    One of the core responsibilities of DQCsim itself is to manage logging. If it wouldn't do this and every plugin
+    would handle it by itself, not only would the log output become messy and hard to trace back to the originating
+    plugin, but due to the simulation consisting of multiple processes messages would start running through each other.
+
+    To manage message filtering, DQCsim uses loglevels and various loglevel filters. Loglevels indicate the importance
+    of a message as follows, in order of increasing importance:
+
+        trace:
+            This loglevel is normally used for reporting debugging information useful for debugging the internals of
+            the sender of the message. Such messages would normally only be generated by debug builds, to prevent them
+            from impacting performance under normal circumstances.
+
+        debug:
+            This loglevel is normally used for reporting debugging information useful for debugging the systems
+            interacting with the sender of the message.
+
+        info:
+            This loglevel is normally used for reporting information you did NOT specifically request, but may be
+            helpful nonetheless.
+
+        note:
+            This loglevel is normally used for reporting information you specifically requested in some way.
+
+        warn:
+            This loglevel is normally used for reporting an exception that the sender of the message knows how to deal
+            with, but nonetheless wasn't expecting, and may indicate a deeper problem.
+
+        error:
+            This loglevel is normally used for reporting or propagating a non-fatal error caused by for instance the
+            user of the plugin doing something wrong, or reporting some exception that the plugin cannot deal with on
+            its own.
+
+        critical:
+            This loglevel is normally used for reporting a fatal error, resulting from the owner of the logger getting
+            into an illegal state from which it cannot recover.
+
+    Loglevel filters allow you to specify the minimum loglevel that will be reported. For instance, if a filter is set
+    to info, debug and trace messages are supressed. You can also specify off, which supresses all messages.
+
+    DQCsim regards each individual plugin and itself as sources of log messages. Each source has a source filter that
+    controls whether a message is forwarded to logging backbone (-l for plugins, --dqcsim-level for DQCsim itself), and
+    the logging backbone has sink filters for every output; normally this is just stderr (-l), but you can specify one
+    or more files in addition (-T). The plugins can also output just their own messages to files with their own filter
+    independent of the rest of the system (-T).
+

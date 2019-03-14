@@ -1,6 +1,6 @@
 //! Utility function to spawn a log proxy implementation to forward standard i/o streams.
 
-use crate::{error, init, log, proxy::LogProxy, trace, Level, LevelFilter, Record};
+use crate::{error, init, log, proxy::LogProxy, trace, Loglevel, LoglevelFilter, Record};
 use crossbeam_channel::Sender;
 use std::{
     io::Read,
@@ -17,10 +17,10 @@ use std::{
 pub fn proxy_stdio(
     mut stream: Box<Read + Send>,
     sender: Sender<Record>,
-    level: Level,
+    level: Loglevel,
 ) -> JoinHandle<()> {
     spawn(move || {
-        init(LogProxy::boxed(sender), LevelFilter::from(level)).unwrap();
+        init(LogProxy::boxed(sender), LoglevelFilter::from(level)).unwrap();
         let mut buf = Vec::new();
         let mut byte = [0u8];
         loop {

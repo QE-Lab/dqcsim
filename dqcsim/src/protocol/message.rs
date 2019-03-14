@@ -1,4 +1,4 @@
-use crate::log::LevelFilter;
+use crate::log::LoglevelFilter;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -33,8 +33,8 @@ pub struct InitializeRequest {
     pub arb_cmds: Option<Vec<ArbCmd>>,
     /// Prefix for logging.
     pub prefix: String,
-    /// LevelFilter for logging.
-    pub level: LevelFilter,
+    /// LoglevelFilter for logging.
+    pub level: LoglevelFilter,
 }
 
 /// Initialization response.

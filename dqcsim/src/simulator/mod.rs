@@ -1,5 +1,5 @@
 use crate::{
-    log::{debug, fatal, thread::LogThread, trace, LevelFilter},
+    log::{debug, fatal, thread::LogThread, trace, LoglevelFilter},
     plugin::{Plugin, PluginConfig},
 };
 use failure::{bail, format_err, Error};
@@ -8,7 +8,7 @@ use structopt::StructOpt;
 #[derive(Debug, StructOpt)]
 pub struct SimulationOpt {
     #[structopt(short = "l", long = "loglevel")]
-    pub loglevel: Option<LevelFilter>,
+    pub loglevel: Option<LoglevelFilter>,
     #[structopt(raw(required = "true", min_values = "2"))]
     pub plugins: Vec<PluginConfig>,
 }
@@ -30,7 +30,7 @@ impl Simulator {
     pub fn new(opt: SimulationOpt) -> Result<Simulator, Error> {
         // Spawn log thread here so it outlives the Simulation instance. This
         // allows debugging deconstruction as Drop goes outer to inner recursively.
-        let logger = LogThread::spawn(opt.loglevel.unwrap_or(LevelFilter::Info))?;
+        let logger = LogThread::spawn(opt.loglevel.unwrap_or(LoglevelFilter::Info))?;
 
         match Simulation::new(opt, &logger) {
             Err(err) => {

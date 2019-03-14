@@ -5,7 +5,7 @@ use crate::{
     },
     plugin::PluginType,
 };
-use dqcsim_log::{init, proxy::LogProxy, LevelFilter};
+use dqcsim_log::{init, proxy::LogProxy, LoglevelFilter};
 use failure::Error;
 use ipc_channel::ipc::IpcSelectionResult;
 
@@ -33,7 +33,7 @@ impl Connection {
 
         let channel: PluginChannel = connect_simulator(simulator)?;
 
-        init(LogProxy::boxed(channel.log.clone()), LevelFilter::Trace)?;
+        init(LogProxy::boxed(channel.log.clone()), LoglevelFilter::Trace)?;
 
         initialize(&channel, plugin_type)?;
 

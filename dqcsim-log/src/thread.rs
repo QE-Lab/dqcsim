@@ -1,4 +1,4 @@
-use crate::{deinit, init, proxy::LogProxy, trace, Level, LevelFilter, Record, PID};
+use crate::{deinit, init, proxy::LogProxy, trace, Loglevel, LoglevelFilter, Record, PID};
 use failure::Error;
 use std::thread;
 use term::stderr;
@@ -9,21 +9,21 @@ pub struct LogThread {
     handler: Option<thread::JoinHandle<Result<(), term::Error>>>,
 }
 
-/// Convert a Level to term::color::Color
-fn level_to_color(level: Level) -> term::color::Color {
+/// Convert a Loglevel to term::color::Color
+fn level_to_color(level: Loglevel) -> term::color::Color {
     match level {
-        Level::Fatal => 9,
-        Level::Error => 1,
-        Level::Warn => 3,
-        Level::Note => 7,
-        Level::Info => 4,
-        Level::Debug => 6,
-        Level::Trace => 8,
+        Loglevel::Fatal => 9,
+        Loglevel::Error => 1,
+        Loglevel::Warn => 3,
+        Loglevel::Note => 7,
+        Loglevel::Info => 4,
+        Loglevel::Debug => 6,
+        Loglevel::Trace => 8,
     }
 }
 
 impl LogThread {
-    pub fn spawn(level: LevelFilter) -> Result<LogThread, Error> {
+    pub fn spawn(level: LoglevelFilter) -> Result<LogThread, Error> {
         // Create the log channel.
         let (sender, receiver): (_, crossbeam_channel::Receiver<Record>) =
             crossbeam_channel::unbounded();
@@ -35,8 +35,8 @@ impl LogThread {
             let supports_dim = t.supports_attr(term::Attr::Dim);
             let supports_colors = t.supports_attr(term::Attr::ForegroundColor(9));
 
-            let trace = level >= LevelFilter::Trace;
-            let debug = level >= LevelFilter::Debug;
+            let trace = level >= LoglevelFilter::Trace;
+            let debug = level >= LoglevelFilter::Debug;
 
             while let Ok(record) = receiver.recv() {
                 let color = level_to_color(record.level());
@@ -98,7 +98,7 @@ impl LogThread {
                 t.reset()?;
 
                 // Record
-                if supports_colors && record.level() == Level::Trace {
+                if supports_colors && record.level() == Loglevel::Trace {
                     t.fg(color)?;
                 }
                 writeln!(t, "{}", record)?;
