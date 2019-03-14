@@ -25,7 +25,7 @@ script:
   - cargo test
   - cargo doc
   - cd book && mdbook build && mdbook test
-  - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/book/book/_doc
+  - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/book/book/doc_
 
 deploy:
   provider: pages
