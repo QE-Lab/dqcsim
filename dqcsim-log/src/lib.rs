@@ -40,6 +40,7 @@
 pub mod channel;
 pub mod ipc;
 pub mod proxy;
+pub mod router;
 pub mod stdio;
 pub mod thread;
 

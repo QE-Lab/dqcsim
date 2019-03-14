@@ -5,8 +5,7 @@ use crate::{
     plugin::process::PluginProcess,
 };
 use failure::{bail, Error};
-use std::{path::Path, process::Command};
-use std::{str::FromStr, string::ParseError};
+use std::{path::Path, process::Command, str::FromStr, string::ParseError};
 
 #[derive(Debug, Copy, Clone)]
 pub enum PluginType {
@@ -56,7 +55,10 @@ impl Plugin {
         }
 
         let mut command = Command::new(target);
-        let process = PluginProcess::new(command.arg(&config.name), logger.get_sender().unwrap())?;
+        let process = PluginProcess::new(
+            command.arg(&config.name),
+            logger.get_sender().expect("Log thread unavailable"),
+        )?;
 
         Ok(Plugin {
             command,
@@ -70,13 +72,16 @@ impl Plugin {
         &self,
         downstream: Option<String>,
         upstream: &mut impl Iterator<Item = &'a Plugin>,
-    ) {
-        self.process.init(downstream, upstream);
+    ) -> Result<(), Error> {
+        self.process.init(downstream, upstream)?;
+        Ok(())
     }
 
     /// Abort
-    pub fn abort(&self) {
-        self.process.abort();
+    pub fn abort(&mut self, graceful: bool) {
+        if let Ok(Some(exit)) = self.process.abort(graceful) {
+            debug!("Plugin process already exited: {}", exit);
+        }
     }
 }
 

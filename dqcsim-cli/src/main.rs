@@ -3,6 +3,6 @@ use failure::Error;
 use structopt::StructOpt;
 
 fn main() -> Result<(), Error> {
-    Simulator::new(SimulationOpt::from_args())?;
+    Simulator::new(SimulationOpt::from_args())?.abort()?;
     Ok(())
 }

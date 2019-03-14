@@ -1,4 +1,5 @@
 use crate::{deinit, init, proxy::LogProxy, trace, Level, LevelFilter, Record, PID};
+use failure::Error;
 use std::thread;
 use term::stderr;
 
@@ -22,10 +23,7 @@ fn level_to_color(level: Level) -> term::color::Color {
 }
 
 impl LogThread {
-    pub fn get_sender(&self) -> Option<crossbeam_channel::Sender<Record>> {
-        self.sender.clone()
-    }
-    pub fn spawn(level: LevelFilter) -> LogThread {
+    pub fn spawn(level: LevelFilter) -> Result<LogThread, Error> {
         // Create the log channel.
         let (sender, receiver): (_, crossbeam_channel::Receiver<Record>) =
             crossbeam_channel::unbounded();
@@ -106,16 +104,30 @@ impl LogThread {
                 writeln!(t, "{}", record)?;
                 t.reset()?;
             }
+            // Trace log thread down
+            if trace {
+                if supports_colors {
+                    if t.supports_attr(term::Attr::Standout(true)) {
+                        t.attr(term::Attr::Standout(true))?;
+                    }
+                    t.fg(term::color::BRIGHT_BLACK)?;
+                }
+                writeln!(t, "$")?;
+            }
+            t.reset()?;
             Ok(())
         });
 
         // Start a LogProxy for the current thread.
-        init(LogProxy::boxed(sender.clone()), level).unwrap();
+        init(LogProxy::boxed(sender.clone()), level)?;
 
-        LogThread {
+        Ok(LogThread {
             sender: Some(sender),
             handler: Some(handler),
-        }
+        })
+    }
+    pub fn get_sender(&self) -> Option<crossbeam_channel::Sender<Record>> {
+        self.sender.clone()
     }
 }
 
@@ -125,7 +137,7 @@ impl Drop for LogThread {
         trace!("Shutting down logger thread");
 
         // Disconnect the LogProxy running in the main thread.
-        deinit().unwrap();
+        deinit().expect("Failed to deinitialize thread-local logger");
 
         // Drop the owned sender side to disconnect the log channel.
         self.sender = None;

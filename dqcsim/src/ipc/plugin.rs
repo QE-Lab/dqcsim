@@ -4,7 +4,7 @@ use crate::{
     protocol::message::{InitializeResponse, Request, Response},
 };
 
-use failure::{bail, Error};
+use failure::{bail, format_err, Error};
 use ipc_channel::ipc::{IpcOneShotServer, IpcSender};
 
 /// Construct a ([`SimulatorChannel`], [`PluginChannel`]) channel pair.
@@ -75,7 +75,11 @@ pub fn initialize(
             // Frontend and operator connect to downstream plugin first.
             match plugin_type {
                 PluginType::Frontend | PluginType::Operator => {
-                    downstream_channel = Some(connect_downstream(request.downstream.unwrap())?);
+                    downstream_channel = Some(connect_downstream(
+                        request
+                            .downstream
+                            .ok_or(format_err!("Downstream channel closed"))?,
+                    )?);
                 }
                 PluginType::Backend => {}
             }

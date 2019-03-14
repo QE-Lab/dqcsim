@@ -1,13 +1,15 @@
 use crate::{
     ipc::{simulator::start, SimulatorChannel},
-    log::{debug, error, info, stdio::proxy_stdio, trace, warn, Level, LevelFilter, Record},
+    log::{
+        debug, error, fatal, info, router::route, stdio::proxy_stdio, trace, warn, Level,
+        LevelFilter, Record,
+    },
     plugin::Plugin,
     protocol::message::{InitializeRequest, Request, Response},
 };
 use crossbeam_channel::Sender;
-use failure::Error;
-use ipc_channel::router::ROUTER;
-use std::process::{Child, Command};
+use failure::{bail, Error};
+use std::process::{Child, Command, ExitStatus};
 
 #[derive(Debug)]
 pub struct PluginProcess {
@@ -22,7 +24,7 @@ impl PluginProcess {
         let (mut child, mut channel) = start(command, None)?;
 
         trace!("Forward plugin log channel");
-        ROUTER.route_ipc_receiver_to_crossbeam_sender(channel.log().unwrap(), sender.clone());
+        route(channel.log().unwrap(), sender.clone());
 
         // Log piped stdout/stderr
         proxy_stdio(
@@ -49,28 +51,37 @@ impl PluginProcess {
         &self,
         downstream: Option<String>,
         upstream: &mut impl Iterator<Item = &'a Plugin>,
-    ) {
+    ) -> Result<(), Error> {
         trace!("Init: [downstream: {:?}]", downstream);
         self.request(Request::Init(InitializeRequest {
             downstream,
             arb_cmds: None,
             prefix: "".to_string(),
             level: LevelFilter::Trace,
-        }))
-        .expect("Failed to send init.");
+        }))?;
+        trace!("Waiting for init reply.");
         match self.wait_for_reply() {
             Response::Init(response) => {
                 trace!("Got reponse: {:?}", response);
                 if let Some(upstream_plugin) = upstream.next() {
                     trace!("Connecting to upstream plugin");
-                    upstream_plugin.init(response.upstream, upstream);
+                    upstream_plugin.init(response.upstream, upstream)?;
                 }
+                Ok(())
             }
-            _ => panic!("Bad reply."),
+            _ => {
+                fatal!("Bad reply from plugin");
+                bail!("Bad reply from plugin")
+            }
         }
     }
-    pub fn abort(&self) {
-        self.request(Request::Abort).expect("failed to send abort");
+    pub fn abort(&mut self, graceful: bool) -> Result<Option<ExitStatus>, Error> {
+        if graceful {
+            self.request(Request::Abort)?;
+        } else {
+            self.child.kill()?;
+        }
+        Ok(self.child.try_wait()?)
     }
 
     fn wait_for_reply(&self) -> Response {
@@ -81,7 +92,9 @@ impl PluginProcess {
 impl Drop for PluginProcess {
     fn drop(&mut self) {
         trace!("Dropping PluginProcess");
+
         // Wait for child.
+        // TODO: try_wait?
         let status = self.child.wait().expect("Child process failed");
 
         trace!("Child process terminated");
