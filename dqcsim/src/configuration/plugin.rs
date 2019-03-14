@@ -4,9 +4,9 @@ use crate::{
 };
 use failure::{Error, Fail};
 use serde::{Deserialize, Serialize};
+use std::env::{current_exe, split_paths, var_os};
 use std::ffi::OsString;
 use std::path::PathBuf;
-use std::env::{current_exe, split_paths, var_os};
 
 /// Error structure used for reporting plugin specification errors.
 #[derive(Debug, Fail, PartialEq)]
@@ -182,10 +182,11 @@ impl PluginSpecification {
 
         Err(PluginSpecificationError::OsError(format!(
             "Could not find plugin executable '{}', needed for plugin \
-            specification '{}'.",
+             specification '{}'.",
             specification.executable.to_string_lossy(),
             specification.sugared.unwrap().to_string_lossy(),
-        )).into())
+        ))
+        .into())
     }
 }
 
