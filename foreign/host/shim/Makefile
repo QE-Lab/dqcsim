@@ -43,6 +43,13 @@ py-release: py/gen/dqcshost.c c/gen/dqcshost.h py/setup.py $(PY_SOURCES)
 py-install: py/gen/dqcshost.c c/gen/dqcshost.h py/setup.py $(PY_SOURCES)
 	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py build -b gen/release/build install --user
 
+.PHONY: py-clean
+py-clean:
+	rm -rf py/gen/debug
+	rm -rf py/gen/release
+	rm -rf py/dist
+	rm -rf py/dqcsim.egg-info
+
 .PHONY: build
 build: cargo-build py-build
 
@@ -53,7 +60,9 @@ release: cargo-release py-release
 install: cargo-release cargo-install py-install
 
 .PHONY: clean
-clean:
-	rm -rf gen
+clean: py-clean
+	rm -rf c/gen
+	rm -rf cpp/gen
+	rm -rf py/gen
 	cargo clean
 
