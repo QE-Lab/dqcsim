@@ -15,19 +15,19 @@ help:
 	@echo " - 'make commit' to run format, clippy, build, doc, and test; these should"
 	@echo "   work before you commit!"
 	@echo ""
-	@echo "If cargo is not installed (\$$CARGO_HOME not set), the user is told how"
-	@echo "to install rust, which requires relogging. Otherwise, everything should"
-	@echo "happen automagically without requiring root privileges. Fingers crossed!"
+	@echo "If cargo is not installed, the user is told how to install rust, which"
+	@echo "requires relogging. Otherwise, everything should happen automagically"
+	@echo "without requiring root privileges. Fingers crossed!"
 
 .PHONY: %
 %:
-ifdef CARGO_HOME
-ifeq (,$(wildcard $(CARGO_HOME)/bin/cargo-make))
-	cargo install cargo-make
-endif
-	cargo make $@
-else
-	@echo "\$$CARGO_HOME is not set. This probably means that you don't have rust"
+ifndef DQCSIM_HOME
+ ifeq (,$(shell grep DQCSIM_HOME ~/.profile))
+	@echo "\$$DQCSIM_HOME is not set. Trying to add the default value to ~/.profile now..."
+	@echo "export DQCSIM_HOME=\"\$$HOME/.dqcsim\"" >> $(HOME)/.profile
+  ifeq (,$(shell which cargo))
+	@echo ""
+	@echo "Also, cargo was not found. This probably means that you don't have rust"
 	@echo "installed. Run the following:"
 	@echo ""
 	@echo "    curl https://sh.rustup.rs -sSf | sh"
@@ -35,4 +35,31 @@ else
 	@echo "and follow the instructions. Specifically, after installing, either log"
 	@echo "out and back in to reload your profile, or run the source script specified"
 	@echo "by rustup. Then try again!"
+  else
+	@echo ""
+	@echo "Please log out and then log back in again so the changes take effect!"
+  endif
+ else
+	@echo "\$$DQCSIM_HOME is not set, but does seem to be defined in ~/.profile. You"
+	@echo "may need to log out and then log back in again if it was recently changed."
+	@echo "If this message persists, modify the file manually. The default location"
+	@echo "DQCsim is '\$$HOME/.dqcsim'."
+ endif
+else
+ ifeq (,$(shell which cargo))
+	@echo ""
+	@echo "cargo was not found. This probably means that you don't have rust"
+	@echo "installed. Run the following:"
+	@echo ""
+	@echo "    curl https://sh.rustup.rs -sSf | sh"
+	@echo ""
+	@echo "and follow the instructions. Specifically, after installing, either log"
+	@echo "out and back in to reload your profile, or run the source script specified"
+	@echo "by rustup. Then try again!"
+ else
+  ifeq (,$(wildcard $(CARGO_HOME)/bin/cargo-make))
+	cargo install cargo-make
+  endif
+	cargo make $@
+ endif
 endif

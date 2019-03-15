@@ -44,4 +44,3 @@ dependencies = [
 
 [env]
 CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = "true"
-DQCSIM_HOME = "${HOME}/.dqcsim"
