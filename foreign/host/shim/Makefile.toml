@@ -7,3 +7,8 @@ args = ["all"]
 clear = true
 command = "make"
 args = ["clean"]
+
+[tasks.install]
+dependencies = ["release"]
+command = "make"
+args = ["install"]

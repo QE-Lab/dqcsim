@@ -3,7 +3,7 @@
 #include "dqcshost.h"
 %}
 
-%include gen/c/dqcshost.h
+%include c/gen/dqcshost.h
 
 // Mark all functions that return a newly allocated object with newobject, so
 // swig deallocates them after making its own copy.

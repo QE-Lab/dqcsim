@@ -10,7 +10,7 @@ fn main() {
         .with_language(cbindgen::Language::C)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file("gen/c/dqcshost.h");
+        .write_to_file("c/gen/dqcshost.h");
 
     // Generate C++ minimal API headers.
     cbindgen::Builder::new()
@@ -18,5 +18,5 @@ fn main() {
         .with_language(cbindgen::Language::Cxx)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file("gen/cpp/dqcshost.hpp");
+        .write_to_file("cpp/gen/dqcshost.hpp");
 }

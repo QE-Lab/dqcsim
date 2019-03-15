@@ -7,4 +7,6 @@
 
 DQCsim: Delft Quantum Classical Simulator
 
+Build using `make` from the root directory to make everything work! It passes control to `cargo make` after making sure it exists, which then handles the build by calling `cargo` all over the place. `cargo make` also chains to some local `Makefile`s to perform installation and non-rust build steps.
+
 > Work in progress
