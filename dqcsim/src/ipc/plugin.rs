@@ -1,6 +1,6 @@
 use crate::{
+    configuration::PluginType,
     ipc::{DownstreamChannel, PluginChannel, SimulatorChannel, UpstreamChannel},
-    plugin::PluginType,
     protocol::message::{InitializeResponse, Request, Response},
 };
 

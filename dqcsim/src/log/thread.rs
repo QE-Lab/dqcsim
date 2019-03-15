@@ -26,7 +26,11 @@ fn level_to_color(level: Loglevel) -> term::color::Color {
 }
 
 impl LogThread {
-    pub fn spawn(level: LoglevelFilter) -> Result<LogThread, Error> {
+    /// Spawn a new [`LogThread`].
+    ///
+    /// Returns [`LogThread`] instance if succesful. Also spawns a [`LogProxy`] in the current thread with [`proxy_level`] as [`LogLevelFilter`].
+    /// The [`level`] argument is used as  [`LogLevelFilter`] in the [`LogThread`].
+    pub fn spawn(level: LoglevelFilter, proxy_level: LoglevelFilter) -> Result<LogThread, Error> {
         // Create the log channel.
         let (sender, receiver): (_, crossbeam_channel::Receiver<Record>) =
             crossbeam_channel::unbounded();
@@ -122,7 +126,7 @@ impl LogThread {
         });
 
         // Start a LogProxy for the current thread.
-        init(LogProxy::boxed(sender.clone()), level)?;
+        init(LogProxy::boxed(sender.clone()), proxy_level)?;
 
         Ok(LogThread {
             sender: Some(sender),

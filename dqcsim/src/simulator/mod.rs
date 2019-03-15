@@ -1,19 +1,11 @@
 use crate::{
+    configuration::{PluginConfiguration, Seed, SimulatorConfiguration},
     debug, fatal,
     log::{thread::LogThread, LoglevelFilter},
-    plugin::{Plugin, PluginConfig},
+    plugin::Plugin,
     trace,
 };
 use failure::{bail, format_err, Error};
-use structopt::StructOpt;
-
-#[derive(Debug, StructOpt)]
-pub struct SimulationOpt {
-    #[structopt(short = "l", long = "loglevel")]
-    pub loglevel: Option<LoglevelFilter>,
-    #[structopt(raw(required = "true", min_values = "2"))]
-    pub plugins: Vec<PluginConfig>,
-}
 
 /// Simulator instance.
 ///
@@ -23,33 +15,37 @@ pub struct SimulationOpt {
 /// [`LogThread`]: ../log/thread/struct.LogThread.html
 #[derive(Debug)]
 pub struct Simulator {
-    pub logger: LogThread,
+    pub log_thread: LogThread,
     pub simulation: Option<Simulation>,
 }
 
+impl Drop for Simulator {
+    fn drop(&mut self) {
+        trace!("Dropping Simulator");
+
+        // This forces the Simulation to be dropped before the Logger.
+        self.simulation = None;
+    }
+}
+
 impl Simulator {
-    /// Constructs a Simulator instance based on a SimulationOpt.
-    pub fn new(opt: SimulationOpt) -> Result<Simulator, Error> {
+    pub fn try_from(configuration: SimulatorConfiguration) -> Result<Simulator, Error> {
         // Spawn log thread here so it outlives the Simulation instance. This
         // allows debugging deconstruction as Drop goes outer to inner recursively.
-        let logger = LogThread::spawn(opt.loglevel.unwrap_or(LoglevelFilter::Info))?;
+        let log_thread = LogThread::spawn(configuration.stderr_level, configuration.dqcsim_level)?;
 
-        match Simulation::new(opt, &logger) {
-            Err(err) => {
-                fatal!("Simulation construction failed: {}", err);
-                bail!("Simulation construction failed: {}", err);
+        let mut simulation =
+            Simulation::new(configuration.plugins, configuration.seed, &log_thread)?;
+        match simulation.init() {
+            Err(_) => {
+                simulation.abort(false)?;
+                fatal!("Simulation init failed");
+                bail!("Simulation init failed")
             }
-            Ok(mut simulation) => match simulation.init() {
-                Err(_) => {
-                    simulation.abort(false)?;
-                    fatal!("Simulation init failed");
-                    bail!("Simulation init failed")
-                }
-                Ok(_) => Ok(Simulator {
-                    logger,
-                    simulation: Some(simulation),
-                }),
-            },
+            Ok(_) => Ok(Simulator {
+                log_thread,
+                simulation: Some(simulation),
+            }),
         }
     }
     fn simulation_mut(&mut self) -> &mut Simulation {
@@ -64,15 +60,6 @@ impl Simulator {
     }
 }
 
-impl Drop for Simulator {
-    fn drop(&mut self) {
-        trace!("Dropping Simulator");
-
-        // This forces the Simulation to be dropped before the Logger.
-        self.simulation = None;
-    }
-}
-
 /// Simulation instance.
 ///
 /// Contains a pipeline of [`Plugin`] instances.
@@ -80,6 +67,7 @@ impl Drop for Simulator {
 /// [`Plugin`]: ../plugin/struct.Plugin.html
 #[derive(Debug)]
 pub struct Simulation {
+    seed: Seed,
     pipeline: Vec<Plugin>,
 }
 
@@ -88,18 +76,21 @@ impl Simulation {
     /// Requires a [`LogThread`] to be available.
     ///
     /// [`LogThread`]: ../log/thread/struct.LogThread.html
-    pub fn new(opt: SimulationOpt, logger: &LogThread) -> Result<Simulation, Error> {
+    pub fn new(
+        plugins: Vec<PluginConfiguration>,
+        seed: Seed,
+        logger: &LogThread,
+    ) -> Result<Simulation, Error> {
         // let signal = notify(&[
         //     signal_hook::SIGTERM,
         //     signal_hook::SIGINT,
         //     signal_hook::SIGQUIT,
         // ])?;
 
-        let (plugins, errors): (Vec<_>, Vec<_>) = opt
-            .plugins
+        let (plugins, errors): (Vec<_>, Vec<_>) = plugins
             .into_iter()
             .rev()
-            .map(|config: PluginConfig| Plugin::new(config, &logger))
+            .map(|configuration: PluginConfiguration| Plugin::new(configuration, &logger))
             .partition(Result::is_ok);
 
         let mut pipeline: Vec<Plugin> = plugins.into_iter().map(Result::unwrap).collect();
@@ -114,7 +105,7 @@ impl Simulation {
             bail!("Failed to start simulation.")
         }
 
-        Ok(Simulation { pipeline })
+        Ok(Simulation { seed, pipeline })
     }
 
     pub fn init(&self) -> Result<(), Error> {

@@ -18,7 +18,7 @@
 //!     log::{init, LoglevelFilter, proxy::LogProxy, thread::LogThread}
 //! };
 //!
-//! let log_thread = LogThread::spawn(LoglevelFilter::Trace).unwrap();
+//! let log_thread = LogThread::spawn(LoglevelFilter::Trace, LoglevelFilter::Info).unwrap();
 //! let log_endpoint = log_thread.get_sender().unwrap();
 //!
 //! std::thread::spawn(move || {

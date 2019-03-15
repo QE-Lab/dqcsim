@@ -1,4 +1,4 @@
-use dqcsim::{debug, info, ipc::connection::Connection, plugin::PluginType};
+use dqcsim::{configuration::PluginType, debug, info, ipc::connection::Connection};
 use failure::Error;
 use ipc_channel::ipc::IpcSelectionResult;
 use std::env;
@@ -9,15 +9,16 @@ fn main() -> Result<(), Error> {
     let name: &str = args[1].as_ref();
     let server = args[2].as_ref();
 
-    let plugin_type = if name.starts_with("frontend") {
+    let plugin_type = if name.starts_with("front") {
         PluginType::Frontend
-    } else if name.starts_with("backend") {
+    } else if name.starts_with("back") {
         PluginType::Backend
     } else {
         PluginType::Operator
     };
 
     let mut connection = Connection::init(server, plugin_type)?;
+
     let map = connection.map.clone();
 
     connection.recv(|message| match message {

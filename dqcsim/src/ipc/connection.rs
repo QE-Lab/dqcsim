@@ -1,10 +1,10 @@
 use crate::{
+    configuration::PluginType,
     ipc::{
         plugin::{connect_simulator, initialize},
         PluginChannel,
     },
     log::{init, proxy::LogProxy, LoglevelFilter},
-    plugin::PluginType,
 };
 use failure::Error;
 use ipc_channel::ipc::{IpcReceiverSet, IpcSelectionResult};
