@@ -3,9 +3,9 @@ import os
 
 try:
     os.environ['DQCSIM_RUST_RELEASE']
-    libdir = '../../../../target/release'
+    libdir = '../../target/release'
 except KeyError:
-    libdir = '../../../../target/debug'
+    libdir = '../../target/debug'
 
 setup(
     name = 'dqcsim',
@@ -18,12 +18,12 @@ setup(
     ],
     package_dir = {'dqcsim': 'src'},
     ext_modules = [Extension(
-        'dqcsim.host._dqcshost',
-        ['gen/dqcshost.c'],
+        'dqcsim._dqcsim',
+        ['gen/dqcsim.c'],
         library_dirs = [libdir],
         runtime_library_dirs = [os.environ['DQCSIM_HOME'] + '/lib'],
-        libraries = ['dqcshost'],
+        libraries = ['dqcsim'],
         include_dirs = ['../c/gen']
     )],
-    data_files = [libdir + '/libdqcshost.so'] # FIXME: file is copied to egg, but rpath points to DQCSIM_HOME.
+    data_files = [libdir + '/libdqcsim.so'] # FIXME: file is copied to egg, but rpath points to DQCSIM_HOME.
 )

@@ -1,9 +1,9 @@
-%module dqcshost
+%module dqcsim
 %{
-#include "dqcshost.h"
+#include "dqcsim.h"
 %}
 
-%include c/gen/dqcshost.h
+%include c/gen/dqcsim.h
 
 // Mark all functions that return a newly allocated object with newobject, so
 // swig deallocates them after making its own copy.

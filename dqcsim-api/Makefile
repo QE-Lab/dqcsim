@@ -14,33 +14,35 @@ all: build
 .PHONY: cargo-build
 cargo-build:
 	cargo build
+	cp -fp ../target/debug/libdqcsim_api.so ../target/debug/libdqcsim.so
 
 .PHONY: cargo-release
 cargo-release:
 	cargo build --release
+	cp -fp ../target/release/libdqcsim_api.so ../target/release/libdqcsim.so
 
 .PHONY: cargo-release
 cargo-install:
 	mkdir -p $(DQCSIM_HOME)/lib
-	cp -t $(DQCSIM_HOME)/lib ../../../target/release/libdqcshost.so
+	cp ../target/release/libdqcsim.so $(DQCSIM_HOME)/lib/libdqcsim.so
 	mkdir -p $(DQCSIM_HOME)/bin
-	ln -fs ../lib/libdqcshost.so $(DQCSIM_HOME)/bin/libdqcshost.so
+	ln -fs ../lib/libdqcsim.so $(DQCSIM_HOME)/bin/libdqcsim.so
 
-py/gen/dqcshost.c: dqcshost.i c/gen/dqcshost.h
+py/gen/dqcsim.c: dqcsim.i c/gen/dqcsim.h
 	mkdir -p py/gen
-	swig -python -py3 -outdir py/gen -o py/gen/dqcshost.c $<
-	rm -f py/gen/dqcshost.py
+	swig -python -py3 -outdir py/gen -o py/gen/dqcsim.c $<
+	rm -f py/gen/dqcsim.py
 
 .PHONY: py-build
-py-build: py/gen/dqcshost.c c/gen/dqcshost.h py/setup.py $(PY_SOURCES)
+py-build: py/gen/dqcsim.c c/gen/dqcsim.h py/setup.py $(PY_SOURCES)
 	cd py && python3 setup.py build -b gen/debug/build
 
 .PHONY: py-release
-py-release: py/gen/dqcshost.c c/gen/dqcshost.h py/setup.py $(PY_SOURCES)
+py-release: py/gen/dqcsim.c c/gen/dqcsim.h py/setup.py $(PY_SOURCES)
 	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py build -b gen/release/build
 
 .PHONY: py-install
-py-install: py/gen/dqcshost.c c/gen/dqcshost.h py/setup.py $(PY_SOURCES)
+py-install: py/gen/dqcsim.c c/gen/dqcsim.h py/setup.py $(PY_SOURCES)
 	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py build -b gen/release/build install --user
 
 .PHONY: py-clean

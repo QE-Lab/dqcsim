@@ -138,18 +138,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dqcshost"
-version = "0.1.0"
-dependencies = [
- "cbindgen 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "dqcsim 0.1.0",
- "failure 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.2.50 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.89 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 1.0.39 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "dqcsim"
 version = "0.1.0"
 dependencies = [
@@ -169,6 +157,18 @@ dependencies = [
  "structopt 0.2.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "term 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "whoami 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "dqcsim-api"
+version = "0.1.0"
+dependencies = [
+ "cbindgen 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "dqcsim 0.1.0",
+ "failure 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.2.50 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.89 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.39 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

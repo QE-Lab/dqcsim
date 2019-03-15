@@ -4,7 +4,7 @@ members = [
   "dqcsim",
   "dqcsim-cli",
   "dqcsim-plugin",
-  "foreign/host/shim",
+  "dqcsim-api",
   "enum-variants",
   "enum-variants-derive",
 ]

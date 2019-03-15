@@ -1,9 +1,5 @@
-//! The `dqcshost` (DQCsim host) library crate provides a C interface to the
-//! DQCsim simulator.
-//!
-//! More specifically, this API represents the lowlevel host API for DQCsim.
-//! It allows simulations to be configured and executed, and during execution
-//! allows the host to interact with the simulation.
+//! The `dqcsim-api` library crate provides a C interface to the DQCsim
+//! simulator.
 //!
 //! The API is based upon a handle system for referring to simulator data. That
 //! means that the complex data structures contained within the simulator never
