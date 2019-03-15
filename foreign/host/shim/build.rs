@@ -4,17 +4,19 @@ use std::env;
 fn main() {
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
+    // Generate C headers.
     cbindgen::Builder::new()
         .with_crate(crate_dir.clone())
         .with_language(cbindgen::Language::C)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file("dqcshost.h");
+        .write_to_file("gen/c/dqcshost.h");
 
+    // Generate C++ minimal API headers.
     cbindgen::Builder::new()
         .with_crate(crate_dir)
         .with_language(cbindgen::Language::Cxx)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file("dqcshost.hpp");
+        .write_to_file("gen/cpp/dqcshost.hpp");
 }

@@ -1,0 +1,9 @@
+[tasks.build]
+clear = true
+command = "make"
+args = ["all"]
+
+[tasks.clean]
+clear = true
+command = "make"
+args = ["clean"]
