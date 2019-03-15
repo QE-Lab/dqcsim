@@ -1,11 +1,8 @@
 pub mod process;
 
 use crate::{
-    configuration::{PluginConfiguration, PluginType},
-    debug,
-    log::{thread::LogThread, LoglevelFilter},
-    plugin::process::PluginProcess,
-    trace,
+    configuration::PluginConfiguration, debug, log::thread::LogThread,
+    plugin::process::PluginProcess, trace,
 };
 use failure::{bail, Error};
 use std::{path::Path, process::Command};

@@ -1,7 +1,7 @@
 use crate::{
     configuration::{PluginConfiguration, Seed, SimulatorConfiguration},
     debug, fatal,
-    log::{thread::LogThread, LoglevelFilter},
+    log::thread::LogThread,
     plugin::Plugin,
     trace,
 };
