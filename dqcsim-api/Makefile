@@ -24,9 +24,10 @@ cargo-release:
 .PHONY: cargo-release
 cargo-install:
 	mkdir -p $(DQCSIM_HOME)/lib
-	cp ../target/release/libdqcsim.so $(DQCSIM_HOME)/lib/libdqcsim.so
-	mkdir -p $(DQCSIM_HOME)/bin
-	ln -fs ../lib/libdqcsim.so $(DQCSIM_HOME)/bin/libdqcsim.so
+	cp -fp ../target/release/libdqcsim.so $(DQCSIM_HOME)/lib/libdqcsim.so
+	mkdir -p $(DQCSIM_HOME)/include
+	cp -fp c/gen/dqcsim.h $(DQCSIM_HOME)/include/dqcsim.h
+	cp -fp cpp/gen/dqcsim.hpp $(DQCSIM_HOME)/include/dqcsim.hpp
 
 py/gen/dqcsim.c: dqcsim.i c/gen/dqcsim.h
 	mkdir -p py/gen
