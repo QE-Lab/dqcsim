@@ -1,42 +1,20 @@
 pub mod process;
 
 use crate::{
+    configuration::{PluginConfiguration, PluginType},
     debug,
     log::{thread::LogThread, LoglevelFilter},
     plugin::process::PluginProcess,
     trace,
 };
 use failure::{bail, Error};
-use std::{path::Path, process::Command, str::FromStr, string::ParseError};
-
-#[derive(Debug, Copy, Clone)]
-pub enum PluginType {
-    Backend,
-    Frontend,
-    Operator,
-}
-
-#[derive(Debug)]
-pub struct PluginConfig {
-    pub name: String,
-    pub loglevel: Option<LoglevelFilter>,
-}
-
-impl FromStr for PluginConfig {
-    type Err = ParseError;
-    fn from_str(s: &str) -> Result<PluginConfig, ParseError> {
-        Ok(PluginConfig {
-            name: s.to_owned(),
-            loglevel: Some(LoglevelFilter::Trace),
-        })
-    }
-}
+use std::{path::Path, process::Command};
 
 /// The Plugin structure used in a Simulator.
 #[derive(Debug)]
 pub struct Plugin {
     /// The Plugin configuration.
-    config: PluginConfig,
+    configuration: PluginConfiguration,
     /// The Plugin process.
     process: PluginProcess,
     /// Command
@@ -47,8 +25,8 @@ impl Plugin {
     /// Construct a new Plugin instance.
     ///
     /// Create a Plugin instance. Starts a PluginProcess.
-    pub fn new(config: PluginConfig, logger: &LogThread) -> Result<Plugin, Error> {
-        debug!("Constructing Plugin: {}", &config.name);
+    pub fn new(configuration: PluginConfiguration, logger: &LogThread) -> Result<Plugin, Error> {
+        debug!("Constructing Plugin: {}", &configuration.name);
 
         let target = Path::new("target/debug/dqcsim-plugin");
 
@@ -58,13 +36,13 @@ impl Plugin {
 
         let mut command = Command::new(target);
         let process = PluginProcess::new(
-            command.arg(&config.name),
+            command.arg(&configuration.name),
             logger.get_sender().expect("Log thread unavailable"),
         )?;
 
         Ok(Plugin {
             command,
-            config,
+            configuration,
             process,
         })
     }
@@ -89,6 +67,6 @@ impl Plugin {
 
 impl Drop for Plugin {
     fn drop(&mut self) {
-        trace!("Dropping Plugin: {}", self.config.name);
+        trace!("Dropping Plugin: {}", self.configuration.name);
     }
 }

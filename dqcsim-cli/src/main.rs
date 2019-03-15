@@ -1,3 +1,4 @@
+use dqcsim::simulator::Simulator;
 use failure::Error;
 
 mod arg_parse;
@@ -8,7 +9,7 @@ fn main() -> Result<(), Error> {
         println!("{}", e);
         std::process::exit(1);
     });
-    dbg!(cfg);
-    //Simulator::new(SimulationOpt::from_args())?.abort()?;
+    dbg!(&cfg);
+    Simulator::try_from(cfg.dqcsim)?.abort()?;
     Ok(())
 }
