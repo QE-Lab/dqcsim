@@ -1,3 +1,4 @@
+use dqcsim::configuration::PluginType;
 use libc::*;
 
 /// Object type for a handle.
@@ -55,40 +56,80 @@ pub enum dqcs_handle_type_t {
     ///  - The handle value is invalid (zero or negative).
     ///  - The handle has not been used yet.
     ///  - The object associated with the handle was deleted.
-    DQCS_INVALID = 0,
+    DQCS_HTYPE_INVALID = 0,
 
     /// Indicates that the given handle belongs to an `ArbData` object.
     ///
     /// This means that the handle supports the `handle` and `arb` interfaces.
-    DQCS_ARB_DATA = 1,
+    DQCS_HTYPE_ARB_DATA = 1,
 
     /// Indicates that the given handle belongs to an `ArbCmd` object.
     ///
     /// This means that the handle supports the `handle`, `arb`, and `cmd`
     /// interfaces.
-    DQCS_ARB_CMD = 2,
+    DQCS_HTYPE_ARB_CMD = 2,
 
     /// Indicates that the given handle belongs to a `Gate` object.
     ///
     /// This means that the handle supports the `handle`, `arb`, and `gate`
     /// interfaces.
-    DQCS_GATE = 3,
+    DQCS_HTYPE_GATE = 3,
 
     /// Indicates that the given handle belongs to a frontend plugin
     /// configuration object.
-    DQCS_FRONT_CONFIG = 4,
+    DQCS_HTYPE_FRONT_CONFIG = 4,
 
     /// Indicates that the given handle belongs to an operator plugin
     /// configuration object.
-    DQCS_OPER_CONFIG = 5,
+    DQCS_HTYPE_OPER_CONFIG = 5,
 
     /// Indicates that the given handle belongs to a backend plugin
     /// configuration object.
-    DQCS_BACK_CONFIG = 6,
+    DQCS_HTYPE_BACK_CONFIG = 6,
 
     /// Indicates that the given handle belongs to a simulator configuration
     /// object.
-    DQCS_SIM_CONFIG = 7,
+    DQCS_HTYPE_SIM_CONFIG = 7,
+}
+
+/// Enumeration of the three types of plugins.
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+#[allow(non_camel_case_types)]
+pub enum dqcs_plugin_type_t {
+    /// Invalid plugin type. Used to indicate failure of an API that returns
+    /// a plugin type.
+    DQCS_PTYPE_INVALID = 0,
+
+    /// Frontend plugin.
+    DQCS_PTYPE_FRONT = 1,
+
+    /// Operator plugin.
+    DQCS_PTYPE_OPER = 2,
+
+    /// Backend plugin.
+    DQCS_PTYPE_BACK = 3,
+}
+
+impl From<PluginType> for dqcs_plugin_type_t {
+    fn from(x: PluginType) -> Self {
+        match x {
+            PluginType::Frontend => dqcs_plugin_type_t::DQCS_PTYPE_FRONT,
+            PluginType::Operator => dqcs_plugin_type_t::DQCS_PTYPE_OPER,
+            PluginType::Backend => dqcs_plugin_type_t::DQCS_PTYPE_BACK,
+        }
+    }
+}
+
+impl Into<PluginType> for dqcs_plugin_type_t {
+    fn into(self) -> PluginType {
+        match self {
+            dqcs_plugin_type_t::DQCS_PTYPE_FRONT => PluginType::Frontend,
+            dqcs_plugin_type_t::DQCS_PTYPE_OPER => PluginType::Operator,
+            dqcs_plugin_type_t::DQCS_PTYPE_BACK => PluginType::Backend,
+            _ => PluginType::Frontend,
+        }
+    }
 }
 
 /// Enumeration of the different qubit sets associated with a gate.

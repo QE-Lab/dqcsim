@@ -51,7 +51,7 @@ impl PluginSpecification {
     pub fn new<T>(
         executable: impl Into<PathBuf>,
         script: Option<T>,
-        typ: PluginType,
+        typ: impl Into<PluginType>,
     ) -> PluginSpecification
     where
         T: Into<PathBuf>,
@@ -60,7 +60,7 @@ impl PluginSpecification {
             sugared: None,
             executable: executable.into(),
             script: script.map(|x| x.into()),
-            typ,
+            typ: typ.into(),
         }
     }
 
@@ -269,9 +269,9 @@ impl PluginConfiguration {
     /// Creates a new plugin configuration.
     ///
     /// The default values are inserted for the configuration options.
-    pub fn new(name: String, specification: PluginSpecification) -> PluginConfiguration {
+    pub fn new(name: impl Into<String>, specification: PluginSpecification) -> PluginConfiguration {
         PluginConfiguration {
-            name,
+            name: name.into(),
             specification,
             functional: PluginFunctionalConfiguration::default(),
             nonfunctional: PluginNonfunctionalConfiguration::default(),

@@ -90,6 +90,10 @@ pub use arb::*;
 mod cmd;
 pub use cmd::*;
 
+// dqcs_pcfg_* functions, for constructing `PluginConfiguration` objects.
+mod pcfg;
+pub use pcfg::*;
+
 /// Enumeration of all objects that can be associated with an handle, including
 /// the object data.
 #[derive(Debug)]
@@ -245,9 +249,7 @@ fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t, Er
         index
     };
     let mut ok = true;
-    if converted_index < 0 {
-        ok = false;
-    } else if converted_index as size_t > len {
+    if converted_index < 0 || converted_index as size_t > len {
         ok = false;
     } else if converted_index as size_t == len {
         ok = insert;

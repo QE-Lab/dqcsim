@@ -218,7 +218,7 @@ pub extern "C" fn dqcs_arb_set_str(
         |arb| {
             let mut s: Vec<u8> = receive_str(s)?.bytes().collect();
             let index = receive_index(arb.args.len(), index, false)?;
-            let arg = arb.args.get_mut(index).unwrap();
+            let arg = &mut arb.args[index];
             arg.clear();
             arg.append(&mut s);
             Ok(dqcs_return_t::DQCS_SUCCESS)
@@ -241,7 +241,7 @@ pub extern "C" fn dqcs_arb_set_raw(
         |arb| {
             let mut s: Vec<u8> = receive_raw(obj, obj_size)?.to_owned();
             let index = receive_index(arb.args.len(), index, false)?;
-            let arg = arb.args.get_mut(index).unwrap();
+            let arg = &mut arb.args[index];
             arg.clear();
             arg.append(&mut s);
             Ok(dqcs_return_t::DQCS_SUCCESS)
@@ -258,10 +258,7 @@ pub extern "C" fn dqcs_arb_set_raw(
 pub extern "C" fn dqcs_arb_get_str(handle: dqcs_handle_t, index: ssize_t) -> *const c_char {
     with_arb(handle, null, |arb| {
         return_string(String::from_utf8(
-            arb.args
-                .get(receive_index(arb.args.len(), index, false)?)
-                .unwrap()
-                .clone(),
+            arb.args[receive_index(arb.args.len(), index, false)?].clone(),
         )?)
     })
 }
@@ -289,9 +286,7 @@ pub extern "C" fn dqcs_arb_get_raw(
         || -1,
         |arb| {
             return_raw(
-                &arb.args
-                    .get(receive_index(arb.args.len(), index, false)?)
-                    .unwrap(),
+                &arb.args[receive_index(arb.args.len(), index, false)?],
                 obj,
                 obj_size,
             )

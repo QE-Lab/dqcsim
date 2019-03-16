@@ -6,7 +6,7 @@ args = ["fmt"]
 [tasks.clippy]
 install_crate = "clippy"
 command = "cargo"
-args = ["clippy"]
+args = ["clippy", "--", "-Dwarnings"]
 
 [tasks.doc]
 command = "cargo"

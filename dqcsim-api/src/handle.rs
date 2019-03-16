@@ -7,15 +7,15 @@ pub extern "C" fn dqcs_handle_type(h: dqcs_handle_t) -> dqcs_handle_type_t {
     STATE.with(|state| {
         let state = state.borrow();
         match &state.objects.get(&h) {
-            None => dqcs_handle_type_t::DQCS_INVALID,
-            Some(Object::ArbData(_)) => dqcs_handle_type_t::DQCS_ARB_DATA,
-            Some(Object::ArbCmd(_)) => dqcs_handle_type_t::DQCS_ARB_CMD,
+            None => dqcs_handle_type_t::DQCS_HTYPE_INVALID,
+            Some(Object::ArbData(_)) => dqcs_handle_type_t::DQCS_HTYPE_ARB_DATA,
+            Some(Object::ArbCmd(_)) => dqcs_handle_type_t::DQCS_HTYPE_ARB_CMD,
             Some(Object::PluginConfiguration(x)) => match x.specification.typ {
-                PluginType::Frontend => dqcs_handle_type_t::DQCS_FRONT_CONFIG,
-                PluginType::Operator => dqcs_handle_type_t::DQCS_OPER_CONFIG,
-                PluginType::Backend => dqcs_handle_type_t::DQCS_BACK_CONFIG,
+                PluginType::Frontend => dqcs_handle_type_t::DQCS_HTYPE_FRONT_CONFIG,
+                PluginType::Operator => dqcs_handle_type_t::DQCS_HTYPE_OPER_CONFIG,
+                PluginType::Backend => dqcs_handle_type_t::DQCS_HTYPE_BACK_CONFIG,
             },
-            Some(Object::SimulatorConfiguration(_)) => dqcs_handle_type_t::DQCS_SIM_CONFIG,
+            Some(Object::SimulatorConfiguration(_)) => dqcs_handle_type_t::DQCS_HTYPE_SIM_CONFIG,
         }
     })
 }
