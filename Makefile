@@ -57,7 +57,7 @@ else
 	@echo "out and back in to reload your profile, or run the source script specified"
 	@echo "by rustup. Then try again!"
  else
-  ifeq (,$(wildcard $(CARGO_HOME)/bin/cargo-make))
+  ifeq (,$(shell which cargo-make))
 	cargo install cargo-make
   endif
 	cargo make $@
