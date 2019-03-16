@@ -29,27 +29,32 @@ cargo-install:
 	cp -fp c/gen/dqcsim.h $(DQCSIM_HOME)/include/dqcsim.h
 	cp -fp cpp/gen/dqcsim.hpp $(DQCSIM_HOME)/include/dqcsim.hpp
 
-py/gen/dqcsim.c: dqcsim.i c/gen/dqcsim.h
+py/gen/dqcsim.i: py/add_swig_directives.py py/gen/dqcsim.h
+	python3 $^ $@
+
+py/gen/dqcsim.c: py/gen/dqcsim.i py/gen/dqcsim.h
 	mkdir -p py/gen
-	swig -python -py3 -outdir py/gen -o py/gen/dqcsim.c $<
+	swig -v -python -py3 -outdir py/gen -o py/gen/dqcsim.c $<
 	rm -f py/gen/dqcsim.py
 
 .PHONY: py-build
-py-build: py/gen/dqcsim.c c/gen/dqcsim.h py/setup.py $(PY_SOURCES)
+py-build: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
 	cd py && python3 setup.py build -b gen/debug/build
 
 .PHONY: py-release
-py-release: py/gen/dqcsim.c c/gen/dqcsim.h py/setup.py $(PY_SOURCES)
+py-release: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
 	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py build -b gen/release/build
 
 .PHONY: py-install
-py-install: py/gen/dqcsim.c c/gen/dqcsim.h py/setup.py $(PY_SOURCES)
+py-install: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
 	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py build -b gen/release/build install --user
 
 .PHONY: py-clean
 py-clean:
 	rm -rf py/gen/debug
 	rm -rf py/gen/release
+	rm -rf py/gen/*.c
+	rm -rf py/gen/*.i
 	rm -rf py/dist
 	rm -rf py/dqcsim.egg-info
 

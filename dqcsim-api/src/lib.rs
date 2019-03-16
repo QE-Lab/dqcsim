@@ -162,7 +162,7 @@ enum APIError {
     #[fail(display = "Handle {} does not implement the requisite interface", 0)]
     UnsupportedHandle(dqcs_handle_t),
     #[fail(display = "Index {} out of range", 0)]
-    IndexError(usize),
+    IndexError(ssize_t),
 }
 
 /// Convenience function for operating on the thread-local state object.
@@ -199,6 +199,63 @@ fn return_string(s: impl AsRef<str>) -> Result<*const c_char, Error> {
         Err(APIError::Generic("Failed to allocate return value".to_string()).into())
     } else {
         Ok(s)
+    }
+}
+
+/// Convenience function for converting a C const buffer to a Rust `&[u8]`.
+fn receive_raw<'a>(obj: *const c_void, obj_size: usize) -> Result<&'a [u8], Error> {
+    if obj_size == 0 {
+        Ok(&[])
+    } else if obj.is_null() {
+        Err(APIError::Generic("Received NULL data".to_string()).into())
+    } else {
+        Ok(unsafe { std::slice::from_raw_parts(obj as *const u8, obj_size) })
+    }
+}
+
+/// Convenience function for converting a C const buffer to a Rust `&[u8]`.
+fn return_raw(obj_in: &[u8], obj_out: *mut c_void, obj_size: usize) -> Result<ssize_t, Error> {
+    if obj_size > 0 && obj_out.is_null() {
+        Err(APIError::Generic("Received NULL buffer".to_string()).into())
+    } else {
+        let actual_size = obj_in.len();
+        let copy_size = std::cmp::min(actual_size, obj_size);
+        if copy_size > 0 {
+            unsafe {
+                memcpy(obj_out, obj_in.as_ptr() as *const c_void, copy_size);
+            }
+        }
+        Ok(actual_size as ssize_t)
+    }
+}
+
+/// Converts an index Pythonically and checks bounds.
+///
+/// By "Pythonically" we mean that the list length is added to the index if it
+/// is negative, allowing -1 to be used for the end of the list, -2 for the
+/// penultimate item, and so on.
+///
+/// `len` specifies the size of the list, `index` is the index to convert, and
+/// `insert` selects whether index == len is okay (it is for the `insert()`
+/// function, but isn't for anything else).
+fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t, Error> {
+    let converted_index = if index < 0 {
+        index + (len as ssize_t)
+    } else {
+        index
+    };
+    let mut ok = true;
+    if converted_index < 0 {
+        ok = false;
+    } else if converted_index as size_t > len {
+        ok = false;
+    } else if converted_index as size_t == len {
+        ok = insert;
+    }
+    if ok {
+        Ok(converted_index as size_t)
+    } else {
+        Err(APIError::IndexError(index).into())
     }
 }
 

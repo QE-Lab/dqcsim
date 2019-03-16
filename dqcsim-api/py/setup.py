@@ -22,8 +22,7 @@ setup(
         ['gen/dqcsim.c'],
         library_dirs = [libdir],
         runtime_library_dirs = [os.environ['DQCSIM_HOME'] + '/lib'],
-        libraries = ['dqcsim'],
-        include_dirs = ['../c/gen']
+        libraries = ['dqcsim']
     )],
     data_files = [libdir + '/libdqcsim.so'] # FIXME: file is copied to egg, but rpath points to DQCSIM_HOME.
 )

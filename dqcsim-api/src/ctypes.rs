@@ -9,8 +9,10 @@ use libc::*;
 /// Handles are always positive integers, counting upwards from 1 upon
 /// allocation, and they are not reused even after being deleted. Thus, every
 /// subsequent object allocation returns a handle one greater than the
-/// previous. This is guaranteed behavior that code can rely upon. The value
-/// zero is reserved for invalid references or error propagation.
+/// previous. Note however that DQCsim may allocate objects as well without
+/// the user specifically requesting this, so external code should generally
+/// *not* rely on this behavior unless otherwise noted. The value zero is
+/// reserved for invalid references or error propagation.
 ///
 /// Note that the scope for handles is thread-local. That is, data referenced
 /// by a handle cannot be shared or moved between threads.
@@ -28,8 +30,9 @@ pub type dqcs_handle_t = c_ulonglong;
 /// Qubit references are always positive integers, counting upwards from 1 upon
 /// allocation, and they are not reused even after the qubit is deallocated.
 /// Thus, every subsequent allocation returns a qubit reference one greater
-/// than the previous. This is guaranteed behavior that code can rely upon. The
-/// value zero is reserved for invalid references or error propagation.
+/// than the previous. This is guaranteed behavior that external code can rely
+/// upon. The value zero is reserved for invalid references or error
+/// propagation.
 #[allow(non_camel_case_types)]
 pub type dqcs_qubit_t = c_ulonglong;
 

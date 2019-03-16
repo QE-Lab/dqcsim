@@ -1,6 +1,6 @@
 use super::*;
 use failure::Error;
-use std::ptr::null;
+use std::ptr::{null, null_mut};
 
 /// Convenience function for writing functions that operate on `ArbData`s.
 fn with_arb<T>(
@@ -71,6 +71,23 @@ pub extern "C" fn dqcs_arb_push_str(handle: dqcs_handle_t, s: *const c_char) -> 
     )
 }
 
+/// Pushes an unstructured raw argument to the back of the list.
+#[no_mangle]
+pub extern "C" fn dqcs_arb_push_raw(
+    handle: dqcs_handle_t,
+    obj: *const c_void,
+    obj_size: size_t,
+) -> dqcs_return_t {
+    with_arb(
+        handle,
+        || dqcs_return_t::DQCS_FAILURE,
+        |arb| {
+            arb.args.push(receive_raw(obj, obj_size)?.to_owned());
+            Ok(dqcs_return_t::DQCS_SUCCESS)
+        },
+    )
+}
+
 /// Pops an unstructured string argument from the back of the list.
 ///
 /// On success, this **returns a newly allocated string containing the JSON
@@ -85,41 +102,104 @@ pub extern "C" fn dqcs_arb_pop_str(handle: dqcs_handle_t) -> *const c_char {
     })
 }
 
+/// Pops an unstructured raw argument from the back of the list.
+///
+/// If the actual size of the object differs from the specified object size,
+/// this function will copy the minimum of the actual and specified sizes
+/// number of bytes, and return what the actual size was.
+///
+/// If the specified object size is zero, `obj` is allowed to be `NULL`. You
+/// can use this if you don't need the contents of the argument and just want
+/// to delete it.
+///
+/// Since this function removes the returned element, data will be lost if the
+/// specified size is smaller than the actual size. To avoid this, first use
+/// `dqcs_arb_get_size(handle, -1)` to query the size.
+///
+/// This function returns -1 on failure.
+#[no_mangle]
+pub extern "C" fn dqcs_arb_pop_raw(
+    handle: dqcs_handle_t,
+    obj: *mut c_void,
+    obj_size: size_t,
+) -> ssize_t {
+    with_arb(
+        handle,
+        || -1,
+        |arb| {
+            return_raw(
+                &arb.args.pop().ok_or_else(|| APIError::IndexError(0))?,
+                obj,
+                obj_size,
+            )
+        },
+    )
+}
+
+/// Pops an unstructured argument from the back of the list without returning
+/// it.
+#[no_mangle]
+pub extern "C" fn dqcs_arb_pop(handle: dqcs_handle_t) -> dqcs_return_t {
+    if dqcs_arb_pop_raw(handle, null_mut(), 0) < 0 {
+        dqcs_return_t::DQCS_FAILURE
+    } else {
+        dqcs_return_t::DQCS_SUCCESS
+    }
+}
+
 /// Inserts an unstructured string argument into the list at the specified
 /// index.
 #[no_mangle]
 pub extern "C" fn dqcs_arb_insert_str(
     handle: dqcs_handle_t,
-    index: size_t,
+    index: ssize_t,
     s: *const c_char,
 ) -> dqcs_return_t {
     with_arb(
         handle,
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
-            if index > arb.args.len() {
-                Err(APIError::IndexError(index).into())
-            } else {
-                arb.args.insert(index, receive_str(s)?.bytes().collect());
-                Ok(dqcs_return_t::DQCS_SUCCESS)
-            }
+            arb.args.insert(
+                receive_index(arb.args.len(), index, true)?,
+                receive_str(s)?.bytes().collect(),
+            );
+            Ok(dqcs_return_t::DQCS_SUCCESS)
+        },
+    )
+}
+
+/// Inserts an unstructured raw argument into the list at the specified
+/// index.
+#[no_mangle]
+pub extern "C" fn dqcs_arb_insert_raw(
+    handle: dqcs_handle_t,
+    index: ssize_t,
+    obj: *const c_void,
+    obj_size: size_t,
+) -> dqcs_return_t {
+    with_arb(
+        handle,
+        || dqcs_return_t::DQCS_FAILURE,
+        |arb| {
+            arb.args.insert(
+                receive_index(arb.args.len(), index, true)?,
+                receive_raw(obj, obj_size)?.to_owned(),
+            );
+            Ok(dqcs_return_t::DQCS_SUCCESS)
         },
     )
 }
 
 /// Removes the specified unstructured string argument from the list.
 #[no_mangle]
-pub extern "C" fn dqcs_arb_remove(handle: dqcs_handle_t, index: size_t) -> dqcs_return_t {
+pub extern "C" fn dqcs_arb_remove(handle: dqcs_handle_t, index: ssize_t) -> dqcs_return_t {
     with_arb(
         handle,
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
-            if index >= arb.args.len() {
-                Err(APIError::IndexError(index).into())
-            } else {
-                arb.args.remove(index);
-                Ok(dqcs_return_t::DQCS_SUCCESS)
-            }
+            arb.args
+                .remove(receive_index(arb.args.len(), index, false)?);
+            Ok(dqcs_return_t::DQCS_SUCCESS)
         },
     )
 }
@@ -129,7 +209,7 @@ pub extern "C" fn dqcs_arb_remove(handle: dqcs_handle_t, index: size_t) -> dqcs_
 #[no_mangle]
 pub extern "C" fn dqcs_arb_set_str(
     handle: dqcs_handle_t,
-    index: size_t,
+    index: ssize_t,
     s: *const c_char,
 ) -> dqcs_return_t {
     with_arb(
@@ -137,10 +217,31 @@ pub extern "C" fn dqcs_arb_set_str(
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
             let mut s: Vec<u8> = receive_str(s)?.bytes().collect();
-            let arg = arb
-                .args
-                .get_mut(index)
-                .ok_or_else(|| APIError::IndexError(0))?;
+            let index = receive_index(arb.args.len(), index, false)?;
+            let arg = arb.args.get_mut(index).unwrap();
+            arg.clear();
+            arg.append(&mut s);
+            Ok(dqcs_return_t::DQCS_SUCCESS)
+        },
+    )
+}
+
+/// Replaces the unstructured argument at the specified index with the
+/// specified raw object.
+#[no_mangle]
+pub extern "C" fn dqcs_arb_set_raw(
+    handle: dqcs_handle_t,
+    index: ssize_t,
+    obj: *const c_void,
+    obj_size: size_t,
+) -> dqcs_return_t {
+    with_arb(
+        handle,
+        || dqcs_return_t::DQCS_FAILURE,
+        |arb| {
+            let mut s: Vec<u8> = receive_raw(obj, obj_size)?.to_owned();
+            let index = receive_index(arb.args.len(), index, false)?;
+            let arg = arb.args.get_mut(index).unwrap();
             arg.clear();
             arg.append(&mut s);
             Ok(dqcs_return_t::DQCS_SUCCESS)
@@ -154,15 +255,55 @@ pub extern "C" fn dqcs_arb_set_str(
 /// string. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure, this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_arb_get_str(handle: dqcs_handle_t, index: size_t) -> *const c_char {
+pub extern "C" fn dqcs_arb_get_str(handle: dqcs_handle_t, index: ssize_t) -> *const c_char {
     with_arb(handle, null, |arb| {
         return_string(String::from_utf8(
             arb.args
-                .get(index)
-                .ok_or_else(|| APIError::IndexError(0))?
+                .get(receive_index(arb.args.len(), index, false)?)
+                .unwrap()
                 .clone(),
         )?)
     })
+}
+
+/// Returns the unstructured string argument at the specified index.
+///
+/// If the actual size of the object differs from the specified object size,
+/// this function will copy the minimum of the actual and specified sizes
+/// number of bytes, and return what the actual size was.
+///
+/// If the specified object size is zero, `obj` is allowed to be `NULL`. You
+/// can use this to determine the size of the argument prior to actually
+/// reading it, so you can allocate the right buffer size first.
+///
+/// This function returns -1 on failure.
+#[no_mangle]
+pub extern "C" fn dqcs_arb_get_raw(
+    handle: dqcs_handle_t,
+    index: ssize_t,
+    obj: *mut c_void,
+    obj_size: size_t,
+) -> ssize_t {
+    with_arb(
+        handle,
+        || -1,
+        |arb| {
+            return_raw(
+                &arb.args
+                    .get(receive_index(arb.args.len(), index, false)?)
+                    .unwrap(),
+                obj,
+                obj_size,
+            )
+        },
+    )
+}
+
+/// Returns the size in bytes of the unstructured string argument at the
+/// specified index, or -1 on failure.
+#[no_mangle]
+pub extern "C" fn dqcs_arb_get_size(handle: dqcs_handle_t, index: ssize_t) -> ssize_t {
+    dqcs_arb_get_raw(handle, index, null_mut(), 0)
 }
 
 /// Returns the number of unstructured arguments, or -1 to indicate failure.
