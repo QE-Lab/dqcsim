@@ -1,14 +1,58 @@
 //! The `dqcsim-api` library crate provides a C interface to the DQCsim
 //! simulator.
 //!
-//! The API is based upon a handle system for referring to simulator data. That
-//! means that the complex data structures contained within the simulator never
-//! actually leave the simulator directly. Instead, when the simulator needs to
-//! pass data to you, it returns a handle, which you can use to access the
-//! contents of the referred structure through a number of API calls.
-//! Similarly, when you need to pass something to the simulator, you construct
-//! an object through a number of API calls, and then pass the handle to the
-//! object to the simulator.
+//! # Handles
+//!
+//! The API is based upon a handle system for referring to simulator data.
+//! Handles are like cross-language references or pointers: they point to a
+//! piece of data in the simulator, but don't contain it.
+//!
+//! The usage of handles implies that the complex data structures contained
+//! within the simulator never actually leave the simulator. Instead, when the
+//! simulator needs to pass data to you, it returns a handle, which you can use
+//! to access the contents of the referred structure through a number of API
+//! calls. Similarly, when you need to pass something to the simulator, you
+//! construct an object through a number of API calls, and then pass the handle
+//! to the simulator.
+//!
+//! # Operating on handles
+//!
+//! Handles can represent a number of different object types. Based on the type
+//! of object the handle represents, different interfaces are supported. For
+//! instance, `ArbCmd` objects support `handle`, `arb`, and `cmd`, while
+//! `ArbData` objects only support `handle` and `arb`. Note that all handles
+//! support the `handle` interface.
+//!
+//! The name of the API functions directly corresponds with the name of the
+//! interface it requires the primary handle it operates on to have: the
+//! functions have the form `dqcs_<interface>_*`.
+//!
+//! Refer to the documentation of `dqcs_handle_type_t` for more information.
+//!
+//! # Memory management
+//!
+//! To prevent memory leaks, pay close attention to the documentation of the
+//! API calls you make. Most importantly, strings returned by DQCsim almost
+//! always have to be deallocated by you through `free()` (the only exception
+//! is `dqcs_explain()`). You should also make sure that you delete handles
+//! that you no longer need through `dqcs_handle_delete()`, though most of the
+//! time DQCsim does this for you when you use a handle.
+//!
+//! # Error handling
+//!
+//! Almost all API calls can fail, for instance because an invalid handle is
+//! supplied. Since C does not support any kind of exceptions, such failures
+//! are reported through the return value. Which value is used to indicate an
+//! error depends on the return type:
+//!
+//!  - no return data: -1 for failure, 0 for success.
+//!  - booleans and timestamps: -1 for failure, the value otherwise.
+//!  - handles and qubit references: 0 for failure, the (positive) handle
+//!    otherwise.
+//!  - pointers: `NULL` for failure, the pointer otherwise.
+//!
+//! When you receive a failure code, use `dqcs_explain()` to get an error
+//! message.
 //!
 //! # Thread-safety
 //!
@@ -28,65 +72,23 @@ use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::ptr::null;
 
+// Type definitions shared between rust and C.
+mod ctypes;
+pub use ctypes::*;
+
+// dqcs_handle_* functions, for operating on any handle.
+mod handle;
+pub use handle::*;
+
+// dqcs_arb_* functions, for operating on `ArbData` objects and objects
+// containing/using a single `ArbData`.
 mod arb;
 pub use arb::*;
 
-/// Object type for a handle.
-///
-/// Handles are like pointers into DQCsim's internal structures: all API calls
-/// use these to refer to objects. Handles are always positive integers, and
-/// they are not reused even after their object is deleted. Use
-/// `dqcs_handle_type()` or `dqcs_handle_dump()` if you want information about
-/// a mystery handle.
-#[allow(non_camel_case_types)]
-pub type dqcs_handle_t = c_longlong;
-
-/// Enumeration of types that can be associated with a handle.
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-#[allow(non_camel_case_types)]
-pub enum dqcs_handle_type_t {
-    /// Indicates that the given handle is invalid.
-    ///
-    /// This indicates one of the following:
-    ///
-    ///  - The handle value is invalid (zero or negative).
-    ///  - The handle has not been used yet.
-    ///  - The object associated with the handle was deleted.
-    DQCS_INVALID = 0,
-
-    /// Indicates that the given handle belongs to an ArbData object.
-    DQCS_ARB_DATA,
-
-    /// Indicates that the given handle belongs to a frontend plugin
-    /// configuration object.
-    DQCS_FRONT_CONFIG,
-
-    /// Indicates that the given handle belongs to an operator plugin
-    /// configuration object.
-    DQCS_OPER_CONFIG,
-
-    /// Indicates that the given handle belongs to a backend plugin
-    /// configuration object.
-    DQCS_BACK_CONFIG,
-
-    /// Indicates that the given handle belongs to a simulator configuration
-    /// object.
-    DQCS_SIM_CONFIG,
-}
-
-/// Default return value for functions that don't need to return anything.
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-#[allow(non_camel_case_types)]
-pub enum dqcs_return_t {
-    /// The function has failed. More information may be obtained through
-    /// `dqcsim_explain()`.
-    DQCS_FAILURE = -1,
-
-    /// The function did what it was supposed to.
-    DQCS_SUCCESS = 0,
-}
+// dqcs_cmd_* functions, for operating on `ArbCmd` objects and objects
+// containing/using a single `ArbCmd`.
+mod cmd;
+pub use cmd::*;
 
 /// Enumeration of all objects that can be associated with an handle, including
 /// the object data.
@@ -95,6 +97,9 @@ pub enum dqcs_return_t {
 enum Object {
     /// ArbData object.
     ArbData(ArbData),
+
+    /// ArbData object.
+    ArbCmd(ArbCmd),
 
     /// PluginConfiguration object.
     PluginConfiguration(PluginConfiguration),
@@ -152,8 +157,26 @@ thread_local! {
 enum APIError {
     #[fail(display = "{}", 0)]
     Generic(String),
+    #[fail(display = "Handle {} is invalid", 0)]
+    InvalidHandle(dqcs_handle_t),
+    #[fail(display = "Handle {} does not implement the requisite interface", 0)]
+    UnsupportedHandle(dqcs_handle_t),
     #[fail(display = "Index {} out of range", 0)]
     IndexError(usize),
+}
+
+/// Convenience function for operating on the thread-local state object.
+fn with_state<T>(
+    error: impl FnOnce() -> T,
+    call: impl FnOnce(std::cell::RefMut<ThreadState>) -> Result<T, Error>,
+) -> T {
+    STATE.with(|state| match call(state.borrow_mut()) {
+        Ok(r) => r,
+        Err(e) => {
+            state.borrow_mut().fail(e.to_string());
+            error()
+        }
+    })
 }
 
 /// Convenience function for converting a C string to a Rust `str`.
@@ -191,63 +214,6 @@ pub extern "C" fn dqcs_explain() -> *const c_char {
         match &state.last_error {
             Some(msg) => msg.as_ptr(),
             None => null(),
-        }
-    })
-}
-
-/// Returns the type of object associated with the given handle.
-#[no_mangle]
-pub extern "C" fn dqcs_handle_type(h: dqcs_handle_t) -> dqcs_handle_type_t {
-    STATE.with(|state| {
-        let state = state.borrow();
-        match &state.objects.get(&h) {
-            None => dqcs_handle_type_t::DQCS_INVALID,
-            Some(Object::ArbData(_)) => dqcs_handle_type_t::DQCS_ARB_DATA,
-            Some(Object::PluginConfiguration(x)) => match x.specification.typ {
-                PluginType::Frontend => dqcs_handle_type_t::DQCS_FRONT_CONFIG,
-                PluginType::Operator => dqcs_handle_type_t::DQCS_OPER_CONFIG,
-                PluginType::Backend => dqcs_handle_type_t::DQCS_BACK_CONFIG,
-            },
-            Some(Object::SimulatorConfiguration(_)) => dqcs_handle_type_t::DQCS_SIM_CONFIG,
-        }
-    })
-}
-
-/// Returns a debug dump of the object associated with the given handle.
-///
-/// On success, this **returns a newly allocated string containing the
-/// description. Free it with `free()` when you're done with it to avoid memory
-/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.
-#[no_mangle]
-pub extern "C" fn dqcs_handle_dump(h: dqcs_handle_t) -> *const c_char {
-    STATE.with(|state| {
-        let mut state = state.borrow_mut();
-        match &state.objects.get(&h) {
-            None => {
-                state.fail(format!("Handle {} is invalid", h));
-                null()
-            }
-            Some(x) => match return_string(format!("{:?}", x)) {
-                Ok(p) => p,
-                Err(e) => {
-                    state.fail(e.to_string());
-                    null()
-                }
-            },
-        }
-    })
-}
-
-/// Destroys the object associated with a handle.
-///
-/// Returns 0 when successful, -1 otherwise.
-#[no_mangle]
-pub extern "C" fn dqcs_handle_delete(h: dqcs_handle_t) -> dqcs_return_t {
-    STATE.with(|state| {
-        let mut state = state.borrow_mut();
-        match &state.objects.remove_entry(&h) {
-            None => state.fail(format!("Handle {} is invalid", h)),
-            Some(_) => dqcs_return_t::DQCS_SUCCESS,
         }
     })
 }

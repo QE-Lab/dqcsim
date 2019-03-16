@@ -64,6 +64,11 @@ impl ArbCmd {
     pub fn data(&self) -> &ArbData {
         &self.data
     }
+
+    /// Returns a mutable reference to the data for this ArbCmd.
+    pub fn data_mut(&mut self) -> &mut ArbData {
+        &mut self.data
+    }
 }
 
 impl ::std::str::FromStr for ArbCmd {

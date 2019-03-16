@@ -8,32 +8,20 @@ fn with_arb<T>(
     error: impl FnOnce() -> T,
     call: impl FnOnce(&mut ArbData) -> Result<T, Error>,
 ) -> T {
-    STATE.with(|state| {
-        let mut state = state.borrow_mut();
-        match state.objects.get_mut(&handle) {
-            Some(Object::ArbData(x)) => match call(x) {
-                Ok(r) => r,
-                Err(e) => {
-                    state.fail(e.to_string());
-                    error()
-                }
-            },
-            Some(_) => {
-                state.fail(format!("Handle {} is not of type ArbData", handle));
-                error()
-            }
-            None => {
-                state.fail(format!("Handle {} is invalid", handle));
-                error()
-            }
-        }
+    with_state(error, |mut state| match state.objects.get_mut(&handle) {
+        Some(Object::ArbData(x)) => call(x),
+        Some(Object::ArbCmd(x)) => call(x.data_mut()),
+        Some(_) => Err(APIError::UnsupportedHandle(handle).into()),
+        None => Err(APIError::InvalidHandle(handle).into()),
     })
 }
 
 /// Creates a new `ArbData` object.
 ///
-/// Returns the handle of the newly created ArbData. The `ArbData` is
+/// Returns the handle of the newly created `ArbData`. The `ArbData` is
 /// initialized with JSON object `{}` and an empty binary argument list.
+///
+/// `ArbData` objects support the `handle` and `arb`.
 #[no_mangle]
 pub extern "C" fn dqcs_arb_new() -> dqcs_handle_t {
     STATE.with(|state| {
@@ -181,4 +169,35 @@ pub extern "C" fn dqcs_arb_get_str(handle: dqcs_handle_t, index: size_t) -> *con
 #[no_mangle]
 pub extern "C" fn dqcs_arb_len(handle: dqcs_handle_t) -> ssize_t {
     with_arb(handle, || -1, |arb| Ok(arb.args.len() as ssize_t))
+}
+
+/// Clears the unstructured argument list.
+#[no_mangle]
+pub extern "C" fn dqcs_arb_clear(handle: dqcs_handle_t) -> dqcs_return_t {
+    with_arb(
+        handle,
+        || dqcs_return_t::DQCS_FAILURE,
+        |arb| {
+            arb.args.clear();
+            Ok(dqcs_return_t::DQCS_SUCCESS)
+        },
+    )
+}
+
+/// Copies the data from one object to another.
+#[no_mangle]
+pub extern "C" fn dqcs_arb_assign(dest: dqcs_handle_t, src: dqcs_handle_t) -> dqcs_return_t {
+    let src_clone = with_arb(src, || None, |src_arb| Ok(Some(src_arb.clone())));
+    match src_clone {
+        Some(src_clone) => with_arb(
+            dest,
+            || dqcs_return_t::DQCS_FAILURE,
+            |dest_arb| {
+                dest_arb.json = src_clone.json;
+                dest_arb.args = src_clone.args;
+                Ok(dqcs_return_t::DQCS_SUCCESS)
+            },
+        ),
+        None => dqcs_return_t::DQCS_FAILURE,
+    }
 }
