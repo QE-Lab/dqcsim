@@ -1,6 +1,8 @@
 use super::*;
+use dqcsim::log;
 use dqcsim::log::tee_file::TeeFile;
 use failure::Error;
+use std::time::*;
 
 /// Convenience function for writing functions that operate on
 /// `SimulatorConfiguration`s.
@@ -137,6 +139,124 @@ pub extern "C" fn dqcs_scfg_tee(
                 verbosity.into_loglevel_filter()?,
                 receive_str(filename)?,
             ));
+            Ok(dqcs_return_t::DQCS_SUCCESS)
+        },
+    )
+}
+
+/// Configures DQCsim to also output its log messages to callback function.
+///
+/// `verbosity` specifies the minimum importance of a message required for the
+/// callback to be called.
+///
+/// `callback` is the callback function to install. It is always called with
+/// the `user_data` pointer to make calling stuff like class member functions
+/// or closures possible. The `user_free` function, if non-null, will be called
+/// when the callback is uninstalled in any way. If `callback` is null, any
+/// current callback is uninstalled instead. For consistency, if `user_free` is
+/// non-null while `callback` is null, `user_free` is called immediately, under
+/// the assumption that the caller has allocated resources unbeknownst that the
+/// callback it's trying to install is null.
+///
+/// **NOTE: both `callback` and `user_free` may be called from a thread spawned
+/// by the simulator. Calling any API calls from the callback is therefore
+/// undefined behavior!**
+///
+/// The callback takes the following arguments:
+///  - `void*`: user defined data.
+///  - `const char*`: log message string, excluding metadata.
+///  - `dqcs_loglevel_t`: the verbosity level that the message was logged with.
+///  - `const char*`: string representing the source of the log message, or
+///    `NULL` when no source is known.
+///  - `const char*`: string containing the filename of the source that
+///    generated the message, or `NULL` when no source is known.
+///  - `uint32_t`: line number within the aforementioned file, or 0 if not
+///    known.
+///  - `uint64_t`: Time in seconds since the Unix epoch.
+///  - `uint32_t`: Additional time in nanoseconds since the aforementioned.
+///  - `uint32_t`: PID of the generating process.
+///  - `uint64_t`: TID of the generating thread.
+///
+/// If an internal log record is particularly malformed and cannot be coerced
+/// into the above (nul bytes in the strings, invalid timestamp, whatever) the
+/// message is silently ignored.
+///
+/// The primary use of this callback is to pipe DQCsim's messages to an
+/// external logging framework. When you do this, you probably also want to
+/// call `dqcs_scfg_stderr_verbosity_set(handle, DQCS_LOG_OFF)` to prevent
+/// DQCsim from writing the messages to stderr itself.
+#[no_mangle]
+#[allow(unused_must_use)]
+pub extern "C" fn dqcs_scfg_log_callback(
+    handle: dqcs_handle_t,
+    verbosity: dqcs_loglevel_t,
+    callback: Option<
+        extern "C" fn(
+            *mut c_void,
+            *const c_char,
+            dqcs_loglevel_t,
+            *const c_char,
+            *const c_char,
+            u32,
+            u64,
+            u32,
+            u32,
+            u64,
+        ),
+    >,
+    user_free: Option<extern "C" fn(*mut c_void)>,
+    user_data: *mut c_void,
+) -> dqcs_return_t {
+    with_scfg(
+        handle,
+        || dqcs_return_t::DQCS_FAILURE,
+        |sim| {
+            let data = CallbackUserData::new(user_free, user_data);
+
+            if let Some(callback) = callback {
+                sim.log_callback = Some(LogCallback {
+                    callback: Box::new(move |record: &log::Record| {
+                        || -> Result<(), Error> {
+                            let ts_sec;
+                            let ts_nano;
+                            if let Ok(ts) =
+                                record.timestamp().duration_since(SystemTime::UNIX_EPOCH)
+                            {
+                                ts_sec = ts.as_secs();
+                                ts_nano = ts.subsec_nanos();
+                            } else {
+                                ts_sec = 0;
+                                ts_nano = 0;
+                            }
+                            callback(
+                                data.data(),
+                                CString::new(record.payload())?.as_ptr(),
+                                record.level().into(),
+                                match record.module_path() {
+                                    Some(x) => CString::new(x)?.as_ptr(),
+                                    None => null(),
+                                },
+                                match record.file() {
+                                    Some(x) => CString::new(x)?.as_ptr(),
+                                    None => null(),
+                                },
+                                match record.line() {
+                                    Some(x) => x,
+                                    None => 0,
+                                },
+                                ts_sec,
+                                ts_nano,
+                                record.process(),
+                                record.thread(),
+                            );
+                            Ok(())
+                        }();
+                    }),
+                    filter: verbosity.into_loglevel_filter()?,
+                });
+            } else {
+                sim.log_callback = None;
+            }
             Ok(dqcs_return_t::DQCS_SUCCESS)
         },
     )
