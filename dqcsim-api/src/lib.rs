@@ -154,7 +154,12 @@ impl ThreadState {
     }
 }
 
-/// Thread-local state storage.
+/// Thread-local state storage. Be careful not to call user callback functions
+/// while holding a reference to the state: those callbacks can and probably
+/// will claim the reference mutably at some point. Basically, once user
+/// callbacks need to become "callable" from the Rust world, for instance when
+/// a configuration object is consumed into the object it configures, they
+/// should move out of this state.
 thread_local! {
     static STATE: RefCell<ThreadState> = RefCell::new(ThreadState {
         objects: HashMap::new(),
@@ -299,4 +304,57 @@ pub extern "C" fn dqcs_set_error(msg: *const c_char) {
             state.last_error = Some(unsafe { CStr::from_ptr(msg) }.to_owned())
         }
     })
+}
+
+/// User data structure for callbacks.
+///
+/// All callbacks carry a user-defined `void*` with them, which is passed to
+/// the callback as the first argument whenever it's called. This can be used
+/// for closure data or for calling C++ class member functions. In the case of
+/// a closure though, the ownership of the closure data is logically the
+/// closure itself, which is moved from the user language into the Rust domain.
+/// To avoid leaking this data, a second function pointer is optionally
+/// provided by the user that is called when the closure is deleted, allowing
+/// the user to clean up.
+///
+/// For Python, the user data is always the callable PyObject pointer, and the
+/// `user_free` callbacks all point to the same function, which just decrements
+/// the callable's refcount. This behavior is unfortunately not at *all*
+/// supported by SWIG, so it's implemented in the `add_swig_directives.py`
+/// script.
+///
+/// To turn an API callback into a Rust closure when it is installed, be sure
+/// to construct this object outside of the closure and then move it into the
+/// closure! For example:
+///
+/// ```rust
+/// let data = CallbackUserData::new(user_free, user_data);
+/// let cb = move || callback(data.data());
+/// ```
+struct CallbackUserData {
+    user_free: Option<extern "C" fn(*mut c_void)>,
+    data: *mut c_void,
+}
+
+impl Drop for CallbackUserData {
+    fn drop(&mut self) {
+        if let Some(user_free) = self.user_free {
+            user_free(self.data);
+        }
+    }
+}
+
+impl CallbackUserData {
+    /// Constructs a `CallbackUserData` object.
+    pub fn new(
+        user_free: Option<extern "C" fn(*mut c_void)>,
+        data: *mut c_void,
+    ) -> CallbackUserData {
+        CallbackUserData { user_free, data }
+    }
+
+    /// Returns the user data pointer.
+    pub fn data(&self) -> *mut c_void {
+        self.data
+    }
 }

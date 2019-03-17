@@ -2,28 +2,6 @@ use super::*;
 use std::cell::RefCell;
 use std::ptr::null_mut;
 
-struct UserData {
-    user_free: Option<extern "C" fn(*mut c_void)>,
-    user_data: *mut c_void,
-}
-
-impl Drop for UserData {
-    fn drop(&mut self) {
-        if let Some(user_free) = self.user_free {
-            user_free(self.user_data);
-        }
-    }
-}
-
-impl UserData {
-    pub fn new(user_free: Option<extern "C" fn(*mut c_void)>, user_data: *mut c_void) -> UserData {
-        UserData {
-            user_free,
-            user_data,
-        }
-    }
-}
-
 type TestCallback = dyn Fn(i32, i32) -> Result<i32, Error>;
 
 struct Banana {
@@ -53,11 +31,11 @@ pub extern "C" fn dqcs_cb_test_install(
     BANANA.with(|banana| {
         let mut banana = banana.borrow_mut();
 
-        let data = UserData::new(user_free, user_data);
+        let data = CallbackUserData::new(user_free, user_data);
 
         if let Some(callback) = callback {
             banana.test = Some(Box::new(move |a: i32, b: i32| {
-                match callback(data.user_data, a, b) {
+                match callback(data.data(), a, b) {
                     -1 => Err(APIError::Generic(receive_str(dqcs_explain())?.to_string()).into()),
                     x => Ok(x),
                 }
