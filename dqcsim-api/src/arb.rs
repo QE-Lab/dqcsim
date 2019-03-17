@@ -295,7 +295,9 @@ pub extern "C" fn dqcs_arb_get_raw(
 }
 
 /// Returns the size in bytes of the unstructured string argument at the
-/// specified index, or -1 on failure.
+/// specified index.
+///
+/// Returns -1 when the function fails.
 #[no_mangle]
 pub extern "C" fn dqcs_arb_get_size(handle: dqcs_handle_t, index: ssize_t) -> ssize_t {
     dqcs_arb_get_raw(handle, index, null_mut(), 0)

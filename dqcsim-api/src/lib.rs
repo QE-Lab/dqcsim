@@ -15,7 +15,7 @@
 //! construct an object through a number of API calls, and then pass the handle
 //! to the simulator.
 //!
-//! # Operating on handles
+//! ## Operating on handles
 //!
 //! Handles can represent a number of different object types. Based on the type
 //! of object the handle represents, different interfaces are supported. For
@@ -53,6 +53,11 @@
 //!
 //! When you receive a failure code, use `dqcs_explain()` to get an error
 //! message.
+//!
+//! DQCsim plugins use callback functions to let you define the behavior of
+//! the plugin. When *your* behavior wants to return an error, the same
+//! handshake is done, but the other way around: you set the error string
+//! using `dqcs_set_error()` and then you return the failure code.
 //!
 //! # Thread-safety
 //!
