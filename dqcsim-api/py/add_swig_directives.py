@@ -46,11 +46,17 @@ def gen_callback_installer(name, args):
     return '''\
 %{{
 {cb_ret} {name}_handler(void *user{cb_args}) {{
+    if (!Py_IsInitialized()) return ({cb_ret}){cb_ret_fail};
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+
     PyObject *ret_obj = PyObject_CallFunction((PyObject*)user, "{cb_arg_fmts}"{cb_arg_refs});
     if (!ret_obj) goto pyerr;
     long long ret_long = PyLong_AsLongLong(ret_obj);
     Py_XDECREF(ret_obj);
     if (ret_long == -1 && PyErr_Occurred()) goto pyerr;
+
+    PyGILState_Release(gstate);
     return ({cb_ret})ret_long;
 pyerr:
     Py_XDECREF(ret_obj);
@@ -67,6 +73,7 @@ pyerr:
     Py_XDECREF(exc_tb);
     dqcs_set_error(c_str);
 
+    PyGILState_Release(gstate);
     return ({cb_ret}){cb_ret_fail};
 }}
 
@@ -127,7 +134,11 @@ typedef signed int int32_t;
 
 %{
 void dqcs_swig_callback_cleanup(void *user) {
+    if (!Py_IsInitialized()) return;
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
     Py_XDECREF((PyObject*)user);
+    PyGILState_Release(gstate);
 }
 %}
 ''']
