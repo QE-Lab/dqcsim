@@ -94,6 +94,10 @@ pub use cmd::*;
 mod pcfg;
 pub use pcfg::*;
 
+// dqcs_scfg_* functions, for constructing `SimulatorConfiguration` objects.
+mod scfg;
+pub use scfg::*;
+
 mod test_callbacks;
 pub use test_callbacks::*;
 

@@ -124,12 +124,12 @@ output = ['''\
 
 %include <pybuffer.i>
 %include exception.i
+%include stdint.i
 
 %inline %{
 #include "dqcsim.h"
-typedef long unsigned int size_t;
-typedef long signed int ssize_t;
-typedef signed int int32_t;
+typedef unsigned long size_t;
+typedef signed long ssize_t;
 %}
 
 %{
