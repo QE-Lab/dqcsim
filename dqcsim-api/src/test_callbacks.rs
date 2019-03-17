@@ -2,13 +2,12 @@ use super::*;
 use std::cell::RefCell;
 use std::ptr::null_mut;
 
-struct TestCallback {
-    callback: extern "C" fn(*mut c_void, i32, i32) -> i32,
+struct UserData {
     user_free: Option<extern "C" fn(*mut c_void)>,
     user_data: *mut c_void,
 }
 
-impl Drop for TestCallback {
+impl Drop for UserData {
     fn drop(&mut self) {
         if let Some(user_free) = self.user_free {
             user_free(self.user_data);
@@ -16,8 +15,19 @@ impl Drop for TestCallback {
     }
 }
 
+impl UserData {
+    pub fn new(user_free: Option<extern "C" fn(*mut c_void)>, user_data: *mut c_void) -> UserData {
+        UserData {
+            user_free,
+            user_data,
+        }
+    }
+}
+
+type TestCallback = dyn Fn(i32, i32) -> Result<i32, Error>;
+
 struct Banana {
-    test: Option<TestCallback>,
+    test: Option<Box<TestCallback>>,
 }
 
 thread_local! {
@@ -42,17 +52,18 @@ pub extern "C" fn dqcs_cb_test_install(
 ) -> dqcs_return_t {
     BANANA.with(|banana| {
         let mut banana = banana.borrow_mut();
-        banana.test = if let Some(callback) = callback {
-            Some(TestCallback {
-                callback,
-                user_free,
-                user_data,
-            })
+
+        let data = UserData::new(user_free, user_data);
+
+        if let Some(callback) = callback {
+            banana.test = Some(Box::new(move |a: i32, b: i32| {
+                match callback(data.user_data, a, b) {
+                    -1 => Err(APIError::Generic(receive_str(dqcs_explain())?.to_string()).into()),
+                    x => Ok(x),
+                }
+            }));
         } else {
-            if let Some(user_free) = user_free {
-                user_free(user_data)
-            }
-            None
+            banana.test = None;
         }
     });
     dqcs_return_t::DQCS_SUCCESS
@@ -68,22 +79,7 @@ pub extern "C" fn dqcs_cb_test_foobar_install(
     user_free: Option<extern "C" fn(*mut c_void)>,
     user_data: *mut c_void,
 ) -> dqcs_return_t {
-    BANANA.with(|banana| {
-        let mut banana = banana.borrow_mut();
-        banana.test = if let Some(callback) = callback {
-            Some(TestCallback {
-                callback,
-                user_free,
-                user_data,
-            })
-        } else {
-            if let Some(user_free) = user_free {
-                user_free(user_data)
-            }
-            None
-        }
-    });
-    dqcs_return_t::DQCS_SUCCESS
+    dqcs_cb_test_install(callback, user_free, user_data)
 }
 
 /// Uninstalls the test callback.
@@ -102,8 +98,8 @@ pub extern "C" fn dqcs_cb_test_call(a: i32, b: i32) -> i32 {
     BANANA.with(|banana| {
         let banana = banana.borrow();
         if let Some(test) = banana.test.as_ref() {
-            let x = test.callback;
-            x(test.user_data, a, b)
+            let x = test(a, b);
+            with_state(|| -1, |_| x)
         } else {
             -1
         }
