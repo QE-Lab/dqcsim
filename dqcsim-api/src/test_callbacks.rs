@@ -1,0 +1,111 @@
+use super::*;
+use std::cell::RefCell;
+use std::ptr::null_mut;
+
+struct TestCallback {
+    callback: extern "C" fn(*mut c_void, i32, i32) -> i32,
+    user_free: Option<extern "C" fn(*mut c_void)>,
+    user_data: *mut c_void,
+}
+
+impl Drop for TestCallback {
+    fn drop(&mut self) {
+        if let Some(user_free) = self.user_free {
+            user_free(self.user_data);
+        }
+    }
+}
+
+struct Banana {
+    test: Option<TestCallback>,
+}
+
+thread_local! {
+    static BANANA: RefCell<Banana> = RefCell::new(Banana { test: None });
+}
+
+/// Installs a test callback.
+///
+/// `callback` is the callback function to install. It is always called with
+/// the `user_data` pointer to make calling stuff like class member functions
+/// or closures possible. The `user_free` function, if non-null, will be called
+/// when the callback is uninstalled in any way. If `callback` is null, any
+/// current callback is uninstalled instead. For consistency, if `user_free` is
+/// non-null while `callback` is null, `user_free` is called immediately, under
+/// the assumption that the caller has allocated resources unbeknownst that the
+/// callback it's trying to install is null.
+#[no_mangle]
+pub extern "C" fn dqcs_cb_test_install(
+    callback: Option<extern "C" fn(*mut c_void, i32, i32) -> i32>,
+    user_free: Option<extern "C" fn(*mut c_void)>,
+    user_data: *mut c_void,
+) -> dqcs_return_t {
+    BANANA.with(|banana| {
+        let mut banana = banana.borrow_mut();
+        banana.test = if let Some(callback) = callback {
+            Some(TestCallback {
+                callback,
+                user_free,
+                user_data,
+            })
+        } else {
+            if let Some(user_free) = user_free {
+                user_free(user_data)
+            }
+            None
+        }
+    });
+    dqcs_return_t::DQCS_SUCCESS
+}
+
+/// This should also work...
+#[no_mangle]
+#[allow(unused_variables)]
+pub extern "C" fn dqcs_cb_test_foobar_install(
+    a: i32,
+    b: *const c_char,
+    callback: Option<extern "C" fn(*mut c_void, i32, i32) -> i32>,
+    user_free: Option<extern "C" fn(*mut c_void)>,
+    user_data: *mut c_void,
+) -> dqcs_return_t {
+    BANANA.with(|banana| {
+        let mut banana = banana.borrow_mut();
+        banana.test = if let Some(callback) = callback {
+            Some(TestCallback {
+                callback,
+                user_free,
+                user_data,
+            })
+        } else {
+            if let Some(user_free) = user_free {
+                user_free(user_data)
+            }
+            None
+        }
+    });
+    dqcs_return_t::DQCS_SUCCESS
+}
+
+/// Uninstalls the test callback.
+///
+/// Same as calling `dqcs_cb_test_install(NULL, NULL, NULL)`.
+#[no_mangle]
+pub extern "C" fn dqcs_cb_test_uninstall() -> dqcs_return_t {
+    dqcs_cb_test_install(None, None, null_mut())
+}
+
+/// Calls the test callback.
+///
+/// If no callback is installed, -1 is returned.
+#[no_mangle]
+pub extern "C" fn dqcs_cb_test_call(a: i32, b: i32) -> i32 {
+    BANANA.with(|banana| {
+        let banana = banana.borrow();
+        if let Some(test) = banana.test.as_ref() {
+            let x = test.callback;
+            x(test.user_data, a, b)
+        } else {
+            -1
+        }
+    })
+}

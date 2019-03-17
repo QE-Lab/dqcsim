@@ -94,6 +94,9 @@ pub use cmd::*;
 mod pcfg;
 pub use pcfg::*;
 
+mod test_callbacks;
+pub use test_callbacks::*;
+
 /// Enumeration of all objects that can be associated with an handle, including
 /// the object data.
 #[derive(Debug)]
@@ -273,6 +276,23 @@ pub extern "C" fn dqcs_explain() -> *const c_char {
         match &state.last_error {
             Some(msg) => msg.as_ptr(),
             None => null(),
+        }
+    })
+}
+
+/// Sets the latest error message string.
+///
+/// This must be called by callback functions when an error occurs within the
+/// callback, otherwise the upstream result for `dqcs_explain()` will be
+/// undefined.
+#[no_mangle]
+pub extern "C" fn dqcs_set_error(msg: *const c_char) {
+    STATE.with(|state| {
+        let mut state = state.borrow_mut();
+        if msg.is_null() {
+            state.last_error = None
+        } else {
+            state.last_error = Some(unsafe { CStr::from_ptr(msg) }.to_owned())
         }
     })
 }
