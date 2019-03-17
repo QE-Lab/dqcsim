@@ -88,9 +88,12 @@ pub extern "C" fn dqcs_scfg_seed_get(handle: dqcs_handle_t) -> u64 {
     with_scfg(handle, || 0, |sim| Ok(sim.seed.value))
 }
 
-/// Configures the logging verbosity for DQCsim's own messages.
+/// Configures the stderr sink verbosity for a simulation.
+///
+/// That is, the minimum loglevel that a messages needs to have for it to be
+/// printed to stderr.
 #[no_mangle]
-pub extern "C" fn dqcs_scfg_dqcsim_verbosity_set(
+pub extern "C" fn dqcs_scfg_stderr_verbosity_set(
     handle: dqcs_handle_t,
     level: dqcs_loglevel_t,
 ) -> dqcs_return_t {
@@ -98,19 +101,22 @@ pub extern "C" fn dqcs_scfg_dqcsim_verbosity_set(
         handle,
         || dqcs_return_t::DQCS_FAILURE,
         |sim| {
-            sim.dqcsim_level = level.into_loglevel_filter()?;
+            sim.stderr_level = level.into_loglevel_filter()?;
             Ok(dqcs_return_t::DQCS_SUCCESS)
         },
     )
 }
 
-/// Returns the configured verbosity for DQCsim's own messages.
+/// Returns the configured stderr sink verbosity for a simulation.
+///
+/// That is, the minimum loglevel that a messages needs to have for it to be
+/// printed to stderr.
 #[no_mangle]
-pub extern "C" fn dqcs_scfg_dqcsim_verbosity_get(handle: dqcs_handle_t) -> dqcs_loglevel_t {
+pub extern "C" fn dqcs_scfg_stderr_verbosity_get(handle: dqcs_handle_t) -> dqcs_loglevel_t {
     with_scfg(
         handle,
         || dqcs_loglevel_t::DQCS_LOG_INVALID,
-        |sim| Ok(sim.dqcsim_level.into()),
+        |sim| Ok(sim.stderr_level.into()),
     )
 }
 
@@ -136,12 +142,9 @@ pub extern "C" fn dqcs_scfg_tee(
     )
 }
 
-/// Configures the stderr sink verbosity for a simulation.
-///
-/// That is, the minimum loglevel that a messages needs to have for it to be
-/// printed to stderr.
+/// Configures the logging verbosity for DQCsim's own messages.
 #[no_mangle]
-pub extern "C" fn dqcs_scfg_stderr_verbosity_set(
+pub extern "C" fn dqcs_scfg_dqcsim_verbosity_set(
     handle: dqcs_handle_t,
     level: dqcs_loglevel_t,
 ) -> dqcs_return_t {
@@ -149,21 +152,18 @@ pub extern "C" fn dqcs_scfg_stderr_verbosity_set(
         handle,
         || dqcs_return_t::DQCS_FAILURE,
         |sim| {
-            sim.stderr_level = level.into_loglevel_filter()?;
+            sim.dqcsim_level = level.into_loglevel_filter()?;
             Ok(dqcs_return_t::DQCS_SUCCESS)
         },
     )
 }
 
 /// Returns the configured verbosity for DQCsim's own messages.
-///
-/// That is, the minimum loglevel that a messages needs to have for it to be
-/// printed to stderr.
 #[no_mangle]
-pub extern "C" fn dqcs_scfg_stderr_verbosity_get(handle: dqcs_handle_t) -> dqcs_loglevel_t {
+pub extern "C" fn dqcs_scfg_dqcsim_verbosity_get(handle: dqcs_handle_t) -> dqcs_loglevel_t {
     with_scfg(
         handle,
         || dqcs_loglevel_t::DQCS_LOG_INVALID,
-        |sim| Ok(sim.stderr_level.into()),
+        |sim| Ok(sim.dqcsim_level.into()),
     )
 }
