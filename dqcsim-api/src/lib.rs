@@ -98,9 +98,6 @@ pub use pcfg::*;
 mod scfg;
 pub use scfg::*;
 
-mod test_callbacks;
-pub use test_callbacks::*;
-
 /// Enumeration of all objects that can be associated with an handle, including
 /// the object data.
 #[derive(Debug)]
