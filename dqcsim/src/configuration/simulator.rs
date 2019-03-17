@@ -1,11 +1,36 @@
 use crate::{
     configuration::{plugin::PluginConfiguration, seed::Seed},
-    log::{tee_file::TeeFile, LoglevelFilter},
+    log::{tee_file::TeeFile, LoglevelFilter, Record},
 };
 use serde::{Deserialize, Serialize};
 
+/// Log callback function structure.
+///
+/// Note the lack of derives; they don't play well with `Box<dyn Fn...>`...
+/// I wonder why. That's primarily why this struct is defined outside
+/// `SimulatorConfiguration`.
+pub struct LogCallback {
+    /// The callback function to call.
+    ///
+    /// The sole argument is the log message record.
+    pub callback: Box<dyn Fn(&Record)>,
+
+    /// Verbosity level for calling the log callback function.
+    pub filter: LoglevelFilter,
+}
+
+impl std::fmt::Debug for LogCallback {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "LogCallback {{ callback: <...>, filter: {:?} }}",
+            self.filter
+        )
+    }
+}
+
 /// The complete configuration for a DQCsim run.
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct SimulatorConfiguration {
     /// The random seed for the simulation.
     pub seed: Seed,
@@ -16,6 +41,10 @@ pub struct SimulatorConfiguration {
     /// Logs messages to the specified file in addition to stderr. level sets
     /// the minimum importance for a message to be logged to this file.
     pub tee_files: Vec<TeeFile>,
+
+    /// Optional log callback function.
+    #[serde(skip)]
+    pub log_callback: Option<LogCallback>,
 
     /// The verbosity for DQCsim itself.
     pub dqcsim_level: LoglevelFilter,
@@ -33,6 +62,11 @@ impl SimulatorConfiguration {
         for tee in &self.tee_files {
             if tee.filter > max_dqcsim_verbosity {
                 max_dqcsim_verbosity = tee.filter;
+            }
+        }
+        if let Some(cb) = self.log_callback.as_ref() {
+            if cb.filter > max_dqcsim_verbosity {
+                max_dqcsim_verbosity = cb.filter;
             }
         }
 
@@ -58,6 +92,7 @@ impl Default for SimulatorConfiguration {
             seed: Seed::default(),
             stderr_level: LoglevelFilter::Info,
             tee_files: vec![],
+            log_callback: None,
             dqcsim_level: LoglevelFilter::Info,
             plugins: vec![],
         }

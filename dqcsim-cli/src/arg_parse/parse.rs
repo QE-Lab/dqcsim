@@ -185,7 +185,7 @@ impl<'a, 'b> PluginConfigParser<'a, 'b> {
 }
 
 /// The complete configuration for a DQCsim run.
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct CommandLineConfiguration {
     /// The sequence of host calls to make.
     ///
@@ -308,6 +308,7 @@ impl CommandLineConfiguration {
                 seed: dqcsim_opts.seed.clone().unwrap_or_default(),
                 stderr_level: dqcsim_opts.stderr_level,
                 tee_files: dqcsim_opts.tee_files.clone(),
+                log_callback: None,
                 dqcsim_level: dqcsim_opts.dqcsim_level,
                 plugins: vec![],
             },
