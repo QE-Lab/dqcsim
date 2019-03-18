@@ -103,6 +103,11 @@ pub use pcfg::*;
 mod scfg;
 pub use scfg::*;
 
+// dqcs_accel_* functions, for talking to the simulator from a host
+// perspective.
+mod accel;
+pub use accel::*;
+
 /// Enumeration of all objects that can be associated with an handle, including
 /// the object data.
 #[derive(Debug)]

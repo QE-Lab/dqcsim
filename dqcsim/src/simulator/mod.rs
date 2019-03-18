@@ -29,7 +29,12 @@ impl Drop for Simulator {
 }
 
 impl Simulator {
-    pub fn try_from(configuration: SimulatorConfiguration) -> Result<Simulator, Error> {
+    pub fn try_from(mut configuration: SimulatorConfiguration) -> Result<Simulator, Error> {
+        // Check and optimize the configuration.
+        configuration.check_plugin_list()?;
+        configuration.optimize_loglevels();
+        let configuration = configuration;
+
         // Spawn log thread here so it outlives the Simulation instance. This
         // allows debugging deconstruction as Drop goes outer to inner recursively.
         let log_thread = LogThread::spawn(configuration.stderr_level, configuration.dqcsim_level)?;

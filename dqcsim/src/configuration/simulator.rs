@@ -1,7 +1,8 @@
 use crate::{
-    configuration::{plugin::PluginConfiguration, seed::Seed},
+    configuration::{PluginConfiguration, PluginType, Seed},
     log::{tee_file::TeeFile, LoglevelFilter, Record},
 };
+use failure::{Error, Fail};
 use serde::{Deserialize, Serialize};
 
 /// Log callback function structure.
@@ -27,6 +28,19 @@ impl std::fmt::Debug for LogCallback {
             self.filter
         )
     }
+}
+
+/// Error structure used for reporting simulator configuration errors.
+#[derive(Debug, Fail, PartialEq)]
+enum SimulatorConfigurationError {
+    #[fail(display = "Duplicate frontend plugin")]
+    DuplicateFrontend,
+    #[fail(display = "Duplicate backend plugin")]
+    DuplicateBackend,
+    #[fail(display = "Missing frontend plugin")]
+    MissingFrontend,
+    #[fail(display = "Missing backend plugin")]
+    MissingBackend,
 }
 
 /// The complete configuration for a DQCsim run.
@@ -79,6 +93,56 @@ impl SimulatorConfiguration {
                 plugin.nonfunctional.verbosity = max_dqcsim_verbosity;
             }
         }
+    }
+
+    /// Verifies that the plugins are specified correctly.
+    ///
+    /// This checks that there is exactly one frontend and exactly one backend.
+    /// If this is true but they're not in the right place, they are silently
+    /// moved.
+    pub fn check_plugin_list(&mut self) -> Result<(), Error> {
+        // Check and fix frontend.
+        let mut frontend_idx = None;
+        for (i, item) in self.plugins.iter().enumerate() {
+            if let PluginType::Frontend = item.specification.typ {
+                if frontend_idx.is_some() {
+                    Err(SimulatorConfigurationError::DuplicateFrontend)?
+                } else {
+                    frontend_idx = Some(i);
+                }
+            }
+        }
+        match frontend_idx {
+            Some(0) => (),
+            Some(x) => {
+                let plugin = self.plugins.remove(x);
+                self.plugins.insert(0, plugin);
+            }
+            None => Err(SimulatorConfigurationError::MissingFrontend)?,
+        }
+
+        // Check and fix backend.
+        let mut backend_idx = None;
+        for (i, item) in self.plugins.iter().enumerate() {
+            if let PluginType::Backend = item.specification.typ {
+                if backend_idx.is_some() {
+                    Err(SimulatorConfigurationError::DuplicateBackend)?
+                } else {
+                    backend_idx = Some(i);
+                }
+            }
+        }
+        match backend_idx {
+            Some(x) => {
+                if x != self.plugins.len() - 1 {
+                    let plugin = self.plugins.remove(x);
+                    self.plugins.push(plugin);
+                }
+            }
+            None => Err(SimulatorConfigurationError::MissingBackend)?,
+        }
+
+        Ok(())
     }
 }
 
