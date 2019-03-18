@@ -18,7 +18,7 @@
 //!     log::{init, LoglevelFilter, proxy::LogProxy, thread::LogThread}
 //! };
 //!
-//! let log_thread = LogThread::spawn(LoglevelFilter::Trace, LoglevelFilter::Info).unwrap();
+//! let log_thread = LogThread::spawn(LoglevelFilter::Trace, LoglevelFilter::Info, None).unwrap();
 //! let log_endpoint = log_thread.get_sender().unwrap();
 //!
 //! std::thread::spawn(move || {
@@ -50,9 +50,12 @@ pub mod thread;
 #[doc(hidden)]
 pub use ref_thread_local as _ref_thread_local;
 
-use crate::log::channel::Sender;
+use crate::{
+    error,
+    error::{ErrorKind, ResultExt},
+    log::channel::Sender,
+};
 use enum_variants::EnumVariants;
-use failure::Fail;
 use lazy_static::lazy_static;
 use ref_thread_local::ref_thread_local;
 use serde::{Deserialize, Serialize};
@@ -61,12 +64,6 @@ use std::{cell::RefCell, fmt};
 /// The Log trait.
 pub trait Log {
     fn log(&self, record: Record);
-}
-
-#[derive(Debug, Fail)]
-pub enum LogError {
-    #[fail(display = "Failed to update thread-local logger ({})", _0)]
-    ThreadLocalError(String),
 }
 
 thread_local! {
@@ -264,29 +261,29 @@ impl fmt::Display for Record {
 }
 
 /// Update the thread-local logger.
-fn update(log: Option<Box<dyn Log>>, level: Option<LoglevelFilter>) -> Result<(), LogError> {
-    LOGGER.with(|logger| match logger.try_borrow_mut() {
-        Ok(mut logger) => {
-            *logger = log;
-            LOGLEVEL.with(|loglevel| match loglevel.try_borrow_mut() {
-                Ok(mut loglevel) => {
-                    *loglevel = level.unwrap_or(LoglevelFilter::Off);
-                    Ok(())
-                }
-                Err(_) => Err(LogError::ThreadLocalError("log level".to_string())),
-            })
-        }
-        Err(_) => Err(LogError::ThreadLocalError("logger".to_string())),
+fn update(log: Option<Box<dyn Log>>, level: Option<LoglevelFilter>) -> error::Result<()> {
+    LOGGER.with(|logger| {
+        let mut logger = logger.try_borrow_mut().context(ErrorKind::LogError(
+            "failed to update thread-local log level".to_string(),
+        ))?;
+        *logger = log;
+        LOGLEVEL.with(|loglevel| {
+            let mut loglevel = loglevel.try_borrow_mut().context(ErrorKind::LogError(
+                "failed to update thread-local log level".to_string(),
+            ))?;
+            *loglevel = level.unwrap_or(LoglevelFilter::Off);
+            Ok(())
+        })
     })
 }
 
 /// Initialize the thread-local logger.
-pub fn init(log: Box<dyn Log>, level: LoglevelFilter) -> Result<(), LogError> {
+pub fn init(log: Box<dyn Log>, level: LoglevelFilter) -> error::Result<()> {
     update(Some(log), Some(level))
 }
 
 /// Deinitialize the thread-local logger.
-pub fn deinit() -> Result<(), LogError> {
+pub fn deinit() -> error::Result<()> {
     update(None, None)
 }
 

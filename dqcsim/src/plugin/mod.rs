@@ -2,12 +2,12 @@ pub mod process;
 
 use crate::{
     configuration::{ArbCmd, ArbData, PluginConfiguration},
-    debug,
-    log::thread::LogThread,
+    error::{ErrorKind, Result},
+    log::Record,
     plugin::process::PluginProcess,
+    protocol::message::{InitializeRequest, Request, Response},
     trace,
 };
-use failure::{bail, Error};
 use std::{path::Path, process::Command};
 
 /// The Plugin structure used in a Simulator.
@@ -16,7 +16,7 @@ pub struct Plugin {
     /// The Plugin configuration.
     configuration: PluginConfiguration,
     /// The Plugin process.
-    process: PluginProcess,
+    process: Option<PluginProcess>,
     /// Command
     command: Command,
 }
@@ -24,26 +24,25 @@ pub struct Plugin {
 impl Plugin {
     /// Construct a new Plugin instance.
     ///
-    /// Create a Plugin instance. Starts a PluginProcess.
-    pub fn new(configuration: PluginConfiguration, logger: &LogThread) -> Result<Plugin, Error> {
-        debug!("Constructing Plugin: {}", &configuration.name);
+    /// Create a Plugin instance.
+    pub fn try_from(configuration: PluginConfiguration) -> Result<Plugin> {
+        trace!("Constructing Plugin: {}", &configuration.name);
 
         let target = Path::new("target/debug/dqcsim-plugin");
 
         if !target.exists() || !target.is_file() {
-            bail!("Plugin ({:?}) not found", target)
+            Err(ErrorKind::ConstructFailed(format!(
+                "Plugin ({:?}) not found",
+                target
+            )))?
         }
 
-        let mut command = Command::new(target);
-        let process = PluginProcess::new(
-            command.arg(&configuration.name),
-            logger.get_sender().expect("Log thread unavailable"),
-        )?;
+        let command = Command::new(target);
 
         Ok(Plugin {
-            command,
             configuration,
-            process,
+            process: None,
+            command,
         })
     }
 
@@ -52,28 +51,51 @@ impl Plugin {
         &self.configuration.name
     }
 
-    /// Init
+    fn process_ref(&self) -> &PluginProcess {
+        self.process.as_ref().unwrap()
+    }
+
+    pub fn spawn(&mut self, log_sender: crossbeam_channel::Sender<Record>) -> Result<()> {
+        let process = PluginProcess::new(self.command.arg(&self.configuration.name), log_sender)?;
+        self.process = Some(process);
+        Ok(())
+    }
+
+    /// Initialize the Plugin.
+    ///
+    /// Initializes the [`Plugin`] by sending an initialization
+    /// [`Request::Init`] to the [`PluginProcess`].
     pub fn init<'a>(
         &self,
         downstream: Option<String>,
         upstream: &mut impl Iterator<Item = &'a Plugin>,
-    ) -> Result<(), Error> {
-        self.process.init(downstream, upstream)?;
-        Ok(())
-    }
-
-    /// Abort
-    pub fn abort(&mut self, graceful: bool) {
-        if let Ok(Some(exit)) = self.process.abort(graceful) {
-            debug!("Plugin process already exited: {}", exit);
+    ) -> Result<()> {
+        trace!("Initialize Plugin: {}", self.configuration.name);
+        self.process_ref()
+            .request(Request::Init(InitializeRequest {
+                downstream,
+                arb_cmds: self.configuration.functional.init.clone(),
+                prefix: self.configuration.name.to_owned(),
+                level: self.configuration.nonfunctional.verbosity,
+            }))?;
+        match self.process_ref().wait_for_reply() {
+            Response::Init(response) => {
+                trace!("Got reponse: {:?}", response);
+                if let Some(upstream_plugin) = upstream.next() {
+                    trace!("Connecting to upstream plugin");
+                    upstream_plugin.init(response.upstream, upstream)?;
+                }
+                Ok(())
+            }
+            _ => Err(ErrorKind::Other("bad-reply".to_string()))?,
         }
     }
 
     /// Sends an `ArbCmd` message to this plugin.
     #[allow(unused)] // TODO: remove <--
-    pub fn arb(&mut self, cmd: impl Into<ArbCmd>) -> Result<ArbData, Error> {
+    pub fn arb(&mut self, cmd: impl Into<ArbCmd>) -> Result<ArbData> {
         // TODO
-        bail!("Not yet implemented")
+        Err(ErrorKind::Other("Not yet implemented".to_string()))?
     }
 }
 

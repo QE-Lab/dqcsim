@@ -33,10 +33,12 @@
 //! [`Plugin`]: ./plugin/struct.Plugin.html
 //! [`Simulation`]: ./simulator/struct.Simulation.html
 
+pub mod error;
+
 /// Plugin control structure.
 pub mod plugin;
 
-/// Simulator instance.
+pub mod simulation;
 pub mod simulator;
 
 /// Configuration structures for the plugins and simulator.

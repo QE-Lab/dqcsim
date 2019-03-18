@@ -1,4 +1,7 @@
-use dqcsim::{configuration::PluginType, debug, info, ipc::connection::Connection};
+use dqcsim::{
+    configuration::PluginType, debug, info, ipc::connection::Connection,
+    protocol::message::Response,
+};
 use failure::Error;
 use ipc_channel::ipc::IpcSelectionResult;
 use std::env;
@@ -21,15 +24,23 @@ fn main() -> Result<(), Error> {
 
     let map = connection.map.clone();
 
-    connection.recv(|message| match message {
-        IpcSelectionResult::MessageReceived(id, message) => {
-            debug!("[{:?}] {:?}", &map[&id], message);
-        }
-        IpcSelectionResult::ChannelClosed(id) => {
-            debug!("[{:?}] Closed", &map[&id]);
-        }
-    })?;
+    connection
+        .incoming
+        .select()?
+        .iter()
+        .for_each(|message| match message {
+            IpcSelectionResult::MessageReceived(id, message) => {
+                debug!("[{:?}] {:?}", &map[&id], message);
+                connection.response.send(Response::Success).unwrap();
+                // std::process::exit(0);
+            }
+            IpcSelectionResult::ChannelClosed(id) => {
+                debug!("[{:?}] Closed", &map[&id]);
+                // std::process::exit(1);
+            }
+        });
 
+    std::thread::sleep(std::time::Duration::from_secs(4));
     info!("Plugin down.");
 
     Ok(())

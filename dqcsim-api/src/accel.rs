@@ -140,6 +140,7 @@ pub extern "C" fn dqcs_accel_start(data: dqcs_handle_t) -> dqcs_return_t {
                     .as_mut()
                     .start(data.clone())
                     .map(|_| dqcs_return_t::DQCS_SUCCESS)
+                    .map_err(Error::from) // TODO: jeroen
             })
         },
     )
@@ -161,6 +162,7 @@ pub extern "C" fn dqcs_accel_wait() -> dqcs_handle_t {
                 .as_mut()
                 .wait()
                 .map(|d| STATE.with(|state| state.borrow_mut().push(Object::ArbData(d))))
+                .map_err(Error::from) // TODO: jeroen
         },
     )
 }
@@ -183,6 +185,7 @@ pub extern "C" fn dqcs_accel_send(data: dqcs_handle_t) -> dqcs_return_t {
                     .as_mut()
                     .send(data.clone())
                     .map(|_| dqcs_return_t::DQCS_SUCCESS)
+                    .map_err(Error::from) // TODO: jeroen
             })
         },
     )
@@ -203,6 +206,7 @@ pub extern "C" fn dqcs_accel_recv() -> dqcs_handle_t {
                 .as_mut()
                 .recv()
                 .map(|d| STATE.with(|state| state.borrow_mut().push(Object::ArbData(d))))
+                .map_err(Error::from) // TODO: jeroen
         },
     )
 }
@@ -226,6 +230,7 @@ pub extern "C" fn dqcs_accel_yield() -> dqcs_return_t {
                 .as_mut()
                 .yield_to_frontend()
                 .map(|_| dqcs_return_t::DQCS_SUCCESS)
+                .map_err(Error::from) // TODO: jeroen
         },
     )
 }
@@ -250,6 +255,7 @@ pub extern "C" fn dqcs_accel_arb(name: *const c_char, cmd: dqcs_handle_t) -> dqc
                     .as_mut()
                     .arb(receive_str(name)?, cmd.clone())
                     .map(|d| STATE.with(|state| state.borrow_mut().push(Object::ArbData(d))))
+                    .map_err(Error::from) // TODO: jeroen
             })
         },
     )
@@ -282,6 +288,7 @@ pub extern "C" fn dqcs_accel_arb_idx(index: ssize_t, cmd: dqcs_handle_t) -> dqcs
                     .as_mut()
                     .arb_idx(index, cmd.clone())
                     .map(|d| STATE.with(|state| state.borrow_mut().push(Object::ArbData(d))))
+                    .map_err(Error::from) // TODO: jeroen
             })
         },
     )

@@ -1,15 +1,16 @@
 use crate::{
+    configuration::LogCallback,
+    error::{ErrorKind, Result},
     log::{deinit, init, proxy::LogProxy, Loglevel, LoglevelFilter, Record, PID},
     trace,
 };
-use failure::Error;
 use std::thread;
 use term::stderr;
 
 #[derive(Debug)]
 pub struct LogThread {
     sender: Option<crossbeam_channel::Sender<Record>>,
-    handler: Option<thread::JoinHandle<Result<(), term::Error>>>,
+    handler: Option<thread::JoinHandle<Result<()>>>,
 }
 
 /// Convert a Loglevel to term::color::Color
@@ -30,14 +31,19 @@ impl LogThread {
     ///
     /// Returns [`LogThread`] instance if succesful. Also spawns a [`LogProxy`] in the current thread with [`proxy_level`] as [`LogLevelFilter`].
     /// The [`level`] argument is used as  [`LogLevelFilter`] in the [`LogThread`].
-    pub fn spawn(level: LoglevelFilter, proxy_level: LoglevelFilter) -> Result<LogThread, Error> {
+    pub fn spawn(
+        level: LoglevelFilter,
+        proxy_level: LoglevelFilter,
+        callback: Option<LogCallback>,
+    ) -> Result<LogThread> {
         // Create the log channel.
         let (sender, receiver): (_, crossbeam_channel::Receiver<Record>) =
             crossbeam_channel::unbounded();
 
         // Spawn the local channel log thread.
         let handler = thread::spawn(move || {
-            let mut t = stderr().expect("Unable to wrap terminal");
+            let mut t = stderr()
+                .ok_or_else(|| ErrorKind::TermError("failed to wrap terminal".to_string()))?;
 
             let supports_dim = t.supports_attr(term::Attr::Dim);
             let supports_colors = t.supports_attr(term::Attr::ForegroundColor(9));
@@ -46,6 +52,14 @@ impl LogThread {
             let debug = level >= LoglevelFilter::Debug;
 
             while let Ok(record) = receiver.recv() {
+                // Callback
+                if let Some(callback) = &callback {
+                    if LoglevelFilter::from(record.level()) >= callback.filter {
+                        let cbfn = callback.callback.as_ref();
+                        cbfn(&record);
+                    }
+                }
+
                 let color = level_to_color(record.level());
 
                 // Timestamp
@@ -127,6 +141,7 @@ impl LogThread {
 
         // Start a LogProxy for the current thread.
         init(LogProxy::boxed(sender.clone()), proxy_level)?;
+        trace!("LogThread started");
 
         Ok(LogThread {
             sender: Some(sender),
@@ -141,7 +156,7 @@ impl LogThread {
 /// Drops the sender side of the log channel and wait for the log thread to drop.
 impl Drop for LogThread {
     fn drop(&mut self) {
-        trace!("Shutting down logger thread");
+        trace!("Dropping LogThread");
 
         // Disconnect the LogProxy running in the main thread.
         deinit().expect("Failed to deinitialize thread-local logger");

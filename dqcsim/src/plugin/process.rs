@@ -1,14 +1,14 @@
 use crate::{
-    debug, error, fatal, info,
+    error,
+    error::Result,
+    info,
     ipc::{simulator::start, SimulatorChannel},
-    log::{router::route, stdio::proxy_stdio, Loglevel, LoglevelFilter, Record},
-    plugin::Plugin,
-    protocol::message::{InitializeRequest, Request, Response},
+    log::{router::route, stdio::proxy_stdio, Loglevel, Record},
+    protocol::message::{Request, Response},
     trace, warn,
 };
 use crossbeam_channel::Sender;
-use failure::{bail, Error};
-use std::process::{Child, Command, ExitStatus};
+use std::process::{Child, Command};
 
 #[derive(Debug)]
 pub struct PluginProcess {
@@ -17,12 +17,11 @@ pub struct PluginProcess {
 }
 
 impl PluginProcess {
-    pub fn new(command: &mut Command, sender: Sender<Record>) -> Result<PluginProcess, Error> {
-        debug!("Constructing PluginProcess: {:?}", command);
+    pub fn new(command: &mut Command, sender: Sender<Record>) -> Result<PluginProcess> {
+        trace!("Constructing PluginProcess: {:?}", command);
 
         let (mut child, mut channel) = start(command, None)?;
 
-        trace!("Forward plugin log channel");
         route(channel.log().unwrap(), sender.clone());
 
         // Log piped stdout/stderr
@@ -41,49 +40,12 @@ impl PluginProcess {
         Ok(PluginProcess { child, channel })
     }
 
-    fn request(&self, request: Request) -> Result<(), Error> {
+    pub fn request(&self, request: Request) -> Result<()> {
         self.channel.request.send(request)?;
         Ok(())
     }
 
-    pub fn init<'a>(
-        &self,
-        downstream: Option<String>,
-        upstream: &mut impl Iterator<Item = &'a Plugin>,
-    ) -> Result<(), Error> {
-        trace!("Init: [downstream: {:?}]", downstream);
-        self.request(Request::Init(InitializeRequest {
-            downstream,
-            arb_cmds: None,
-            prefix: "".to_string(),
-            level: LoglevelFilter::Trace,
-        }))?;
-        trace!("Waiting for init reply.");
-        match self.wait_for_reply() {
-            Response::Init(response) => {
-                trace!("Got reponse: {:?}", response);
-                if let Some(upstream_plugin) = upstream.next() {
-                    trace!("Connecting to upstream plugin");
-                    upstream_plugin.init(response.upstream, upstream)?;
-                }
-                Ok(())
-            }
-            _ => {
-                fatal!("Bad reply from plugin");
-                bail!("Bad reply from plugin")
-            }
-        }
-    }
-    pub fn abort(&mut self, graceful: bool) -> Result<Option<ExitStatus>, Error> {
-        if graceful {
-            self.request(Request::Abort)?;
-        } else {
-            self.child.kill()?;
-        }
-        Ok(self.child.try_wait()?)
-    }
-
-    fn wait_for_reply(&self) -> Response {
+    pub fn wait_for_reply(&self) -> Response {
         self.channel.response.recv().unwrap()
     }
 }
@@ -92,21 +54,40 @@ impl Drop for PluginProcess {
     fn drop(&mut self) {
         trace!("Dropping PluginProcess");
 
-        // Wait for child.
-        // TODO: try_wait?
-        let status = self.child.wait().expect("Child process failed");
+        if self
+            .child
+            .try_wait()
+            .expect("PluginProcess failed")
+            .is_none()
+        {
+            trace!("Aborting PluginProcess");
+            self.request(Request::Abort)
+                .expect("Failed to abort PluginProcess");
 
-        trace!("Child process terminated");
+            // No timeout support for ipc-channel, so we wait.
+            std::thread::sleep(std::time::Duration::from_millis(100));
+            match self.channel.response.try_recv() {
+                Ok(Response::Success) => {}
+                _ => {
+                    trace!("Killing PluginProcess");
+                    self.child.kill().expect("Failed to kill PluginProcess");
+                }
+            }
+        }
+
+        // At this point the process should be shutting down.
+        let status = self.child.wait().expect("Failed to get exit status");
+
         match status.code() {
             Some(code) => {
-                let msg = format!("Exited with status code: {}", code);
+                let msg = format!("PluginProcess exited with status code: {}", code);
                 if code > 0 {
                     warn!("{}", msg)
                 } else {
                     info!("{}", msg)
                 }
             }
-            None => error!("Process terminated by signal"),
-        };
+            None => error!("PluginProcess terminated by signal"),
+        }
     }
 }

@@ -1,5 +1,8 @@
-use crate::{fatal, ipc::SimulatorChannel, trace};
-use failure::{bail, Error};
+use crate::{
+    error::{ErrorKind, Result},
+    ipc::SimulatorChannel,
+    trace,
+};
 use ipc_channel::ipc::IpcOneShotServer;
 use std::{
     process::{Child, Command, Stdio},
@@ -26,7 +29,7 @@ const IPC_CONNECT_TIMEOUT_SECS: Duration = Duration::from_secs(5);
 pub fn start(
     command: &mut Command,
     connect_timeout: Option<Duration>,
-) -> Result<(Child, SimulatorChannel), Error> {
+) -> Result<(Child, SimulatorChannel)> {
     // Setup channel
     let (server, server_name) = IpcOneShotServer::new()?;
 
@@ -41,7 +44,7 @@ pub fn start(
     #[cfg_attr(feature = "cargo-clippy", allow(clippy::mutex_atomic))]
     let pair = Arc::new((Mutex::new(false), Condvar::new()));
     let pair2 = pair.clone();
-    let handle: thread::JoinHandle<Result<SimulatorChannel, Error>> = thread::spawn(move || {
+    let handle: thread::JoinHandle<Result<SimulatorChannel>> = thread::spawn(move || {
         {
             let &(ref lock, _) = &*pair2;
             let mut started = lock.lock().expect("Unable to aquire lock");
@@ -71,11 +74,12 @@ pub fn start(
                 trace!("Plugin started and connected.");
                 Ok((child, channel))
             }
-            Err(_) => bail!("Plugin IPC connection start thread failed"),
+            Err(_) => Err(ErrorKind::Other(
+                "Plugin IPC connection start thread failed".to_string(),
+            ))?,
         }
     } else {
-        fatal!("Channel setup timeout");
-        bail!("Channel setup timeout")
+        Err(ErrorKind::Other("Channel setup timeout".to_string()))?
     }
 }
 
@@ -93,7 +97,7 @@ mod tests {
         );
         assert!(timeout.is_err());
         let err = timeout.err().unwrap();
-        assert_eq!(format!("{}", err), "Channel setup timeout");
+        assert_eq!(format!("{}", err), "error: Channel setup timeout");
     }
 
 }

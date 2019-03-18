@@ -122,6 +122,8 @@ pub struct CallbackUserData {
     data: *mut c_void,
 }
 
+unsafe impl Send for CallbackUserData {}
+
 impl Drop for CallbackUserData {
     fn drop(&mut self) {
         if let Some(user_free) = self.user_free {

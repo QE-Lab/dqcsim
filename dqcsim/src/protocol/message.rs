@@ -1,7 +1,6 @@
-use crate::log::LoglevelFilter;
+use crate::{configuration::ArbCmd, log::LoglevelFilter};
 
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 /// Simulator to plugin requests.
 #[derive(Debug, Serialize, Deserialize)]
@@ -30,7 +29,7 @@ pub struct InitializeRequest {
     /// Downstream plugin to connect to.
     pub downstream: Option<String>,
     /// Arbitrary commmands.
-    pub arb_cmds: Option<Vec<ArbCmd>>,
+    pub arb_cmds: Vec<ArbCmd>,
     /// Prefix for logging.
     pub prefix: String,
     /// LoglevelFilter for logging.
@@ -48,30 +47,6 @@ pub struct InitializeResponse {
 pub enum GateStream {
     Hello(String),
     Bye(String),
-}
-
-/// Arbitrary data as part of an arbitrary command.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ArbData {
-    /// JSON object.
-    json: Value,
-    /// Optional unstructured data.
-    args: Option<Vec<Vec<u8>>>,
-}
-
-/// Arbitrary command from one endpoint to another.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ArbCmd {
-    /// Identifies the interface that this command addresses. If an endpoint
-    /// receives a command for an unsupported interface, it should treat the
-    /// command as no-op.
-    interface_identifier: String,
-    /// Identifies the name of the command within the specified interface.
-    /// If the interface is recognized but the operation is not, an error
-    /// should be thrown.
-    operation_identifier: String,
-    /// Arbitrary data to go along with the command.
-    data: ArbData,
 }
 
 // use serde_json::Value;

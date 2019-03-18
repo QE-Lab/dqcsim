@@ -1,17 +1,17 @@
 use crate::{
     configuration::PluginType,
+    error::{ErrorKind, Result},
     ipc::{DownstreamChannel, PluginChannel, SimulatorChannel, UpstreamChannel},
     protocol::message::{InitializeResponse, Request, Response},
 };
 
-use failure::{bail, format_err, Error};
 use ipc_channel::ipc::{IpcOneShotServer, IpcSender};
 
 /// Construct a ([`SimulatorChannel`], [`PluginChannel`]) channel pair.
 ///
 /// [`PluginChannel`]: ../struct.PluginChannel.html
 /// [`SimulatorChannel`]: ../struct.SimulatorChannel.html
-fn channel() -> Result<(SimulatorChannel, PluginChannel), Error> {
+fn channel() -> Result<(SimulatorChannel, PluginChannel)> {
     let (log, log_rx) = ipc_channel::ipc::channel()?;
     let (request_tx, request) = ipc_channel::ipc::channel()?;
     let (response, response_rx) = ipc_channel::ipc::channel()?;
@@ -33,7 +33,7 @@ fn channel() -> Result<(SimulatorChannel, PluginChannel), Error> {
 ///
 /// [`Plugin`]: ../plugin/struct.Plugin.html
 /// [`Simulation`]: ../simulator/struct.Simulation.html
-pub fn connect_simulator(server: impl Into<String>) -> Result<PluginChannel, Error> {
+pub fn connect_simulator(server: impl Into<String>) -> Result<PluginChannel> {
     // Attempt to connect to the server
     let connect = IpcSender::connect(server.into())?;
     let (simulator, plugin) = channel()?;
@@ -48,7 +48,7 @@ pub fn connect_simulator(server: impl Into<String>) -> Result<PluginChannel, Err
 ///
 /// [`Plugin`]: ../plugin/struct.Plugin.html
 /// [`Simulation`]: ../simulator/struct.Simulation.html
-fn connect_downstream(server: impl Into<String>) -> Result<DownstreamChannel, Error> {
+fn connect_downstream(server: impl Into<String>) -> Result<DownstreamChannel> {
     // Attempt to connect to the server
     let connect = IpcSender::connect(server.into())?;
     let (down_tx, down_rx) = ipc_channel::ipc::channel()?;
@@ -66,7 +66,7 @@ fn connect_downstream(server: impl Into<String>) -> Result<DownstreamChannel, Er
 pub fn initialize(
     channel: &PluginChannel,
     plugin_type: PluginType,
-) -> Result<(Option<DownstreamChannel>, Option<UpstreamChannel>), Error> {
+) -> Result<(Option<DownstreamChannel>, Option<UpstreamChannel>)> {
     let init = channel.request.recv()?;
     let mut downstream_channel = None;
     let mut upstream_channel = None;
@@ -75,11 +75,7 @@ pub fn initialize(
             // Frontend and operator connect to downstream plugin first.
             match plugin_type {
                 PluginType::Frontend | PluginType::Operator => {
-                    downstream_channel = Some(connect_downstream(
-                        request
-                            .downstream
-                            .ok_or_else(|| format_err!("Downstream channel closed"))?,
-                    )?);
+                    downstream_channel = Some(connect_downstream(request.downstream.unwrap())?);
                 }
                 PluginType::Backend => {}
             }
@@ -105,7 +101,7 @@ pub fn initialize(
 
             Ok((downstream_channel, upstream_channel))
         }
-        _ => bail!("Handshake problem"),
+        _ => Err(ErrorKind::Other("Handshake problem".to_string()))?,
     }
 }
 

@@ -14,7 +14,7 @@ pub struct LogCallback {
     /// The callback function to call.
     ///
     /// The sole argument is the log message record.
-    pub callback: Box<dyn Fn(&Record)>,
+    pub callback: Box<dyn Fn(&Record) + Send>,
 
     /// Verbosity level for calling the log callback function.
     pub filter: LoglevelFilter,
