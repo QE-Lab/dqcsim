@@ -1,8 +1,9 @@
 use crate::{
     configuration::{PluginConfiguration, PluginType, Seed},
+    error::{ErrorKind, Result, SimulatorConfigurationError},
     log::{tee_file::TeeFile, LoglevelFilter, Record},
 };
-use failure::{Error, Fail};
+use failure::Fail;
 use serde::{Deserialize, Serialize};
 
 /// Log callback function structure.
@@ -28,21 +29,6 @@ impl std::fmt::Debug for LogCallback {
             self.filter
         )
     }
-}
-
-/// Error structure used for reporting simulator configuration errors.
-#[derive(Debug, Fail, PartialEq)]
-enum SimulatorConfigurationError {
-    #[fail(display = "Duplicate frontend plugin")]
-    DuplicateFrontend,
-    #[fail(display = "Duplicate backend plugin")]
-    DuplicateBackend,
-    #[fail(display = "Missing frontend plugin")]
-    MissingFrontend,
-    #[fail(display = "Missing backend plugin")]
-    MissingBackend,
-    #[fail(display = "Duplicate plugin name '{}'", 0)]
-    DuplicateName(String),
 }
 
 /// The complete configuration for a DQCsim run.
@@ -103,7 +89,7 @@ impl SimulatorConfiguration {
     /// If this is true but they're not in the right place, they are silently
     /// moved. This also ensures that there are no duplicate plugin names, and
     /// auto-names empty plugin names.
-    pub fn check_plugin_list(&mut self) -> Result<(), Error> {
+    pub fn check_plugin_list(&mut self) -> Result<()> {
         // Check and fix frontend.
         let mut frontend_idx = None;
         for (i, plugin) in self.plugins.iter().enumerate() {

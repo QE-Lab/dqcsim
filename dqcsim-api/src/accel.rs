@@ -64,7 +64,7 @@ pub extern "C" fn dqcs_accel_init(scfg_handle: dqcs_handle_t) -> dqcs_return_t {
         // allowed to get a mutable reference to `STATE`, so we must make sure
         // to release our reference before that happens.
         match STATE.with(|state| state.borrow_mut().objects.remove(&scfg_handle)) {
-            Some(Object::SimulatorConfiguration(scfg_ob)) => match Simulator::try_from(scfg_ob) {
+            Some(Object::SimulatorConfiguration(scfg_ob)) => match Simulator::new(scfg_ob) {
                 Ok(sim) => {
                     accel.replace(sim);
                     dqcs_return_t::DQCS_SUCCESS

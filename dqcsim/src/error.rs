@@ -46,6 +46,9 @@ pub enum ErrorKind {
     #[fail(display = "Simulator failed")]
     SimulatorError,
 
+    #[fail(display = "{}", _0)]
+    SimulatorConfigurationError(SimulatorConfigurationError),
+
     /// Constructor error if constructor failed
     #[fail(display = "constructor failed: {}", _0)]
     ConstructFailed(String),
@@ -77,6 +80,21 @@ pub enum ErrorKind {
     // Other
     #[fail(display = "error: {}", _0)]
     Other(String),
+}
+
+/// Error structure used for reporting simulator configuration errors.
+#[derive(Debug, Clone, Fail, PartialEq, Eq)]
+pub enum SimulatorConfigurationError {
+    #[fail(display = "Duplicate frontend plugin")]
+    DuplicateFrontend,
+    #[fail(display = "Duplicate backend plugin")]
+    DuplicateBackend,
+    #[fail(display = "Missing frontend plugin")]
+    MissingFrontend,
+    #[fail(display = "Missing backend plugin")]
+    MissingBackend,
+    #[fail(display = "Duplicate plugin name '{}'", 0)]
+    DuplicateName(String),
 }
 
 impl Fail for Error {
@@ -114,6 +132,14 @@ impl From<Context<String>> for Error {
 impl From<Context<ErrorKind>> for Error {
     fn from(ctx: Context<ErrorKind>) -> Error {
         Error { ctx }
+    }
+}
+
+impl From<SimulatorConfigurationError> for Error {
+    fn from(error: SimulatorConfigurationError) -> Error {
+        Error {
+            ctx: Context::new(ErrorKind::SimulatorConfigurationError(error)),
+        }
     }
 }
 

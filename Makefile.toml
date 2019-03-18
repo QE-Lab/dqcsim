@@ -8,6 +8,11 @@ install_crate = "clippy"
 command = "cargo"
 args = ["clippy", "--", "-Dwarnings"]
 
+[tasks.fix]
+install_crate = "fix"
+command = "cargo"
+args = ["fix", "--allow-dirty", "--allow-staged"]
+
 [tasks.doc]
 command = "cargo"
 args = ["doc"]
@@ -31,6 +36,7 @@ args = ["test"]
 [tasks.commit]
 dependencies = [
     "format",
+    "fix",
     "clippy",
     "build",
     "doc",

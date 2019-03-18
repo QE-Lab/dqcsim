@@ -62,6 +62,14 @@ impl Simulator {
     /// Returns the Simulator instance or an Error.
     /// Potential errors causes are related to spawning the LogThread and
     /// constructing the Simulation.
+    pub fn new(mut configuration: SimulatorConfiguration) -> Result<Simulator> {
+        configuration.optimize_loglevels();
+        configuration.check_plugin_list()?;
+        let mut sim = Simulator::try_from(configuration)?;
+        sim.init()?;
+        Ok(sim)
+    }
+
     pub fn try_from(configuration: SimulatorConfiguration) -> Result<Simulator> {
         let log_thread = LogThread::spawn(
             configuration.stderr_level,
