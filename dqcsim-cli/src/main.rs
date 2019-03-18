@@ -10,6 +10,6 @@ fn main() -> Result<(), Error> {
         std::process::exit(1);
     });
     dbg!(&cfg);
-    Simulator::try_from(cfg.dqcsim)?.abort()?;
+    Simulator::try_from(cfg.dqcsim)?.as_mut().abort(true)?;
     Ok(())
 }

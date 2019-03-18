@@ -1,11 +1,12 @@
 use crate::{
-    configuration::{PluginConfiguration, Seed, SimulatorConfiguration},
+    configuration::{ArbCmd, ArbData, PluginConfiguration, Seed, SimulatorConfiguration},
     debug, fatal,
     log::thread::LogThread,
     plugin::Plugin,
     trace,
 };
 use failure::{bail, format_err, Error};
+use std::convert::{AsMut, AsRef};
 
 /// Simulator instance.
 ///
@@ -53,15 +54,17 @@ impl Simulator {
             }),
         }
     }
-    fn simulation_mut(&mut self) -> &mut Simulation {
+}
+
+impl AsRef<Simulation> for Simulator {
+    fn as_ref(&self) -> &Simulation {
+        self.simulation.as_ref().unwrap()
+    }
+}
+
+impl AsMut<Simulation> for Simulator {
+    fn as_mut(&mut self) -> &mut Simulation {
         self.simulation.as_mut().unwrap()
-    }
-    pub fn abort(&mut self) -> Result<(), Error> {
-        // Graceful termination
-        self.simulation_mut().abort(true)
-    }
-    pub fn kill(&mut self) -> Result<(), Error> {
-        self.simulation_mut().abort(false)
     }
 }
 
@@ -134,6 +137,104 @@ impl Simulation {
             .iter_mut()
             .for_each(|plugin| plugin.abort(graceful));
         Ok(())
+    }
+
+    /// Starts a program on the accelerator.
+    ///
+    /// This is an asynchronous call: nothing happens until `yield()`,
+    /// `recv()`, or `wait()` is called.
+    #[allow(unused)] // TODO: remove <--
+    pub fn start(&mut self, args: impl Into<ArbData>) -> Result<(), Error> {
+        // TODO
+        bail!("Not yet implemented")
+    }
+
+    /// Waits for the accelerator to finish its current program.
+    ///
+    /// When this succeeds, the return value of the accelerator's `run()`
+    /// function is returned.
+    ///
+    /// Deadlocks are detected and prevented by throwing an error message.
+    pub fn wait(&mut self) -> Result<ArbData, Error> {
+        // TODO
+        bail!("Not yet implemented")
+    }
+
+    /// Sends a message to the accelerator.
+    ///
+    /// This is an asynchronous call: nothing happens until `yield()`,
+    /// `recv()`, or `wait()` is called.
+    #[allow(unused)] // TODO: remove <--
+    pub fn send(&mut self, args: impl Into<ArbData>) -> Result<(), Error> {
+        // TODO
+        bail!("Not yet implemented")
+    }
+
+    /// Waits for the accelerator to send a message to us.
+    ///
+    /// Deadlocks are detected and prevented by throwing an error message.
+    pub fn recv(&mut self) -> Result<ArbData, Error> {
+        // TODO
+        bail!("Not yet implemented")
+    }
+
+    /// Yields to the accelerator.
+    ///
+    /// The accelerator simulation runs until it blocks again. This is useful
+    /// if you want an immediate response to an otherwise asynchronous call
+    /// through the logging system or some communication channel outside of
+    /// DQCsim's control.
+    ///
+    /// This function silently returns immediately if no asynchronous data was
+    /// pending or if the simulator is waiting for something that has not been
+    /// sent yet.
+    pub fn yield_to_frontend(&mut self) -> Result<(), Error> {
+        // TODO
+        bail!("Not yet implemented")
+    }
+
+    /// Sends an `ArbCmd` message to one of the plugins, referenced by name.
+    ///
+    /// `ArbCmd`s are executed immediately after yielding to the simulator, so
+    /// all pending asynchronous calls are flushed and executed *before* the
+    /// `ArbCmd`.
+    pub fn arb(&mut self, name: impl AsRef<str>, cmd: impl Into<ArbCmd>) -> Result<ArbData, Error> {
+        let name = name.as_ref();
+        for (idx, plugin) in self.pipeline.iter().enumerate() {
+            if plugin.name() == name {
+                return self.arb_idx(idx as isize, cmd);
+            }
+        }
+        bail!("Plugin {} not found", name)
+    }
+
+    /// Sends an `ArbCmd` message to one of the plugins, referenced by index.
+    ///
+    /// The frontend always has index 0. 1 through N are used for the operators
+    /// in front to back order (where N is the number of operators). The
+    /// backend is at index N+1.
+    ///
+    /// Python-style negative indices are supported. That is, -1 can be used to
+    /// refer to the backend, -2 to the last operator, and so on.
+    ///
+    /// `ArbCmd`s are executed immediately after yielding to the simulator, so
+    /// all pending asynchronous calls are flushed and executed *before* the
+    /// `ArbCmd`.
+    pub fn arb_idx(&mut self, index: isize, cmd: impl Into<ArbCmd>) -> Result<ArbData, Error> {
+        let mut index = index;
+        let n_plugins = self.pipeline.len();
+        if index < 0 {
+            index += n_plugins as isize;
+            if index < 0 {
+                bail!("Index {} out of range", index);
+            }
+        }
+        let index = index as usize;
+        if index >= n_plugins {
+            bail!("Index {} out of range", index);
+        }
+        self.yield_to_frontend()?;
+        self.pipeline[index].arb(cmd)
     }
 }
 

@@ -1,8 +1,11 @@
 pub mod process;
 
 use crate::{
-    configuration::PluginConfiguration, debug, log::thread::LogThread,
-    plugin::process::PluginProcess, trace,
+    configuration::{ArbCmd, ArbData, PluginConfiguration},
+    debug,
+    log::thread::LogThread,
+    plugin::process::PluginProcess,
+    trace,
 };
 use failure::{bail, Error};
 use std::{path::Path, process::Command};
@@ -44,6 +47,11 @@ impl Plugin {
         })
     }
 
+    /// Returns the name of the plugin.
+    pub fn name(&self) -> &str {
+        &self.configuration.name
+    }
+
     /// Init
     pub fn init<'a>(
         &self,
@@ -59,6 +67,13 @@ impl Plugin {
         if let Ok(Some(exit)) = self.process.abort(graceful) {
             debug!("Plugin process already exited: {}", exit);
         }
+    }
+
+    /// Sends an `ArbCmd` message to this plugin.
+    #[allow(unused)] // TODO: remove <--
+    pub fn arb(&mut self, cmd: impl Into<ArbCmd>) -> Result<ArbData, Error> {
+        // TODO
+        bail!("Not yet implemented")
     }
 }
 
