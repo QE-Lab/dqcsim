@@ -41,6 +41,8 @@ enum SimulatorConfigurationError {
     MissingFrontend,
     #[fail(display = "Missing backend plugin")]
     MissingBackend,
+    #[fail(display = "Duplicate plugin name '{}'", 0)]
+    DuplicateName(String),
 }
 
 /// The complete configuration for a DQCsim run.
@@ -99,12 +101,13 @@ impl SimulatorConfiguration {
     ///
     /// This checks that there is exactly one frontend and exactly one backend.
     /// If this is true but they're not in the right place, they are silently
-    /// moved.
+    /// moved. This also ensures that there are no duplicate plugin names, and
+    /// auto-names empty plugin names.
     pub fn check_plugin_list(&mut self) -> Result<(), Error> {
         // Check and fix frontend.
         let mut frontend_idx = None;
-        for (i, item) in self.plugins.iter().enumerate() {
-            if let PluginType::Frontend = item.specification.typ {
+        for (i, plugin) in self.plugins.iter().enumerate() {
+            if let PluginType::Frontend = plugin.specification.typ {
                 if frontend_idx.is_some() {
                     Err(SimulatorConfigurationError::DuplicateFrontend)?
                 } else {
@@ -123,8 +126,8 @@ impl SimulatorConfiguration {
 
         // Check and fix backend.
         let mut backend_idx = None;
-        for (i, item) in self.plugins.iter().enumerate() {
-            if let PluginType::Backend = item.specification.typ {
+        for (i, plugin) in self.plugins.iter().enumerate() {
+            if let PluginType::Backend = plugin.specification.typ {
                 if backend_idx.is_some() {
                     Err(SimulatorConfigurationError::DuplicateBackend)?
                 } else {
@@ -140,6 +143,23 @@ impl SimulatorConfiguration {
                 }
             }
             None => Err(SimulatorConfigurationError::MissingBackend)?,
+        }
+
+        // Auto-name plugins and check for conflicts.
+        let mut names = std::collections::HashSet::new();
+        for (i, plugin) in self.plugins.iter_mut().enumerate() {
+            if plugin.name == "" {
+                plugin.name = match plugin.specification.typ {
+                    PluginType::Frontend => "front".to_string(),
+                    PluginType::Operator => format!("op{}", i),
+                    PluginType::Backend => "back".to_string(),
+                }
+            }
+            if !names.insert(&plugin.name) {
+                Err(SimulatorConfigurationError::DuplicateName(
+                    plugin.name.clone(),
+                ))?;
+            }
         }
 
         Ok(())
