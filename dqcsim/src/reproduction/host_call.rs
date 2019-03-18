@@ -34,7 +34,7 @@ pub enum HostCall {
     Send(ArbData),
     Recv,
     Yield,
-    Arb(ArbCmd),
+    Arb(String, ArbCmd),
 }
 
 impl ::std::str::FromStr for HostCall {
@@ -47,7 +47,7 @@ impl ::std::str::FromStr for HostCall {
     ///  - `send:<ArbData>`
     ///  - `recv`
     ///  - `yield`
-    ///  - `arb:<ArbCmd>`
+    ///  - `arb:<plugin>:<ArbCmd>`
     ///
     /// The function names may also be abbreviated.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -71,7 +71,7 @@ impl ::std::str::FromStr for HostCall {
                 HostCallFunction::Recv => Ok(HostCall::Recv),
                 HostCallFunction::Yield => Ok(HostCall::Yield),
                 HostCallFunction::Arb => Err(HostCallError::ParseError(
-                    "The arb API call requires an ArbCmd argument.".to_string(),
+                    "The arb API call requires a plugin and an ArbCmd argument.".to_string(),
                 ))?,
             },
             Some(argument) => match function {
@@ -86,7 +86,19 @@ impl ::std::str::FromStr for HostCall {
                 HostCallFunction::Yield => Err(HostCallError::ParseError(
                     "The yield API call does not take an argument.".to_string(),
                 ))?,
-                HostCallFunction::Arb => Ok(HostCall::Arb(ArbCmd::from_str(argument)?)),
+                HostCallFunction::Arb => {
+                    let mut splitter = argument.splitn(2, ':');
+                    let arg1 = splitter.next().unwrap();
+                    if let Some(arg2) = splitter.next() {
+                        assert_eq!(splitter.next(), None);
+                        Ok(HostCall::Arb(arg1.to_string(), ArbCmd::from_str(arg2)?))
+                    } else {
+                        Err(HostCallError::ParseError(
+                            "The arb API call requires a plugin and an ArbCmd argument."
+                                .to_string(),
+                        ))?
+                    }
+                }
             },
         }
     }
@@ -102,7 +114,7 @@ impl ::std::fmt::Display for HostCall {
             HostCall::Send(ref a) => write!(f, "send:{}", a),
             HostCall::Recv => write!(f, "recv"),
             HostCall::Yield => write!(f, "yield"),
-            HostCall::Arb(ref a) => write!(f, "arb:{}", a),
+            HostCall::Arb(ref p, ref a) => write!(f, "arb:{}:{}", p, a),
         }
     }
 }
@@ -160,11 +172,18 @@ mod test {
         );
         assert_eq!(
             HostCall::from_str("arb").unwrap_err().to_string(),
-            "The arb API call requires an ArbCmd argument."
+            "The arb API call requires a plugin and an ArbCmd argument."
         );
         assert_eq!(
-            HostCall::from_str("arb:a.b:{\"answer\": 42},x,y,z").unwrap(),
-            HostCall::Arb(ArbCmd::from_str("a.b:{\"answer\": 42},x,y,z").unwrap())
+            HostCall::from_str("arb:a").unwrap_err().to_string(),
+            "The arb API call requires a plugin and an ArbCmd argument."
+        );
+        assert_eq!(
+            HostCall::from_str("arb:a:b.c:{\"answer\": 42},x,y,z").unwrap(),
+            HostCall::Arb(
+                "a".to_string(),
+                ArbCmd::from_str("b.c:{\"answer\": 42},x,y,z").unwrap()
+            )
         );
         assert_eq!(
             HostCall::from_str("hello").unwrap_err().to_string(),
