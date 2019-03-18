@@ -8,13 +8,16 @@ use crate::{
     trace,
 };
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SimulationState {
+    /// Simulation pipeline is constructed.
     Constructed,
+    /// Simulation spawned plugins in pipeline.
     Spawned,
+    /// Simulation initalized plugins in pipeline.
+    ///
+    /// This includes upstream and downstream channel setup.
     Initialized,
-    Running,
-    Stopped,
 }
 
 /// Simulation instance.
@@ -35,7 +38,7 @@ impl Simulation {
         trace!("Constructing Simulation");
         if plugins.len() < 2 {
             Err(ErrorKind::ConstructFailed(
-                "Simulation consists at least a frontend and backend".to_string(),
+                "Simulation must consist of at least a frontend and backend".to_string(),
             ))?
         }
 
@@ -93,7 +96,7 @@ impl Simulation {
     ///
     /// Initialize the [`Simulation`] by spawning the plugin processes and
     /// initializing the plugins.
-    pub fn init(&self) -> Result<()> {
+    pub fn init(&mut self) -> Result<()> {
         trace!("Initialize Simulation");
         match self.state {
             SimulationState::Spawned => {
@@ -101,6 +104,7 @@ impl Simulation {
                     .first()
                     .unwrap()
                     .init(None, self.pipeline.iter().skip(1).by_ref())?;
+                    self.state = SimulationState::Initialized;
                     Ok(())
             },
             _ => {
@@ -128,8 +132,10 @@ impl Simulation {
     /// `recv()`, or `wait()` is called.
     #[allow(unused)] // TODO: remove <--
     pub fn start(&mut self, args: impl Into<ArbData>) -> Result<()> {
-        // TODO
-        Err(ErrorKind::Other("Not yet implemented".to_string()))?
+        if self.state != SimulationState::Initialized {
+            Err(ErrorKind::InvalidOperation(format!("init functions requires the simulation to be in the Initialized state. Current state: {:?}", self.state)))?
+        }
+        Ok(())
     }
 
     /// Waits for the accelerator to finish its current program.
@@ -139,8 +145,10 @@ impl Simulation {
     ///
     /// Deadlocks are detected and prevented by throwing an error message.
     pub fn wait(&mut self) -> Result<ArbData> {
-        // TODO
-        Err(ErrorKind::Other("Not yet implemented".to_string()))?
+        if self.state != SimulationState::Initialized {
+            Err(ErrorKind::InvalidOperation(format!("init functions requires the simulation to be in the Initialized state. Current state: {:?}", self.state)))?
+        }
+        Ok(ArbData::default())
     }
 
     /// Sends a message to the accelerator.
@@ -237,5 +245,7 @@ impl Simulation {
 impl Drop for Simulation {
     fn drop(&mut self) {
         trace!("Dropping Simulation");
+
+        // TODO: send abort to all plugins. Then wait and collect exit.
     }
 }

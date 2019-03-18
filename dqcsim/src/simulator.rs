@@ -86,32 +86,9 @@ impl Simulator {
     pub fn init(&mut self) -> Result<()> {
         trace!("Initialize Simulator");
         let sender = self.log_thread.get_sender().unwrap();
-        self.simulation_mut().spawn(sender)?;
-        self.simulation_ref().init()
+        self.as_mut().spawn(sender)?;
+        self.as_mut().init()
     }
-
-    /// Returns reference to Simulation.
-    fn simulation_ref(&self) -> &Simulation {
-        self.simulation.as_ref().unwrap()
-    }
-
-    /// Returns mutable reference to Simulation.
-    fn simulation_mut(&mut self) -> &mut Simulation {
-        self.simulation.as_mut().unwrap()
-    }
-
-    // /// Abort the simulation. This sends a Request to all Plugins in the
-    // /// Simulation to gracefully terminate.
-    // pub fn abort(&mut self) -> Result<(), Error> {
-    //     // Graceful termination
-    //     self.simulation_mut().abort(true)
-    // }
-    //
-    // /// Kill the simulation. Sends SIGKILL to all the Plugins in the
-    // /// Simulation.
-    // pub fn kill(&mut self) -> Result<(), Error> {
-    //     self.simulation_mut().abort(false)
-    // }
 }
 
 impl Drop for Simulator {
@@ -130,16 +107,16 @@ mod tests {
         PluginConfiguration, PluginSpecification, PluginType, SimulatorConfiguration,
     };
 
-    // #[test]
-    // fn default_configuration() {
-    //     // Default SimulatorConfiguration is not supposed to work.
-    //     let simulator = Simulator::try_from(SimulatorConfiguration::default());
-    //     assert!(simulator.is_err());
-    //     assert_eq!(
-    //         format!("{}", simulator.err().unwrap()),
-    //         "Simulation consists of at least a frontend and backend"
-    //     );
-    // }
+    #[test]
+    fn default_configuration() {
+        // Default SimulatorConfiguration is not supposed to work.
+        let simulator = Simulator::try_from(SimulatorConfiguration::default());
+        assert!(simulator.is_err());
+        assert_eq!(
+            format!("{}", simulator.err().unwrap()),
+            "constructor failed: Simulation must consist of at least a frontend and backend"
+        );
+    }
 
     #[test]
     fn frontend_backend() {

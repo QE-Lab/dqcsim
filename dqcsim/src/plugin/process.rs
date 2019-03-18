@@ -1,5 +1,4 @@
 use crate::{
-    error,
     error::Result,
     info,
     ipc::{simulator::start, SimulatorChannel},
@@ -65,6 +64,7 @@ impl Drop for PluginProcess {
                 .expect("Failed to abort PluginProcess");
 
             // No timeout support for ipc-channel, so we wait.
+            // TODO: poll loop with longer timeout
             std::thread::sleep(std::time::Duration::from_millis(100));
             match self.channel.response.try_recv() {
                 Ok(Response::Success) => {}
@@ -87,7 +87,7 @@ impl Drop for PluginProcess {
                     info!("{}", msg)
                 }
             }
-            None => error!("PluginProcess terminated by signal"),
+            None => warn!("PluginProcess terminated by signal"),
         }
     }
 }
