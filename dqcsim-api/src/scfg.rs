@@ -18,6 +18,27 @@ fn with_scfg<T>(
     })
 }
 
+/// Constructs an empty simulation configuration.
+///
+/// Before the configuration can be used, at least a frontend and a backend
+/// plugin configuration must be pushed into it. This can be done with
+/// `dqcs_scfg_push_plugin()`. Failing to do this will result in an error when
+/// you try to start the simulation.
+///
+/// The default settings correspond to the defaults of the `dqcsim` command
+/// line interface. Refer to its help for more information.
+#[no_mangle]
+pub extern "C" fn dqcs_scfg_new() -> dqcs_handle_t {
+    with_state(
+        || 0,
+        |mut state| {
+            Ok(state.push(Object::SimulatorConfiguration(
+                SimulatorConfiguration::default(),
+            )))
+        },
+    )
+}
+
 /// Appends a plugin to a simulation configuration.
 ///
 /// Frontend and backend plugins will automatically be inserted at the front
