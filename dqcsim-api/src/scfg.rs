@@ -4,20 +4,6 @@ use dqcsim::log::tee_file::TeeFile;
 use failure::Error;
 use std::time::*;
 
-/// Convenience function for writing functions that operate on
-/// `SimulatorConfiguration`s.
-fn with_scfg<T>(
-    handle: dqcs_handle_t,
-    error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut SimulatorConfiguration) -> Result<T, Error>,
-) -> T {
-    with_state(error, |mut state| match state.objects.get_mut(&handle) {
-        Some(Object::SimulatorConfiguration(x)) => call(x),
-        Some(_) => Err(APIError::UnsupportedHandle(handle).into()),
-        None => Err(APIError::InvalidHandle(handle).into()),
-    })
-}
-
 /// Constructs an empty simulation configuration.
 ///
 /// Before the configuration can be used, at least a frontend and a backend

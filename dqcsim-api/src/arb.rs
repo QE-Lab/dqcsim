@@ -1,20 +1,5 @@
 use super::*;
-use failure::Error;
 use std::ptr::{null, null_mut};
-
-/// Convenience function for writing functions that operate on `ArbData`s.
-fn with_arb<T>(
-    handle: dqcs_handle_t,
-    error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut ArbData) -> Result<T, Error>,
-) -> T {
-    with_state(error, |mut state| match state.objects.get_mut(&handle) {
-        Some(Object::ArbData(x)) => call(x),
-        Some(Object::ArbCmd(x)) => call(x.data_mut()),
-        Some(_) => Err(APIError::UnsupportedHandle(handle).into()),
-        None => Err(APIError::InvalidHandle(handle).into()),
-    })
-}
 
 /// Creates a new `ArbData` object.
 ///

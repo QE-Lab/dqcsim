@@ -1,19 +1,5 @@
 use super::*;
-use failure::Error;
 use std::ptr::null;
-
-/// Convenience function for writing functions that operate on `ArbCmd`s.
-fn with_cmd<T>(
-    handle: dqcs_handle_t,
-    error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut ArbCmd) -> Result<T, Error>,
-) -> T {
-    with_state(error, |mut state| match state.objects.get_mut(&handle) {
-        Some(Object::ArbCmd(x)) => call(x),
-        Some(_) => Err(APIError::UnsupportedHandle(handle).into()),
-        None => Err(APIError::InvalidHandle(handle).into()),
-    })
-}
 
 /// Creates a new `ArbCmd` object.
 ///

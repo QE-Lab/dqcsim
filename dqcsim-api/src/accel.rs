@@ -1,7 +1,6 @@
 use super::*;
 use dqcsim::simulator::Simulator;
-//use failure::Error;
-//use std::ptr::{null, null_mut};
+use failure::Error;
 
 /// Simulator/accelerator object storage. There can be only one
 /// simulator/accelerator per thread.
@@ -11,7 +10,7 @@ thread_local! {
 
 /// Convenience function for writing functions that operate on the accelerator
 /// instance.
-/*fn with_accel<T>(
+fn with_accel<T>(
     error: impl FnOnce() -> T,
     call: impl FnOnce(&mut Simulator) -> Result<T, Error>,
 ) -> T {
@@ -32,7 +31,7 @@ thread_local! {
             error()
         }
     })
-}*/
+}
 
 /// Constructs a DQCsim simulation.
 ///
@@ -121,4 +120,169 @@ pub extern "C" fn dqcs_accel_drop() -> dqcs_return_t {
             dqcs_return_t::DQCS_SUCCESS
         }
     })
+}
+
+/// Starts a program on the accelerator.
+///
+/// This is an asynchronous call: nothing happens until `yield()`,
+/// `recv()`, or `wait()` is called.
+///
+/// The `ArbData` handle is optional; if 0 is passed, an empty data object is
+/// used. If a handle is passed, it is consumed if and only if the API call
+/// succeeds.
+#[no_mangle]
+pub extern "C" fn dqcs_accel_start(data: dqcs_handle_t) -> dqcs_return_t {
+    with_accel(
+        || dqcs_return_t::DQCS_FAILURE,
+        |accel| {
+            take_arb(data, |data| {
+                accel
+                    .as_mut()
+                    .start(data.clone())
+                    .map(|_| dqcs_return_t::DQCS_SUCCESS)
+            })
+        },
+    )
+}
+
+/// Waits for the accelerator to finish its current program.
+///
+/// When this succeeds, the return value of the accelerator's `run()`
+/// function is returned in the form of a new handle. When it fails, 0 is
+/// returned.
+///
+/// Deadlocks are detected and prevented by returning an error.
+#[no_mangle]
+pub extern "C" fn dqcs_accel_wait() -> dqcs_handle_t {
+    with_accel(
+        || 0,
+        |accel| {
+            accel
+                .as_mut()
+                .wait()
+                .map(|d| STATE.with(|state| state.borrow_mut().push(Object::ArbData(d))))
+        },
+    )
+}
+
+/// Sends a message to the accelerator.
+///
+/// This is an asynchronous call: nothing happens until `yield()`,
+/// `recv()`, or `wait()` is called.
+///
+/// The `ArbData` handle is optional; if 0 is passed, an empty data object is
+/// used. If a handle is passed, it is consumed if and only if the API call
+/// succeeds.
+#[no_mangle]
+pub extern "C" fn dqcs_accel_send(data: dqcs_handle_t) -> dqcs_return_t {
+    with_accel(
+        || dqcs_return_t::DQCS_FAILURE,
+        |accel| {
+            take_arb(data, |data| {
+                accel
+                    .as_mut()
+                    .send(data.clone())
+                    .map(|_| dqcs_return_t::DQCS_SUCCESS)
+            })
+        },
+    )
+}
+
+/// Waits for the accelerator to send a message to us.
+///
+/// When this succeeds, the received data is returned in the form of a new
+/// handle. When it fails, 0 is returned.
+///
+/// Deadlocks are detected and prevented by returning an error.
+#[no_mangle]
+pub extern "C" fn dqcs_accel_recv() -> dqcs_handle_t {
+    with_accel(
+        || 0,
+        |accel| {
+            accel
+                .as_mut()
+                .recv()
+                .map(|d| STATE.with(|state| state.borrow_mut().push(Object::ArbData(d))))
+        },
+    )
+}
+
+/// Yields to the accelerator.
+///
+/// The accelerator simulation runs until it blocks again. This is useful
+/// if you want an immediate response to an otherwise asynchronous call
+/// through the logging system or some communication channel outside of
+/// DQCsim's control.
+///
+/// This function silently returns immediately if no asynchronous data was
+/// pending or if the simulator is waiting for something that has not been
+/// sent yet.
+#[no_mangle]
+pub extern "C" fn dqcs_accel_yield() -> dqcs_return_t {
+    with_accel(
+        || dqcs_return_t::DQCS_FAILURE,
+        |accel| {
+            accel
+                .as_mut()
+                .yield_to_frontend()
+                .map(|_| dqcs_return_t::DQCS_SUCCESS)
+        },
+    )
+}
+
+/// Sends an `ArbCmd` message to one of the plugins, referenced by name.
+///
+/// `ArbCmd`s are executed immediately after yielding to the simulator, so
+/// all pending asynchronous calls are flushed and executed *before* the
+/// `ArbCmd`.
+///
+/// When this succeeds, the received data is returned in the form of a new
+/// handle. When it fails, 0 is returned.
+///
+/// The `ArbCmd` handle is consumed if and only if the API call succeeds.
+#[no_mangle]
+pub extern "C" fn dqcs_accel_arb(name: *const c_char, cmd: dqcs_handle_t) -> dqcs_handle_t {
+    with_accel(
+        || 0,
+        |accel| {
+            take_cmd(cmd, |cmd| {
+                accel
+                    .as_mut()
+                    .arb(receive_str(name)?, cmd.clone())
+                    .map(|d| STATE.with(|state| state.borrow_mut().push(Object::ArbData(d))))
+            })
+        },
+    )
+}
+
+/// Sends an `ArbCmd` message to one of the plugins, referenced by index.
+///
+/// The frontend always has index 0. 1 through N are used for the operators
+/// in front to back order (where N is the number of operators). The
+/// backend is at index N+1.
+///
+/// Python-style negative indices are supported. That is, -1 can be used to
+/// refer to the backend, -2 to the last operator, and so on.
+///
+/// `ArbCmd`s are executed immediately after yielding to the simulator, so
+/// all pending asynchronous calls are flushed and executed *before* the
+/// `ArbCmd`.
+///
+/// When this succeeds, the received data is returned in the form of a new
+/// handle. When it fails, 0 is returned.
+///
+/// The `ArbCmd` handle is consumed if and only if the API call succeeds.
+#[no_mangle]
+pub extern "C" fn dqcs_accel_arb_idx(index: ssize_t, cmd: dqcs_handle_t) -> dqcs_handle_t {
+    with_accel(
+        || 0,
+        |accel| {
+            take_cmd(cmd, |cmd| {
+                accel
+                    .as_mut()
+                    .arb_idx(index, cmd.clone())
+                    .map(|d| STATE.with(|state| state.borrow_mut().push(Object::ArbData(d))))
+            })
+        },
+    )
 }
