@@ -24,13 +24,20 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn init(simulator: impl Into<String>, plugin_type: PluginType) -> Result<Connection> {
+    pub fn init(
+        name: impl Into<String>,
+        simulator: impl Into<String>,
+        plugin_type: PluginType,
+    ) -> Result<Connection> {
         let mut incoming = IpcReceiverSet::new()?;
         let mut map = HashMap::with_capacity(3);
 
         let channel: PluginChannel = connect_simulator(simulator)?;
 
-        init(LogProxy::boxed(channel.log.clone()), LoglevelFilter::Trace)?;
+        init(
+            LogProxy::boxed(name, channel.log.clone()),
+            LoglevelFilter::Trace,
+        )?;
 
         initialize(&channel, plugin_type)?;
 

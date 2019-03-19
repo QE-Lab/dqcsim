@@ -1,6 +1,5 @@
 use crate::{
-    configuration::{PluginConfiguration, PluginType, Seed},
-    error::{inv_arg, Result},
+    configuration::{PluginConfiguration, Seed},
     log::{tee_file::TeeFile, LoglevelFilter, Record},
 };
 use serde::{Deserialize, Serialize};
@@ -52,101 +51,6 @@ pub struct SimulatorConfiguration {
 
     /// The plugin configurations, from front to back.
     pub plugins: Vec<PluginConfiguration>,
-}
-
-impl SimulatorConfiguration {
-    /// Optimizes the source verbosity levels, such that they are no more
-    /// verbose than the most verbose sink.
-    pub fn optimize_loglevels(&mut self) {
-        // Find the verbosity of the most verbose sink.
-        let mut max_dqcsim_verbosity = self.stderr_level;
-        for tee in &self.tee_files {
-            if tee.filter > max_dqcsim_verbosity {
-                max_dqcsim_verbosity = tee.filter;
-            }
-        }
-        if let Some(cb) = self.log_callback.as_ref() {
-            if cb.filter > max_dqcsim_verbosity {
-                max_dqcsim_verbosity = cb.filter;
-            }
-        }
-
-        // Clamp the verbosities of the sources.
-        if self.dqcsim_level > max_dqcsim_verbosity {
-            self.dqcsim_level = max_dqcsim_verbosity;
-        }
-        for plugin in &mut self.plugins {
-            if plugin.nonfunctional.verbosity > max_dqcsim_verbosity {
-                plugin.nonfunctional.verbosity = max_dqcsim_verbosity;
-            }
-        }
-    }
-
-    /// Verifies that the plugins are specified correctly.
-    ///
-    /// This checks that there is exactly one frontend and exactly one backend.
-    /// If this is true but they're not in the right place, they are silently
-    /// moved. This also ensures that there are no duplicate plugin names, and
-    /// auto-names empty plugin names.
-    pub fn check_plugin_list(&mut self) -> Result<()> {
-        // Check and fix frontend.
-        let mut frontend_idx = None;
-        for (i, plugin) in self.plugins.iter().enumerate() {
-            if let PluginType::Frontend = plugin.specification.typ {
-                if frontend_idx.is_some() {
-                    inv_arg("duplicate frontend")?
-                } else {
-                    frontend_idx = Some(i);
-                }
-            }
-        }
-        match frontend_idx {
-            Some(0) => (),
-            Some(x) => {
-                let plugin = self.plugins.remove(x);
-                self.plugins.insert(0, plugin);
-            }
-            None => inv_arg("missing frontend")?,
-        }
-
-        // Check and fix backend.
-        let mut backend_idx = None;
-        for (i, plugin) in self.plugins.iter().enumerate() {
-            if let PluginType::Backend = plugin.specification.typ {
-                if backend_idx.is_some() {
-                    inv_arg("duplicate backend")?
-                } else {
-                    backend_idx = Some(i);
-                }
-            }
-        }
-        match backend_idx {
-            Some(x) => {
-                if x != self.plugins.len() - 1 {
-                    let plugin = self.plugins.remove(x);
-                    self.plugins.push(plugin);
-                }
-            }
-            None => inv_arg("missing backend")?,
-        }
-
-        // Auto-name plugins and check for conflicts.
-        let mut names = std::collections::HashSet::new();
-        for (i, plugin) in self.plugins.iter_mut().enumerate() {
-            if plugin.name == "" {
-                plugin.name = match plugin.specification.typ {
-                    PluginType::Frontend => "front".to_string(),
-                    PluginType::Operator => format!("op{}", i),
-                    PluginType::Backend => "back".to_string(),
-                }
-            }
-            if !names.insert(&plugin.name) {
-                inv_arg(format!("duplicate plugin name '{}'", plugin.name))?;
-            }
-        }
-
-        Ok(())
-    }
 }
 
 impl Default for SimulatorConfiguration {

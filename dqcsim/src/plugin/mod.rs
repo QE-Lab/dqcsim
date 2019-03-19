@@ -8,7 +8,7 @@ use crate::{
     protocol::message::{InitializeRequest, Request, Response},
     trace,
 };
-use std::{path::Path, process::Command};
+use std::process::Command;
 
 /// The Plugin structure used in a Simulator.
 #[derive(Debug)]
@@ -28,16 +28,22 @@ impl Plugin {
     pub fn try_from(configuration: PluginConfiguration) -> Result<Plugin> {
         trace!("Constructing Plugin: {}", &configuration.name);
 
-        let target = Path::new("target/debug/dqcsim-plugin");
+        let target = &configuration.specification.executable;
 
-        if !target.exists() || !target.is_file() {
+        if !target.is_file() {
             Err(ErrorKind::InvalidArgument(format!(
                 "Plugin ({:?}) not found",
                 target
             )))?
         }
 
-        let command = Command::new(target);
+        let mut command = Command::new(target);
+
+        // We don't check for existence as this is not neccesarily a existing path.
+        // It's the responsibility of the plugin to check this.
+        if configuration.specification.script.is_some() {
+            command.arg(configuration.specification.script.as_ref().unwrap());
+        }
 
         Ok(Plugin {
             configuration,
@@ -51,12 +57,22 @@ impl Plugin {
         &self.configuration.name
     }
 
+    /// Returns a reference to the plugin's command.
+    #[doc(hidden)]
+    pub fn command(&self) -> &Command {
+        &self.command
+    }
+
     fn process_ref(&self) -> &PluginProcess {
         self.process.as_ref().unwrap()
     }
 
     pub fn spawn(&mut self, log_sender: crossbeam_channel::Sender<Record>) -> Result<()> {
-        let process = PluginProcess::new(self.command.arg(&self.configuration.name), log_sender)?;
+        let process = PluginProcess::new(
+            &self.configuration,
+            self.command.arg(&self.configuration.name),
+            log_sender,
+        )?;
         self.process = Some(process);
         Ok(())
     }
@@ -102,5 +118,30 @@ impl Plugin {
 impl Drop for Plugin {
     fn drop(&mut self) {
         trace!("Dropping Plugin: {}", self.configuration.name);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Plugin;
+    use crate::configuration::{PluginConfiguration, PluginSpecification, PluginType};
+    use std::process::Command;
+
+    #[test]
+    fn with_script() {
+        let current = std::env::current_exe().unwrap();
+
+        let spec =
+            PluginSpecification::new(current.clone(), Some(current.clone()), PluginType::Operator);
+
+        let configuration = PluginConfiguration::new("test", spec);
+        let plugin = Plugin::try_from(configuration);
+        assert!(plugin.is_ok());
+
+        let plugin = plugin.unwrap();
+        assert_eq!(
+            format!("{:?}", plugin.command()),
+            format!("{:?}", Command::new(current.clone()).arg(current))
+        );
     }
 }

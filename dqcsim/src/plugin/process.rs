@@ -1,4 +1,5 @@
 use crate::{
+    configuration::PluginConfiguration,
     error::Result,
     info,
     ipc::{simulator::start, SimulatorChannel},
@@ -16,21 +17,31 @@ pub struct PluginProcess {
 }
 
 impl PluginProcess {
-    pub fn new(command: &mut Command, sender: Sender<Record>) -> Result<PluginProcess> {
+    pub fn new(
+        configuration: &PluginConfiguration,
+        command: &mut Command,
+        sender: Sender<Record>,
+    ) -> Result<PluginProcess> {
         trace!("Constructing PluginProcess: {:?}", command);
 
         let (mut child, mut channel) = start(command, None)?;
 
-        route(channel.log().unwrap(), sender.clone());
+        route(
+            configuration.name.as_str(),
+            channel.log().unwrap(),
+            sender.clone(),
+        );
 
         // Log piped stdout/stderr
         proxy_stdio(
+            format!("{}::stderr", configuration.name.as_str()),
             Box::new(child.stderr.take().expect("stderr")),
             sender.clone(),
             Loglevel::Error,
         );
 
         proxy_stdio(
+            format!("{}::stdout", configuration.name.as_str()),
             Box::new(child.stdout.take().expect("stdout")),
             sender,
             Loglevel::Info,
