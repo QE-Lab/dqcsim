@@ -2,7 +2,7 @@
 
 use crate::{
     configuration::{ArbCmd, ArbData, PluginConfiguration, Seed},
-    error::{Error, ErrorKind, Result},
+    error::{err, inv_arg, inv_op, ErrorKind, Result},
     log::Record,
     plugin::Plugin,
     trace,
@@ -37,9 +37,7 @@ impl Simulation {
     pub fn new(plugins: Vec<PluginConfiguration>, seed: Seed) -> Result<Simulation> {
         trace!("Constructing Simulation");
         if plugins.len() < 2 {
-            Err(ErrorKind::ConstructFailed(
-                "Simulation must consist of at least a frontend and backend".to_string(),
-            ))?
+            inv_arg("Simulation must consist of at least a frontend and backend")?
         }
 
         let (plugins, errors): (Vec<_>, Vec<_>) = plugins
@@ -51,13 +49,12 @@ impl Simulation {
         let pipeline: Vec<Plugin> = plugins.into_iter().map(Result::unwrap).collect();
 
         if !errors.is_empty() {
-            Err(ErrorKind::ConstructFailed(format!(
-                "{:?}",
+            Err(ErrorKind::Multiple(
                 errors
                     .into_iter()
-                    .map(Result::unwrap_err)
-                    .collect::<Vec<Error>>()
-            )))?
+                    .map(|x| Box::new(ErrorKind::Other(x.unwrap_err().to_string())))
+                    .collect(),
+            ))?
         }
 
         Ok(Simulation {
@@ -79,13 +76,11 @@ impl Simulation {
                     .map(|plugin| plugin.spawn(log_sender.clone()))
                     .partition(Result::is_ok);
                 if !errors.is_empty() {
-                    Err(ErrorKind::Other("Failed to spawn plugin(s)".to_string()))?
+                    err("Failed to spawn plugin(s)")?
                 }
             }
             _ => {
-                Err(
-                    ErrorKind::InvalidOperation(
-                        format!("spawn functions requires the simulation to be in the Constructed state. Current state: {:?}", self.state)))?
+                inv_op(format!("spawn functions requires the simulation to be in the Constructed state. Current state: {:?}", self.state))?
             }
         }
         self.state = SimulationState::Spawned;
@@ -108,7 +103,7 @@ impl Simulation {
                     Ok(())
             },
             _ => {
-                Err(ErrorKind::InvalidOperation(format!("init functions requires the simulation to be in the Spawned state. Current state: {:?}", self.state)))?
+                inv_op(format!("init functions requires the simulation to be in the Spawned state. Current state: {:?}", self.state))?
             }
         }
     }
@@ -133,7 +128,7 @@ impl Simulation {
     #[allow(unused)] // TODO: remove <--
     pub fn start(&mut self, args: impl Into<ArbData>) -> Result<()> {
         if self.state != SimulationState::Initialized {
-            Err(ErrorKind::InvalidOperation(format!("init functions requires the simulation to be in the Initialized state. Current state: {:?}", self.state)))?
+            inv_op(format!("init functions requires the simulation to be in the Initialized state. Current state: {:?}", self.state))?
         }
         Ok(())
     }
@@ -146,7 +141,7 @@ impl Simulation {
     /// Deadlocks are detected and prevented by throwing an error message.
     pub fn wait(&mut self) -> Result<ArbData> {
         if self.state != SimulationState::Initialized {
-            Err(ErrorKind::InvalidOperation(format!("init functions requires the simulation to be in the Initialized state. Current state: {:?}", self.state)))?
+            inv_op(format!("init functions requires the simulation to be in the Initialized state. Current state: {:?}", self.state))?
         }
         Ok(ArbData::default())
     }
@@ -158,7 +153,7 @@ impl Simulation {
     #[allow(unused)] // TODO: remove <--
     pub fn send(&mut self, args: impl Into<ArbData>) -> Result<()> {
         // TODO
-        Err(ErrorKind::Other("Not yet implemented".to_string()))?
+        inv_op("Not yet implemented")
     }
 
     /// Waits for the accelerator to send a message to us.
@@ -166,7 +161,7 @@ impl Simulation {
     /// Deadlocks are detected and prevented by throwing an error message.
     pub fn recv(&mut self) -> Result<ArbData> {
         // TODO
-        Err(ErrorKind::Other("Not yet implemented".to_string()))?
+        inv_op("Not yet implemented")
     }
 
     /// Yields to the accelerator.
@@ -181,7 +176,7 @@ impl Simulation {
     /// sent yet.
     pub fn yield_to_frontend(&mut self) -> Result<()> {
         // TODO
-        Err(ErrorKind::Other("Not yet implemented".to_string()))?
+        inv_op("Not yet implemented")
     }
 
     /// Sends an `ArbCmd` message to one of the plugins, referenced by name.
@@ -196,7 +191,7 @@ impl Simulation {
                 return self.arb_idx(idx as isize, cmd);
             }
         }
-        Err(ErrorKind::Other(format!("Plugin {} not found", name)))?
+        inv_arg(format!("Plugin {} not found", name))
     }
 
     /// Sends an `ArbCmd` message to one of the plugins, referenced by index.
@@ -217,12 +212,12 @@ impl Simulation {
         if index < 0 {
             index += n_plugins as isize;
             if index < 0 {
-                Err(ErrorKind::Other(format!("Index {} out of range", index)))?
+                inv_arg(format!("Index {} out of range", index))?
             }
         }
         let index = index as usize;
         if index >= n_plugins {
-            Err(ErrorKind::Other(format!("Index {} out of range", index)))?
+            inv_arg(format!("Index {} out of range", index))?
         }
         self.yield_to_frontend()?;
         self.pipeline[index].arb(cmd)

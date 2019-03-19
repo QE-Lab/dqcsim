@@ -97,7 +97,7 @@ mod tests {
         );
         assert!(timeout.is_err());
         let err = timeout.err().unwrap();
-        assert_eq!(format!("{}", err), "error: Channel setup timeout");
+        assert_eq!(format!("{}", err), "Error: Channel setup timeout");
     }
 
 }

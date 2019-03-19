@@ -1,9 +1,8 @@
 use crate::{
     configuration::{PluginConfiguration, PluginType, Seed},
-    error::{ErrorKind, Result, SimulatorConfigurationError},
+    error::{Result, SimulatorConfigurationError},
     log::{tee_file::TeeFile, LoglevelFilter, Record},
 };
-use failure::Fail;
 use serde::{Deserialize, Serialize};
 
 /// Log callback function structure.

@@ -122,7 +122,7 @@ mod tests {
         assert!(simulator.is_err());
         assert_eq!(
             format!("{}", simulator.err().unwrap()),
-            "constructor failed: Simulation must consist of at least a frontend and backend"
+            "Invalid argument: Simulation must consist of at least a frontend and backend"
         );
     }
 

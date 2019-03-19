@@ -31,7 +31,7 @@ impl Plugin {
         let target = Path::new("target/debug/dqcsim-plugin");
 
         if !target.exists() || !target.is_file() {
-            Err(ErrorKind::ConstructFailed(format!(
+            Err(ErrorKind::InvalidArgument(format!(
                 "Plugin ({:?}) not found",
                 target
             )))?

@@ -42,8 +42,10 @@ impl LogThread {
 
         // Spawn the local channel log thread.
         let handler = thread::spawn(move || {
+            // FIXME: if we're not logging to stderr, we shouldn't acquire it.
+            // (but right now this setting isn't available here yet anyway)
             let mut t = stderr()
-                .ok_or_else(|| ErrorKind::TermError("failed to wrap terminal".to_string()))?;
+                .ok_or_else(|| ErrorKind::LogError("Failed to acquire stderr".to_string()))?;
 
             let supports_dim = t.supports_attr(term::Attr::Dim);
             let supports_colors = t.supports_attr(term::Attr::ForegroundColor(9));

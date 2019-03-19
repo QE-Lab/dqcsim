@@ -40,49 +40,74 @@ pub struct Error {
     ctx: Context<ErrorKind>,
 }
 
-#[derive(Clone, Eq, PartialEq, Debug, Fail)]
+#[derive(PartialEq, Debug, Fail)]
 pub enum ErrorKind {
-    /// Simulator errors
-    #[fail(display = "Simulator failed")]
-    SimulatorError,
-
+    // TODO: remove
     #[fail(display = "{}", _0)]
     SimulatorConfigurationError(SimulatorConfigurationError),
 
-    /// Constructor error if constructor failed
-    #[fail(display = "constructor failed: {}", _0)]
-    ConstructFailed(String),
-
-    // LogError
-    #[fail(display = "log error: {}", _0)]
+    /// LogError
+    #[fail(display = "Log error: {}", _0)]
     LogError(String),
 
-    // Broken state
-    #[fail(display = "simulator in broken state: {}", _0)]
-    BrokenState(String),
+    /// Generic invalid argument: use when a function is called in a way it
+    /// shouldn't be.
+    #[fail(display = "Invalid argument: {}", _0)]
+    InvalidArgument(String),
 
-    // Invalid operation
-    #[fail(display = "invalid operation: {}", _0)]
+    /// Generic invalid operation: use when a function is called while it
+    /// shouldn't be.
+    #[fail(display = "Invalid operation: {}", _0)]
     InvalidOperation(String),
 
-    // crossbeam_channel erro
-    #[fail(display = "channel operation failed: {}", _0)]
-    ChannelError(String),
-
-    // std::io::Error
-    #[fail(display = "io error: {}", _0)]
-    IoError(String),
-
-    // term::Error
-    #[fail(display = "term error: {}", _0)]
-    TermError(String),
-
-    // Other
-    #[fail(display = "error: {}", _0)]
+    /// Generic error: use when an error doesn't fit in the above categories
+    /// and you're too lazy to define one properly.
+    #[fail(display = "Error: {}", _0)]
     Other(String),
+
+    /// Wraps multiple errors that occurred asynchronously.
+    #[fail(display = "Multiple errors occurred. Check the log.")]
+    Multiple(Vec<Box<ErrorKind>>),
+
+    /// For propagating crossbeam_channel errors.
+    #[fail(display = "Inter-thread communication error: {}", _0)]
+    ITCError(String),
+
+    /// For propagating ipc_channel errors.
+    #[fail(display = "Interprocess communication error: {}", _0)]
+    IPCError(String),
+
+    /// For propagating std::io::Error errors.
+    #[fail(display = "I/O error: {}", _0)]
+    IoError(String, std::io::ErrorKind),
+
+    /// For propagating term::Error errors.
+    #[fail(display = "Terminal error: {}", _0)]
+    TermError(String, term::Error),
 }
 
-/// Error structure used for reporting simulator configuration errors.
+/// Shorthand for producing a LogError.
+pub fn log_err<T>(s: impl Into<String>) -> Result<T> {
+    Err(ErrorKind::LogError(s.into()).into())
+}
+
+/// Shorthand for producing an invalid argument error.
+pub fn inv_arg<T>(s: impl Into<String>) -> Result<T> {
+    Err(ErrorKind::InvalidArgument(s.into()).into())
+}
+
+/// Shorthand for producing an invalid operation error.
+pub fn inv_op<T>(s: impl Into<String>) -> Result<T> {
+    Err(ErrorKind::InvalidOperation(s.into()).into())
+}
+
+/// Shorthand for producing an error that does not fit in any of the ErrorKind
+/// classes.
+pub fn err<T>(s: impl Into<String>) -> Result<T> {
+    Err(ErrorKind::Other(s.into()).into())
+}
+
+// TODO: remove
 #[derive(Debug, Clone, Fail, PartialEq, Eq)]
 pub enum SimulatorConfigurationError {
     #[fail(display = "Duplicate frontend plugin")]
@@ -148,8 +173,9 @@ impl From<SimulatorConfigurationError> for Error {
 /// std::io::Error
 impl From<std::io::Error> for Error {
     fn from(error: std::io::Error) -> Error {
+        let msg = error.to_string();
         Error {
-            ctx: Context::new(ErrorKind::IoError(format!("{}", error))),
+            ctx: Context::new(ErrorKind::IoError(msg, error.kind())),
         }
     }
 }
@@ -157,24 +183,27 @@ impl From<std::io::Error> for Error {
 /// term::Error
 impl From<term::Error> for Error {
     fn from(error: term::Error) -> Error {
+        let msg = error.to_string();
         Error {
-            ctx: Context::new(ErrorKind::TermError(format!("{}", error))),
+            ctx: Context::new(ErrorKind::TermError(msg, error)),
         }
     }
 }
 
 impl<T> From<crossbeam_channel::SendError<T>> for Error {
     fn from(error: crossbeam_channel::SendError<T>) -> Error {
+        let msg = error.to_string();
         Error {
-            ctx: Context::new(ErrorKind::ChannelError(format!("{}", error))),
+            ctx: Context::new(ErrorKind::ITCError(msg)),
         }
     }
 }
 
 impl From<ipc_channel::Error> for Error {
     fn from(error: ipc_channel::Error) -> Error {
+        let msg = error.to_string();
         Error {
-            ctx: Context::new(ErrorKind::ChannelError(format!("{}", error))),
+            ctx: Context::new(ErrorKind::IPCError(msg)),
         }
     }
 }
