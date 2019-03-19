@@ -22,7 +22,7 @@ script:
   - cargo fmt -- --check
   - cargo build
   - cargo test
-  - cargo clippy
+  - cargo clippy -- -Dwarnings
 
 before_deploy:
   - cargo doc
