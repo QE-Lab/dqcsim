@@ -1,10 +1,10 @@
 [tasks.format]
-install_crate = "rustfmt"
+install_crate = { rustup_component_name = "rustfmt", binary = "rustfmt", test_arg = "--help" }
 command = "cargo"
 args = ["fmt"]
 
 [tasks.clippy]
-install_crate = "clippy"
+install_crate = { rustup_component_name = "clippy", binary = "clippy", test_arg = "--help" }
 command = "cargo"
 args = ["clippy", "--", "-Dwarnings"]
 

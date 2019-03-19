@@ -12,7 +12,7 @@ matrix:
     - rust: nightly
 
 install:
-  - rustup component add clippy
+  - rustup component add clippy --toolchain="$TRAVIS_RUST_VERSION" || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
   - rustup component add rustfmt
   - (test -x $HOME/.cargo/bin/cargo-install-update || cargo install cargo-update)
   - (test -x $HOME/.cargo/bin/mdbook || cargo install mdbook)
@@ -22,7 +22,7 @@ script:
   - cargo fmt -- --check
   - cargo build
   - cargo test
-  - cargo clippy
+  - cargo clippy -- -Dwarnings
 
 before_deploy:
   - cargo doc
