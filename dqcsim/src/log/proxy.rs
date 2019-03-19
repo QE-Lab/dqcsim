@@ -18,21 +18,28 @@ use crate::log::{Log, Record, Sender};
 /// [`LogProxy`]: ./struct.LogProxy.html
 #[derive(Debug)]
 pub struct LogProxy<T: Sender> {
+    name: String,
     sender: T,
 }
 
 impl<T: Sender<Item = Record>> LogProxy<T> {
-    fn new(sender: T) -> LogProxy<T> {
-        LogProxy { sender }
+    fn new(name: impl Into<String>, sender: T) -> LogProxy<T> {
+        LogProxy {
+            name: name.into(),
+            sender,
+        }
     }
 
     /// Return a new boxed LogProxy for the provided sender and level.
-    pub fn boxed(sender: T) -> Box<LogProxy<T>> {
-        Box::new(LogProxy::new(sender))
+    pub fn boxed(name: impl Into<String>, sender: T) -> Box<LogProxy<T>> {
+        Box::new(LogProxy::new(name, sender))
     }
 }
 
 impl<T: Sender<Item = Record>> Log for LogProxy<T> {
+    fn name(&self) -> &str {
+        self.name.as_ref()
+    }
     fn log(&self, record: Record) {
         self.sender
             .send(record)

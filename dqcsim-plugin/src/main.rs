@@ -20,7 +20,10 @@ fn main() -> Result<(), Error> {
         PluginType::Operator
     };
 
-    let mut connection = Connection::init(server, plugin_type)?;
+    let mut connection = Connection::init(name, server, plugin_type)?;
+
+    eprintln!("stderr");
+    println!("stdout");
 
     let map = connection.map.clone();
 
@@ -32,15 +35,12 @@ fn main() -> Result<(), Error> {
             IpcSelectionResult::MessageReceived(id, message) => {
                 debug!("[{:?}] {:?}", &map[&id], message);
                 connection.response.send(Response::Success).unwrap();
-                // std::process::exit(0);
             }
             IpcSelectionResult::ChannelClosed(id) => {
                 debug!("[{:?}] Closed", &map[&id]);
-                // std::process::exit(1);
             }
         });
 
-    std::thread::sleep(std::time::Duration::from_secs(4));
     info!("Plugin down.");
 
     Ok(())

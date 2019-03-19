@@ -19,12 +19,14 @@ use std::{
 ///
 /// Returns a thread::JoinHandle to the spawned thread.
 pub fn proxy_stdio(
+    name: impl Into<String>,
     mut stream: Box<Read + Send>,
     sender: Sender<Record>,
     level: Loglevel,
 ) -> JoinHandle<()> {
+    let name = name.into();
     spawn(move || {
-        init(LogProxy::boxed(sender), LoglevelFilter::from(level)).unwrap();
+        init(LogProxy::boxed(name, sender), LoglevelFilter::from(level)).unwrap();
         let mut buf = Vec::new();
         let mut byte = [0u8];
         loop {

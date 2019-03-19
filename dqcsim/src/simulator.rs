@@ -72,6 +72,7 @@ impl Simulator {
 
     pub fn try_from(configuration: SimulatorConfiguration) -> Result<Simulator> {
         let log_thread = LogThread::spawn(
+            "dqcsim",
             configuration.stderr_level,
             configuration.dqcsim_level,
             configuration.log_callback,

@@ -56,7 +56,11 @@ impl Plugin {
     }
 
     pub fn spawn(&mut self, log_sender: crossbeam_channel::Sender<Record>) -> Result<()> {
-        let process = PluginProcess::new(self.command.arg(&self.configuration.name), log_sender)?;
+        let process = PluginProcess::new(
+            &self.configuration,
+            self.command.arg(&self.configuration.name),
+            log_sender,
+        )?;
         self.process = Some(process);
         Ok(())
     }

@@ -30,8 +30,9 @@ impl LogThread {
     /// Spawn a new [`LogThread`].
     ///
     /// Returns [`LogThread`] instance if succesful. Also spawns a [`LogProxy`] in the current thread with [`proxy_level`] as [`LogLevelFilter`].
-    /// The [`level`] argument is used as  [`LogLevelFilter`] in the [`LogThread`].
+    /// The [`level`] argument is used as [`LogLevelFilter`] in the [`LogThread`].
     pub fn spawn(
+        name: impl Into<String>,
         level: LoglevelFilter,
         proxy_level: LoglevelFilter,
         callback: Option<LogCallback>,
@@ -106,16 +107,16 @@ impl LogThread {
                     // With process + thread identifier
                     write!(
                         t,
-                        "{:<35} ",
+                        "{:<32} ",
                         format!(
                             "{:>5}:{:<2} {} ",
                             record.process(),
                             record.thread(),
-                            record.module_path().unwrap(),
+                            record.logger(),
                         )
                     )?;
                 } else {
-                    write!(t, "{:<28} ", record.module_path().unwrap())?;
+                    write!(t, "{:<25} ", record.logger())?;
                 }
                 t.reset()?;
 
@@ -141,7 +142,7 @@ impl LogThread {
         });
 
         // Start a LogProxy for the current thread.
-        init(LogProxy::boxed(sender.clone()), proxy_level)?;
+        init(LogProxy::boxed(name, sender.clone()), proxy_level)?;
         trace!("LogThread started");
 
         Ok(LogThread {
