@@ -330,3 +330,73 @@ pub extern "C" fn dqcs_pcfg_stderr_mode_get(handle: dqcs_handle_t) -> dqcs_logle
         |plugin| Ok(plugin.nonfunctional.stderr_mode.clone().into()),
     )
 }
+
+/// Configures the timeout for the plugin to connect to DQCsim.
+///
+/// The default is 5 seconds, so you should normally be able to leave this
+/// alone.
+///
+/// The time unit is seconds. Use IEEE positive infinity to specify an infinite
+/// timeout.
+#[no_mangle]
+pub extern "C" fn dqcs_pcfg_accept_timeout_set(
+    handle: dqcs_handle_t,
+    timeout: f64,
+) -> dqcs_return_t {
+    with_pcfg(
+        handle,
+        || dqcs_return_t::DQCS_FAILURE,
+        |plugin| {
+            plugin.nonfunctional.accept_timeout = Timeout::try_from_double(timeout)?;
+            Ok(dqcs_return_t::DQCS_SUCCESS)
+        },
+    )
+}
+
+/// Returns the configured timeout for the plugin to connect to DQCsim.
+///
+/// The time unit is in seconds. Returns positive inifinity for an infinite
+/// timeout. Returns -1 when the function fails.
+#[no_mangle]
+pub extern "C" fn dqcs_pcfg_accept_timeout_get(handle: dqcs_handle_t) -> f64 {
+    with_pcfg(
+        handle,
+        || -1.0,
+        |plugin| Ok(plugin.nonfunctional.accept_timeout.to_double()),
+    )
+}
+
+/// Configures the timeout for the plugin to shut down gracefully.
+///
+/// The default is 5 seconds, so you should normally be able to leave this
+/// alone.
+///
+/// The time unit is seconds. Use IEEE positive infinity to specify an infinite
+/// timeout.
+#[no_mangle]
+pub extern "C" fn dqcs_pcfg_shutdown_timeout_set(
+    handle: dqcs_handle_t,
+    timeout: f64,
+) -> dqcs_return_t {
+    with_pcfg(
+        handle,
+        || dqcs_return_t::DQCS_FAILURE,
+        |plugin| {
+            plugin.nonfunctional.shutdown_timeout = Timeout::try_from_double(timeout)?;
+            Ok(dqcs_return_t::DQCS_SUCCESS)
+        },
+    )
+}
+
+/// Returns the configured timeout for the plugin to shut down gracefully.
+///
+/// The time unit is in seconds. Returns positive inifinity for an infinite
+/// timeout. Returns -1 when the function fails.
+#[no_mangle]
+pub extern "C" fn dqcs_pcfg_shutdown_timeout_get(handle: dqcs_handle_t) -> f64 {
+    with_pcfg(
+        handle,
+        || -1.0,
+        |plugin| Ok(plugin.nonfunctional.shutdown_timeout.to_double()),
+    )
+}

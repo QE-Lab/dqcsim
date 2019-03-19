@@ -13,18 +13,49 @@ pub enum Timeout {
 }
 
 impl Timeout {
+    /// Creates a timeout from an integer time in seconds.
     pub fn from_seconds(seconds: u64) -> Timeout {
         Timeout::Duration(Duration::new(seconds, 0))
     }
 
+    /// Creates a timeout from an integer time in milliseconds.
     pub fn from_millis(millis: u64) -> Timeout {
         Timeout::Duration(Duration::from_millis(millis))
     }
 
+    /// Creates an infinite timeout.
     pub fn infinite() -> Timeout {
         Timeout::Infinite
     }
 
+    /// Creates a timeout from an floating point time in seconds.
+    ///
+    /// Floating point infinity is used to specify infinite timeouts. This
+    /// function fails when the specified time is negative.
+    pub fn try_from_double(t: f64) -> Result<Timeout> {
+        if t < 0.0 {
+            inv_arg("timeouts cannot be negative")
+        } else if t.is_infinite() {
+            Ok(Timeout::infinite())
+        } else {
+            Ok(Timeout::Duration(Duration::from_nanos(
+                (t * 1000000000.0_f64) as u64,
+            )))
+        }
+    }
+
+    /// Returns the timeout as a floating point time in seconds.
+    ///
+    /// Floating point infinity is used to specify infinite timeouts.
+    pub fn to_double(&self) -> f64 {
+        if let Timeout::Duration(d) = self {
+            (d.as_nanos() as f64) * 0.000000001_f64
+        } else {
+            std::f64::INFINITY
+        }
+    }
+
+    /// Internal helper function for parsing duration strings.
     fn duration_from_component(num: &str, unit: &str) -> Result<Duration> {
         if let Ok(t) = num.parse::<u64>() {
             let unit = match unit {
@@ -116,8 +147,8 @@ impl ::std::fmt::Display for Timeout {
     /// Turns the Timeout object into a string representation that can be
     /// parsed by `from_str()`.
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        if let Timeout::Duration(d) = self {
-            write!(f, "{}", (d.as_nanos() as f64) * 0.000000001_f64)
+        if let Timeout::Duration(_) = self {
+            write!(f, "{}", self.to_double())
         } else {
             write!(f, "infinite")
         }
