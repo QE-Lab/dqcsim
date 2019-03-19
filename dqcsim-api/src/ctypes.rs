@@ -1,6 +1,5 @@
 use super::*;
 use dqcsim::log::*;
-use failure::Error;
 
 /// Object type for a handle.
 ///
@@ -237,18 +236,18 @@ impl From<Loglevel> for dqcs_loglevel_t {
 }
 
 impl dqcs_loglevel_t {
-    pub fn into_loglevel(self) -> Result<Loglevel, Error> {
+    pub fn into_loglevel(self) -> Result<Loglevel> {
         match self.into() {
             StreamCaptureMode::Capture(level) => Ok(level),
-            _ => Err(APIError::Generic(format!("Invalid loglevel {:?}", self)).into()),
+            _ => inv_arg(format!("invalid loglevel {:?}", self)),
         }
     }
 
-    pub fn into_loglevel_filter(self) -> Result<LoglevelFilter, Error> {
+    pub fn into_loglevel_filter(self) -> Result<LoglevelFilter> {
         match self.into() {
             StreamCaptureMode::Capture(level) => Ok(level.into()),
             StreamCaptureMode::Null => Ok(LoglevelFilter::Off),
-            _ => Err(APIError::Generic(format!("Invalid loglevel filter {:?}", self)).into()),
+            _ => inv_arg(format!("invalid loglevel filter {:?}", self)),
         }
     }
 }

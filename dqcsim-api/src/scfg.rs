@@ -1,7 +1,6 @@
 use super::*;
 use dqcsim::log;
 use dqcsim::log::tee_file::TeeFile;
-use failure::Error;
 use std::time::*;
 
 /// Constructs an empty simulation configuration.
@@ -55,20 +54,20 @@ pub extern "C" fn dqcs_scfg_push_plugin(
                     state
                         .objects
                         .insert(pcfg_handle, Object::PluginConfiguration(pcfg_ob));
-                    Err(APIError::UnsupportedHandle(handle).into())
+                    unsup_handle(handle, "scfg")
                 }
                 None => {
                     state
                         .objects
                         .insert(pcfg_handle, Object::PluginConfiguration(pcfg_ob));
-                    Err(APIError::InvalidHandle(handle).into())
+                    inv_handle(handle)
                 }
             },
             Some(ob) => {
                 state.objects.insert(pcfg_handle, ob);
-                Err(APIError::UnsupportedHandle(pcfg_handle).into())
+                unsup_handle(pcfg_handle, "pcfg")
             }
-            None => Err(APIError::InvalidHandle(pcfg_handle).into()),
+            None => inv_handle(pcfg_handle),
         },
     )
 }
@@ -223,7 +222,7 @@ pub extern "C" fn dqcs_scfg_log_callback(
             if let Some(callback) = callback {
                 sim.log_callback = Some(LogCallback {
                     callback: Box::new(move |record: &log::Record| {
-                        || -> Result<(), Error> {
+                        || -> Result<()> {
                             let ts_sec;
                             let ts_nano;
                             if let Ok(ts) =

@@ -215,6 +215,42 @@ impl From<serde_yaml::Error> for Error {
     }
 }
 
+impl From<serde_json::Error> for Error {
+    fn from(error: serde_json::Error) -> Error {
+        let msg = error.to_string();
+        Error {
+            ctx: Context::new(ErrorKind::InvalidArgument(msg)),
+        }
+    }
+}
+
+impl From<std::str::Utf8Error> for Error {
+    fn from(error: std::str::Utf8Error) -> Error {
+        let msg = error.to_string();
+        Error {
+            ctx: Context::new(ErrorKind::InvalidArgument(msg)),
+        }
+    }
+}
+
+impl From<std::string::FromUtf8Error> for Error {
+    fn from(error: std::string::FromUtf8Error) -> Error {
+        let msg = error.to_string();
+        Error {
+            ctx: Context::new(ErrorKind::InvalidArgument(msg)),
+        }
+    }
+}
+
+impl From<std::ffi::NulError> for Error {
+    fn from(error: std::ffi::NulError) -> Error {
+        let msg = error.to_string();
+        Error {
+            ctx: Context::new(ErrorKind::InvalidArgument(msg)),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

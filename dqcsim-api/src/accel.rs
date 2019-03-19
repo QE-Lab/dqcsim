@@ -1,6 +1,5 @@
 use super::*;
 use dqcsim::simulator::Simulator;
-use failure::Error;
 
 /// Simulator/accelerator object storage. There can be only one
 /// simulator/accelerator per thread.
@@ -10,10 +9,7 @@ thread_local! {
 
 /// Convenience function for writing functions that operate on the accelerator
 /// instance.
-fn with_accel<T>(
-    error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut Simulator) -> Result<T, Error>,
-) -> T {
+fn with_accel<T>(error: impl FnOnce() -> T, call: impl FnOnce(&mut Simulator) -> Result<T>) -> T {
     ACCEL.with(|accel| match accel.borrow_mut().as_mut() {
         Some(accel) => match call(accel) {
             Ok(r) => r,

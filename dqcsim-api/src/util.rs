@@ -1,23 +1,23 @@
 use super::*;
-use failure::Error;
 
-/// Error structure used for reporting generic API errors.
-#[derive(Debug, Fail, PartialEq)]
-pub enum APIError {
-    #[fail(display = "{}", 0)]
-    Generic(String),
-    #[fail(display = "Handle {} is invalid", 0)]
-    InvalidHandle(dqcs_handle_t),
-    #[fail(display = "Handle {} does not implement the requisite interface", 0)]
-    UnsupportedHandle(dqcs_handle_t),
-    #[fail(display = "Index {} out of range", 0)]
-    IndexError(ssize_t),
+/// Shorthand for producing an unsupported handle error.
+pub fn unsup_handle<T>(handle: dqcs_handle_t, iface: impl AsRef<str>) -> Result<T> {
+    inv_arg(format!(
+        "handle {} does not support the {} interface",
+        handle,
+        iface.as_ref()
+    ))
+}
+
+/// Shorthand for producing an invalid handle error.
+pub fn inv_handle<T>(handle: dqcs_handle_t) -> Result<T> {
+    inv_arg(format!("handle {} is invalid", handle))
 }
 
 /// Convenience function for converting a C string to a Rust `str`.
-pub fn receive_str<'a>(s: *const c_char) -> Result<&'a str, Error> {
+pub fn receive_str<'a>(s: *const c_char) -> Result<&'a str> {
     if s.is_null() {
-        Err(APIError::Generic("Received NULL string".to_string()).into())
+        inv_arg("unexpected NULL string")
     } else {
         Ok(unsafe { CStr::from_ptr(s) }.to_str()?)
     }
@@ -27,31 +27,31 @@ pub fn receive_str<'a>(s: *const c_char) -> Result<&'a str, Error> {
 ///
 /// On success, this **returns a newly allocated string. It must be freed
 /// with `free()` by the caller.**
-pub fn return_string(s: impl AsRef<str>) -> Result<*const c_char, Error> {
+pub fn return_string(s: impl AsRef<str>) -> Result<*const c_char> {
     let s = CString::new(s.as_ref())?;
     let s = unsafe { strdup(s.as_ptr()) };
     if s.is_null() {
-        Err(APIError::Generic("Failed to allocate return value".to_string()).into())
+        err("failed to allocate return value")
     } else {
         Ok(s)
     }
 }
 
 /// Convenience function for converting a C const buffer to a Rust `&[u8]`.
-pub fn receive_raw<'a>(obj: *const c_void, obj_size: usize) -> Result<&'a [u8], Error> {
+pub fn receive_raw<'a>(obj: *const c_void, obj_size: usize) -> Result<&'a [u8]> {
     if obj_size == 0 {
         Ok(&[])
     } else if obj.is_null() {
-        Err(APIError::Generic("Received NULL data".to_string()).into())
+        inv_arg("unexpected NULL data")
     } else {
         Ok(unsafe { std::slice::from_raw_parts(obj as *const u8, obj_size) })
     }
 }
 
 /// Convenience function for converting a C const buffer to a Rust `&[u8]`.
-pub fn return_raw(obj_in: &[u8], obj_out: *mut c_void, obj_size: usize) -> Result<ssize_t, Error> {
+pub fn return_raw(obj_in: &[u8], obj_out: *mut c_void, obj_size: usize) -> Result<ssize_t> {
     if obj_size > 0 && obj_out.is_null() {
-        Err(APIError::Generic("Received NULL buffer".to_string()).into())
+        inv_arg("unexpected NULL buffer")
     } else {
         let actual_size = obj_in.len();
         let copy_size = std::cmp::min(actual_size, obj_size);
@@ -73,7 +73,7 @@ pub fn return_raw(obj_in: &[u8], obj_out: *mut c_void, obj_size: usize) -> Resul
 /// `len` specifies the size of the list, `index` is the index to convert, and
 /// `insert` selects whether index == len is okay (it is for the `insert()`
 /// function, but isn't for anything else).
-pub fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t, Error> {
+pub fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t> {
     let converted_index = if index < 0 {
         index + (len as ssize_t)
     } else {
@@ -88,7 +88,7 @@ pub fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t
     if ok {
         Ok(converted_index as size_t)
     } else {
-        Err(APIError::IndexError(index).into())
+        inv_arg(format!("index out of range: {}", index))
     }
 }
 
@@ -151,13 +151,13 @@ impl CallbackUserData {
 pub fn with_arb<T>(
     handle: dqcs_handle_t,
     error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut ArbData) -> Result<T, Error>,
+    call: impl FnOnce(&mut ArbData) -> Result<T>,
 ) -> T {
     with_state(error, |mut state| match state.objects.get_mut(&handle) {
         Some(Object::ArbData(x)) => call(x),
         Some(Object::ArbCmd(x)) => call(x.data_mut()),
-        Some(_) => Err(APIError::UnsupportedHandle(handle).into()),
-        None => Err(APIError::InvalidHandle(handle).into()),
+        Some(_) => unsup_handle(handle, "arb"),
+        None => inv_handle(handle),
     })
 }
 
@@ -165,8 +165,8 @@ pub fn with_arb<T>(
 /// context of the accelerator or plugin interface layer.
 pub fn take_arb<T>(
     handle: dqcs_handle_t,
-    call: impl FnOnce(&mut ArbData) -> Result<T, Error>,
-) -> Result<T, Error> {
+    call: impl FnOnce(&mut ArbData) -> Result<T>,
+) -> Result<T> {
     // Take the ArbData from the object store.
     let mut maybe_ob = STATE.with(|state| state.borrow_mut().objects.remove(&handle));
 
@@ -174,8 +174,8 @@ pub fn take_arb<T>(
     let ret = match maybe_ob.as_mut() {
         Some(Object::ArbData(x)) => call(x),
         Some(Object::ArbCmd(x)) => call(x.data_mut()),
-        Some(_) => Err(APIError::UnsupportedHandle(handle).into()),
-        None => Err(APIError::InvalidHandle(handle).into()),
+        Some(_) => unsup_handle(handle, "arb"),
+        None => inv_handle(handle),
     };
 
     // If the callback of handle loading failed but we did get an object,
@@ -193,12 +193,12 @@ pub fn take_arb<T>(
 pub fn with_cmd<T>(
     handle: dqcs_handle_t,
     error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut ArbCmd) -> Result<T, Error>,
+    call: impl FnOnce(&mut ArbCmd) -> Result<T>,
 ) -> T {
     with_state(error, |mut state| match state.objects.get_mut(&handle) {
         Some(Object::ArbCmd(x)) => call(x),
-        Some(_) => Err(APIError::UnsupportedHandle(handle).into()),
-        None => Err(APIError::InvalidHandle(handle).into()),
+        Some(_) => unsup_handle(handle, "cmd"),
+        None => inv_handle(handle),
     })
 }
 
@@ -206,16 +206,16 @@ pub fn with_cmd<T>(
 /// context of the accelerator or plugin interface layer.
 pub fn take_cmd<T>(
     handle: dqcs_handle_t,
-    call: impl FnOnce(&mut ArbCmd) -> Result<T, Error>,
-) -> Result<T, Error> {
+    call: impl FnOnce(&mut ArbCmd) -> Result<T>,
+) -> Result<T> {
     // Take the ArbCmd from the object store.
     let mut maybe_ob = STATE.with(|state| state.borrow_mut().objects.remove(&handle));
 
     // Call the callback.
     let ret = match maybe_ob.as_mut() {
         Some(Object::ArbCmd(x)) => call(x),
-        Some(_) => Err(APIError::UnsupportedHandle(handle).into()),
-        None => Err(APIError::InvalidHandle(handle).into()),
+        Some(_) => unsup_handle(handle, "cmd"),
+        None => inv_handle(handle),
     };
 
     // If the callback of handle loading failed but we did get an object,
@@ -234,12 +234,12 @@ pub fn take_cmd<T>(
 pub fn with_pcfg<T>(
     handle: dqcs_handle_t,
     error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut PluginConfiguration) -> Result<T, Error>,
+    call: impl FnOnce(&mut PluginConfiguration) -> Result<T>,
 ) -> T {
     with_state(error, |mut state| match state.objects.get_mut(&handle) {
         Some(Object::PluginConfiguration(x)) => call(x),
-        Some(_) => Err(APIError::UnsupportedHandle(handle).into()),
-        None => Err(APIError::InvalidHandle(handle).into()),
+        Some(_) => unsup_handle(handle, "pcfg"),
+        None => inv_handle(handle),
     })
 }
 
@@ -248,11 +248,11 @@ pub fn with_pcfg<T>(
 pub fn with_scfg<T>(
     handle: dqcs_handle_t,
     error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut SimulatorConfiguration) -> Result<T, Error>,
+    call: impl FnOnce(&mut SimulatorConfiguration) -> Result<T>,
 ) -> T {
     with_state(error, |mut state| match state.objects.get_mut(&handle) {
         Some(Object::SimulatorConfiguration(x)) => call(x),
-        Some(_) => Err(APIError::UnsupportedHandle(handle).into()),
-        None => Err(APIError::InvalidHandle(handle).into()),
+        Some(_) => unsup_handle(handle, "scfg"),
+        None => inv_handle(handle),
     })
 }

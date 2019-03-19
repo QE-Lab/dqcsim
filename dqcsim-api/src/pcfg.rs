@@ -21,9 +21,7 @@ pub extern "C" fn dqcs_pcfg_new(
         |mut state| {
             let spec = receive_str(spec)?;
             if spec.is_empty() {
-                return Err(
-                    APIError::Generic("Plugin specification must not be empty".to_string()).into(),
-                );
+                return inv_arg("plugin specification must not be empty");
             }
             Ok(
                 state.push(Object::PluginConfiguration(PluginConfiguration::new(
@@ -57,9 +55,7 @@ pub extern "C" fn dqcs_pcfg_new_raw(
         |mut state| {
             let executable = receive_str(executable)?;
             if executable.is_empty() {
-                return Err(
-                    APIError::Generic("Plugin executable must not be empty".to_string()).into(),
-                );
+                return inv_arg("plugin executable must not be empty");
             }
             let script_path;
             if script.is_null() {
@@ -152,18 +148,18 @@ pub extern "C" fn dqcs_pcfg_init_arb(
                 }
                 Some(_) => {
                     state.objects.insert(cmd_handle, Object::ArbCmd(cmd_ob));
-                    Err(APIError::UnsupportedHandle(handle).into())
+                    unsup_handle(handle, "pcfg")
                 }
                 None => {
                     state.objects.insert(cmd_handle, Object::ArbCmd(cmd_ob));
-                    Err(APIError::InvalidHandle(handle).into())
+                    inv_handle(handle)
                 }
             },
             Some(ob) => {
                 state.objects.insert(cmd_handle, ob);
-                Err(APIError::UnsupportedHandle(cmd_handle).into())
+                unsup_handle(cmd_handle, "cmd")
             }
-            None => Err(APIError::InvalidHandle(cmd_handle).into()),
+            None => inv_handle(cmd_handle),
         },
     )
 }

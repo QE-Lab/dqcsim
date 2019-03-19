@@ -82,7 +82,9 @@ pub extern "C" fn dqcs_arb_push_raw(
 pub extern "C" fn dqcs_arb_pop_str(handle: dqcs_handle_t) -> *const c_char {
     with_arb(handle, null, |arb| {
         return_string(String::from_utf8(
-            arb.args.pop().ok_or_else(|| APIError::IndexError(0))?,
+            arb.args
+                .pop()
+                .ok_or_else(oe_inv_arg("pop from empty list"))?,
         )?)
     })
 }
@@ -113,7 +115,9 @@ pub extern "C" fn dqcs_arb_pop_raw(
         || -1,
         |arb| {
             return_raw(
-                &arb.args.pop().ok_or_else(|| APIError::IndexError(0))?,
+                &arb.args
+                    .pop()
+                    .ok_or_else(oe_inv_arg("pop from empty list"))?,
                 obj,
                 obj_size,
             )

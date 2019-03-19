@@ -70,7 +70,7 @@
 //! documentation.
 
 use dqcsim::configuration::*;
-use failure::{Error, Fail};
+use dqcsim::error::*;
 use libc::*;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -182,7 +182,7 @@ thread_local! {
 /// Convenience function for operating on the thread-local state object.
 fn with_state<T>(
     error: impl FnOnce() -> T,
-    call: impl FnOnce(std::cell::RefMut<ThreadState>) -> Result<T, Error>,
+    call: impl FnOnce(std::cell::RefMut<ThreadState>) -> Result<T>,
 ) -> T {
     STATE.with(|state| match call(state.borrow_mut()) {
         Ok(r) => r,
