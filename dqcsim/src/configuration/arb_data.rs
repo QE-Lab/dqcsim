@@ -1,13 +1,6 @@
-use failure::{Error, Fail};
+use crate::error::{inv_arg, Error, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-
-/// Error structure used for reporting ArbData errors.
-#[derive(Debug, Fail, PartialEq)]
-pub enum ArbDataError {
-    #[fail(display = "{}", 0)]
-    ParseError(String),
-}
 
 /// Represents an ArbData structure, consisting of an (unparsed, TODO) JSON
 /// string and a list of binary strings.
@@ -22,12 +15,10 @@ impl ArbData {
     ///
     /// *Only* the JSON object is taken from the iterator; that is, if there is
     /// additional data behind the JSON object, this data remains.
-    fn scan_json_arg(it: &mut impl Iterator<Item = char>) -> Result<serde_json::Value, Error> {
+    fn scan_json_arg(it: &mut impl Iterator<Item = char>) -> Result<serde_json::Value> {
         // First character must always be a {
         if it.next() != Some('{') {
-            Err(ArbDataError::ParseError(
-                "Expected JSON argument while parsing ArbData.".to_string(),
-            ))?
+            inv_arg("expected JSON argument while parsing ArbData")?
         }
 
         // Loop over the rest of the JSON object.
@@ -54,10 +45,7 @@ impl ArbData {
                                     if let Some(c) = it.next() {
                                         json.push(c);
                                     } else {
-                                        Err(ArbDataError::ParseError(
-                                            "Unterminated JSON string while parsing ArbData."
-                                                .to_string(),
-                                        ))?;
+                                        inv_arg("unterminated JSON string while parsing ArbData")?;
                                     }
                                 }
                             }
@@ -66,9 +54,7 @@ impl ArbData {
                                 json.push(c);
                             }
                             None => {
-                                Err(ArbDataError::ParseError(
-                                    "Unterminated JSON string while parsing ArbData.".to_string(),
-                                ))?;
+                                inv_arg("unterminated JSON string while parsing ArbData")?;
                             }
                         };
                     }
@@ -76,9 +62,7 @@ impl ArbData {
                         json.push(c);
                     }
                     None => {
-                        Err(ArbDataError::ParseError(
-                            "Unterminated JSON string while parsing ArbData.".to_string(),
-                        ))?;
+                        inv_arg("unterminated JSON string while parsing ArbData")?;
                     }
                 };
             } else {
@@ -95,10 +79,10 @@ impl ArbData {
                             // deserialize it.
                             match serde_json::from_str(&json) {
                                 Ok(j) => return Ok(j),
-                                Err(e) => Err(ArbDataError::ParseError(format!(
-                                    "Error parsing JSON component of ArbData, {}: {}",
+                                Err(e) => inv_arg(format!(
+                                    "error parsing JSON component of ArbData, {}: {}",
                                     json, e
-                                )))?,
+                                ))?,
                             };
                         }
                     }
@@ -110,9 +94,7 @@ impl ArbData {
                         json.push(c);
                     }
                     None => {
-                        Err(ArbDataError::ParseError(
-                            "Unterminated JSON object while parsing ArbData.".to_string(),
-                        ))?;
+                        inv_arg("unterminated JSON object while parsing ArbData")?;
                     }
                 };
             }
@@ -129,7 +111,7 @@ impl ArbData {
     ///  - `__` turns into an underscore (`_`).
     ///  - `_##` where ## is a 2-digit hexadecimal string turns into a byte
     ///    with the respective value.
-    fn scan_unstructured_args(it: &mut impl Iterator<Item = char>) -> Result<Vec<Vec<u8>>, Error> {
+    fn scan_unstructured_args(it: &mut impl Iterator<Item = char>) -> Result<Vec<Vec<u8>>> {
         let mut output: Vec<Vec<u8>> = vec![];
         loop {
             let mut current: Vec<u8> = vec![];
@@ -145,24 +127,24 @@ impl ArbData {
                             }
                             Some(c1) => {
                                 if !c1.is_ascii_hexdigit() {
-                                    Err(ArbDataError::ParseError("Invalid binary string escape sequence while parsing ArbData.".to_string()))?;
+                                    inv_arg("invalid binary string escape sequence while parsing ArbData")?;
                                 }
                                 match it.next() {
                                     Some(c2) => {
                                         if !c2.is_ascii_hexdigit() {
-                                            Err(ArbDataError::ParseError("Invalid binary string escape sequence while parsing ArbData.".to_string()))?;
+                                            inv_arg("invalid binary string escape sequence while parsing ArbData")?;
                                         }
                                         let mut hex = c1.to_string();
                                         hex.push(c2);
                                         current.push(u8::from_str_radix(&hex, 16).unwrap());
                                     }
                                     None => {
-                                        Err(ArbDataError::ParseError("Unterminated binary string escape sequence while parsing ArbData.".to_string()))?;
+                                        inv_arg("unterminated binary string escape sequence while parsing ArbData")?;
                                     }
                                 }
                             }
                             None => {
-                                Err(ArbDataError::ParseError("Unterminated binary string escape sequence while parsing ArbData.".to_string()))?;
+                                inv_arg("unterminated binary string escape sequence while parsing ArbData")?;
                             }
                         }
                     }
@@ -200,7 +182,7 @@ impl ArbData {
     ///
     /// To also parse a JSON object, use `from_str()`. To get an ArbData with
     /// the default JSON object and zero binary arguments, use `default()`.
-    pub fn from_str_args_only(s: &str) -> Result<Self, Error> {
+    pub fn from_str_args_only(s: &str) -> Result<Self> {
         Ok(ArbData {
             json: json!({}),
             args: ArbData::scan_unstructured_args(&mut s.chars())?,
@@ -225,7 +207,7 @@ impl ::std::str::FromStr for ArbData {
     /// To omit the JSON object and substitute the default {}, use
     /// `from_str_args_only()`. To get an ArbData with the default JSON object
     /// and zero binary arguments, use `default()`.
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         let mut iterator = s.chars();
         let mut output = ArbData {
             json: ArbData::scan_json_arg(&mut iterator)?,
@@ -236,10 +218,10 @@ impl ::std::str::FromStr for ArbData {
                 output.args = ArbData::scan_unstructured_args(&mut iterator)?;
                 Ok(output)
             }
-            Some(c) => Err(ArbDataError::ParseError(format!(
-                "Expected comma after JSON object in ArbData, received {}.",
+            Some(c) => inv_arg(format!(
+                "expected comma after JSON object in ArbData, received {}",
                 c
-            )))?,
+            )),
             None => Ok(output),
         }
     }
@@ -313,18 +295,21 @@ mod test {
         );
         test_from_str_fail(
             "{}}",
-            "Expected comma after JSON object in ArbData, received }.",
+            "Invalid argument: expected comma after JSON object in ArbData, received }",
         );
-        test_from_str_fail("{{}", "Unterminated JSON object while parsing ArbData.");
+        test_from_str_fail(
+            "{{}",
+            "Invalid argument: unterminated JSON object while parsing ArbData",
+        );
         test_from_str_good("{},x_,y,z", json!({}), vec![b"x,y", b"z"]);
         test_from_str_good("{},_202_2f_,__,y,z", json!({}), vec![b" 2/,_", b"y", b"z"]);
         test_from_str_fail(
             "{},x,y,z_",
-            "Unterminated binary string escape sequence while parsing ArbData.",
+            "Invalid argument: unterminated binary string escape sequence while parsing ArbData",
         );
         test_from_str_fail(
             "{},x,y,z_",
-            "Unterminated binary string escape sequence while parsing ArbData.",
+            "Invalid argument: unterminated binary string escape sequence while parsing ArbData",
         );
     }
 

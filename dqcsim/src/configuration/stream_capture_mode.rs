@@ -1,8 +1,8 @@
 use enum_variants::EnumVariants;
-use failure::Error;
 use serde::{Deserialize, Serialize};
 
 use crate::log::Loglevel;
+use crate::error::{Error};
 
 /// All loglevel options plus pass and null, used to specify how a
 /// stdout/stderr stream should be captured.

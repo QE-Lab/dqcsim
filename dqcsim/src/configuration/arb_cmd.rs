@@ -1,16 +1,7 @@
-use failure::{Error, Fail};
 use serde::{Deserialize, Serialize};
 
 use crate::configuration::arb_data::ArbData;
-
-/// Error structure used for reporting ArbCmd errors.
-#[derive(Debug, Fail, PartialEq)]
-pub enum ArbCmdError {
-    #[fail(display = "{}", 0)]
-    ParseError(String),
-    #[fail(display = "{}", 0)]
-    IdError(String),
-}
+use crate::error::{inv_arg, oe_inv_arg, Error, Result};
 
 /// Represents an ArbCmd structure, consisting of interface and operation
 /// identifier strings and an ArbData object.
@@ -23,12 +14,12 @@ pub struct ArbCmd {
 
 impl ArbCmd {
     /// Verifies that the given identifier does not contain invalid characters.
-    fn verify_id(id: String) -> Result<String, Error> {
+    fn verify_id(id: String) -> Result<String> {
         if id.chars().any(|x| !(x.is_ascii_alphanumeric() || x == '_')) {
-            Err(ArbCmdError::IdError(format!(
-                "\"{}\" is not a valid identifier; it contains characters outside [a-zA-Z0-9_].",
+            inv_arg(format!(
+                "\"{}\" is not a valid identifier; it contains characters outside [a-zA-Z0-9_]",
                 id
-            )))?
+            ))?
         } else {
             Ok(id)
         }
@@ -82,15 +73,13 @@ impl ::std::str::FromStr for ArbCmd {
     ///    (use `ArbData::from_str()`)
     ///  - `<interface-id>.<operation-id>.<arg1>,<arg2>,[...]` (use
     ///    `ArbData::from_str_args_only()`)
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         // Split off and validate the interface identifier.
         let mut x = s.splitn(2, '.');
         let interface_identifier = ArbCmd::verify_id(x.next().unwrap().to_string())?;
-        let s = x.next().ok_or_else(|| {
-            ArbCmdError::ParseError(
-                "Expected period after interface identifier while parsing ArbCmd.".to_string(),
-            )
-        })?;
+        let s = x.next().ok_or_else(oe_inv_arg(
+            "expected period after interface identifier while parsing ArbCmd",
+        ))?;
         assert_eq!(x.next(), None);
 
         // Figure out where and how to split the operation identifier from the
@@ -214,15 +203,15 @@ mod test {
         );
         test_from_str_fail(
             "a",
-            "Expected period after interface identifier while parsing ArbCmd.",
+            "Invalid argument: expected period after interface identifier while parsing ArbCmd",
         );
         test_from_str_fail(
             "a%.b",
-            "\"a%\" is not a valid identifier; it contains characters outside [a-zA-Z0-9_].",
+            "Invalid argument: \"a%\" is not a valid identifier; it contains characters outside [a-zA-Z0-9_]",
         );
         test_from_str_fail(
             "a.b%",
-            "\"b%\" is not a valid identifier; it contains characters outside [a-zA-Z0-9_].",
+            "Invalid argument: \"b%\" is not a valid identifier; it contains characters outside [a-zA-Z0-9_]",
         );
     }
 

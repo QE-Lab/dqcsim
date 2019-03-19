@@ -42,10 +42,6 @@ pub struct Error {
 
 #[derive(PartialEq, Debug, Fail)]
 pub enum ErrorKind {
-    // TODO: remove
-    #[fail(display = "{}", _0)]
-    SimulatorConfigurationError(SimulatorConfigurationError),
-
     /// LogError
     #[fail(display = "Log error: {}", _0)]
     LogError(String),
@@ -91,14 +87,29 @@ pub fn log_err<T>(s: impl Into<String>) -> Result<T> {
     Err(ErrorKind::LogError(s.into()).into())
 }
 
+/// Shorthand for producing a LogError in an or_else function.
+pub fn oe_log_err(s: impl Into<String>) -> impl FnOnce() -> Error {
+    move || ErrorKind::LogError(s.into()).into()
+}
+
 /// Shorthand for producing an invalid argument error.
 pub fn inv_arg<T>(s: impl Into<String>) -> Result<T> {
     Err(ErrorKind::InvalidArgument(s.into()).into())
 }
 
+/// Shorthand for producing an invalid argument error in an or_else function.
+pub fn oe_inv_arg(s: impl Into<String>) -> impl FnOnce() -> Error {
+    move || ErrorKind::InvalidArgument(s.into()).into()
+}
+
 /// Shorthand for producing an invalid operation error.
 pub fn inv_op<T>(s: impl Into<String>) -> Result<T> {
     Err(ErrorKind::InvalidOperation(s.into()).into())
+}
+
+/// Shorthand for producing an invalid operation error in an or_else function.
+pub fn oe_inv_op(s: impl Into<String>) -> impl FnOnce() -> Error {
+    move || ErrorKind::InvalidOperation(s.into()).into()
 }
 
 /// Shorthand for producing an error that does not fit in any of the ErrorKind
@@ -107,19 +118,9 @@ pub fn err<T>(s: impl Into<String>) -> Result<T> {
     Err(ErrorKind::Other(s.into()).into())
 }
 
-// TODO: remove
-#[derive(Debug, Clone, Fail, PartialEq, Eq)]
-pub enum SimulatorConfigurationError {
-    #[fail(display = "Duplicate frontend plugin")]
-    DuplicateFrontend,
-    #[fail(display = "Duplicate backend plugin")]
-    DuplicateBackend,
-    #[fail(display = "Missing frontend plugin")]
-    MissingFrontend,
-    #[fail(display = "Missing backend plugin")]
-    MissingBackend,
-    #[fail(display = "Duplicate plugin name '{}'", 0)]
-    DuplicateName(String),
+/// err() but for or_else() functions.
+pub fn oe_err(s: impl Into<String>) -> impl FnOnce() -> Error {
+    move || ErrorKind::Other(s.into()).into()
 }
 
 impl Fail for Error {
@@ -160,17 +161,6 @@ impl From<Context<ErrorKind>> for Error {
     }
 }
 
-impl From<SimulatorConfigurationError> for Error {
-    fn from(error: SimulatorConfigurationError) -> Error {
-        Error {
-            ctx: Context::new(ErrorKind::SimulatorConfigurationError(error)),
-        }
-    }
-}
-
-/// Custom errors
-
-/// std::io::Error
 impl From<std::io::Error> for Error {
     fn from(error: std::io::Error) -> Error {
         let msg = error.to_string();
@@ -180,7 +170,6 @@ impl From<std::io::Error> for Error {
     }
 }
 
-/// term::Error
 impl From<term::Error> for Error {
     fn from(error: term::Error) -> Error {
         let msg = error.to_string();
@@ -207,6 +196,17 @@ impl From<ipc_channel::Error> for Error {
         }
     }
 }
+
+impl From<enum_variants::EnumVariantError> for Error {
+    fn from(error: enum_variants::EnumVariantError) -> Error {
+        let msg = error.to_string();
+        Error {
+            ctx: Context::new(ErrorKind::InvalidArgument(msg)),
+        }
+    }
+}
+
+
 
 #[cfg(test)]
 mod tests {

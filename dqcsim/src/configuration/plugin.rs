@@ -1,21 +1,12 @@
 use crate::{
     configuration::{arb_cmd::ArbCmd, env_mod::EnvMod, stream_capture_mode::StreamCaptureMode},
     log::{tee_file::TeeFile, Loglevel, LoglevelFilter},
+    error::{Result, inv_arg, oe_err},
 };
-use failure::{Error, Fail};
 use serde::{Deserialize, Serialize};
 use std::env::{current_exe, split_paths, var_os};
 use std::ffi::OsString;
 use std::path::PathBuf;
-
-/// Error structure used for reporting plugin specification errors.
-#[derive(Debug, Fail, PartialEq)]
-enum PluginSpecificationError {
-    #[fail(display = "{}", 0)]
-    Invalid(String),
-    #[fail(display = "{}", 0)]
-    OsError(String),
-}
 
 /// Enumeration of the three types of plugins.
 #[derive(Debug, Copy, Clone, PartialEq, Deserialize, Serialize)]
@@ -82,7 +73,7 @@ impl PluginSpecification {
     pub fn from_sugar(
         specification: impl Into<PathBuf>,
         typ: PluginType,
-    ) -> Result<PluginSpecification, Error> {
+    ) -> Result<PluginSpecification> {
         // Generate the default specification. This default assumes that the
         // specification is a valid path to an executable. We'll fix the
         // structure later if this assumption turns out to be incorrect.
@@ -124,12 +115,11 @@ impl PluginSpecification {
                 .to_string_lossy()
                 .contains('/')
             {
-                return Err(PluginSpecificationError::Invalid(format!(
-                    "The plugin specification '{}' appears to be a path, \
-                     but the referenced file does not exist.",
+                return inv_arg(format!(
+                    "the plugin specification '{}' appears to be a path, \
+                     but the referenced file does not exist",
                     &specification.executable.to_string_lossy()
-                ))
-                .into());
+                ));
             }
         }
 
@@ -155,11 +145,7 @@ impl PluginSpecification {
         if let Ok(dqcsim_dir) = current_exe() {
             let mut exec = dqcsim_dir
                 .parent()
-                .ok_or_else(|| {
-                    PluginSpecificationError::OsError(
-                        "Could not determine path to DQCsim binary.".to_string(),
-                    )
-                })?
+                .ok_or_else(oe_err("Could not determine path to DQCsim binary."))?
                 .to_path_buf();
             exec.push(&specification.executable);
             if exec.exists() {
@@ -180,13 +166,12 @@ impl PluginSpecification {
             }
         }
 
-        Err(PluginSpecificationError::OsError(format!(
-            "Could not find plugin executable '{}', needed for plugin \
-             specification '{}'.",
+        inv_arg(format!(
+            "could not find plugin executable '{}', needed for plugin \
+             specification '{}'",
             specification.executable.to_string_lossy(),
             specification.sugared.unwrap().to_string_lossy(),
         ))
-        .into())
     }
 }
 

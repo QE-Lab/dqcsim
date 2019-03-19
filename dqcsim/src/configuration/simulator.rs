@@ -1,6 +1,6 @@
 use crate::{
     configuration::{PluginConfiguration, PluginType, Seed},
-    error::{Result, SimulatorConfigurationError},
+    error::{inv_arg, Result},
     log::{tee_file::TeeFile, LoglevelFilter, Record},
 };
 use serde::{Deserialize, Serialize};
@@ -94,7 +94,7 @@ impl SimulatorConfiguration {
         for (i, plugin) in self.plugins.iter().enumerate() {
             if let PluginType::Frontend = plugin.specification.typ {
                 if frontend_idx.is_some() {
-                    Err(SimulatorConfigurationError::DuplicateFrontend)?
+                    inv_arg("duplicate frontend")?
                 } else {
                     frontend_idx = Some(i);
                 }
@@ -106,7 +106,7 @@ impl SimulatorConfiguration {
                 let plugin = self.plugins.remove(x);
                 self.plugins.insert(0, plugin);
             }
-            None => Err(SimulatorConfigurationError::MissingFrontend)?,
+            None => inv_arg("missing frontend")?,
         }
 
         // Check and fix backend.
@@ -114,7 +114,7 @@ impl SimulatorConfiguration {
         for (i, plugin) in self.plugins.iter().enumerate() {
             if let PluginType::Backend = plugin.specification.typ {
                 if backend_idx.is_some() {
-                    Err(SimulatorConfigurationError::DuplicateBackend)?
+                    inv_arg("duplicate backend")?
                 } else {
                     backend_idx = Some(i);
                 }
@@ -127,7 +127,7 @@ impl SimulatorConfiguration {
                     self.plugins.push(plugin);
                 }
             }
-            None => Err(SimulatorConfigurationError::MissingBackend)?,
+            None => inv_arg("missing backend")?,
         }
 
         // Auto-name plugins and check for conflicts.
@@ -141,9 +141,7 @@ impl SimulatorConfiguration {
                 }
             }
             if !names.insert(&plugin.name) {
-                Err(SimulatorConfigurationError::DuplicateName(
-                    plugin.name.clone(),
-                ))?;
+                inv_arg(format!("duplicate plugin name '{}'", plugin.name))?;
             }
         }
 
