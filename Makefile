@@ -23,8 +23,12 @@ help:
 %:
 ifndef DQCSIM_HOME
  ifeq (,$(shell grep DQCSIM_HOME ~/.profile))
-	@echo "\$$DQCSIM_HOME is not set. Trying to add the default value to ~/.profile now..."
+	@echo "\$$DQCSIM_HOME is not set. Trying to add the default value to ~/.profile now."
+	@echo "The binary directory is also added to the front of \$$PATH by default; if you"
+	@echo "don't want this, remove it from ~/.profile and it won't be added again as"
+	@echo "long as \$$DQCSIM_HOME remains set."
 	@echo "export DQCSIM_HOME=\"\$$HOME/.dqcsim\"" >> $(HOME)/.profile
+	@echo "export PATH=\"\$$DQCSIM_HOME/bin:\$$PATH\"" >> $(HOME)/.profile
   ifeq (,$(shell which cargo))
 	@echo ""
 	@echo "Also, cargo was not found. This probably means that you don't have rust"
@@ -43,7 +47,8 @@ ifndef DQCSIM_HOME
 	@echo "\$$DQCSIM_HOME is not set, but does seem to be defined in ~/.profile. You"
 	@echo "may need to log out and then log back in again if it was recently changed."
 	@echo "If this message persists, modify the file manually. The default location"
-	@echo "DQCsim is '\$$HOME/.dqcsim'."
+	@echo "DQCsim is '\$$HOME/.dqcsim'. Alternatively, if your OS does not respect"
+	@echo "~/.profile, please define the environment variable in some other way."
  endif
 else
  ifeq (,$(shell which cargo))
