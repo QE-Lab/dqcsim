@@ -13,6 +13,9 @@ pub use stream_capture_mode::StreamCaptureMode;
 mod seed;
 pub use seed::Seed;
 
+mod timeout;
+pub use timeout::Timeout;
+
 mod plugin;
 pub use plugin::{
     PluginConfiguration, PluginFunctionalConfiguration, PluginNonfunctionalConfiguration,

@@ -23,6 +23,14 @@ pub struct PluginNonfunctionalOpts {
     /// Specifies how the stderr stream of the plugin should be connected.
     /// `None` implies default.
     pub stderr_mode: Option<StreamCaptureMode>,
+
+    /// Specifies the timeout for connecting to the plugin after it has been
+    /// spawned.
+    pub accept_timeout: Option<Timeout>,
+
+    /// Specifies the timeout for connecting to the plugin after it has been
+    /// spawned.
+    pub shutdown_timeout: Option<Timeout>,
 }
 
 impl PluginNonfunctionalOpts {
@@ -42,6 +50,12 @@ impl PluginNonfunctionalOpts {
         if let Some(stderr_mode) = &self.stderr_mode {
             to.stderr_mode = stderr_mode.clone();
         }
+        if let Some(accept_timeout) = &self.accept_timeout {
+            to.accept_timeout = accept_timeout.clone();
+        }
+        if let Some(shutdown_timeout) = &self.shutdown_timeout {
+            to.shutdown_timeout = shutdown_timeout.clone();
+        }
     }
 
     /// Converts this structure to a PluginNonfunctionalConfiguration structure by
@@ -59,6 +73,8 @@ impl PluginNonfunctionalOpts {
             stderr_mode: self
                 .stderr_mode
                 .unwrap_or(StreamCaptureMode::Capture(Loglevel::Info)),
+            accept_timeout: self.accept_timeout.unwrap_or(Timeout::from_seconds(5)),
+            shutdown_timeout: self.shutdown_timeout.unwrap_or(Timeout::from_seconds(5)),
         }
     }
 }
@@ -70,6 +86,8 @@ impl Default for PluginNonfunctionalOpts {
             tee_files: vec![],
             stdout_mode: None,
             stderr_mode: None,
+            accept_timeout: None,
+            shutdown_timeout: None,
         }
     }
 }

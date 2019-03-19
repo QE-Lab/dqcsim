@@ -206,6 +206,22 @@ pub struct PluginStructOpt {
     /// default is "info".
     #[structopt(long = "stderr", value_name = "level", case_insensitive = true)]
     pub stderr_mode: Option<StreamCaptureMode>,
+
+    /// Sets the timeout for DQCsim to connect to the plugin after the process
+    /// is launched. The default is 5 seconds, so you normally shouldn't have
+    /// to touch this. The value accepts floating point numbers as seconds,
+    /// integers with time units (h, m, s, ms, us, ns), or "infinity" to
+    /// disable the timeout.
+    #[structopt(long = "accept-timeout", value_name = "level")]
+    pub accept_timeout: Option<Timeout>,
+
+    /// Sets the timeout for plugin shutdown. When this timeout expires, DQCsim
+    /// sends SIGKILL to the process to terminate it. The default timeout is 5
+    /// seconds, so you normally shouldn't have to touch this. The value
+    /// accepts floating point numbers as seconds, integers with time units (h,
+    /// m, s, ms, us, ns), or "infinity" to disable the timeout.
+    #[structopt(long = "shutdown-timeout", value_name = "level")]
+    pub shutdown_timeout: Option<Timeout>,
 }
 
 impl From<&PluginStructOpt> for PluginNonfunctionalOpts {
@@ -215,6 +231,8 @@ impl From<&PluginStructOpt> for PluginNonfunctionalOpts {
             tee_files: opts.tee_files.clone(),
             stdout_mode: opts.stdout_mode.clone(),
             stderr_mode: opts.stderr_mode.clone(),
+            accept_timeout: opts.accept_timeout.clone(),
+            shutdown_timeout: opts.shutdown_timeout.clone(),
         }
     }
 }

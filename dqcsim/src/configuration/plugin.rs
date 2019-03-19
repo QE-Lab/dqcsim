@@ -1,5 +1,7 @@
 use crate::{
-    configuration::{arb_cmd::ArbCmd, env_mod::EnvMod, stream_capture_mode::StreamCaptureMode},
+    configuration::{
+        arb_cmd::ArbCmd, env_mod::EnvMod, stream_capture_mode::StreamCaptureMode, timeout::Timeout,
+    },
     error::{inv_arg, oe_err, Result},
     log::{tee_file::TeeFile, Loglevel, LoglevelFilter},
 };
@@ -214,6 +216,14 @@ pub struct PluginNonfunctionalConfiguration {
 
     /// Specifies how the stderr stream of the plugin should be connected.
     pub stderr_mode: StreamCaptureMode,
+
+    /// Specifies the timeout for connecting to the plugin after it has been
+    /// spawned.
+    pub accept_timeout: Timeout,
+
+    /// Specifies the timeout for connecting to the plugin after it has been
+    /// spawned.
+    pub shutdown_timeout: Timeout,
 }
 
 impl Default for PluginNonfunctionalConfiguration {
@@ -223,6 +233,8 @@ impl Default for PluginNonfunctionalConfiguration {
             tee_files: vec![],
             stdout_mode: StreamCaptureMode::Capture(Loglevel::Info),
             stderr_mode: StreamCaptureMode::Capture(Loglevel::Info),
+            accept_timeout: Timeout::from_seconds(5),
+            shutdown_timeout: Timeout::from_seconds(5),
         }
     }
 }
