@@ -1,20 +1,15 @@
-use crate::configuration::*;
-use failure::{Error, Fail};
+use crate::{
+    configuration::*,
+    error::{err, Result},
+};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
 mod host_call;
-pub use host_call::{HostCall, HostCallError};
+pub use host_call::HostCall;
 
 mod path_style;
 pub use path_style::ReproductionPathStyle;
-
-/// Error structure used for reporting reproduction errors.
-#[derive(Debug, Fail, PartialEq)]
-enum ReproductionError {
-    #[fail(display = "{}", 0)]
-    Corrupted(String),
-}
 
 /// The contents of a plugin configuration in a reproduction file.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -84,7 +79,7 @@ impl Reproduction {
         config: &SimulatorConfiguration,
         host_calls: T,
         path_style: ReproductionPathStyle,
-    ) -> Result<Reproduction, Error>
+    ) -> Result<Reproduction>
     where
         T: IntoIterator<Item = &'a HostCall>,
     {
@@ -106,7 +101,7 @@ impl Reproduction {
                         },
                     })
                 })
-                .collect::<Result<Vec<PluginReproduction>, Error>>()?,
+                .collect::<Result<Vec<PluginReproduction>>>()?,
             hostname: whoami::hostname(),
             username: whoami::username(),
             workdir: std::env::current_dir()?,
@@ -122,7 +117,7 @@ impl Reproduction {
         &self,
         config: &mut SimulatorConfiguration,
         exact: bool,
-    ) -> Result<Vec<HostCall>, Error> {
+    ) -> Result<Vec<HostCall>> {
         // If this is an exact reproduction, set the seed.
         if exact {
             config.seed.value = self.seed;
@@ -146,15 +141,13 @@ impl Reproduction {
                     nonfunctional: PluginNonfunctionalConfiguration::default(),
                 })
             })
-            .collect::<Result<_, Error>>()?;
+            .collect::<Result<_>>()?;
 
         // Set the plugin types and make sure we have at least a frontend
         // and a backend.
         let plugin_count = config.plugins.len();
         if plugin_count < 2 {
-            Err(ReproductionError::Corrupted(
-                "Reproduction file corrupted: less than two plugins specified".to_string(),
-            ))?;
+            err("reproduction file corrupted: less than two plugins specified")?;
         }
         config.plugins[0].specification.typ = PluginType::Frontend;
         config.plugins[plugin_count - 1].specification.typ = PluginType::Frontend;
@@ -163,12 +156,12 @@ impl Reproduction {
     }
 
     /// Constructs a reproduction structure from a file.
-    pub fn from_file(file: &Path) -> Result<Reproduction, Error> {
+    pub fn from_file(file: &Path) -> Result<Reproduction> {
         Ok(serde_yaml::from_reader(&mut std::fs::File::open(file)?)?)
     }
 
     /// Writes a reproduction structure to a file.
-    pub fn to_file(&self, file: &Path) -> Result<(), Error> {
+    pub fn to_file(&self, file: &Path) -> Result<()> {
         serde_yaml::to_writer(&mut std::fs::File::create(file)?, self)?;
         Ok(())
     }

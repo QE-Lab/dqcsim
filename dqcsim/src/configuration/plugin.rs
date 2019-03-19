@@ -1,7 +1,7 @@
 use crate::{
     configuration::{arb_cmd::ArbCmd, env_mod::EnvMod, stream_capture_mode::StreamCaptureMode},
+    error::{inv_arg, oe_err, Result},
     log::{tee_file::TeeFile, Loglevel, LoglevelFilter},
-    error::{Result, inv_arg, oe_err},
 };
 use serde::{Deserialize, Serialize};
 use std::env::{current_exe, split_paths, var_os};

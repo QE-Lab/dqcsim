@@ -1,6 +1,6 @@
 use crate::{
     configuration::LogCallback,
-    error::{ErrorKind, Result},
+    error::{oe_log_err, Result},
     log::{deinit, init, proxy::LogProxy, Loglevel, LoglevelFilter, Record, PID},
     trace,
 };
@@ -44,8 +44,7 @@ impl LogThread {
         let handler = thread::spawn(move || {
             // FIXME: if we're not logging to stderr, we shouldn't acquire it.
             // (but right now this setting isn't available here yet anyway)
-            let mut t = stderr()
-                .ok_or_else(|| ErrorKind::LogError("Failed to acquire stderr".to_string()))?;
+            let mut t = stderr().ok_or_else(oe_log_err("Failed to acquire stderr"))?;
 
             let supports_dim = t.supports_attr(term::Attr::Dim);
             let supports_colors = t.supports_attr(term::Attr::ForegroundColor(9));

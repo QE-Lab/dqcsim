@@ -206,7 +206,14 @@ impl From<enum_variants::EnumVariantError> for Error {
     }
 }
 
-
+impl From<serde_yaml::Error> for Error {
+    fn from(error: serde_yaml::Error) -> Error {
+        let msg = error.to_string();
+        Error {
+            ctx: Context::new(ErrorKind::InvalidArgument(msg)),
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {

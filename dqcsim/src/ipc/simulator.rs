@@ -1,5 +1,5 @@
 use crate::{
-    error::{ErrorKind, Result},
+    error::{err, Result},
     ipc::SimulatorChannel,
     trace,
 };
@@ -74,12 +74,10 @@ pub fn start(
                 trace!("Plugin started and connected.");
                 Ok((child, channel))
             }
-            Err(_) => Err(ErrorKind::Other(
-                "Plugin IPC connection start thread failed".to_string(),
-            ))?,
+            Err(_) => err("plugin IPC connection start thread failed")?,
         }
     } else {
-        Err(ErrorKind::Other("Channel setup timeout".to_string()))?
+        err("plugin did not connect within specified timeout")?
     }
 }
 
@@ -97,7 +95,10 @@ mod tests {
         );
         assert!(timeout.is_err());
         let err = timeout.err().unwrap();
-        assert_eq!(format!("{}", err), "Error: Channel setup timeout");
+        assert_eq!(
+            format!("{}", err),
+            "Error: plugin did not connect within specified timeout"
+        );
     }
 
 }

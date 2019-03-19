@@ -188,14 +188,14 @@ where
     /// assert_eq!(
     ///     TestEnum::variant_from_str_fuzzy("ba"),
     ///     Err(EnumVariantError::ParseError(
-    ///         "ba is an ambiguous test enum. Did you mean bar or baz?"
+    ///         "ba is an ambiguous test enum, it could mean either bar or baz"
     ///         .to_string()
     ///     ))
     /// );
     /// assert_eq!(
     ///     TestEnum::variant_from_str_fuzzy("banana"),
     ///     Err(EnumVariantError::ParseError(
-    ///         "banana is not a valid test enum. Valid values are foo, bar, or baz."
+    ///         "banana is not a valid test enum, valid values are foo, bar, or baz"
     ///         .to_string()
     ///     ))
     /// );
@@ -217,14 +217,14 @@ where
         // We're expecting one match; more is ambiguous, less is no match.
         match matches.len() {
             0 => Err(EnumVariantError::ParseError(format!(
-                "{} is not a valid {}. Valid values are {}.",
+                "{} is not a valid {}, valid values are {}",
                 s,
                 friendly_name(Self::type_name()),
                 friendly_enumerate(Self::variants_lower().into_iter(), Some("or"))
             ))),
             1 => Ok(unsafe { matches.get_unchecked(0) }.1.clone()),
             _ => Err(EnumVariantError::ParseError(format!(
-                "{} is an ambiguous {}. Did you mean {}?",
+                "{} is an ambiguous {}, it could mean either {}",
                 s,
                 friendly_name(Self::type_name()),
                 friendly_enumerate(matches.into_iter().map(|x| x.0), Some("or"))

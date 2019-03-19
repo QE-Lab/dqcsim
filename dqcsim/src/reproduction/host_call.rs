@@ -1,15 +1,10 @@
 use enum_variants::EnumVariants;
-use failure::Fail;
 use serde::{Deserialize, Serialize};
 
-use crate::configuration::{ArbCmd, ArbData};
-
-/// Error structure used for reporting HostCall errors.
-#[derive(Debug, Fail, PartialEq)]
-pub enum HostCallError {
-    #[fail(display = "{}", 0)]
-    ParseError(String),
-}
+use crate::{
+    configuration::{ArbCmd, ArbData},
+    error::{inv_arg, Error},
+};
 
 /// Represents a host API call name.
 #[derive(EnumVariants, Debug, Copy, Clone, PartialEq)]
@@ -38,7 +33,7 @@ pub enum HostCall {
 }
 
 impl ::std::str::FromStr for HostCall {
-    type Err = failure::Error;
+    type Err = Error;
 
     /// Constructs a HostCall from its string representation, which is one of:
     ///
@@ -65,27 +60,19 @@ impl ::std::str::FromStr for HostCall {
             None => match function {
                 HostCallFunction::Start => Ok(HostCall::Start(ArbData::default())),
                 HostCallFunction::Wait => Ok(HostCall::Wait),
-                HostCallFunction::Send => Err(HostCallError::ParseError(
-                    "The send API call requires an ArbData argument.".to_string(),
-                ))?,
+                HostCallFunction::Send => inv_arg("the send API call requires an ArbData argument"),
                 HostCallFunction::Recv => Ok(HostCall::Recv),
                 HostCallFunction::Yield => Ok(HostCall::Yield),
-                HostCallFunction::Arb => Err(HostCallError::ParseError(
-                    "The arb API call requires a plugin and an ArbCmd argument.".to_string(),
-                ))?,
+                HostCallFunction::Arb => {
+                    inv_arg("the arb API call requires a plugin and an ArbCmd argument")
+                }
             },
             Some(argument) => match function {
                 HostCallFunction::Start => Ok(HostCall::Start(ArbData::from_str(argument)?)),
-                HostCallFunction::Wait => Err(HostCallError::ParseError(
-                    "The wait API call does not take an argument.".to_string(),
-                ))?,
+                HostCallFunction::Wait => inv_arg("the wait API call does not take an argument"),
                 HostCallFunction::Send => Ok(HostCall::Send(ArbData::from_str(argument)?)),
-                HostCallFunction::Recv => Err(HostCallError::ParseError(
-                    "The recv API call does not take an argument.".to_string(),
-                ))?,
-                HostCallFunction::Yield => Err(HostCallError::ParseError(
-                    "The yield API call does not take an argument.".to_string(),
-                ))?,
+                HostCallFunction::Recv => inv_arg("the recv API call does not take an argument"),
+                HostCallFunction::Yield => inv_arg("the yield API call does not take an argument"),
                 HostCallFunction::Arb => {
                     let mut splitter = argument.splitn(2, ':');
                     let arg1 = splitter.next().unwrap();
@@ -93,10 +80,7 @@ impl ::std::str::FromStr for HostCall {
                         assert_eq!(splitter.next(), None);
                         Ok(HostCall::Arb(arg1.to_string(), ArbCmd::from_str(arg2)?))
                     } else {
-                        Err(HostCallError::ParseError(
-                            "The arb API call requires a plugin and an ArbCmd argument."
-                                .to_string(),
-                        ))?
+                        inv_arg("the arb API call requires a plugin and an ArbCmd argument")
                     }
                 }
             },
@@ -146,11 +130,11 @@ mod test {
             HostCall::from_str("wait:{\"answer\": 42},x,y,z")
                 .unwrap_err()
                 .to_string(),
-            "The wait API call does not take an argument."
+            "Invalid argument: the wait API call does not take an argument"
         );
         assert_eq!(
             HostCall::from_str("send").unwrap_err().to_string(),
-            "The send API call requires an ArbData argument."
+            "Invalid argument: the send API call requires an ArbData argument"
         );
         assert_eq!(
             HostCall::from_str("send:{\"answer\": 42},x,y,z").unwrap(),
@@ -161,22 +145,22 @@ mod test {
             HostCall::from_str("recv:{\"answer\": 42},x,y,z")
                 .unwrap_err()
                 .to_string(),
-            "The recv API call does not take an argument."
+            "Invalid argument: the recv API call does not take an argument"
         );
         assert_eq!(HostCall::from_str("yield").unwrap(), HostCall::Yield);
         assert_eq!(
             HostCall::from_str("yield:{\"answer\": 42},x,y,z")
                 .unwrap_err()
                 .to_string(),
-            "The yield API call does not take an argument."
+            "Invalid argument: the yield API call does not take an argument"
         );
         assert_eq!(
             HostCall::from_str("arb").unwrap_err().to_string(),
-            "The arb API call requires a plugin and an ArbCmd argument."
+            "Invalid argument: the arb API call requires a plugin and an ArbCmd argument"
         );
         assert_eq!(
             HostCall::from_str("arb:a").unwrap_err().to_string(),
-            "The arb API call requires a plugin and an ArbCmd argument."
+            "Invalid argument: the arb API call requires a plugin and an ArbCmd argument"
         );
         assert_eq!(
             HostCall::from_str("arb:a:b.c:{\"answer\": 42},x,y,z").unwrap(),
@@ -187,7 +171,7 @@ mod test {
         );
         assert_eq!(
             HostCall::from_str("hello").unwrap_err().to_string(),
-            "hello is not a valid host call function. Valid values are start, wait, send, recv, yield, or arb."
+            "Invalid argument: hello is not a valid host call function, valid values are start, wait, send, recv, yield, or arb"
         );
     }
 
