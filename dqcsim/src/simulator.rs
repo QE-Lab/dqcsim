@@ -3,8 +3,11 @@
 //!
 
 use crate::{
-    configuration::SimulatorConfiguration, error::Result, log::thread::LogThread,
-    simulation::Simulation, trace,
+    configuration::{PluginType, SimulatorConfiguration},
+    error::{inv_arg, Result},
+    log::thread::LogThread,
+    simulation::Simulation,
+    trace,
 };
 
 /// Simulator instance.
@@ -63,8 +66,8 @@ impl Simulator {
     /// Potential errors causes are related to spawning the LogThread and
     /// constructing the Simulation.
     pub fn new(mut configuration: SimulatorConfiguration) -> Result<Simulator> {
-        configuration.optimize_loglevels();
-        configuration.check_plugin_list()?;
+        Simulator::optimize_loglevels(&mut configuration);
+        Simulator::check_plugin_list(&mut configuration)?;
         let mut sim = Simulator::try_from(configuration)?;
         sim.init()?;
         Ok(sim)
@@ -97,6 +100,99 @@ impl Simulator {
         let sender = self.log_thread.get_sender().unwrap();
         self.as_mut().spawn(sender)?;
         self.as_mut().init()
+    }
+
+    /// Optimizes the source verbosity levels, such that they are no more
+    /// verbose than the most verbose sink.
+    pub fn optimize_loglevels(configuration: &mut SimulatorConfiguration) {
+        // Find the verbosity of the most verbose sink.
+        let mut max_dqcsim_verbosity = configuration.stderr_level;
+        for tee in &configuration.tee_files {
+            if tee.filter > max_dqcsim_verbosity {
+                max_dqcsim_verbosity = tee.filter;
+            }
+        }
+        if let Some(cb) = configuration.log_callback.as_ref() {
+            if cb.filter > max_dqcsim_verbosity {
+                max_dqcsim_verbosity = cb.filter;
+            }
+        }
+
+        // Clamp the verbosities of the sources.
+        if configuration.dqcsim_level > max_dqcsim_verbosity {
+            configuration.dqcsim_level = max_dqcsim_verbosity;
+        }
+        for plugin in &mut configuration.plugins {
+            if plugin.nonfunctional.verbosity > max_dqcsim_verbosity {
+                plugin.nonfunctional.verbosity = max_dqcsim_verbosity;
+            }
+        }
+    }
+
+    /// Verifies that the plugins are specified correctly.
+    ///
+    /// This checks that there is exactly one frontend and exactly one backend.
+    /// If this is true but they're not in the right place, they are silently
+    /// moved. This also ensures that there are no duplicate plugin names, and
+    /// auto-names empty plugin names.
+    fn check_plugin_list(configuration: &mut SimulatorConfiguration) -> Result<()> {
+        // Check and fix frontend.
+        let mut frontend_idx = None;
+        for (i, plugin) in configuration.plugins.iter().enumerate() {
+            if let PluginType::Frontend = plugin.specification.typ {
+                if frontend_idx.is_some() {
+                    inv_arg("duplicate frontend")?
+                } else {
+                    frontend_idx = Some(i);
+                }
+            }
+        }
+        match frontend_idx {
+            Some(0) => (),
+            Some(x) => {
+                let plugin = configuration.plugins.remove(x);
+                configuration.plugins.insert(0, plugin);
+            }
+            None => inv_arg("missing frontend")?,
+        }
+
+        // Check and fix backend.
+        let mut backend_idx = None;
+        for (i, plugin) in configuration.plugins.iter().enumerate() {
+            if let PluginType::Backend = plugin.specification.typ {
+                if backend_idx.is_some() {
+                    inv_arg("duplicate backend")?
+                } else {
+                    backend_idx = Some(i);
+                }
+            }
+        }
+        match backend_idx {
+            Some(x) => {
+                if x != configuration.plugins.len() - 1 {
+                    let plugin = configuration.plugins.remove(x);
+                    configuration.plugins.push(plugin);
+                }
+            }
+            None => inv_arg("missing backend")?,
+        }
+
+        // Auto-name plugins and check for conflicts.
+        let mut names = std::collections::HashSet::new();
+        for (i, plugin) in configuration.plugins.iter_mut().enumerate() {
+            if plugin.name == "" {
+                plugin.name = match plugin.specification.typ {
+                    PluginType::Frontend => "front".to_string(),
+                    PluginType::Operator => format!("op{}", i),
+                    PluginType::Backend => "back".to_string(),
+                }
+            }
+            if !names.insert(&plugin.name) {
+                inv_arg(format!("duplicate plugin name '{}'", plugin.name))?;
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -144,7 +240,6 @@ mod tests {
         configuration.plugins.push(backend);
 
         let simulator = Simulator::try_from(configuration);
-        let err = simulator.err().unwrap();
-        eprintln!("{}", err);
+        assert!(simulator.is_ok());
     }
 }

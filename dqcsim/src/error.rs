@@ -63,7 +63,7 @@ pub enum ErrorKind {
 
     /// Wraps multiple errors that occurred asynchronously.
     #[fail(display = "Multiple errors occurred. Check the log.")]
-    Multiple(Vec<Box<ErrorKind>>),
+    Multiple(Vec<ErrorKind>),
 
     /// For propagating crossbeam_channel errors.
     #[fail(display = "Inter-thread communication error: {}", _0)]

@@ -52,7 +52,7 @@ impl Simulation {
             Err(ErrorKind::Multiple(
                 errors
                     .into_iter()
-                    .map(|x| Box::new(ErrorKind::Other(x.unwrap_err().to_string())))
+                    .map(|x| ErrorKind::Other(x.unwrap_err().to_string()))
                     .collect(),
             ))?
         }

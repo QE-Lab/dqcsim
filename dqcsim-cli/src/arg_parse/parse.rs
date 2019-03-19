@@ -380,9 +380,6 @@ impl CommandLineConfiguration {
             }
         }
 
-        // Optimize loglevels.
-        config.dqcsim.optimize_loglevels();
-
         // Output a reproduction file if requested.
         if !dqcsim_opts.no_repro_out {
             let file = &dqcsim_opts.repro_out.or_else(|| {
