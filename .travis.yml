@@ -2,6 +2,10 @@ language: rust
 sudo: false
 cache: cargo
 
+os:
+  - linux
+  - osx
+
 rust:
   - stable
   - nightly
