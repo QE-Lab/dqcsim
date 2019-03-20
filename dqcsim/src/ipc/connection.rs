@@ -34,10 +34,11 @@ impl Connection {
 
         let channel: PluginChannel = connect_simulator(simulator)?;
 
-        init(
-            LogProxy::boxed(name, channel.log.clone()),
+        init(LogProxy::boxed(
+            name,
             LoglevelFilter::Trace,
-        )?;
+            channel.log.clone(),
+        ))?;
 
         initialize(&channel, plugin_type)?;
 
