@@ -1,5 +1,5 @@
 use crate::{
-    configuration::PluginConfiguration,
+    configuration::{PluginConfiguration, Timeout},
     error::Result,
     info,
     ipc::{simulator::start, SimulatorChannel},
@@ -8,12 +8,16 @@ use crate::{
     trace, warn,
 };
 use crossbeam_channel::Sender;
-use std::process::{Child, Command};
+use std::{
+    process::{Child, Command},
+    time::Instant,
+};
 
 #[derive(Debug)]
 pub struct PluginProcess {
     child: Child,
     channel: SimulatorChannel,
+    shutdown_timeout: Timeout,
 }
 
 impl PluginProcess {
@@ -24,7 +28,7 @@ impl PluginProcess {
     ) -> Result<PluginProcess> {
         trace!("Constructing PluginProcess: {:?}", command);
 
-        let (mut child, mut channel) = start(command, None)?;
+        let (mut child, mut channel) = start(command, &configuration.nonfunctional.accept_timeout)?;
 
         route(
             configuration.name.as_str(),
@@ -47,7 +51,11 @@ impl PluginProcess {
             Loglevel::Info,
         );
 
-        Ok(PluginProcess { child, channel })
+        Ok(PluginProcess {
+            child,
+            channel,
+            shutdown_timeout: configuration.nonfunctional.shutdown_timeout,
+        })
     }
 
     pub fn request(&self, request: Request) -> Result<()> {
@@ -74,19 +82,23 @@ impl Drop for PluginProcess {
             self.request(Request::Abort)
                 .expect("Failed to abort PluginProcess");
 
-            // No timeout support for ipc-channel, so we wait.
-            // TODO: poll loop with longer timeout
-            std::thread::sleep(std::time::Duration::from_millis(100));
-            match self.channel.response.try_recv() {
-                Ok(Response::Success) => {}
-                _ => {
-                    trace!("Killing PluginProcess");
-                    self.child.kill().expect("Failed to kill PluginProcess");
+            if let Timeout::Duration(duration) = self.shutdown_timeout {
+                let now = Instant::now();
+                while now.elapsed() < duration {
+                    match self.channel.response.try_recv() {
+                        Ok(Response::Success) => {}
+                        _ => {
+                            trace!("Killing PluginProcess");
+                            self.child.kill().expect("Failed to kill PluginProcess");
+                            break;
+                        }
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(100));
                 }
             }
         }
 
-        // At this point the process should be shutting down.
+        // At this point the process should be shutting down or already down.
         let status = self.child.wait().expect("Failed to get exit status");
 
         match status.code() {

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
 /// Represents a timeout parameter, which may be infinite.
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Deserialize, Serialize)]
 pub enum Timeout {
     /// The duration specifies the maximum timeout.
     Duration(Duration),
@@ -39,7 +39,7 @@ impl Timeout {
             Ok(Timeout::infinite())
         } else {
             Ok(Timeout::Duration(Duration::from_nanos(
-                (t * 1000000000.0_f64) as u64,
+                (t * 1_000_000_000.0_f64) as u64,
             )))
         }
     }
@@ -49,7 +49,7 @@ impl Timeout {
     /// Floating point infinity is used to specify infinite timeouts.
     pub fn to_double(&self) -> f64 {
         if let Timeout::Duration(d) = self {
-            (d.as_nanos() as f64) * 0.000000001_f64
+            (d.as_nanos() as f64) * 0.000_000_001_f64
         } else {
             std::f64::INFINITY
         }
@@ -59,11 +59,11 @@ impl Timeout {
     fn duration_from_component(num: &str, unit: &str) -> Result<Duration> {
         if let Ok(t) = num.parse::<u64>() {
             let unit = match unit {
-                "h" => 3600000000000,
-                "m" => 60000000000,
-                "s" => 1000000000,
-                "ms" => 1000000,
-                "us" => 1000,
+                "h" => 3_600_000_000_000,
+                "m" => 60_000_000_000,
+                "s" => 1_000_000_000,
+                "ms" => 1_000_000,
+                "us" => 1_000,
                 "ns" => 1,
                 _ => inv_arg(format!(
                     "failed to parse timeout parameter: unknown time unit {}",
@@ -102,7 +102,7 @@ impl ::std::str::FromStr for Timeout {
         if let Ok(t) = s.parse::<f64>() {
             if t >= 0.0 {
                 return Ok(Timeout::Duration(Duration::from_nanos(
-                    (t * 1000000000.0_f64) as u64,
+                    (t * 1_000_000_000.0_f64) as u64,
                 )));
             }
         }
@@ -112,8 +112,8 @@ impl ::std::str::FromStr for Timeout {
         let mut num_start = 0;
         let mut unit_start = 0;
         let mut expect_num = true;
-        let mut it = s.char_indices();
-        while let Some((i, c)) = it.next() {
+        let it = s.char_indices();
+        for (i, c) in it {
             let is_num = c.is_numeric();
             if !is_num && !c.is_alphabetic() {
                 return inv_arg("failed to parse timeout parameter");
@@ -143,6 +143,15 @@ impl ::std::str::FromStr for Timeout {
     }
 }
 
+impl Into<Option<Duration>> for &Timeout {
+    fn into(self) -> Option<Duration> {
+        match *self {
+            Timeout::Duration(duration) => Some(duration),
+            Timeout::Infinite => None,
+        }
+    }
+}
+
 impl ::std::fmt::Display for Timeout {
     /// Turns the Timeout object into a string representation that can be
     /// parsed by `from_str()`.
@@ -161,6 +170,15 @@ mod test {
     use super::Timeout;
     use std::str::FromStr;
     use std::time::Duration;
+
+    #[test]
+    fn into_duration() {
+        let duration: Option<Duration> = (&Timeout::from_seconds(42)).into();
+        assert_eq!(duration, Some(Duration::from_secs(42)));
+
+        let inf: Option<Duration> = (&Timeout::Infinite).into();
+        assert_eq!(inf, None);
+    }
 
     #[test]
     fn from_str() {

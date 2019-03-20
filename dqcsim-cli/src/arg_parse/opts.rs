@@ -231,8 +231,8 @@ impl From<&PluginStructOpt> for PluginNonfunctionalOpts {
             tee_files: opts.tee_files.clone(),
             stdout_mode: opts.stdout_mode.clone(),
             stderr_mode: opts.stderr_mode.clone(),
-            accept_timeout: opts.accept_timeout.clone(),
-            shutdown_timeout: opts.shutdown_timeout.clone(),
+            accept_timeout: opts.accept_timeout,
+            shutdown_timeout: opts.shutdown_timeout,
         }
     }
 }

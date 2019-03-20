@@ -165,13 +165,13 @@ impl ThreadState {
     }
 }
 
-/// Thread-local state storage. Be careful not to call user callback functions
-/// while holding a reference to the state: those callbacks can and probably
-/// will claim the reference mutably at some point. Basically, once user
-/// callbacks need to become "callable" from the Rust world, for instance when
-/// a configuration object is consumed into the object it configures, they
-/// should move out of this state.
 thread_local! {
+    /// Thread-local state storage. Be careful not to call user callback functions
+    /// while holding a reference to the state: those callbacks can and probably
+    /// will claim the reference mutably at some point. Basically, once user
+    /// callbacks need to become "callable" from the Rust world, for instance when
+    /// a configuration object is consumed into the object it configures, they
+    /// should move out of this state.
     static STATE: RefCell<ThreadState> = RefCell::new(ThreadState {
         objects: HashMap::new(),
         handle_counter: 1,
