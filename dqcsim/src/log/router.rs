@@ -1,3 +1,5 @@
+//! Router functionality.
+
 use crate::{
     log::{init, proxy::LogProxy, LoglevelFilter, Record},
     trace,
