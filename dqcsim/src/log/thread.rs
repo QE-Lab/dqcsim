@@ -1,3 +1,5 @@
+//! A log thread implementation.
+
 use crate::{
     configuration::LogCallback,
     error::{oe_log_err, Result},

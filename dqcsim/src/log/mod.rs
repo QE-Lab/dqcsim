@@ -13,7 +13,7 @@
 //! generated using the provided [`macros`]. The thread-local [`LogProxy`]
 //! forwards the records to the [`LogThread`] for logging.
 //!
-//! # LogThread
+//! ## LogThread
 //!
 //! The [`LogThread`] is the sink for all log [`Records`]. It can output log
 //! records to Standard Error output and invoke a [`LogCallback`] function.
@@ -22,16 +22,23 @@
 //! are forwarded to Standard Error output or to the [`LogCallback`] function
 //! if their [`Loglevel`] is equal or below the configured [`LogLevelFilter`].
 //!
-//! # LogCallback
+//! ## LogCallback
 //!
+//! A [`LogThread`] can invoke a [`LogCallback`] function for incoming records.
+//! This is enabled by passing a [`LogCallback`] (with a [`LoglevelFilter`] bigger than [`LogLevelFilter::Off`]) to the [`callback`] argument of the [`spawn`] method of [`LogThread`].
 //!
-//! # LogProxy
+//! ## LogProxy
 //!
+//! A [`LogProxy`] forwards log [`Records`] to a [`LogThread`]. It logs records
+//! with it's logger name if the generated log [`Record`] [`Loglevel`] is
+//! smaller or equal than the configured [`LoglevelFilter`] of the
+//! [`LogProxy`].
 //!
 //! # Basic Example
 //!
 //! ```rust
 //! use dqcsim::{
+//!     debug,
 //!     log::{init, proxy::LogProxy, thread::LogThread, LoglevelFilter},
 //!     note,
 //! };
@@ -66,7 +73,7 @@
 //!
 //! // This log records is also forwarded to the log thread by the log proxy running
 //! // in the main thread.
-//! note!("Note from main thread via proxy started by log_thread spawn function");
+//! debug!("Note from main thread via proxy started by log_thread spawn function");
 //!
 //! ```
 //!
@@ -75,13 +82,15 @@
 //! * sfackler's [comment](https://github.com/rust-lang-nursery/log/issues/57#issuecomment-143383896)
 //!
 //! [`LogThread`]: ./thread/struct.LogThread.html
+//! [`spawn`]: ./thread/struct.LogThread.html#method.spawn
 //! [`LogProxy`]: ./proxy/struct.LogProxy.html
 //! [`Record`]: ./struct.Record.html
 //! [`Records`]: ./struct.Record.html
 //! [`Loglevel`]: ./enum.Loglevel.html
 //! [`LoglevelFilter`]: ./enum.LoglevelFilter.html
 //! [`LogLevelFilter::Off`]: ./enum.LogLevelFilter.html
-//! [`macros`]: #macros
+//! [`LogCallback`]: ../configuration/struct.LogCallback.html
+//! [`macros`]: ../index.html#macros
 //! [`log`]: https://github.com/rust-lang-nursery/log
 
 // This re-export is required as the trait needs to be in scope in the log
@@ -112,7 +121,27 @@ use std::{cell::RefCell, fmt};
 /// # Implementing the Log trait.
 ///
 /// ```rust
-/// use dqcsim::{log};
+/// use dqcsim::{
+///     log::{Log, Loglevel, Record}
+/// };
+///
+/// struct SimpleLogger {}
+///
+/// impl Log for SimpleLogger {
+///     fn name(&self) -> &str {
+///         "simple_logger"
+///     }
+///
+///     fn enabled(&self, level: Loglevel) -> bool {
+///         // The SimpleLogger is always enabled.
+///         true
+///     }
+///
+///     fn log(&self, record: Record) {
+///         // The SimpleLogger logs to Standard Output.
+///         println!("{}", record);
+///     }
+/// }
 /// ```
 pub trait Log {
     /// Returns the name of this logger
@@ -311,6 +340,7 @@ impl Record {
 }
 
 impl Record {
+    #[cfg_attr(feature = "cargo-clippy", allow(clippy::too_many_arguments))]
     pub fn new(
         logger: impl Into<String>,
         payload: impl Into<String>,
