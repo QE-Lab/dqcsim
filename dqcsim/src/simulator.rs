@@ -68,6 +68,7 @@ impl Simulator {
     pub fn new(mut configuration: SimulatorConfiguration) -> Result<Simulator> {
         Simulator::optimize_loglevels(&mut configuration);
         Simulator::check_plugin_list(&mut configuration)?;
+        dbg!(&configuration);
         let mut sim = Simulator::try_from(configuration)?;
         sim.init()?;
         Ok(sim)

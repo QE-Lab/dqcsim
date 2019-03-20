@@ -1,8 +1,8 @@
-use enum_variants::EnumVariants;
-use serde::{Deserialize, Serialize};
-
 use crate::error::Error;
 use crate::log::Loglevel;
+use enum_variants::EnumVariants;
+use serde::{Deserialize, Serialize};
+use std::process::Stdio;
 
 /// All loglevel options plus pass and null, used to specify how a
 /// stdout/stderr stream should be captured.
@@ -51,5 +51,25 @@ impl ::std::str::FromStr for StreamCaptureMode {
             StreamCaptureOption::Debug => StreamCaptureMode::Capture(Loglevel::Debug),
             StreamCaptureOption::Trace => StreamCaptureMode::Capture(Loglevel::Trace),
         })
+    }
+}
+
+impl Into<Stdio> for StreamCaptureMode {
+    fn into(self) -> Stdio {
+        match self {
+            StreamCaptureMode::Null => Stdio::null(),
+            StreamCaptureMode::Pass => Stdio::inherit(),
+            StreamCaptureMode::Capture(_) => Stdio::piped(),
+        }
+    }
+}
+
+impl Into<Stdio> for &StreamCaptureMode {
+    fn into(self) -> Stdio {
+        match *self {
+            StreamCaptureMode::Null => Stdio::null(),
+            StreamCaptureMode::Pass => Stdio::inherit(),
+            StreamCaptureMode::Capture(_) => Stdio::piped(),
+        }
     }
 }

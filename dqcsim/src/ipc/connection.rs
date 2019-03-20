@@ -26,6 +26,7 @@ pub struct Connection {
 impl Connection {
     pub fn init(
         name: impl Into<String>,
+        level: impl Into<LoglevelFilter>,
         simulator: impl Into<String>,
         plugin_type: PluginType,
     ) -> Result<Connection> {
@@ -34,11 +35,7 @@ impl Connection {
 
         let channel: PluginChannel = connect_simulator(simulator)?;
 
-        init(LogProxy::boxed(
-            name,
-            LoglevelFilter::Trace,
-            channel.log.clone(),
-        ))?;
+        init(LogProxy::boxed(name, level.into(), channel.log.clone()))?;
 
         initialize(&channel, plugin_type)?;
 
