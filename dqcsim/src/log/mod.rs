@@ -13,23 +13,43 @@
 //! generated using the provided [`macros`]. The thread-local [`LogProxy`]
 //! forwards the records to the [`LogThread`] for logging.
 //!
-//! Both [`LogThread`] and [`LogProxy`] filter [`Records`] based on their
-//! [`Loglevel`]. The behavior is defined by setting a [`LoglevelFilter`].
+//! ## LogThread
+//!
+//! The [`LogThread`] is the sink for all log [`Records`]. It can output log
+//! records to Standard Error output and invoke a [`LogCallback`] function.
+//! Both these options can be enabled by setting the corresponding
+//! [`LogLevelFilter`] above [`LogLevelFilter::Off`]. Incoming log [`Records`]
+//! are forwarded to Standard Error output or to the [`LogCallback`] function
+//! if their [`Loglevel`] is equal or below the configured [`LogLevelFilter`].
+//!
+//! ## LogCallback
+//!
+//! A [`LogThread`] can invoke a [`LogCallback`] function for incoming records.
+//! This is enabled by passing a [`LogCallback`] (with a [`LoglevelFilter`] bigger than [`LogLevelFilter::Off`]) to the [`callback`] argument of the [`spawn`] method of [`LogThread`].
+//!
+//! ## LogProxy
+//!
+//! A [`LogProxy`] forwards log [`Records`] to a [`LogThread`]. It logs records
+//! with it's logger name if the generated log [`Record`] [`Loglevel`] is
+//! smaller or equal than the configured [`LoglevelFilter`] of the
+//! [`LogProxy`].
 //!
 //! # Basic Example
 //!
 //! ```rust
 //! use dqcsim::{
+//!     debug,
 //!     log::{init, proxy::LogProxy, thread::LogThread, LoglevelFilter},
 //!     note,
 //! };
 //!
-//! // Spawn the log thread. This also starts a thread-local log proxy in the main
-//! // thread.
+//! // Spawn the log thread. This starts a thread-local log proxy in the main
+//! // thread with a Note level filter and "main_thread" as name. This example
+//! // enables Standard Error output at Debug level filter.
 //! let log_thread = LogThread::spawn(
 //!     "main_thread",
 //!     LoglevelFilter::Note,
-//!     LoglevelFilter::Note,
+//!     LoglevelFilter::Debug,
 //!     None,
 //! )
 //! .unwrap();
@@ -40,11 +60,11 @@
 //! // Spawn an other thread.
 //! std::thread::spawn(move || {
 //!     // Construct a log proxy instance which connects to the log thread endpoint.
-//!     let log_proxy = LogProxy::boxed("other_thread", log_endpoint);
+//!     let log_proxy = LogProxy::boxed("other_thread", LoglevelFilter::Trace, log_endpoint);
 //!
 //!     // Initialize the thread-local logger to enable forwarding of log records to
 //!     // the log thread.
-//!     init(log_proxy, LoglevelFilter::Trace);
+//!     init(log_proxy);
 //!
 //!     // Generate a log record
 //!     note!("Note from thread via proxy");
@@ -53,7 +73,7 @@
 //!
 //! // This log records is also forwarded to the log thread by the log proxy running
 //! // in the main thread.
-//! note!("Note from main thread via proxy started by log_thread spawn function");
+//! debug!("Note from main thread via proxy started by log_thread spawn function");
 //!
 //! ```
 //!
@@ -62,12 +82,15 @@
 //! * sfackler's [comment](https://github.com/rust-lang-nursery/log/issues/57#issuecomment-143383896)
 //!
 //! [`LogThread`]: ./thread/struct.LogThread.html
+//! [`spawn`]: ./thread/struct.LogThread.html#method.spawn
 //! [`LogProxy`]: ./proxy/struct.LogProxy.html
 //! [`Record`]: ./struct.Record.html
 //! [`Records`]: ./struct.Record.html
 //! [`Loglevel`]: ./enum.Loglevel.html
 //! [`LoglevelFilter`]: ./enum.LoglevelFilter.html
-//! [`macros`]: #macros
+//! [`LogLevelFilter::Off`]: ./enum.LogLevelFilter.html
+//! [`LogCallback`]: ../configuration/struct.LogCallback.html
+//! [`macros`]: ../index.html#macros
 //! [`log`]: https://github.com/rust-lang-nursery/log
 
 // This re-export is required as the trait needs to be in scope in the log
@@ -98,21 +121,40 @@ use std::{cell::RefCell, fmt};
 /// # Implementing the Log trait.
 ///
 /// ```rust
-/// use dqcsim::{log};
+/// use dqcsim::{
+///     log::{Log, Loglevel, Record}
+/// };
+///
+/// struct SimpleLogger {}
+///
+/// impl Log for SimpleLogger {
+///     fn name(&self) -> &str {
+///         "simple_logger"
+///     }
+///
+///     fn enabled(&self, level: Loglevel) -> bool {
+///         // The SimpleLogger is always enabled.
+///         true
+///     }
+///
+///     fn log(&self, record: Record) {
+///         // The SimpleLogger logs to Standard Output.
+///         println!("{}", record);
+///     }
+/// }
 /// ```
 pub trait Log {
     /// Returns the name of this logger
     fn name(&self) -> &str;
+    /// Returns true if the provided loglevel is enabled
+    fn enabled(&self, level: Loglevel) -> bool;
     /// Log the incoming record
     fn log(&self, record: Record);
 }
 
 thread_local! {
     /// The thread-local logger.
-    static LOGGER: RefCell<Option<Box<dyn Log>>> = RefCell::new(None);
-    /// The thread-local maximum log level. Defaults to off.
-    #[doc(hidden)]
-    pub static LOGLEVEL: RefCell<LoglevelFilter> = RefCell::new(LoglevelFilter::Off);
+    pub static LOGGER: RefCell<Option<Box<dyn Log>>> = RefCell::new(None);
 }
 
 lazy_static! {
@@ -171,6 +213,20 @@ pub enum Loglevel {
     /// normally only be generated by debug builds, to prevent them from
     /// impacting performance under normal circumstances.
     Trace,
+}
+
+impl Into<term::color::Color> for Loglevel {
+    fn into(self) -> term::color::Color {
+        match self {
+            Loglevel::Fatal => term::color::BRIGHT_RED,
+            Loglevel::Error => term::color::RED,
+            Loglevel::Warn => term::color::YELLOW,
+            Loglevel::Note => term::color::WHITE,
+            Loglevel::Info => term::color::BLUE,
+            Loglevel::Debug => term::color::CYAN,
+            Loglevel::Trace => term::color::BRIGHT_BLACK,
+        }
+    }
 }
 
 /// LoglevelFilter for implementors of the Log trait.
@@ -284,7 +340,9 @@ impl Record {
 }
 
 impl Record {
-    pub fn log(
+    #[cfg_attr(feature = "cargo-clippy", allow(clippy::too_many_arguments))]
+    pub fn new(
+        logger: impl Into<String>,
         payload: impl Into<String>,
         level: Loglevel,
         module_path: impl Into<String>,
@@ -292,25 +350,20 @@ impl Record {
         line: u32,
         process: u32,
         thread: u64,
-    ) {
-        LOGGER.with(|logger| {
-            if let Some(ref logger) = *logger.borrow() {
-                let record = Record {
-                    payload: payload.into(),
-                    metadata: Metadata {
-                        level,
-                        module_path: Some(module_path.into()),
-                        file: Some(file.into()),
-                        line: Some(line),
-                        timestamp: std::time::SystemTime::now(),
-                        process,
-                        thread,
-                    },
-                    logger: logger.name().to_owned(),
-                };
-                logger.log(record);
-            }
-        });
+    ) -> Record {
+        Record {
+            payload: payload.into(),
+            metadata: Metadata {
+                level,
+                module_path: Some(module_path.into()),
+                file: Some(file.into()),
+                line: Some(line),
+                timestamp: std::time::SystemTime::now(),
+                process,
+                thread,
+            },
+            logger: logger.into(),
+        }
     }
 }
 
@@ -321,47 +374,44 @@ impl fmt::Display for Record {
 }
 
 /// Update the thread-local logger.
-fn update(log: Option<Box<dyn Log>>, level: Option<LoglevelFilter>) -> error::Result<()> {
+fn update(log: Option<Box<dyn Log>>) -> error::Result<()> {
     LOGGER.with(|logger| {
         let mut logger = logger.try_borrow_mut().context(ErrorKind::LogError(
             "failed to update thread-local log level".to_string(),
         ))?;
         *logger = log;
-        LOGLEVEL.with(|loglevel| {
-            let mut loglevel = loglevel.try_borrow_mut().context(ErrorKind::LogError(
-                "failed to update thread-local log level".to_string(),
-            ))?;
-            *loglevel = level.unwrap_or(LoglevelFilter::Off);
-            Ok(())
-        })
+        Ok(())
     })
 }
 
 /// Initialize the thread-local logger.
-pub fn init(log: Box<dyn Log>, level: LoglevelFilter) -> error::Result<()> {
-    update(Some(log), Some(level))
+pub fn init(log: Box<dyn Log>) -> error::Result<()> {
+    update(Some(log))
 }
 
 /// Deinitialize the thread-local logger.
 pub fn deinit() -> error::Result<()> {
-    update(None, None)
+    update(None)
 }
 
 #[macro_export]
 macro_rules! log {
     (target: $target:expr, $lvl:expr, $($arg:tt)+) => ({
         use $crate::log::_ref_thread_local::RefThreadLocal;
-        $crate::log::LOGLEVEL.with(|loglevel| {
-            if $crate::log::LoglevelFilter::from($lvl) <= *loglevel.borrow() {
-                $crate::log::Record::log(
-                    format!($($arg)+),
-                    $lvl,
-                    $target,
-                    file!(),
-                    line!(),
-                    *$crate::log::PID,
-                    *$crate::log::TID.borrow()
-                );
+        $crate::log::LOGGER.with(|logger| {
+            if let Some(ref logger) = *logger.borrow() {
+                if logger.enabled($lvl) {
+                    logger.log($crate::log::Record::new(
+                        logger.name(),
+                        format!($($arg)+),
+                        $lvl,
+                        $target,
+                        file!(),
+                        line!(),
+                        *$crate::log::PID,
+                        *$crate::log::TID.borrow()
+                    ));
+                }
             }
         });
     });

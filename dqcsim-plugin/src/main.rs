@@ -1,16 +1,17 @@
 use dqcsim::{
-    configuration::PluginType, debug, info, ipc::connection::Connection,
+    configuration::PluginType, debug, info, ipc::connection::Connection, log::LoglevelFilter,
     protocol::message::Response,
 };
 use failure::Error;
 use ipc_channel::ipc::IpcSelectionResult;
-use std::env;
+use std::{env, str::FromStr};
 
 fn main() -> Result<(), Error> {
     let args: Vec<String> = env::args().collect();
 
     let name: &str = args[1].as_ref();
     let server = args[2].as_ref();
+    let level = LoglevelFilter::from_str(&args[3]).unwrap();
 
     let plugin_type = if name.starts_with("front") {
         PluginType::Frontend
@@ -20,7 +21,7 @@ fn main() -> Result<(), Error> {
         PluginType::Operator
     };
 
-    let mut connection = Connection::init(name, server, plugin_type)?;
+    let mut connection = Connection::init(name, level, server, plugin_type)?;
 
     eprintln!("stderr");
     println!("stdout");
