@@ -3,6 +3,16 @@ clear = true
 command = "make"
 args = ["all"]
 
+[tasks.release]
+clear = true
+command = "make"
+args = ["release"]
+
+[tasks.test]
+clear = true
+command = "make"
+args = ["test"]
+
 [tasks.clean]
 clear = true
 command = "make"

@@ -10,7 +10,7 @@ fn main() {
         .with_language(cbindgen::Language::C)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file("c/gen/dqcsim.h");
+        .write_to_file("c/gen/include/dqcsim.h");
 
     // Generate C++ minimal API headers.
     cbindgen::Builder::new()
@@ -18,7 +18,7 @@ fn main() {
         .with_language(cbindgen::Language::Cxx)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file("cpp/gen/dqcsim.hpp");
+        .write_to_file("cpp/gen/include/dqcsim_raw.hpp");
 
     // Generate SWIG header.
     cbindgen::Builder::new()
