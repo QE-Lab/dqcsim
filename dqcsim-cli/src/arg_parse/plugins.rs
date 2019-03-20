@@ -73,8 +73,12 @@ impl PluginNonfunctionalOpts {
             stderr_mode: self
                 .stderr_mode
                 .unwrap_or(StreamCaptureMode::Capture(Loglevel::Info)),
-            accept_timeout: self.accept_timeout.unwrap_or(Timeout::from_seconds(5)),
-            shutdown_timeout: self.shutdown_timeout.unwrap_or(Timeout::from_seconds(5)),
+            accept_timeout: self
+                .accept_timeout
+                .unwrap_or_else(|| Timeout::from_seconds(5)),
+            shutdown_timeout: self
+                .shutdown_timeout
+                .unwrap_or_else(|| Timeout::from_seconds(5)),
         }
     }
 }
