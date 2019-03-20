@@ -13,11 +13,11 @@ pub extern "C" fn dqcs_cmd_new(iface: *const c_char, oper: *const c_char) -> dqc
     with_state(
         || 0,
         |mut state| {
-            Ok(state.push(Object::ArbCmd(ArbCmd::new(
+            Ok(state.push(Object::ArbCmd(ArbCmd::try_from(
                 receive_str(iface)?,
                 receive_str(oper)?,
                 ArbData::default(),
-            ))))
+            )?)))
         },
     )
 }

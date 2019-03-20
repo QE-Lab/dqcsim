@@ -77,7 +77,9 @@ pub extern "C" fn dqcs_arb_push_raw(
 ///
 /// On success, this **returns a newly allocated string containing the JSON
 /// string. Free it with `free()` when you're done with it to avoid memory
-/// leaks.** On failure, this returns `NULL`.
+/// leaks.** On failure, this returns `NULL`. If the failure is due to the
+/// conversion from binary object to C string (i.e., embedded nulls), the
+/// data is still popped and is thus lost.
 #[no_mangle]
 pub extern "C" fn dqcs_arb_pop_str(handle: dqcs_handle_t) -> *const c_char {
     with_arb(handle, null, |arb| {
@@ -103,7 +105,8 @@ pub extern "C" fn dqcs_arb_pop_str(handle: dqcs_handle_t) -> *const c_char {
 /// specified size is smaller than the actual size. To avoid this, first use
 /// `dqcs_arb_get_size(handle, -1)` to query the size.
 ///
-/// This function returns -1 on failure.
+/// This function returns -1 on failure. If this is due to a `NULL` buffer
+/// being passed, the data that was popped is lost.
 #[no_mangle]
 pub extern "C" fn dqcs_arb_pop_raw(
     handle: dqcs_handle_t,

@@ -75,7 +75,11 @@ pub fn return_raw(obj_in: &[u8], obj_out: *mut c_void, obj_size: usize) -> Resul
 /// function, but isn't for anything else).
 pub fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t> {
     let converted_index = if index < 0 {
-        index + (len as ssize_t)
+        if insert {
+            index + (len as ssize_t) + 1
+        } else {
+            index + (len as ssize_t)
+        }
     } else {
         index
     };

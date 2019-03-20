@@ -20,6 +20,8 @@ impl ArbCmd {
                 "\"{}\" is not a valid identifier; it contains characters outside [a-zA-Z0-9_]",
                 id
             ))?
+        } else if id == "" {
+            inv_arg("identifiers must not be empty")?
         } else {
             Ok(id)
         }
@@ -39,6 +41,22 @@ impl ArbCmd {
             operation_identifier: ArbCmd::verify_id(operation_identifier.into()).unwrap(),
             data,
         }
+    }
+
+    /// Constructs an ArbCmd.
+    ///
+    /// The identifiers may only contain characters in the pattern
+    /// `[a-zA-Z0-9_]`. It this is not the case, this function fails.
+    pub fn try_from(
+        interface_identifier: impl Into<String>,
+        operation_identifier: impl Into<String>,
+        data: ArbData,
+    ) -> Result<ArbCmd> {
+        Ok(ArbCmd {
+            interface_identifier: ArbCmd::verify_id(interface_identifier.into())?,
+            operation_identifier: ArbCmd::verify_id(operation_identifier.into())?,
+            data,
+        })
     }
 
     /// Returns a reference to the interface identifier for this ArbCmd.
