@@ -23,7 +23,7 @@ use std::{
 /// [`SimulatorChannel`]: ../struct.SimulatorChannel.html
 pub fn start(
     command: &mut Command,
-    accept_timeout: impl Into<Duration>,
+    accept_timeout: impl Into<Option<Duration>>,
 ) -> Result<(Child, SimulatorChannel)> {
     // Setup channel
     let (server, server_name) = IpcOneShotServer::new()?;
@@ -35,44 +35,51 @@ pub fn start(
         .stderr(Stdio::piped())
         .spawn()?;
 
-    // Make sure child connects
-    #[cfg_attr(feature = "cargo-clippy", allow(clippy::mutex_atomic))]
-    let pair = Arc::new((Mutex::new(false), Condvar::new()));
-    let pair2 = pair.clone();
-    let handle: thread::JoinHandle<Result<SimulatorChannel>> = thread::spawn(move || {
-        {
-            let &(ref lock, _) = &*pair2;
-            let mut started = lock.lock().expect("Unable to aquire lock");
-            *started = true;
-        }
-        // Wait for the child to connect and get the channel.
-        let (_, channel): (_, SimulatorChannel) = server.accept()?;
-        {
-            let &(_, ref cvar) = &*pair2;
-            cvar.notify_one();
-        }
-        Ok(channel)
-    });
-    let &(ref lock, ref cvar) = &*pair;
-    trace!("Waiting for plugin to connect.");
-    let (started, wait_result) = cvar
-        .wait_timeout(
-            lock.lock()
-                .expect("Plugin IPC connection start lock poisoned"),
-            accept_timeout.into(),
-        )
-        .expect("Plugin IPC connection start lock poisoned");
-    if *started && !wait_result.timed_out() {
-        match handle.join() {
-            Ok(channel) => {
-                let channel = channel?;
-                trace!("Plugin started and connected.");
-                Ok((child, channel))
+    let timeout = accept_timeout.into();
+
+    if timeout.is_some() {
+        // Make sure child connects
+        #[cfg_attr(feature = "cargo-clippy", allow(clippy::mutex_atomic))]
+        let pair = Arc::new((Mutex::new(false), Condvar::new()));
+        let pair2 = pair.clone();
+        let handle: thread::JoinHandle<Result<SimulatorChannel>> = thread::spawn(move || {
+            {
+                let &(ref lock, _) = &*pair2;
+                let mut started = lock.lock().expect("Unable to aquire lock");
+                *started = true;
             }
-            Err(_) => err("plugin IPC connection start thread failed")?,
+            // Wait for the child to connect and get the channel.
+            let (_, channel): (_, SimulatorChannel) = server.accept()?;
+            {
+                let &(_, ref cvar) = &*pair2;
+                cvar.notify_one();
+            }
+            Ok(channel)
+        });
+        let &(ref lock, ref cvar) = &*pair;
+        trace!("Waiting for plugin to connect.");
+        let (started, wait_result) = cvar
+            .wait_timeout(
+                lock.lock()
+                    .expect("Plugin IPC connection start lock poisoned"),
+                timeout.unwrap(),
+            )
+            .expect("Plugin IPC connection start lock poisoned");
+        if *started && !wait_result.timed_out() {
+            match handle.join() {
+                Ok(channel) => {
+                    let channel = channel?;
+                    trace!("Plugin started and connected.");
+                    Ok((child, channel))
+                }
+                Err(_) => err("plugin IPC connection start thread failed")?,
+            }
+        } else {
+            err("plugin did not connect within specified timeout")?
         }
     } else {
-        err("plugin did not connect within specified timeout")?
+        let (_, channel): (_, SimulatorChannel) = server.accept()?;
+        Ok((child, channel))
     }
 }
 

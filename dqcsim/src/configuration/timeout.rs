@@ -143,20 +143,11 @@ impl ::std::str::FromStr for Timeout {
     }
 }
 
-impl Into<Duration> for Timeout {
-    fn into(self) -> Duration {
-        match self {
-            Timeout::Duration(duration) => duration,
-            Timeout::Infinite => Duration::from_secs(std::u64::MAX),
-        }
-    }
-}
-
-impl Into<Duration> for &Timeout {
-    fn into(self) -> Duration {
+impl Into<Option<Duration>> for &Timeout {
+    fn into(self) -> Option<Duration> {
         match *self {
-            Timeout::Duration(duration) => duration,
-            Timeout::Infinite => Duration::from_secs(std::u64::MAX),
+            Timeout::Duration(duration) => Some(duration),
+            Timeout::Infinite => None,
         }
     }
 }
@@ -182,11 +173,11 @@ mod test {
 
     #[test]
     fn into_duration() {
-        let duration: Duration = Timeout::from_seconds(42).into();
-        assert_eq!(duration, Duration::from_secs(42));
+        let duration: Option<Duration> = (&Timeout::from_seconds(42)).into();
+        assert_eq!(duration, Some(Duration::from_secs(42)));
 
-        let inf: Duration = Timeout::Infinite.into();
-        assert_eq!(inf, Duration::from_secs(std::u64::MAX));
+        let inf: Option<Duration> = (&Timeout::Infinite).into();
+        assert_eq!(inf, None);
     }
 
     #[test]
