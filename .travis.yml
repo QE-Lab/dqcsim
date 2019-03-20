@@ -41,4 +41,5 @@ deploy:
   keep-history: false
   on:
     branch: master
-    condition: os = linux AND $TRAVIS_RUST_VERSION = stable
+    rust: stable
+    condition: $TRAVIS_OS_NAME = linux

@@ -26,7 +26,7 @@ pub fn proxy_stdio(
 ) -> JoinHandle<()> {
     let name = name.into();
     spawn(move || {
-        init(LogProxy::boxed(name, sender), LoglevelFilter::from(level)).unwrap();
+        init(LogProxy::boxed(name, LoglevelFilter::from(level), sender)).unwrap();
         let mut buf = Vec::new();
         let mut byte = [0u8];
         loop {

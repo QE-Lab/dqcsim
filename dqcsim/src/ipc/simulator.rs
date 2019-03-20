@@ -1,6 +1,7 @@
 use crate::{
     error::{err, Result},
     ipc::SimulatorChannel,
+    log::LoglevelFilter,
     trace,
 };
 use ipc_channel::ipc::IpcOneShotServer;
@@ -23,7 +24,10 @@ use std::{
 /// [`SimulatorChannel`]: ../struct.SimulatorChannel.html
 pub fn start(
     command: &mut Command,
+    level: LoglevelFilter,
     accept_timeout: impl Into<Option<Duration>>,
+    stderr_mode: impl Into<Stdio>,
+    stdout_mode: impl Into<Stdio>,
 ) -> Result<(Child, SimulatorChannel)> {
     // Setup channel
     let (server, server_name) = IpcOneShotServer::new()?;
@@ -31,8 +35,9 @@ pub fn start(
     // Spawn child process
     let child = command
         .arg(server_name)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
+        .arg(level.to_string())
+        .stderr(stderr_mode.into())
+        .stdout(stdout_mode.into())
         .spawn()?;
 
     let timeout = accept_timeout.into();
@@ -86,6 +91,7 @@ pub fn start(
 #[cfg(test)]
 mod tests {
     use super::start;
+    use crate::{configuration::StreamCaptureMode, log::LoglevelFilter};
     use std::{process::Command, time::Duration};
 
     #[test]
@@ -93,7 +99,10 @@ mod tests {
         let command = "/bin/sh";
         let timeout = start(
             Command::new(command).arg("sleep").arg("1"),
+            LoglevelFilter::Off,
             Duration::from_nanos(1u64),
+            StreamCaptureMode::Null,
+            StreamCaptureMode::Null,
         );
         assert!(timeout.is_err());
         let err = timeout.err().unwrap();

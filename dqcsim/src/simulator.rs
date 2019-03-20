@@ -68,6 +68,7 @@ impl Simulator {
     pub fn new(mut configuration: SimulatorConfiguration) -> Result<Simulator> {
         Simulator::optimize_loglevels(&mut configuration);
         Simulator::check_plugin_list(&mut configuration)?;
+        dbg!(&configuration);
         let mut sim = Simulator::try_from(configuration)?;
         sim.init()?;
         Ok(sim)
@@ -76,8 +77,8 @@ impl Simulator {
     pub fn try_from(configuration: SimulatorConfiguration) -> Result<Simulator> {
         let log_thread = LogThread::spawn(
             "dqcsim",
-            configuration.stderr_level,
             configuration.dqcsim_level,
+            configuration.stderr_level,
             configuration.log_callback,
         )?;
 
