@@ -143,6 +143,24 @@ impl ::std::str::FromStr for Timeout {
     }
 }
 
+impl Into<Duration> for Timeout {
+    fn into(self) -> Duration {
+        match self {
+            Timeout::Duration(duration) => duration,
+            Timeout::Infinite => Duration::from_secs(std::u64::MAX),
+        }
+    }
+}
+
+impl Into<Duration> for &Timeout {
+    fn into(self) -> Duration {
+        match *self {
+            Timeout::Duration(duration) => duration,
+            Timeout::Infinite => Duration::from_secs(std::u64::MAX),
+        }
+    }
+}
+
 impl ::std::fmt::Display for Timeout {
     /// Turns the Timeout object into a string representation that can be
     /// parsed by `from_str()`.
@@ -161,6 +179,15 @@ mod test {
     use super::Timeout;
     use std::str::FromStr;
     use std::time::Duration;
+
+    #[test]
+    fn into_duration() {
+        let duration: Duration = Timeout::from_seconds(42).into();
+        assert_eq!(duration, Duration::from_secs(42));
+
+        let inf: Duration = Timeout::Infinite.into();
+        assert_eq!(inf, Duration::from_secs(std::u64::MAX));
+    }
 
     #[test]
     fn from_str() {

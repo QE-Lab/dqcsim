@@ -24,7 +24,7 @@ impl PluginProcess {
     ) -> Result<PluginProcess> {
         trace!("Constructing PluginProcess: {:?}", command);
 
-        let (mut child, mut channel) = start(command, None)?;
+        let (mut child, mut channel) = start(command, &configuration.nonfunctional.accept_timeout)?;
 
         route(
             configuration.name.as_str(),

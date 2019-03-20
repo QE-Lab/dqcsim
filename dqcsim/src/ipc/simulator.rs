@@ -11,11 +11,6 @@ use std::{
     time::Duration,
 };
 
-/// IPC connect timeout in seconds.
-///
-/// Wait at most this Duration for the child process to connect to the channel.
-const IPC_CONNECT_TIMEOUT_SECS: Duration = Duration::from_secs(5);
-
 /// Start a [`Plugin`] child process and initialize the communication channel.
 ///
 /// Returns a (`Child`, [`SimulatorChannel`]) pair if the plugin started and
@@ -28,7 +23,7 @@ const IPC_CONNECT_TIMEOUT_SECS: Duration = Duration::from_secs(5);
 /// [`SimulatorChannel`]: ../struct.SimulatorChannel.html
 pub fn start(
     command: &mut Command,
-    connect_timeout: Option<Duration>,
+    accept_timeout: impl Into<Duration>,
 ) -> Result<(Child, SimulatorChannel)> {
     // Setup channel
     let (server, server_name) = IpcOneShotServer::new()?;
@@ -64,7 +59,7 @@ pub fn start(
         .wait_timeout(
             lock.lock()
                 .expect("Plugin IPC connection start lock poisoned"),
-            connect_timeout.unwrap_or(IPC_CONNECT_TIMEOUT_SECS),
+            accept_timeout.into(),
         )
         .expect("Plugin IPC connection start lock poisoned");
     if *started && !wait_result.timed_out() {
@@ -91,7 +86,7 @@ mod tests {
         let command = "/bin/sh";
         let timeout = start(
             Command::new(command).arg("sleep").arg("1"),
-            Some(Duration::from_nanos(1u64)),
+            Duration::from_nanos(1u64),
         );
         assert!(timeout.is_err());
         let err = timeout.err().unwrap();
