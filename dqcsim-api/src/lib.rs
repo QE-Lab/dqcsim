@@ -147,12 +147,20 @@ struct ThreadState {
 }
 
 impl ThreadState {
-    /// Sets the `last_error` field in the `ThreadState` structure and returns
-    /// `DQCS_FAILURE` for convenience.
-    fn fail(&mut self, msg: impl AsRef<str>) -> dqcs_return_t {
-        self.last_error =
-            Some(CString::new(msg.as_ref()).unwrap_or_else(|_| CString::new("<UNKNOWN>").unwrap()));
-        dqcs_return_t::DQCS_FAILURE
+    /// Sets the `last_error` field in the `ThreadState` if val is Err and
+    /// calls error for the return value, or returns the value carried in the
+    /// Ok.
+    fn check<T>(&mut self, val: Result<T>, error: impl FnOnce() -> T) -> T {
+        match val {
+            Ok(x) => x,
+            Err(e) => {
+                self.last_error = Some(
+                    CString::new(e.to_string())
+                        .unwrap_or_else(|_| CString::new("<UNKNOWN>").unwrap()),
+                );
+                error()
+            }
+        }
     }
 
     /// Stuffs the given object into the API-managed storage. Returns the
@@ -184,13 +192,20 @@ fn with_state<T>(
     error: impl FnOnce() -> T,
     call: impl FnOnce(std::cell::RefMut<ThreadState>) -> Result<T>,
 ) -> T {
-    STATE.with(|state| match call(state.borrow_mut()) {
-        Ok(r) => r,
-        Err(e) => {
-            state.borrow_mut().fail(e.to_string());
-            error()
-        }
+    STATE.with(|state| {
+        let result = call(state.borrow_mut());
+        state.borrow_mut().check(result, error)
     })
+}
+
+/// Convenience function for setting the error message while STATE is *not*
+/// already borrowed.
+fn check<T>(val: Result<T>, error: impl FnOnce() -> T) -> T {
+    if let Ok(x) = val {
+        x
+    } else {
+        STATE.with(|state| state.borrow_mut().check(val, error))
+    }
 }
 
 /// Returns a pointer to the latest error message.

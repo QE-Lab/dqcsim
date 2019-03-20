@@ -29,19 +29,11 @@ pub extern "C" fn dqcs_handle_type(h: dqcs_handle_t) -> dqcs_handle_type_t {
 pub extern "C" fn dqcs_handle_dump(h: dqcs_handle_t) -> *const c_char {
     STATE.with(|state| {
         let mut state = state.borrow_mut();
-        match &state.objects.get(&h) {
-            None => {
-                state.fail(format!("Handle {} is invalid", h));
-                null()
-            }
-            Some(x) => match return_string(format!("{:?}", x)) {
-                Ok(p) => p,
-                Err(e) => {
-                    state.fail(e.to_string());
-                    null()
-                }
-            },
-        }
+        let result = match &state.objects.get(&h) {
+            None => inv_handle(h),
+            Some(x) => return_string(format!("{:#?}", x)),
+        };
+        state.check(result, null)
     })
 }
 
@@ -52,9 +44,10 @@ pub extern "C" fn dqcs_handle_dump(h: dqcs_handle_t) -> *const c_char {
 pub extern "C" fn dqcs_handle_delete(h: dqcs_handle_t) -> dqcs_return_t {
     STATE.with(|state| {
         let mut state = state.borrow_mut();
-        match &state.objects.remove_entry(&h) {
-            None => state.fail(format!("Handle {} is invalid", h)),
-            Some(_) => dqcs_return_t::DQCS_SUCCESS,
-        }
+        let result = match &state.objects.remove_entry(&h) {
+            None => inv_handle(h),
+            Some(_) => Ok(dqcs_return_t::DQCS_SUCCESS),
+        };
+        state.check(result, || dqcs_return_t::DQCS_FAILURE)
     })
 }

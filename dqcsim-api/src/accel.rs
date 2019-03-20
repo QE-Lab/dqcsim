@@ -10,22 +10,12 @@ thread_local! {
 /// Convenience function for writing functions that operate on the accelerator
 /// instance.
 fn with_accel<T>(error: impl FnOnce() -> T, call: impl FnOnce(&mut Simulator) -> Result<T>) -> T {
-    ACCEL.with(|accel| match accel.borrow_mut().as_mut() {
-        Some(accel) => match call(accel) {
-            Ok(r) => r,
-            Err(e) => {
-                STATE.with(|state| state.borrow_mut().fail(e.to_string()));
-                error()
-            }
-        },
-        None => {
-            STATE.with(|state| {
-                state
-                    .borrow_mut()
-                    .fail("Simulation is not running".to_string())
-            });
-            error()
-        }
+    ACCEL.with(|accel| {
+        let result = match accel.borrow_mut().as_mut() {
+            Some(accel) => call(accel),
+            None => inv_op("simulation is not running"),
+        };
+        check(result, error)
     })
 }
 
@@ -46,12 +36,9 @@ pub extern "C" fn dqcs_accel_init(scfg_handle: dqcs_handle_t) -> dqcs_return_t {
 
         // Fail if a sim is already running.
         if accel.is_some() {
-            STATE.with(|state| {
-                state
-                    .borrow_mut()
-                    .fail("A simulation is already running".to_string())
+            return check(inv_op("a simulation is already running"), || {
+                dqcs_return_t::DQCS_FAILURE
             });
-            return dqcs_return_t::DQCS_FAILURE;
         }
 
         // Try to acquire the sim config object without keeping a reference to
@@ -59,37 +46,22 @@ pub extern "C" fn dqcs_accel_init(scfg_handle: dqcs_handle_t) -> dqcs_return_t {
         // simulator object is allowed to call API callbacks, which are in turn
         // allowed to get a mutable reference to `STATE`, so we must make sure
         // to release our reference before that happens.
-        match STATE.with(|state| state.borrow_mut().objects.remove(&scfg_handle)) {
+        let ob = STATE.with(|state| state.borrow_mut().objects.remove(&scfg_handle));
+        let result = match ob {
             Some(Object::SimulatorConfiguration(scfg_ob)) => match Simulator::new(scfg_ob) {
                 Ok(sim) => {
                     accel.replace(sim);
-                    dqcs_return_t::DQCS_SUCCESS
+                    Ok(dqcs_return_t::DQCS_SUCCESS)
                 }
-                Err(e) => {
-                    STATE.with(|state| state.borrow_mut().fail(e.to_string()));
-                    dqcs_return_t::DQCS_FAILURE
-                }
+                Err(e) => Err(e),
             },
             Some(ob) => {
-                STATE.with(|state| {
-                    let mut state = state.borrow_mut();
-                    state.objects.insert(scfg_handle, ob);
-                    state.fail(format!(
-                        "Handle {} is not a simulator configuration",
-                        scfg_handle
-                    ));
-                });
-                dqcs_return_t::DQCS_FAILURE
+                STATE.with(|state| state.borrow_mut().objects.insert(scfg_handle, ob));
+                unsup_handle(scfg_handle, "scfg")
             }
-            None => {
-                STATE.with(|state| {
-                    state
-                        .borrow_mut()
-                        .fail(format!("Invalid handle {}", scfg_handle))
-                });
-                dqcs_return_t::DQCS_FAILURE
-            }
-        }
+            None => inv_handle(scfg_handle),
+        };
+        check(result, || dqcs_return_t::DQCS_FAILURE)
     })
 }
 
@@ -105,12 +77,9 @@ pub extern "C" fn dqcs_accel_drop() -> dqcs_return_t {
     ACCEL.with(|accel| {
         let mut accel = accel.borrow_mut();
         if accel.is_none() {
-            STATE.with(|state| {
-                state
-                    .borrow_mut()
-                    .fail("No simulation was running".to_string())
-            });
-            dqcs_return_t::DQCS_FAILURE
+            check(inv_op("no simulation was running"), || {
+                dqcs_return_t::DQCS_FAILURE
+            })
         } else {
             accel.take();
             dqcs_return_t::DQCS_SUCCESS
