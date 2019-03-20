@@ -30,7 +30,10 @@ pub fn enum_variants_derive(input: TokenStream) -> TokenStream {
         _ => panic!("derive(EnumVariants) is only possible for enums"),
     }
     let variant_idents: Vec<syn::Ident> = data.variants.iter().map(|x| x.ident.clone()).collect();
-    let variant_ident_strings: Vec<String> = variant_idents.iter().map(|x| x.to_string()).collect();
+    let variant_ident_strings: Vec<String> = variant_idents
+        .iter()
+        .map(std::string::ToString::to_string)
+        .collect();
     let variant_ident_strings_lower: Vec<String> = variant_ident_strings
         .iter()
         .map(|x| x.to_lowercase())

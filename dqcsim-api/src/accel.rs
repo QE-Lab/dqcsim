@@ -1,9 +1,9 @@
 use super::*;
 use dqcsim::simulator::Simulator;
 
-/// Simulator/accelerator object storage. There can be only one
-/// simulator/accelerator per thread.
 thread_local! {
+    /// Simulator/accelerator object storage. There can be only one
+    /// simulator/accelerator per thread.
     static ACCEL: RefCell<Option<Simulator>> = RefCell::new(None);
 }
 

@@ -52,7 +52,7 @@ impl PluginSpecification {
         PluginSpecification {
             sugared: None,
             executable: executable.into(),
-            script: script.map(|x| x.into()),
+            script: script.map(std::convert::Into::into),
             typ: typ.into(),
         }
     }
