@@ -78,22 +78,29 @@ impl Drop for PluginProcess {
             .expect("PluginProcess failed")
             .is_none()
         {
-            trace!("Aborting PluginProcess");
+            trace!(
+                "Aborting PluginProcess (timeout: {:?})",
+                self.shutdown_timeout
+            );
             self.request(Request::Abort)
                 .expect("Failed to abort PluginProcess");
 
             if let Timeout::Duration(duration) = self.shutdown_timeout {
                 let now = Instant::now();
-                while now.elapsed() < duration {
-                    match self.channel.response.try_recv() {
-                        Ok(Response::Success) => {}
-                        _ => {
-                            trace!("Killing PluginProcess");
-                            self.child.kill().expect("Failed to kill PluginProcess");
-                            break;
+                loop {
+                    if now.elapsed() < duration {
+                        match self.channel.response.try_recv() {
+                            Ok(Response::Success) => break,
+                            Ok(_) | Err(_) => {
+                                std::thread::sleep(std::time::Duration::from_millis(10));
+                            }
                         }
+                    } else {
+                        // At this point we're going to kill.
+                        trace!("Killing PluginProcess");
+                        self.child.kill().expect("Failed to kill PluginProcess");
+                        break;
                     }
-                    std::thread::sleep(std::time::Duration::from_millis(100));
                 }
             }
         }

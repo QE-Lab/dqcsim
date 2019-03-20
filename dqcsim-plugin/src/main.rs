@@ -35,6 +35,7 @@ fn main() -> Result<(), Error> {
             IpcSelectionResult::MessageReceived(id, message) => {
                 debug!("[{:?}] {:?}", &map[&id], message);
                 connection.response.send(Response::Success).unwrap();
+                std::process::exit(0);
             }
             IpcSelectionResult::ChannelClosed(id) => {
                 debug!("[{:?}] Closed", &map[&id]);
