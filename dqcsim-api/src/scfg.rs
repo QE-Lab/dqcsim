@@ -171,6 +171,8 @@ pub extern "C" fn dqcs_scfg_tee(
 /// The callback takes the following arguments:
 ///  - `void*`: user defined data.
 ///  - `const char*`: log message string, excluding metadata.
+///  - `const char*`: name assigned to the logger that was used to produce the
+///    message (= "dqcsim" or a plugin name).
 ///  - `dqcs_loglevel_t`: the verbosity level that the message was logged with.
 ///  - `const char*`: string representing the source of the log message, or
 ///    `NULL` when no source is known.
@@ -199,6 +201,7 @@ pub extern "C" fn dqcs_scfg_log_callback(
     callback: Option<
         extern "C" fn(
             *mut c_void,
+            *const c_char,
             *const c_char,
             dqcs_loglevel_t,
             *const c_char,
@@ -237,6 +240,7 @@ pub extern "C" fn dqcs_scfg_log_callback(
                             callback(
                                 data.data(),
                                 CString::new(record.payload())?.as_ptr(),
+                                CString::new(record.logger())?.as_ptr(),
                                 record.level().into(),
                                 match record.module_path() {
                                     Some(x) => CString::new(x)?.as_ptr(),
