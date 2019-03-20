@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
 /// Represents a timeout parameter, which may be infinite.
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Copy, Clone, PartialEq, Deserialize, Serialize)]
 pub enum Timeout {
     /// The duration specifies the maximum timeout.
     Duration(Duration),

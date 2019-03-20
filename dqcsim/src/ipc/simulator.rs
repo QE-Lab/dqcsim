@@ -16,8 +16,8 @@ use std::{
 /// Returns a (`Child`, [`SimulatorChannel`]) pair if the plugin started and
 /// the channel was setup succesfully.
 ///
-/// The optional connect timeout argument can be used to override the default timeout
-/// duration of 5 seconds.
+/// The accept_timeout argument can be used to set a timeout to wait for the
+/// spawned plugin process to connect.
 ///
 /// [`Plugin`]: ../plugin/struct.Plugin.html
 /// [`SimulatorChannel`]: ../struct.SimulatorChannel.html

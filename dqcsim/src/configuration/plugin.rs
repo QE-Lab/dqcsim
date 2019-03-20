@@ -221,8 +221,8 @@ pub struct PluginNonfunctionalConfiguration {
     /// spawned.
     pub accept_timeout: Timeout,
 
-    /// Specifies the timeout for connecting to the plugin after it has been
-    /// spawned.
+    /// Specifies the timeout duration to wait for the plugin to shutdown after
+    /// sending the abort request.
     pub shutdown_timeout: Timeout,
 }
 

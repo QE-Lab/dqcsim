@@ -51,10 +51,10 @@ impl PluginNonfunctionalOpts {
             to.stderr_mode = stderr_mode.clone();
         }
         if let Some(accept_timeout) = &self.accept_timeout {
-            to.accept_timeout = accept_timeout.clone();
+            to.accept_timeout = *accept_timeout;
         }
         if let Some(shutdown_timeout) = &self.shutdown_timeout {
-            to.shutdown_timeout = shutdown_timeout.clone();
+            to.shutdown_timeout = *shutdown_timeout;
         }
     }
 
