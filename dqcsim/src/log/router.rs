@@ -9,7 +9,7 @@ use ipc_channel::ipc::IpcReceiver;
 pub fn route(name: impl Into<String>, receiver: IpcReceiver<Record>, sender: Sender<Record>) {
     let name = name.into();
     std::thread::spawn(move || {
-        init(LogProxy::boxed(name, sender.clone()), LoglevelFilter::Trace)
+        init(LogProxy::boxed(name, LoglevelFilter::Trace, sender.clone()))
             .expect("Log channel forwarding failed");
         while let Ok(record) = receiver.recv() {
             sender.send(record).expect("Log channel forwarding failed");
