@@ -1,5 +1,5 @@
 use super::*;
-use dqcsim::log::tee_file::TeeFile;
+use dqcsim::common::log::tee_file::TeeFile;
 use std::ptr::null;
 
 /// Creates a new `PluginConfiguration` object using sugared syntax.

@@ -1,4 +1,7 @@
-use dqcsim::{configuration::*, log::tee_file::TeeFile, log::*};
+use dqcsim::{
+    common::{log::tee_file::TeeFile, log::*},
+    host::configuration::*,
+};
 use failure::{Error, Fail};
 
 /// Structure containing the NONfunctional options for a plugin, i.e. the

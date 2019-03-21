@@ -1,5 +1,5 @@
 use super::*;
-use dqcsim::log::*;
+use dqcsim::common::log::*;
 
 /// Type for a handle.
 ///

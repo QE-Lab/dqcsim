@@ -1,6 +1,8 @@
 use dqcsim::{
-    configuration::PluginType, debug, info, ipc::connection::Connection, log::LoglevelFilter,
-    protocol::message::Response,
+    common::{ipc::connection::Connection, log::LoglevelFilter, protocol::Response},
+    debug,
+    host::configuration::PluginType,
+    info,
 };
 use failure::Error;
 use ipc_channel::ipc::IpcSelectionResult;

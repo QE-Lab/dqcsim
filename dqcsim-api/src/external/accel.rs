@@ -1,5 +1,5 @@
 use super::*;
-use dqcsim::simulator::Simulator;
+use dqcsim::host::simulator::Simulator;
 
 /// Constructs a DQCsim simulation.
 ///

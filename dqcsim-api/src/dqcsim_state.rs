@@ -3,7 +3,7 @@ use super::*;
 /// DQCsim state type, containing either a simulator or a plugin instance.
 #[allow(dead_code)] // <-- TODO: remove me
 pub enum DQCsimState {
-    Simulator(dqcsim::simulator::Simulator),
+    Simulator(dqcsim::host::simulator::Simulator),
     Plugin, // TODO
 }
 
@@ -18,7 +18,7 @@ thread_local! {
 /// (a.k.a. simulator) instance.
 pub fn with_accel<T>(
     error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut dqcsim::simulator::Simulator) -> Result<T>,
+    call: impl FnOnce(&mut dqcsim::host::simulator::Simulator) -> Result<T>,
 ) -> T {
     DQCSIM_STATE.with(|dstate| {
         let result = match dstate.borrow_mut().as_mut() {

@@ -1,6 +1,8 @@
-use dqcsim::reproduction::HostCall;
-use dqcsim::simulator::Simulator;
-use dqcsim::*;
+use dqcsim::{
+    host::{reproduction::HostCall, simulator::Simulator},
+    info, note,
+};
+
 use failure::Error;
 
 mod arg_parse;

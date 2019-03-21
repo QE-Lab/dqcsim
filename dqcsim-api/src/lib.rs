@@ -69,13 +69,14 @@
 //! functions from that thread! Such instances are clearly marked in the
 //! documentation.
 
-use dqcsim::configuration::*;
-use dqcsim::error::*;
+use dqcsim::{common::error::*, host::configuration::*};
 use libc::*;
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::ffi::{CStr, CString};
-use std::ptr::null;
+use std::{
+    cell::RefCell,
+    collections::HashMap,
+    ffi::{CStr, CString},
+    ptr::null,
+};
 
 // Module containing type definitions shared between rust and C.
 mod ctypes;

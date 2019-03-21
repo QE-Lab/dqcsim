@@ -1,5 +1,8 @@
 use crate::arg_parse::plugins::*;
-use dqcsim::{configuration::*, log::tee_file::TeeFile, log::*, reproduction::*};
+use dqcsim::{
+    common::{log::tee_file::TeeFile, log::*},
+    host::{configuration::*, reproduction::*},
+};
 use std::path::PathBuf;
 use structopt::StructOpt;
 
