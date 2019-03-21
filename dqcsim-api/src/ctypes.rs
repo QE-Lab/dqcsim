@@ -1,7 +1,7 @@
 use super::*;
 use dqcsim::log::*;
 
-/// Object type for a handle.
+/// Type for a handle.
 ///
 /// Handles are like pointers into DQCsim's internal structures: all API calls
 /// use these to refer to objects. Besides the object, they contain type
@@ -22,7 +22,7 @@ use dqcsim::log::*;
 #[allow(non_camel_case_types)]
 pub type dqcs_handle_t = c_ulonglong;
 
-/// Object type for a qubit reference.
+/// Type for a qubit reference.
 ///
 /// Qubit references are exchanged between the frontend, operator, and backend
 /// plugins to indicate which qubits a gate operates on. Note that this makes
@@ -37,7 +37,7 @@ pub type dqcs_handle_t = c_ulonglong;
 #[allow(non_camel_case_types)]
 pub type dqcs_qubit_t = c_ulonglong;
 
-/// Object type for a simulation cycle timestamp.
+/// Type for a simulation cycle timestamp.
 ///
 /// Timestamps count upward from zero. The type is signed to allow usage of -1
 /// for errors, and to allow numerical differences to be represented.

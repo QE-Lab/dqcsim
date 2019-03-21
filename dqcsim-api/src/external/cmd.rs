@@ -10,10 +10,10 @@ use std::ptr::null;
 /// `ArbCmd` objects support the `handle`, `arb`, and `cmd` interfaces.
 #[no_mangle]
 pub extern "C" fn dqcs_cmd_new(iface: *const c_char, oper: *const c_char) -> dqcs_handle_t {
-    with_state(
+    with_api_state(
         || 0,
         |mut state| {
-            Ok(state.push(Object::ArbCmd(ArbCmd::try_from(
+            Ok(state.push(APIObject::ArbCmd(ArbCmd::try_from(
                 receive_str(iface)?,
                 receive_str(oper)?,
                 ArbData::default(),

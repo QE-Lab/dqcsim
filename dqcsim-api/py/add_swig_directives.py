@@ -71,7 +71,7 @@ pyerr:
     Py_XDECREF(exc_type);
     Py_XDECREF(exc_value);
     Py_XDECREF(exc_tb);
-    dqcs_set_error(c_str);
+    dqcs_error_set(c_str);
 
     PyGILState_Release(gstate);
     return ({cb_ret}){cb_ret_fail};
@@ -92,7 +92,7 @@ pyerr:
         SWIG_fail;
     }}
     if (result) {{
-        const char *s = dqcs_explain();
+        const char *s = dqcs_error_get();
         if (!s) s = "Unknown error";
         PyErr_SetString(PyExc_RuntimeError, s);
         SWIG_fail;
@@ -168,8 +168,8 @@ for line in data.split('\n\n'):
             ret_typ, name = split_type(name)
 
             # RULE: all functions returning "const char *" except for
-            # dqcs_explain return an owned string that must be freed by SWIG.
-            if ret_typ == 'const char *' and name != 'dqcs_explain':
+            # dqcs_error_get return an owned string that must be freed by SWIG.
+            if ret_typ == 'const char *' and name != 'dqcs_error_get':
                 line = '%%newobject %s;\n%s' % (name, line)
 
             for a, b in pairwise(args):

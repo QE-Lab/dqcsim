@@ -9,9 +9,9 @@ use std::ptr::{null, null_mut};
 /// `ArbData` objects support the `handle` and `arb`.
 #[no_mangle]
 pub extern "C" fn dqcs_arb_new() -> dqcs_handle_t {
-    STATE.with(|state| {
+    API_STATE.with(|state| {
         let mut state = state.borrow_mut();
-        state.push(Object::ArbData(ArbData::default()))
+        state.push(APIObject::ArbData(ArbData::default()))
     })
 }
 

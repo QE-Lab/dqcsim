@@ -14,10 +14,10 @@ use std::time::*;
 /// line interface. Refer to its help for more information.
 #[no_mangle]
 pub extern "C" fn dqcs_scfg_new() -> dqcs_handle_t {
-    with_state(
+    with_api_state(
         || 0,
         |mut state| {
-            Ok(state.push(Object::SimulatorConfiguration(
+            Ok(state.push(APIObject::SimulatorConfiguration(
                 SimulatorConfiguration::default(),
             )))
         },
@@ -42,24 +42,24 @@ pub extern "C" fn dqcs_scfg_push_plugin(
     handle: dqcs_handle_t,
     pcfg_handle: dqcs_handle_t,
 ) -> dqcs_return_t {
-    with_state(
+    with_api_state(
         || dqcs_return_t::DQCS_FAILURE,
         |mut state| match state.objects.remove(&pcfg_handle) {
-            Some(Object::PluginConfiguration(pcfg_ob)) => match state.objects.get_mut(&handle) {
-                Some(Object::SimulatorConfiguration(scfg)) => {
+            Some(APIObject::PluginConfiguration(pcfg_ob)) => match state.objects.get_mut(&handle) {
+                Some(APIObject::SimulatorConfiguration(scfg)) => {
                     scfg.plugins.push(pcfg_ob);
                     Ok(dqcs_return_t::DQCS_SUCCESS)
                 }
                 Some(_) => {
                     state
                         .objects
-                        .insert(pcfg_handle, Object::PluginConfiguration(pcfg_ob));
+                        .insert(pcfg_handle, APIObject::PluginConfiguration(pcfg_ob));
                     unsup_handle(handle, "scfg")
                 }
                 None => {
                     state
                         .objects
-                        .insert(pcfg_handle, Object::PluginConfiguration(pcfg_ob));
+                        .insert(pcfg_handle, APIObject::PluginConfiguration(pcfg_ob));
                     inv_handle(handle)
                 }
             },

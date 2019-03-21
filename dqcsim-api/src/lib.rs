@@ -34,7 +34,7 @@
 //! To prevent memory leaks, pay close attention to the documentation of the
 //! API calls you make. Most importantly, strings returned by DQCsim almost
 //! always have to be deallocated by you through `free()` (the only exception
-//! is `dqcs_explain()`). You should also make sure that you delete handles
+//! is `dqcs_error_get()`). You should also make sure that you delete handles
 //! that you no longer need through `dqcs_handle_delete()`, though most of the
 //! time DQCsim does this for you when you use a handle.
 //!
@@ -51,13 +51,13 @@
 //!    otherwise.
 //!  - pointers: `NULL` for failure, the pointer otherwise.
 //!
-//! When you receive a failure code, use `dqcs_explain()` to get an error
+//! When you receive a failure code, use `dqcs_error_get()` to get an error
 //! message.
 //!
 //! DQCsim plugins use callback functions to let you define the behavior of
 //! the plugin. When *your* behavior wants to return an error, the same
 //! handshake is done, but the other way around: you set the error string
-//! using `dqcs_set_error()` and then you return the failure code.
+//! using `dqcs_error_set()` and then you return the failure code.
 //!
 //! # Thread-safety
 //!
@@ -77,166 +77,45 @@ use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::ptr::null;
 
-// Type definitions shared between rust and C.
+// Module containing type definitions shared between rust and C.
 mod ctypes;
 pub use ctypes::*;
 
-// Utility functions and auxiliary data structures.
+// Module containing all the external functions exposed to the library user.
+mod external;
+pub use external::*;
+
+// Module containing the thread-local API state object. This object owns all
+// the objects that are directly manipulable by the API and are not otherwise
+// owned by any DQCsim instance.
+mod api_state;
+use api_state::*;
+
+// Module containing the thread-local state of whatever DQCsim structure is
+// being represented by the API user, which may be one of the following or
+// nothing:
+//  - an "accelerator" a.k.a. a DQCsim simulation;
+//  - a frontend plugin;
+//  - an operator plugin;
+//  - a backend plugin;
+// Even when none of those things is active, API functions operating only on
+// the API_STATE object will still work just fine, and are in fact needed to
+// initialize the above four things.
+//
+// The reason for the separation between the API and DQCsim state has to do
+// with the fact that objects owned by the DQCsim state are allowed to call
+// back into the user code, which is in turn allowed to modify the API state.
+// That is, DQCSIM_STATE owns closures that may take a mutable reference to
+// API_STATE. Unless we move the closures out of DQCSIM_STATE before calling
+// them, this necessarily means that API_STATE and DQCSIM_STATE cannot be
+// contained by the same RefCell. Hence the need for them to be separated.
+//
+// Note that the above means that user callback functions are NOT allowed to
+// call any API function that takes a reference to DQCSIM_STATE. Fortunately,
+// there is (currently!) no need for them to ever do that.
+mod dqcsim_state;
+use dqcsim_state::*;
+
+// Module containing utility functions and auxiliary data structures.
 mod util;
 use util::*;
-
-// dqcs_handle_* functions, for operating on any handle.
-mod handle;
-pub use handle::*;
-
-// dqcs_arb_* functions, for operating on `ArbData` objects and objects
-// containing/using a single `ArbData`.
-mod arb;
-pub use arb::*;
-
-// dqcs_cmd_* functions, for operating on `ArbCmd` objects and objects
-// containing/using a single `ArbCmd`.
-mod cmd;
-pub use cmd::*;
-
-// dqcs_pcfg_* functions, for constructing `PluginConfiguration` objects.
-mod pcfg;
-pub use pcfg::*;
-
-// dqcs_scfg_* functions, for constructing `SimulatorConfiguration` objects.
-mod scfg;
-pub use scfg::*;
-
-// dqcs_accel_* functions, for talking to the simulator from a host
-// perspective.
-mod accel;
-pub use accel::*;
-
-/// Enumeration of all objects that can be associated with an handle, including
-/// the object data.
-#[derive(Debug)]
-#[allow(dead_code)]
-enum Object {
-    /// ArbData object.
-    ArbData(ArbData),
-
-    /// ArbData object.
-    ArbCmd(ArbCmd),
-
-    /// PluginConfiguration object.
-    PluginConfiguration(PluginConfiguration),
-
-    /// SimulatorConfiguration object.
-    SimulatorConfiguration(SimulatorConfiguration),
-}
-
-/// Thread-local state storage structure.
-struct ThreadState {
-    /// Mapping from handle to object.
-    ///
-    /// This contains all API-managed data.
-    pub objects: HashMap<dqcs_handle_t, Object>,
-
-    /// This variable stores the handle value that will be used for the next
-    /// allocation.
-    pub handle_counter: dqcs_handle_t,
-
-    /// This variable records the error message associated with the latest
-    /// failure.
-    pub last_error: Option<CString>,
-}
-
-impl ThreadState {
-    /// Sets the `last_error` field in the `ThreadState` if val is Err and
-    /// calls error for the return value, or returns the value carried in the
-    /// Ok.
-    fn check<T>(&mut self, val: Result<T>, error: impl FnOnce() -> T) -> T {
-        match val {
-            Ok(x) => x,
-            Err(e) => {
-                self.last_error = Some(
-                    CString::new(e.to_string())
-                        .unwrap_or_else(|_| CString::new("<UNKNOWN>").unwrap()),
-                );
-                error()
-            }
-        }
-    }
-
-    /// Stuffs the given object into the API-managed storage. Returns the
-    /// handle created for it.
-    fn push(&mut self, object: Object) -> dqcs_handle_t {
-        let handle = self.handle_counter;
-        self.objects.insert(handle, object);
-        self.handle_counter = handle + 1;
-        handle
-    }
-}
-
-thread_local! {
-    /// Thread-local state storage. Be careful not to call user callback functions
-    /// while holding a reference to the state: those callbacks can and probably
-    /// will claim the reference mutably at some point. Basically, once user
-    /// callbacks need to become "callable" from the Rust world, for instance when
-    /// a configuration object is consumed into the object it configures, they
-    /// should move out of this state.
-    static STATE: RefCell<ThreadState> = RefCell::new(ThreadState {
-        objects: HashMap::new(),
-        handle_counter: 1,
-        last_error: None,
-    });
-}
-
-/// Convenience function for operating on the thread-local state object.
-fn with_state<T>(
-    error: impl FnOnce() -> T,
-    call: impl FnOnce(std::cell::RefMut<ThreadState>) -> Result<T>,
-) -> T {
-    STATE.with(|state| {
-        let result = call(state.borrow_mut());
-        state.borrow_mut().check(result, error)
-    })
-}
-
-/// Convenience function for setting the error message while STATE is *not*
-/// already borrowed.
-fn check<T>(val: Result<T>, error: impl FnOnce() -> T) -> T {
-    if let Ok(x) = val {
-        x
-    } else {
-        STATE.with(|state| state.borrow_mut().check(val, error))
-    }
-}
-
-/// Returns a pointer to the latest error message.
-///
-/// Call this to get extra information when another function returns a failure
-/// code. The returned pointer is temporary and therefore should **NOT** be
-/// `free()`d; it will become invalid when a new error occurs.
-#[no_mangle]
-pub extern "C" fn dqcs_explain() -> *const c_char {
-    STATE.with(|state| {
-        let state = state.borrow();
-        match &state.last_error {
-            Some(msg) => msg.as_ptr(),
-            None => null(),
-        }
-    })
-}
-
-/// Sets the latest error message string.
-///
-/// This must be called by callback functions when an error occurs within the
-/// callback, otherwise the upstream result for `dqcs_explain()` will be
-/// undefined.
-#[no_mangle]
-pub extern "C" fn dqcs_set_error(msg: *const c_char) {
-    STATE.with(|state| {
-        let mut state = state.borrow_mut();
-        if msg.is_null() {
-            state.last_error = None
-        } else {
-            state.last_error = Some(unsafe { CStr::from_ptr(msg) }.to_owned())
-        }
-    })
-}

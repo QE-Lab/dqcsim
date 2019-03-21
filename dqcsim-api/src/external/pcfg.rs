@@ -16,7 +16,7 @@ pub extern "C" fn dqcs_pcfg_new(
     name: *const c_char,
     spec: *const c_char,
 ) -> dqcs_handle_t {
-    with_state(
+    with_api_state(
         || 0,
         |mut state| {
             let spec = receive_str(spec)?;
@@ -24,7 +24,7 @@ pub extern "C" fn dqcs_pcfg_new(
                 return inv_arg("plugin specification must not be empty");
             }
             Ok(
-                state.push(Object::PluginConfiguration(PluginConfiguration::new(
+                state.push(APIObject::PluginConfiguration(PluginConfiguration::new(
                     receive_str(name)?,
                     PluginSpecification::from_sugar(spec, typ.into())?,
                 ))),
@@ -50,7 +50,7 @@ pub extern "C" fn dqcs_pcfg_new_raw(
     executable: *const c_char,
     script: *const c_char,
 ) -> dqcs_handle_t {
-    with_state(
+    with_api_state(
         || 0,
         |mut state| {
             let executable = receive_str(executable)?;
@@ -69,7 +69,7 @@ pub extern "C" fn dqcs_pcfg_new_raw(
                 }
             }
             Ok(
-                state.push(Object::PluginConfiguration(PluginConfiguration::new(
+                state.push(APIObject::PluginConfiguration(PluginConfiguration::new(
                     receive_str(name)?,
                     PluginSpecification::new(executable, script_path, typ),
                 ))),
@@ -138,20 +138,20 @@ pub extern "C" fn dqcs_pcfg_init_arb(
     handle: dqcs_handle_t,
     cmd_handle: dqcs_handle_t,
 ) -> dqcs_return_t {
-    with_state(
+    with_api_state(
         || dqcs_return_t::DQCS_FAILURE,
         |mut state| match state.objects.remove(&cmd_handle) {
-            Some(Object::ArbCmd(cmd_ob)) => match state.objects.get_mut(&handle) {
-                Some(Object::PluginConfiguration(pcfg)) => {
+            Some(APIObject::ArbCmd(cmd_ob)) => match state.objects.get_mut(&handle) {
+                Some(APIObject::PluginConfiguration(pcfg)) => {
                     pcfg.functional.init.push(cmd_ob);
                     Ok(dqcs_return_t::DQCS_SUCCESS)
                 }
                 Some(_) => {
-                    state.objects.insert(cmd_handle, Object::ArbCmd(cmd_ob));
+                    state.objects.insert(cmd_handle, APIObject::ArbCmd(cmd_ob));
                     unsup_handle(handle, "pcfg")
                 }
                 None => {
-                    state.objects.insert(cmd_handle, Object::ArbCmd(cmd_ob));
+                    state.objects.insert(cmd_handle, APIObject::ArbCmd(cmd_ob));
                     inv_handle(handle)
                 }
             },

@@ -157,9 +157,9 @@ pub fn with_arb<T>(
     error: impl FnOnce() -> T,
     call: impl FnOnce(&mut ArbData) -> Result<T>,
 ) -> T {
-    with_state(error, |mut state| match state.objects.get_mut(&handle) {
-        Some(Object::ArbData(x)) => call(x),
-        Some(Object::ArbCmd(x)) => call(x.data_mut()),
+    with_api_state(error, |mut state| match state.objects.get_mut(&handle) {
+        Some(APIObject::ArbData(x)) => call(x),
+        Some(APIObject::ArbCmd(x)) => call(x.data_mut()),
         Some(_) => unsup_handle(handle, "arb"),
         None => inv_handle(handle),
     })
@@ -172,12 +172,12 @@ pub fn take_arb<T>(
     call: impl FnOnce(&mut ArbData) -> Result<T>,
 ) -> Result<T> {
     // Take the ArbData from the object store.
-    let mut maybe_ob = STATE.with(|state| state.borrow_mut().objects.remove(&handle));
+    let mut maybe_ob = API_STATE.with(|state| state.borrow_mut().objects.remove(&handle));
 
     // Call the callback.
     let ret = match maybe_ob.as_mut() {
-        Some(Object::ArbData(x)) => call(x),
-        Some(Object::ArbCmd(x)) => call(x.data_mut()),
+        Some(APIObject::ArbData(x)) => call(x),
+        Some(APIObject::ArbCmd(x)) => call(x.data_mut()),
         Some(_) => unsup_handle(handle, "arb"),
         None => inv_handle(handle),
     };
@@ -186,7 +186,7 @@ pub fn take_arb<T>(
     // insert it back into the handle store.
     if let Some(ob) = maybe_ob {
         if ret.is_err() {
-            STATE.with(|state| state.borrow_mut().objects.insert(handle, ob));
+            API_STATE.with(|state| state.borrow_mut().objects.insert(handle, ob));
         }
     }
 
@@ -199,8 +199,8 @@ pub fn with_cmd<T>(
     error: impl FnOnce() -> T,
     call: impl FnOnce(&mut ArbCmd) -> Result<T>,
 ) -> T {
-    with_state(error, |mut state| match state.objects.get_mut(&handle) {
-        Some(Object::ArbCmd(x)) => call(x),
+    with_api_state(error, |mut state| match state.objects.get_mut(&handle) {
+        Some(APIObject::ArbCmd(x)) => call(x),
         Some(_) => unsup_handle(handle, "cmd"),
         None => inv_handle(handle),
     })
@@ -213,11 +213,11 @@ pub fn take_cmd<T>(
     call: impl FnOnce(&mut ArbCmd) -> Result<T>,
 ) -> Result<T> {
     // Take the ArbCmd from the object store.
-    let mut maybe_ob = STATE.with(|state| state.borrow_mut().objects.remove(&handle));
+    let mut maybe_ob = API_STATE.with(|state| state.borrow_mut().objects.remove(&handle));
 
     // Call the callback.
     let ret = match maybe_ob.as_mut() {
-        Some(Object::ArbCmd(x)) => call(x),
+        Some(APIObject::ArbCmd(x)) => call(x),
         Some(_) => unsup_handle(handle, "cmd"),
         None => inv_handle(handle),
     };
@@ -226,7 +226,7 @@ pub fn take_cmd<T>(
     // insert it back into the handle store.
     if let Some(ob) = maybe_ob {
         if ret.is_err() {
-            STATE.with(|state| state.borrow_mut().objects.insert(handle, ob));
+            API_STATE.with(|state| state.borrow_mut().objects.insert(handle, ob));
         }
     }
 
@@ -240,8 +240,8 @@ pub fn with_pcfg<T>(
     error: impl FnOnce() -> T,
     call: impl FnOnce(&mut PluginConfiguration) -> Result<T>,
 ) -> T {
-    with_state(error, |mut state| match state.objects.get_mut(&handle) {
-        Some(Object::PluginConfiguration(x)) => call(x),
+    with_api_state(error, |mut state| match state.objects.get_mut(&handle) {
+        Some(APIObject::PluginConfiguration(x)) => call(x),
         Some(_) => unsup_handle(handle, "pcfg"),
         None => inv_handle(handle),
     })
@@ -254,8 +254,8 @@ pub fn with_scfg<T>(
     error: impl FnOnce() -> T,
     call: impl FnOnce(&mut SimulatorConfiguration) -> Result<T>,
 ) -> T {
-    with_state(error, |mut state| match state.objects.get_mut(&handle) {
-        Some(Object::SimulatorConfiguration(x)) => call(x),
+    with_api_state(error, |mut state| match state.objects.get_mut(&handle) {
+        Some(APIObject::SimulatorConfiguration(x)) => call(x),
         Some(_) => unsup_handle(handle, "scfg"),
         None => inv_handle(handle),
     })

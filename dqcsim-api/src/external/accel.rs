@@ -1,24 +1,6 @@
 use super::*;
 use dqcsim::simulator::Simulator;
 
-thread_local! {
-    /// Simulator/accelerator object storage. There can be only one
-    /// simulator/accelerator per thread.
-    static ACCEL: RefCell<Option<Simulator>> = RefCell::new(None);
-}
-
-/// Convenience function for writing functions that operate on the accelerator
-/// instance.
-fn with_accel<T>(error: impl FnOnce() -> T, call: impl FnOnce(&mut Simulator) -> Result<T>) -> T {
-    ACCEL.with(|accel| {
-        let result = match accel.borrow_mut().as_mut() {
-            Some(accel) => call(accel),
-            None => inv_op("simulation is not running"),
-        };
-        check(result, error)
-    })
-}
-
 /// Constructs a DQCsim simulation.
 ///
 /// The simulation behaves like a quantum accelerator, hence the `dqcs_accel_`
@@ -31,37 +13,38 @@ fn with_accel<T>(error: impl FnOnce() -> T, call: impl FnOnce(&mut Simulator) ->
 /// least.)
 #[no_mangle]
 pub extern "C" fn dqcs_accel_init(scfg_handle: dqcs_handle_t) -> dqcs_return_t {
-    ACCEL.with(|accel| {
-        let mut accel = accel.borrow_mut();
+    DQCSIM_STATE.with(|dstate| {
+        let mut dstate = dstate.borrow_mut();
 
         // Fail if a sim is already running.
-        if accel.is_some() {
-            return check(inv_op("a simulation is already running"), || {
-                dqcs_return_t::DQCS_FAILURE
-            });
+        if dstate.is_some() {
+            return result_to_api(
+                inv_op("an accelerator or plugin instance has already been created in this thread"),
+                || dqcs_return_t::DQCS_FAILURE,
+            );
         }
 
         // Try to acquire the sim config object without keeping a reference to
-        // `STATE`. While this doesn't happen at the time of writing, the
+        // `API_STATE`. While this doesn't happen at the time of writing, the
         // simulator object is allowed to call API callbacks, which are in turn
-        // allowed to get a mutable reference to `STATE`, so we must make sure
+        // allowed to get a mutable reference to `API_STATE`, so we must make sure
         // to release our reference before that happens.
-        let ob = STATE.with(|state| state.borrow_mut().objects.remove(&scfg_handle));
+        let ob = API_STATE.with(|state| state.borrow_mut().objects.remove(&scfg_handle));
         let result = match ob {
-            Some(Object::SimulatorConfiguration(scfg_ob)) => match Simulator::new(scfg_ob) {
+            Some(APIObject::SimulatorConfiguration(scfg_ob)) => match Simulator::new(scfg_ob) {
                 Ok(sim) => {
-                    accel.replace(sim);
+                    dstate.replace(DQCsimState::Simulator(sim));
                     Ok(dqcs_return_t::DQCS_SUCCESS)
                 }
                 Err(e) => Err(e),
             },
             Some(ob) => {
-                STATE.with(|state| state.borrow_mut().objects.insert(scfg_handle, ob));
+                API_STATE.with(|state| state.borrow_mut().objects.insert(scfg_handle, ob));
                 unsup_handle(scfg_handle, "scfg")
             }
             None => inv_handle(scfg_handle),
         };
-        check(result, || dqcs_return_t::DQCS_FAILURE)
+        result_to_api(result, || dqcs_return_t::DQCS_FAILURE)
     })
 }
 
@@ -74,15 +57,15 @@ pub extern "C" fn dqcs_accel_init(scfg_handle: dqcs_handle_t) -> dqcs_return_t {
 /// This returns failure if no simulation was running.
 #[no_mangle]
 pub extern "C" fn dqcs_accel_drop() -> dqcs_return_t {
-    ACCEL.with(|accel| {
-        let mut accel = accel.borrow_mut();
-        if accel.is_none() {
-            check(inv_op("no simulation was running"), || {
+    DQCSIM_STATE.with(|dstate| {
+        let mut dstate = dstate.borrow_mut();
+        if let Some(DQCsimState::Simulator(_)) = dstate.as_ref() {
+            dstate.take();
+            dqcs_return_t::DQCS_SUCCESS
+        } else {
+            result_to_api(inv_op("no simulation was running"), || {
                 dqcs_return_t::DQCS_FAILURE
             })
-        } else {
-            accel.take();
-            dqcs_return_t::DQCS_SUCCESS
         }
     })
 }
@@ -126,7 +109,7 @@ pub extern "C" fn dqcs_accel_wait() -> dqcs_handle_t {
             accel
                 .as_mut()
                 .wait()
-                .map(|d| STATE.with(|state| state.borrow_mut().push(Object::ArbData(d))))
+                .map(|d| API_STATE.with(|state| state.borrow_mut().push(APIObject::ArbData(d))))
                 .map_err(Error::from) // TODO: jeroen
         },
     )
@@ -170,7 +153,7 @@ pub extern "C" fn dqcs_accel_recv() -> dqcs_handle_t {
             accel
                 .as_mut()
                 .recv()
-                .map(|d| STATE.with(|state| state.borrow_mut().push(Object::ArbData(d))))
+                .map(|d| API_STATE.with(|state| state.borrow_mut().push(APIObject::ArbData(d))))
                 .map_err(Error::from) // TODO: jeroen
         },
     )
@@ -219,7 +202,7 @@ pub extern "C" fn dqcs_accel_arb(name: *const c_char, cmd: dqcs_handle_t) -> dqc
                 accel
                     .as_mut()
                     .arb(receive_str(name)?, cmd.clone())
-                    .map(|d| STATE.with(|state| state.borrow_mut().push(Object::ArbData(d))))
+                    .map(|d| API_STATE.with(|state| state.borrow_mut().push(APIObject::ArbData(d))))
                     .map_err(Error::from) // TODO: jeroen
             })
         },
@@ -252,7 +235,7 @@ pub extern "C" fn dqcs_accel_arb_idx(index: ssize_t, cmd: dqcs_handle_t) -> dqcs
                 accel
                     .as_mut()
                     .arb_idx(index, cmd.clone())
-                    .map(|d| STATE.with(|state| state.borrow_mut().push(Object::ArbData(d))))
+                    .map(|d| API_STATE.with(|state| state.borrow_mut().push(APIObject::ArbData(d))))
                     .map_err(Error::from) // TODO: jeroen
             })
         },
