@@ -1,6 +1,9 @@
 use crate::arg_parse::{opts::*, plugins::*};
 use ansi_term::Colour;
-use dqcsim::host::{configuration::*, reproduction::*};
+use dqcsim::{
+    common::protocol::*,
+    host::{configuration::*, reproduction::*},
+};
 use failure::{Error, Fail};
 use serde::{Deserialize, Serialize};
 use std::{ffi::OsString, path::PathBuf, str::FromStr};

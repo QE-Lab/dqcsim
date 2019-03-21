@@ -4,9 +4,10 @@ use crate::{
     common::{
         error::{err, inv_arg, inv_op, ErrorKind, Result},
         log::Record,
+        protocol::{ArbCmd, ArbData},
     },
     host::{
-        configuration::{ArbCmd, ArbData, PluginConfiguration, Seed},
+        configuration::{PluginConfiguration, Seed},
         plugin::Plugin,
     },
     trace,

@@ -1,7 +1,13 @@
 //! Defines the protocols for all forms of communication.
 
-use crate::{common::log::LoglevelFilter, host::configuration::ArbCmd};
+use crate::common::log::LoglevelFilter;
 use serde::{Deserialize, Serialize};
+
+mod arb_cmd;
+pub use arb_cmd::ArbCmd;
+
+mod arb_data;
+pub use arb_data::ArbData;
 
 /// Simulator to plugin requests.
 #[derive(Debug, Serialize, Deserialize)]

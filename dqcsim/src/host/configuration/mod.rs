@@ -1,11 +1,5 @@
 //! Configuration structures for the plugins and simulator.
 
-mod arb_data;
-pub use arb_data::ArbData;
-
-mod arb_cmd;
-pub use arb_cmd::ArbCmd;
-
 mod env_mod;
 pub use env_mod::EnvMod;
 

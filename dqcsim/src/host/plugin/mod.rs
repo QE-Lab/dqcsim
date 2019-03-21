@@ -4,12 +4,9 @@ use crate::{
     common::{
         error::{ErrorKind, Result},
         log::Record,
-        protocol::{InitializeRequest, Request, Response},
+        protocol::{ArbCmd, ArbData, InitializeRequest, Request, Response},
     },
-    host::{
-        configuration::{ArbCmd, ArbData, PluginConfiguration},
-        plugin::process::PluginProcess,
-    },
+    host::{configuration::PluginConfiguration, plugin::process::PluginProcess},
     trace,
 };
 use std::process::Command;

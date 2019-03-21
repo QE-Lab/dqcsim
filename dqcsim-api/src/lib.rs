@@ -69,7 +69,10 @@
 //! functions from that thread! Such instances are clearly marked in the
 //! documentation.
 
-use dqcsim::{common::error::*, host::configuration::*};
+use dqcsim::{
+    common::{error::*, protocol::*},
+    host::configuration::*,
+};
 use libc::*;
 use std::{
     cell::RefCell,
