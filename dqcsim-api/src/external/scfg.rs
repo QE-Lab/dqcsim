@@ -1,5 +1,8 @@
 use super::*;
-use dqcsim::common::{log, log::tee_file::TeeFile};
+use dqcsim::common::{
+    log,
+    log::{callback::LogCallback, tee_file::TeeFile},
+};
 use std::time::*;
 
 /// Constructs an empty simulation configuration.

@@ -19,4 +19,4 @@ pub use plugin::{
 };
 
 mod simulator;
-pub use simulator::{LogCallback, SimulatorConfiguration};
+pub use simulator::SimulatorConfiguration;

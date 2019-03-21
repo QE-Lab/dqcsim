@@ -31,11 +31,15 @@ impl PluginProcess {
 
         let (mut child, mut channel) = start(
             command,
-            configuration.nonfunctional.verbosity,
             &configuration.nonfunctional.accept_timeout,
             &configuration.nonfunctional.stderr_mode,
             &configuration.nonfunctional.stdout_mode,
         )?;
+
+        // Handshake
+        channel
+            .request
+            .send(Request::Configuration(Box::new(configuration.clone())))?;
 
         route(
             configuration.name.as_str(),

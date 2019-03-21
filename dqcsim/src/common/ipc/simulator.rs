@@ -2,7 +2,6 @@ use crate::{
     common::{
         error::{err, Result},
         ipc::SimulatorChannel,
-        log::LoglevelFilter,
     },
     trace,
 };
@@ -26,7 +25,6 @@ use std::{
 /// [`SimulatorChannel`]: ../struct.SimulatorChannel.html
 pub fn start(
     command: &mut Command,
-    level: LoglevelFilter,
     accept_timeout: impl Into<Option<Duration>>,
     stderr_mode: impl Into<Stdio>,
     stdout_mode: impl Into<Stdio>,
@@ -37,7 +35,6 @@ pub fn start(
     // Spawn child process
     let child = command
         .arg(server_name)
-        .arg(level.to_string())
         .stderr(stderr_mode.into())
         .stdout(stdout_mode.into())
         .spawn()?;
@@ -93,7 +90,7 @@ pub fn start(
 #[cfg(test)]
 mod tests {
     use super::start;
-    use crate::{common::log::LoglevelFilter, host::configuration::StreamCaptureMode};
+    use crate::host::configuration::StreamCaptureMode;
     use std::{process::Command, time::Duration};
 
     #[test]
@@ -101,7 +98,6 @@ mod tests {
         let command = "/bin/sh";
         let timeout = start(
             Command::new(command).arg("sleep").arg("1"),
-            LoglevelFilter::Off,
             Duration::from_nanos(1u64),
             StreamCaptureMode::Null,
             StreamCaptureMode::Null,

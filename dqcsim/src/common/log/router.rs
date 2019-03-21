@@ -16,7 +16,8 @@ pub fn route(
 ) {
     let name = name.into();
     std::thread::spawn(move || {
-        init(LogProxy::boxed(name, level, sender.clone())).expect("Log channel forwarding failed");
+        init(vec![LogProxy::boxed(name, level, sender.clone())])
+            .expect("Log channel forwarding failed");
         while let Ok(record) = receiver.recv() {
             sender.send(record).expect("Log channel forwarding failed");
         }

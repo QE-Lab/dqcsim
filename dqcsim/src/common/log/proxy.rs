@@ -45,9 +45,9 @@ impl<T: Sender<Item = Record>> Log for LogProxy<T> {
     fn enabled(&self, level: Loglevel) -> bool {
         LoglevelFilter::from(level) <= self.level
     }
-    fn log(&self, record: Record) {
+    fn log(&self, record: &Record) {
         self.sender
-            .send(record)
+            .send(record.clone())
             .expect("LogProxy failed to send record");
     }
 }
@@ -63,6 +63,7 @@ mod tests {
             LoglevelFilter::Off,
             LoglevelFilter::Trace,
             None,
+            vec![],
         )
         .unwrap();
 

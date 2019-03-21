@@ -1,7 +1,7 @@
-use crate::common::log::LoglevelFilter;
+use crate::common::log::{Log, Loglevel, LoglevelFilter, Record};
 use failure::Fail;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::{fs::File, io::Write, path::PathBuf};
 
 /// Error structure used for reporting TeeFile errors.
 #[derive(Debug, Fail, PartialEq)]
@@ -11,18 +11,61 @@ pub enum TeeFileError {
 }
 
 /// Represents a tee file for the logging system.
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct TeeFile {
     pub filter: LoglevelFilter,
     pub file: PathBuf,
+    #[serde(skip)]
+    buffer: Option<File>,
+}
+
+impl Clone for TeeFile {
+    fn clone(&self) -> TeeFile {
+        TeeFile::new(self.filter, self.file.clone())
+    }
+}
+
+impl PartialEq for TeeFile {
+    fn eq(&self, other: &TeeFile) -> bool {
+        self.filter == other.filter && self.file == other.file
+    }
 }
 
 impl TeeFile {
-    /// Convenience method for building a TeeFile.
+    /// Convenience method for building a TeeFile. This is the combinatin of build + create.
     pub fn new(filter: impl Into<LoglevelFilter>, file: impl Into<PathBuf>) -> TeeFile {
+        let file = file.into();
+        TeeFile {
+            filter: filter.into(),
+            file: file.clone(),
+            buffer: Some(File::create(file).unwrap()),
+        }
+    }
+    /// Create the File.
+    pub fn create(mut self) -> TeeFile {
+        self.buffer = Some(File::create(self.file.clone()).unwrap());
+        self
+    }
+    /// Build the TeeFile, but do not create the inner File.
+    pub fn build(filter: impl Into<LoglevelFilter>, file: impl Into<PathBuf>) -> TeeFile {
         TeeFile {
             filter: filter.into(),
             file: file.into(),
+            buffer: None,
+        }
+    }
+}
+
+impl Log for TeeFile {
+    fn name(&self) -> &str {
+        self.file.to_str().unwrap()
+    }
+    fn enabled(&self, level: Loglevel) -> bool {
+        LoglevelFilter::from(level) <= self.filter
+    }
+    fn log(&self, record: &Record) {
+        if let Some(mut buffer) = self.buffer.as_ref() {
+            writeln!(buffer, "{}", record).expect("Failed to write to file");
         }
     }
 }
@@ -36,13 +79,13 @@ impl ::std::str::FromStr for TeeFile {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut splitter = s.splitn(2, ':');
         let filter = LoglevelFilter::from_str(splitter.next().unwrap())?;
-        let file = splitter
+        let file: PathBuf = splitter
             .next()
             .ok_or_else(|| {
                 TeeFileError::ParseError("Expected a colon in tee file description.".to_string())
             })?
             .into();
-        Ok(TeeFile { filter, file })
+        Ok(TeeFile::build(filter, file))
     }
 }
 
@@ -65,14 +108,14 @@ mod test {
     fn from_str() {
         assert_eq!(
             TeeFile::from_str("info:hello:/there").unwrap(),
-            TeeFile::new(LoglevelFilter::Info, "hello:/there"),
+            TeeFile::build(LoglevelFilter::Info, "hello:/there"),
         );
     }
 
     #[test]
     fn to_str() {
         assert_eq!(
-            TeeFile::new(LoglevelFilter::Info, "hello:/there").to_string(),
+            TeeFile::build(LoglevelFilter::Info, "hello:/there").to_string(),
             "Info:hello:/there",
         );
     }

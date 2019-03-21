@@ -1,11 +1,8 @@
 use crate::{
     common::{
         error::Result,
-        ipc::{
-            plugin::{connect_simulator, initialize},
-            PluginChannel,
-        },
-        log::{init, proxy::LogProxy, LoglevelFilter},
+        ipc::plugin::{connect_simulator, initialize},
+        log::{init, proxy::LogProxy, tee_file::TeeFile, Log},
         protocol::Response,
     },
     host::configuration::PluginType,
@@ -26,18 +23,28 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn init(
-        name: impl Into<String>,
-        level: impl Into<LoglevelFilter>,
-        simulator: impl Into<String>,
-        plugin_type: PluginType,
-    ) -> Result<Connection> {
+    pub fn init(simulator: impl Into<String>, plugin_type: PluginType) -> Result<Connection> {
         let mut incoming = IpcReceiverSet::new()?;
         let mut map = HashMap::with_capacity(3);
 
-        let channel: PluginChannel = connect_simulator(simulator)?;
+        let (channel, configuration) = connect_simulator(simulator)?;
 
-        init(LogProxy::boxed(name, level.into(), channel.log.clone()))?;
+        let mut loggers = Vec::with_capacity(1 + configuration.nonfunctional.tee_files.len());
+        loggers.push(LogProxy::boxed(
+            configuration.name,
+            configuration.nonfunctional.verbosity,
+            channel.log.clone(),
+        ) as Box<dyn Log>);
+        loggers.extend(
+            configuration
+                .nonfunctional
+                .tee_files
+                .into_iter()
+                .map(TeeFile::create)
+                .map(Box::new)
+                .map(|l| l as Box<dyn Log>),
+        );
+        init(loggers)?;
 
         initialize(&channel, plugin_type)?;
 
