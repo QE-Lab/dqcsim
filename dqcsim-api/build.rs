@@ -16,6 +16,7 @@ fn main() {
     cbindgen::Builder::new()
         .with_crate(crate_dir.clone())
         .with_language(cbindgen::Language::Cxx)
+        .with_include("unistd.h")
         .generate()
         .expect("Unable to generate bindings")
         .write_to_file("cpp/gen/include/dqcsim_raw.hpp");

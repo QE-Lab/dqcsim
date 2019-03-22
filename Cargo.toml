@@ -8,3 +8,6 @@ members = [
   "enum-variants",
   "enum-variants-derive",
 ]
+
+[profile.release]
+rpath = true

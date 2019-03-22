@@ -1,10 +1,15 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.9)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 project(dqcsim_cpp_test
     VERSION 0.1.0
     DESCRIPTION "Tests the C++ bindings for the Delft Quantum & Classical Simulator"
     LANGUAGES CXX
 )
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #------------------------------------------------------------------------------
 # CMake options
@@ -24,11 +29,7 @@ FetchContent_Declare(
     GIT_TAG        release-1.8.0
 )
 
-FetchContent_GetProperties(googletest)
-if(NOT googletest_POPULATED)
-    FetchContent_Populate(googletest)
-    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
-endif()
+FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 

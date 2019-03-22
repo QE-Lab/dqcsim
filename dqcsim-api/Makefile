@@ -4,6 +4,14 @@ $(error $$DQCSIM_HOME is not set)
 endif
 
 PY_SOURCES = $(shell find py/src -name '*.py')
+UNAME = $(shell uname)
+
+ifeq ($(UNAME),Linux)
+	DYLIB_EXT = "so"
+endif
+ifeq ($(UNAME),Darwin)
+	DYLIB_EXT = "dylib"
+endif
 
 .SUFFIXES:
 
@@ -29,17 +37,17 @@ all: build
 .PHONY: cargo-build
 cargo-build:
 	cargo build
-	cp -fp ../target/debug/libdqcsim_api.so ../target/debug/libdqcsim.so
+	cp -fp ../target/debug/libdqcsim_api.$(DYLIB_EXT) ../target/debug/libdqcsim.$(DYLIB_EXT)
 
 .PHONY: cargo-release
 cargo-release:
 	cargo build --release
-	cp -fp ../target/release/libdqcsim_api.so ../target/release/libdqcsim.so
+	cp -fp ../target/release/libdqcsim_api.$(DYLIB_EXT) ../target/release/libdqcsim.$(DYLIB_EXT)
 
 .PHONY: cargo-install
 cargo-install: cargo-release
 	mkdir -p $(DQCSIM_HOME)/lib
-	cp -fp ../target/release/libdqcsim.so $(DQCSIM_HOME)/lib/libdqcsim.so
+	cp -fp ../target/release/libdqcsim.$(DYLIB_EXT) $(DQCSIM_HOME)/lib/libdqcsim.$(DYLIB_EXT)
 
 .PHONY: cargo-test
 cargo-test:
@@ -58,7 +66,7 @@ cargo-clean:
 .PHONY: c-install
 c-install: | cargo-build cargo-release cargo-install
 	mkdir -p $(DQCSIM_HOME)/include
-	cp -fpt $(DQCSIM_HOME)/include c/gen/include/*
+	cp -fp c/gen/include/* $(DQCSIM_HOME)/include
 
 # NOTE: there is no test target here. To keep things simpler, the C/raw C++
 # APIs are tested by the same build system that tests the C++ API.
@@ -69,8 +77,8 @@ c-install: | cargo-build cargo-release cargo-install
 .PHONY: cpp-install
 cpp-install: | cargo-build cargo-release cargo-install
 	mkdir -p $(DQCSIM_HOME)/include
-	cp -fpt $(DQCSIM_HOME)/include cpp/gen/include/*
-	cp -fpt $(DQCSIM_HOME)/include cpp/include/*
+	cp -fp cpp/gen/include/* $(DQCSIM_HOME)/include
+	cp -fp cpp/include/* $(DQCSIM_HOME)/include
 
 .PHONY: cpp-test
 cpp-test:
@@ -105,7 +113,7 @@ py-release: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
 
 .PHONY: py-install
 py-install: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
-	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py build -b gen/release/build install --user
+	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py build -b gen/release/build install --user --prefix=
 
 .PHONY: py-test
 py-test:
