@@ -3,9 +3,11 @@
 use crate::{
     common::{
         error::{oe_log_err, Result},
-        log::{deinit, init, proxy::LogProxy, Loglevel, LoglevelFilter, Record, PID},
+        log::{
+            callback::LogCallback, deinit, init, proxy::LogProxy, tee_file::TeeFile, Log, Loglevel,
+            LoglevelFilter, Record, PID,
+        },
     },
-    host::configuration::LogCallback,
     trace,
 };
 use std::thread;
@@ -30,6 +32,7 @@ impl LogThread {
         proxy_level: LoglevelFilter,
         stderr_level: LoglevelFilter,
         callback: Option<LogCallback>,
+        tee_files: Vec<TeeFile>,
     ) -> Result<LogThread> {
         // Create the log channel.
         let (sender, receiver): (_, crossbeam_channel::Receiver<Record>) =
@@ -57,11 +60,11 @@ impl LogThread {
 
                 // Callback
                 if let Some(callback) = &callback {
-                    if level <= callback.filter {
-                        let cbfn = callback.callback.as_ref();
-                        cbfn(&record);
-                    }
+                    callback.log(&record);
                 }
+
+                // Tee files
+                tee_files.iter().for_each(|tf| tf.log(&record));
 
                 // Standard Error
                 if level <= stderr_level {
@@ -150,7 +153,7 @@ impl LogThread {
         });
 
         // Start a LogProxy for the current thread.
-        init(LogProxy::boxed(name, proxy_level, sender.clone()))?;
+        init(vec![LogProxy::boxed(name, proxy_level, sender.clone())])?;
         trace!("LogThread started");
 
         Ok(LogThread {

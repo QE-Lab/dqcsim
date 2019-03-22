@@ -1,6 +1,6 @@
 //! Defines the protocols for all forms of communication.
 
-use crate::common::log::LoglevelFilter;
+use crate::{common::log::LoglevelFilter, host::configuration::PluginConfiguration};
 use serde::{Deserialize, Serialize};
 
 mod arb_cmd;
@@ -12,6 +12,8 @@ pub use arb_data::ArbData;
 /// Simulator to plugin requests.
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Request {
+    /// Handshake the configuration for reference.
+    Configuration(Box<PluginConfiguration>),
     /// Request to initialize the plugin.
     ///
     /// When requested, the plugin should connect to provided downstream and

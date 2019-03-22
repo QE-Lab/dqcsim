@@ -34,6 +34,12 @@
 //! smaller or equal than the configured [`LoglevelFilter`] of the
 //! [`LogProxy`].
 //!
+//! ## TeeFile
+//!
+//! A [`TeeFile`] forwards log [`Records`] to a file. It logs records with it's
+//! logger name if the generated log [`Record`] [`Loglevel`] is smaller or
+//! equal than the configured [`LoglevelFilter`] of the [`TeeFile`].
+//!
 //! # Basic Example
 //!
 //! ```rust
@@ -51,6 +57,7 @@
 //!     LoglevelFilter::Note,
 //!     LoglevelFilter::Debug,
 //!     None,
+//!     vec![]
 //! )
 //! .unwrap();
 //!
@@ -64,7 +71,7 @@
 //!
 //!     // Initialize the thread-local logger to enable forwarding of log records to
 //!     // the log thread.
-//!     init(log_proxy);
+//!     init(vec![log_proxy]);
 //!
 //!     // Generate a log record
 //!     note!("Note from thread via proxy");
@@ -84,6 +91,7 @@
 //! [`LogThread`]: ./thread/struct.LogThread.html
 //! [`spawn`]: ./thread/struct.LogThread.html#method.spawn
 //! [`LogProxy`]: ./proxy/struct.LogProxy.html
+//! [`TeeFile`]: ./tee_file/struct.TeeFile.html
 //! [`Record`]: ./struct.Record.html
 //! [`Records`]: ./struct.Record.html
 //! [`Loglevel`]: ./enum.Loglevel.html
@@ -98,6 +106,7 @@
 #[doc(hidden)]
 pub use ref_thread_local as _ref_thread_local;
 
+pub mod callback;
 pub mod channel;
 pub mod proxy;
 pub mod router;
@@ -137,7 +146,7 @@ use std::{cell::RefCell, fmt};
 ///         true
 ///     }
 ///
-///     fn log(&self, record: Record) {
+///     fn log(&self, record: &Record) {
 ///         // The SimpleLogger logs to Standard Output.
 ///         println!("{}", record);
 ///     }
@@ -149,12 +158,12 @@ pub trait Log {
     /// Returns true if the provided loglevel is enabled
     fn enabled(&self, level: Loglevel) -> bool;
     /// Log the incoming record
-    fn log(&self, record: Record);
+    fn log(&self, record: &Record);
 }
 
 thread_local! {
-    /// The thread-local logger.
-    pub static LOGGER: RefCell<Option<Box<dyn Log>>> = RefCell::new(None);
+    /// The thread-local loggers.
+    pub static LOGGERS: RefCell<Option<Vec<Box<dyn Log>>>> = RefCell::new(None);
 }
 
 lazy_static! {
@@ -369,27 +378,49 @@ impl Record {
 
 impl fmt::Display for Record {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            humantime::format_rfc3339_seconds(self.metadata.timestamp)
+        )?;
+        write!(
+            f,
+            "{:<6}",
+            format!(
+                "+{}ms",
+                self.metadata.timestamp.elapsed().unwrap().as_millis()
+            )
+        )?;
+        write!(f, "{:>5} ", format!("{}", self.metadata.level))?;
+        write!(
+            f,
+            "{:<32} ",
+            format!(
+                "{:>5}:{:<2} {} ",
+                self.metadata.process, self.metadata.thread, self.logger,
+            )
+        )?;
         write!(f, "{}", self.payload)
     }
 }
 
-/// Update the thread-local logger.
-fn update(log: Option<Box<dyn Log>>) -> error::Result<()> {
-    LOGGER.with(|logger| {
-        let mut logger = logger.try_borrow_mut().context(ErrorKind::LogError(
-            "failed to update thread-local log level".to_string(),
+/// Update the thread-local loggers.
+fn update(loggers: Option<Vec<Box<dyn Log>>>) -> error::Result<()> {
+    LOGGERS.with(|x| {
+        let mut x = x.try_borrow_mut().context(ErrorKind::LogError(
+            "Unable to update thread-local loggers".to_string(),
         ))?;
-        *logger = log;
+        *x = loggers;
         Ok(())
     })
 }
 
-/// Initialize the thread-local logger.
-pub fn init(log: Box<dyn Log>) -> error::Result<()> {
-    update(Some(log))
+/// Initialize the thread-local loggers.
+pub fn init(loggers: Vec<Box<dyn Log>>) -> error::Result<()> {
+    update(Some(loggers))
 }
 
-/// Deinitialize the thread-local logger.
+/// Deinitialize the thread-local loggers.
 pub fn deinit() -> error::Result<()> {
     update(None)
 }
@@ -398,20 +429,22 @@ pub fn deinit() -> error::Result<()> {
 macro_rules! log {
     (target: $target:expr, $lvl:expr, $($arg:tt)+) => ({
         use $crate::common::log::_ref_thread_local::RefThreadLocal;
-        $crate::common::log::LOGGER.with(|logger| {
-            if let Some(ref logger) = *logger.borrow() {
-                if logger.enabled($lvl) {
-                    logger.log($crate::common::log::Record::new(
-                        logger.name(),
-                        format!($($arg)+),
-                        $lvl,
-                        $target,
-                        file!(),
-                        line!(),
-                        *$crate::common::log::PID,
-                        *$crate::common::log::TID.borrow()
-                    ));
-                }
+        $crate::common::log::LOGGERS.with(|loggers| {
+            if let Some(ref loggers) = *loggers.borrow() {
+                loggers.iter().for_each(|logger| {
+                    if logger.enabled($lvl) {
+                        logger.log(&$crate::common::log::Record::new(
+                            logger.name(),
+                            format!($($arg)+),
+                            $lvl,
+                            $target,
+                            file!(),
+                            line!(),
+                            *$crate::common::log::PID,
+                            *$crate::common::log::TID.borrow()
+                        ));
+                    }
+                })
             }
         });
     });

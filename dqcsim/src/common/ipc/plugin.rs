@@ -4,7 +4,7 @@ use crate::{
         ipc::{DownstreamChannel, PluginChannel, SimulatorChannel, UpstreamChannel},
         protocol::{InitializeResponse, Request, Response},
     },
-    host::configuration::PluginType,
+    host::configuration::{PluginConfiguration, PluginType},
 };
 
 use ipc_channel::ipc::{IpcOneShotServer, IpcSender};
@@ -35,12 +35,20 @@ fn channel() -> Result<(SimulatorChannel, PluginChannel)> {
 ///
 /// [`Plugin`]: ../plugin/struct.Plugin.html
 /// [`Simulation`]: ../simulator/struct.Simulation.html
-pub fn connect_simulator(server: impl Into<String>) -> Result<PluginChannel> {
+pub fn connect_simulator(
+    server: impl Into<String>,
+) -> Result<(PluginChannel, PluginConfiguration)> {
     // Attempt to connect to the server
     let connect = IpcSender::connect(server.into())?;
     let (simulator, plugin) = channel()?;
     connect.send(simulator)?;
-    Ok(plugin)
+    match plugin.request.recv() {
+        Ok(Request::Configuration(configuration)) => {
+            plugin.response.send(Response::Success)?;
+            Ok((plugin, *configuration))
+        }
+        _ => Err(ErrorKind::Other("Handshake problem".to_string()))?,
+    }
 }
 
 /// Connect an upstream [`Plugin`] instance to a downstream [`Plugin`] instance.
@@ -105,26 +113,4 @@ pub fn initialize(
         }
         _ => Err(ErrorKind::Other("Handshake problem".to_string()))?,
     }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::connect_simulator as connect_simulator_;
-    use crate::common::ipc::SimulatorChannel;
-    use ipc_channel::ipc::IpcOneShotServer;
-
-    #[test]
-    fn connect_simulator() {
-        let (server, server_name): (IpcOneShotServer<SimulatorChannel>, _) =
-            IpcOneShotServer::new().unwrap();
-
-        let plugin = std::thread::spawn(move || {
-            let connect = connect_simulator_(server_name);
-            assert!(connect.is_ok());
-        });
-
-        assert!(server.accept().is_ok());
-        assert!(plugin.join().is_ok());
-    }
-
 }

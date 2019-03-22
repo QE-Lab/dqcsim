@@ -86,6 +86,7 @@ impl Simulator {
             configuration.dqcsim_level,
             configuration.stderr_level,
             configuration.log_callback,
+            configuration.tee_files,
         )?;
 
         trace!("Constructing Simulator");
