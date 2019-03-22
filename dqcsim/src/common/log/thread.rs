@@ -64,7 +64,10 @@ impl LogThread {
                 }
 
                 // Tee files
-                tee_files.iter().for_each(|tf| tf.log(&record));
+                tee_files
+                    .iter()
+                    .filter(|tf| tf.enabled(record.level()))
+                    .for_each(|tf| tf.log(&record));
 
                 // Standard Error
                 if level <= stderr_level {
