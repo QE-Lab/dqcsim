@@ -1,6 +1,6 @@
 use crate::{
     common::{
-        error::Result,
+        error::{ErrorKind, Result},
         ipc::{simulator::start, SimulatorChannel},
         log::{router::route, stdio::proxy_stdio, Record},
         protocol::{Request, Response},
@@ -41,37 +41,42 @@ impl PluginProcess {
             .request
             .send(Request::Configuration(Box::new(configuration.clone())))?;
 
-        route(
-            configuration.name.as_str(),
-            configuration.nonfunctional.verbosity,
-            channel.log().unwrap(),
-            sender.clone(),
-        );
+        match channel.response.recv() {
+            Ok(Response::Success) => {
+                route(
+                    configuration.name.as_str(),
+                    configuration.nonfunctional.verbosity,
+                    channel.log().unwrap(),
+                    sender.clone(),
+                );
 
-        // Log piped stdout/stderr
-        if let StreamCaptureMode::Capture(level) = configuration.nonfunctional.stderr_mode {
-            proxy_stdio(
-                format!("{}::stderr", configuration.name.as_str()),
-                Box::new(child.stderr.take().expect("stderr")),
-                sender.clone(),
-                level,
-            );
+                // Log piped stdout/stderr
+                if let StreamCaptureMode::Capture(level) = configuration.nonfunctional.stderr_mode {
+                    proxy_stdio(
+                        format!("{}::stderr", configuration.name.as_str()),
+                        Box::new(child.stderr.take().expect("stderr")),
+                        sender.clone(),
+                        level,
+                    );
+                }
+
+                if let StreamCaptureMode::Capture(level) = configuration.nonfunctional.stdout_mode {
+                    proxy_stdio(
+                        format!("{}::stdout", configuration.name.as_str()),
+                        Box::new(child.stdout.take().expect("stdout")),
+                        sender,
+                        level,
+                    );
+                }
+
+                Ok(PluginProcess {
+                    child,
+                    channel,
+                    shutdown_timeout: configuration.nonfunctional.shutdown_timeout,
+                })
+            }
+            Ok(_) | Err(_) => Err(ErrorKind::Other("Handshake problem".to_string()))?,
         }
-
-        if let StreamCaptureMode::Capture(level) = configuration.nonfunctional.stdout_mode {
-            proxy_stdio(
-                format!("{}::stdout", configuration.name.as_str()),
-                Box::new(child.stdout.take().expect("stdout")),
-                sender,
-                level,
-            );
-        }
-
-        Ok(PluginProcess {
-            child,
-            channel,
-            shutdown_timeout: configuration.nonfunctional.shutdown_timeout,
-        })
     }
 
     pub fn request(&self, request: Request) -> Result<()> {

@@ -43,7 +43,10 @@ pub fn connect_simulator(
     let (simulator, plugin) = channel()?;
     connect.send(simulator)?;
     match plugin.request.recv() {
-        Ok(Request::Configuration(configuration)) => Ok((plugin, *configuration)),
+        Ok(Request::Configuration(configuration)) => {
+            plugin.response.send(Response::Success)?;
+            Ok((plugin, *configuration))
+        }
         _ => Err(ErrorKind::Other("Handshake problem".to_string()))?,
     }
 }

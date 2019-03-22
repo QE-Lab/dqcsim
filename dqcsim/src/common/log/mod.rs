@@ -417,7 +417,6 @@ fn update(loggers: Option<Vec<Box<dyn Log>>>) -> error::Result<()> {
 
 /// Initialize the thread-local loggers.
 pub fn init(loggers: Vec<Box<dyn Log>>) -> error::Result<()> {
-    eprintln!("Updated the loggers to {:?}", &loggers.len());
     update(Some(loggers))
 }
 
