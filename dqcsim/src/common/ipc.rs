@@ -1,4 +1,4 @@
-//! IPC functionality.
+//! Common IPC functionality.
 
 use crate::common::{
     log::Record,
@@ -6,14 +6,6 @@ use crate::common::{
 };
 use ipc_channel::ipc::{IpcReceiver, IpcSender};
 use serde::{Deserialize, Serialize};
-
-pub mod connection;
-
-/// Plugin IPC utility functions.
-pub mod plugin;
-
-/// Simulation IPC utility functions.
-pub mod simulator;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SimulatorChannel {

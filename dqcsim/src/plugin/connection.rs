@@ -1,11 +1,11 @@
 use crate::{
     common::{
         error::Result,
-        ipc::plugin::{connect_simulator, initialize},
         log::{init, proxy::LogProxy, tee_file::TeeFile, Log},
         protocol::Response,
     },
     host::configuration::PluginType,
+    plugin::ipc::{connect_simulator, initialize},
 };
 use ipc_channel::ipc::{IpcReceiverSet, IpcSelectionResult, IpcSender};
 use std::collections::HashMap;
