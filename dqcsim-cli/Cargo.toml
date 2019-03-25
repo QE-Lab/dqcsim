@@ -7,11 +7,11 @@ build = "build.rs"
 
 [dependencies]
 dqcsim = { path = "../dqcsim" }
+enum-variants = { path = "../lib/enum-variants" }
 
 structopt = "0.2"
 signal-hook = "0.1"
 failure = "0.1"
 ansi_term = "0.11"
 serde = { version = "1.0", features = ["derive"] }
-enum-variants = { path = "../enum-variants" }
 clap = "~2.32.0"

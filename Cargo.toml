@@ -5,8 +5,8 @@ members = [
   "dqcsim-cli",
   "dqcsim-plugin",
   "dqcsim-api",
-  "enum-variants",
-  "enum-variants-derive",
+  "lib/enum-variants",
+  "lib/enum-variants-derive",
 ]
 
 [profile.release]
