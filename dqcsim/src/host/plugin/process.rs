@@ -1,11 +1,14 @@
 use crate::{
     common::{
         error::{ErrorKind, Result},
-        ipc::{simulator::start, SimulatorChannel},
+        ipc::SimulatorChannel,
         log::{router::route, stdio::proxy_stdio, Record},
         protocol::{Request, Response},
     },
-    host::configuration::{PluginConfiguration, StreamCaptureMode, Timeout},
+    host::{
+        configuration::{PluginConfiguration, StreamCaptureMode, Timeout},
+        ipc::start,
+    },
     info, trace, warn,
 };
 use crossbeam_channel::Sender;

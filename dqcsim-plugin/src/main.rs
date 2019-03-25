@@ -1,8 +1,6 @@
 use dqcsim::{
-    common::{ipc::connection::Connection, protocol::Response},
-    debug,
-    host::configuration::PluginType,
-    info,
+    common::protocol::Response, debug, host::configuration::PluginType, info,
+    plugin::connection::Connection,
 };
 use failure::Error;
 use ipc_channel::ipc::IpcSelectionResult;
