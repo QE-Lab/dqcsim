@@ -68,6 +68,20 @@ impl fmt::Display for SequenceNumber {
     }
 }
 
+/// Represents a qubit measurement result.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct QubitMeasurement {
+    /// The measured qubit.
+    pub qubit: QubitRef,
+
+    /// The measured value. true = 1, false = 0.
+    pub value: bool,
+
+    /// Implementation-specific additional data, such as the probability for
+    /// this particular measurement outcome.
+    pub data: ArbData,
+}
+
 // TODO: remove the structures below, replacing them with the structures
 // defined in the modules above!
 

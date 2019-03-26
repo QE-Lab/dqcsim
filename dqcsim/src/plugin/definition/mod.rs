@@ -2,29 +2,10 @@ use crate::{
     common::{
         error::{err, Result},
         log,
-        protocol::{ArbCmd, ArbData},
+        protocol::{ArbCmd, ArbData, Gate, QubitMeasurement, QubitRef},
     },
     host::configuration::PluginType,
 };
-
-/// TODO: move me?
-#[repr(transparent)]
-pub struct QubitRef(u64);
-
-/// TODO: move me?
-#[derive(Clone, Copy)]
-#[repr(C)]
-pub struct Complex {
-    pub real: f64,
-    pub imag: f64,
-}
-
-/// TODO: move me?
-pub struct QubitMeasurement {
-    pub qubit: QubitRef,
-    pub value: bool,
-    pub data: ArbData,
-}
 
 /// Temporary (?) structure that contains the functions that the user may call
 /// from the closures in the plugin definition.
@@ -72,15 +53,7 @@ impl PluginContext {
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn gate(
-        &mut self,
-        _name: Option<String>,
-        _targets: Vec<QubitRef>,
-        _controls: Vec<QubitRef>,
-        _measures: Vec<QubitRef>,
-        _matrix: Vec<Complex>,
-        _arb: ArbData,
-    ) -> Result<()> {
+    pub fn gate(&mut self, _gate: Gate) -> Result<()> {
         err("not yet implemented")
     }
 
@@ -288,17 +261,8 @@ pub struct PluginDefinition {
     /// The default for backends is to fail with a "not implemented" error;
     /// backends should always override this. This callback is never called for
     /// frontend plugins.
-    pub gate: Box<
-        dyn Fn(
-            &mut PluginContext,
-            Option<String>,
-            Vec<QubitRef>,
-            Vec<QubitRef>,
-            Vec<QubitRef>,
-            Vec<Complex>,
-            ArbData,
-        ) -> Result<Vec<QubitMeasurement>>,
-    >,
+    pub gate: Box<dyn Fn(&mut PluginContext, Gate) -> Result<Vec<QubitMeasurement>>>,
+
     /// Measurement modification callback for operators.
     ///
     /// This callback is somewhat special, in that it is not allowed to call
@@ -366,7 +330,7 @@ impl PluginDefinition {
                 run: Box::new(|_, _| err("run() is not implemented")),
                 allocate: Box::new(|_, _, _| err("frontend.allocate() called")),
                 free: Box::new(|_, _| err("frontend.free() called")),
-                gate: Box::new(|_, _, _, _, _, _, _| err("frontend.gate() called")),
+                gate: Box::new(|_, _| err("frontend.gate() called")),
                 modify_measurement: Box::new(|_, _| err("frontend.modify_measurement() called")),
                 advance: Box::new(|_, _| err("frontend.advance() called")),
                 upstream_arb: Box::new(|_, _| err("frontend.upstream_arb() called")),
@@ -384,10 +348,7 @@ impl PluginDefinition {
                     ctxt.allocate(qubits.len(), cmds).map(|_| ())
                 }),
                 free: Box::new(|ctxt, qubits| ctxt.free(qubits)),
-                gate: Box::new(|ctxt, name, targets, controls, measures, matrix, data| {
-                    ctxt.gate(name, targets, controls, measures, matrix, data)
-                        .map(|_| vec![])
-                }),
+                gate: Box::new(|ctxt, gate| ctxt.gate(gate).map(|_| vec![])),
                 modify_measurement: Box::new(|_, measurement| Ok(vec![measurement])),
                 advance: Box::new(|ctxt, cycles| ctxt.advance(cycles).map(|_| ())),
                 upstream_arb: Box::new(|_, _| Ok(ArbData::default())),
@@ -403,7 +364,7 @@ impl PluginDefinition {
                 run: Box::new(|_, _| err("backend.run() called")),
                 allocate: Box::new(|_, _, _| Ok(())),
                 free: Box::new(|_, _| Ok(())),
-                gate: Box::new(|_, _, _, _, _, _, _| err("gate() is not implemented")),
+                gate: Box::new(|_, _| err("gate() is not implemented")),
                 modify_measurement: Box::new(|_, _| err("backend.modify_measurement() called")),
                 advance: Box::new(|_, _| Ok(())),
                 upstream_arb: Box::new(|_, _| Ok(ArbData::default())),
