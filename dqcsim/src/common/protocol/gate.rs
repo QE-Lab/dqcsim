@@ -1,6 +1,10 @@
-use crate::common::protocol::{ArbData, QubitRef};
-//use num_complex::Complex64;
+use crate::common::{
+    error::{inv_arg, Result},
+    protocol::{ArbData, QubitRef},
+};
+use num_complex::Complex64;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 
 /// Represents a complex number internally.
 ///
@@ -104,4 +108,183 @@ pub struct Gate {
 
     /// User-defined classical data to pass along with the gate.
     data: ArbData,
+}
+
+impl Gate {
+    /// Constructs a new unitary gate.
+    pub fn new_unitary(
+        targets: impl IntoIterator<Item = QubitRef>,
+        controls: impl IntoIterator<Item = QubitRef>,
+        matrix: impl IntoIterator<Item = Complex64>,
+    ) -> Result<Gate> {
+        let targets: Vec<QubitRef> = targets.into_iter().collect();
+        let controls: Vec<QubitRef> = controls.into_iter().collect();
+        let matrix: Vec<InternalComplex64> = matrix
+            .into_iter()
+            .map(|x| InternalComplex64 { re: x.re, im: x.im })
+            .collect();
+
+        // We need at least one target.
+        if targets.is_empty() {
+            return inv_arg("at least one target qubit is required");
+        }
+
+        // Enforce uniqueness of the qubits.
+        let mut set = HashSet::new();
+        for qubit in targets.iter().chain(controls.iter()) {
+            if !set.insert(qubit) {
+                return inv_arg(format!("qubit {} is used more than once", qubit));
+            }
+        }
+
+        // Check the size of the matrix.
+        let expected_size = 4 << (targets.len() - 1);
+        if matrix.len() != expected_size {
+            return inv_arg(format!(
+                "the matrix is expected to be of size {} but was {}",
+                expected_size,
+                matrix.len()
+            ));
+        }
+
+        // Construct the Gate structure.
+        Ok(Gate {
+            name: None,
+            targets,
+            controls,
+            measures: vec![],
+            matrix,
+            data: ArbData::default(),
+        })
+    }
+
+    /// Constructs a new measurement gate.
+    ///
+    /// The qubits are measured in the Z basis.
+    pub fn new_measurement(qubits: impl IntoIterator<Item = QubitRef>) -> Result<Gate> {
+        let measures: Vec<QubitRef> = qubits.into_iter().collect();
+
+        // Enforce uniqueness of the qubits.
+        let mut set = HashSet::new();
+        for qubit in measures.iter() {
+            if !set.insert(qubit) {
+                return inv_arg(format!("qubit {} is measured more than once", qubit));
+            }
+        }
+
+        // Construct the Gate structure.
+        Ok(Gate {
+            name: None,
+            targets: vec![],
+            controls: vec![],
+            measures,
+            matrix: vec![],
+            data: ArbData::default(),
+        })
+    }
+
+    /// Constructs a new implementation-defined gate.
+    pub fn new_custom(
+        name: impl Into<String>,
+        targets: impl IntoIterator<Item = QubitRef>,
+        controls: impl IntoIterator<Item = QubitRef>,
+        measures: impl IntoIterator<Item = QubitRef>,
+        matrix: Option<impl IntoIterator<Item = Complex64>>,
+        data: impl Into<ArbData>,
+    ) -> Result<Gate> {
+        let name: String = name.into();
+        let targets: Vec<QubitRef> = targets.into_iter().collect();
+        let controls: Vec<QubitRef> = controls.into_iter().collect();
+        let measures: Vec<QubitRef> = measures.into_iter().collect();
+        let matrix: Option<Vec<InternalComplex64>> = matrix.map(|x| {
+            x.into_iter()
+                .map(|x| InternalComplex64 { re: x.re, im: x.im })
+                .collect()
+        });
+        let data: ArbData = data.into();
+
+        // Enforce uniqueness of the target/control qubits.
+        let mut set = HashSet::new();
+        for qubit in targets.iter().chain(controls.iter()) {
+            if !set.insert(qubit) {
+                return inv_arg(format!("qubit {} is used more than once", qubit));
+            }
+        }
+
+        // Enforce uniqueness of the measured qubits.
+        let mut set = HashSet::new();
+        for qubit in measures.iter() {
+            if !set.insert(qubit) {
+                return inv_arg(format!("qubit {} is measured more than once", qubit));
+            }
+        }
+
+        // Check the size of the matrix.
+        if let Some(ref m) = matrix {
+            if targets.is_empty() {
+                return inv_arg("cannot specify a matrix when there are no target qubits");
+            } else {
+                let expected_size = 4 << (targets.len() - 1);
+                if m.len() != expected_size {
+                    return inv_arg(format!(
+                        "the matrix is expected to be of size {} but was {}",
+                        expected_size,
+                        m.len()
+                    ));
+                }
+            }
+        }
+
+        // Construct the Gate structure.
+        Ok(Gate {
+            name: Some(name),
+            targets,
+            controls,
+            measures,
+            matrix: matrix.unwrap_or_else(|| vec![]),
+            data,
+        })
+    }
+
+    /// Returns the name of the gate, if any.
+    ///
+    /// No name implies DQCsim-defined gate behavior, named gates imply
+    /// plugin-defined behavior.
+    pub fn get_name(&self) -> Option<&str> {
+        self.name.as_ref().map(|x| &x[..])
+    }
+
+    /// Returns the list of target qubits.
+    pub fn get_targets(&self) -> &[QubitRef] {
+        &self.targets
+    }
+
+    /// Returns the list of control qubits.
+    pub fn get_controls(&self) -> &[QubitRef] {
+        &self.controls
+    }
+
+    /// Returns the list of measured qubits.
+    pub fn get_measures(&self) -> &[QubitRef] {
+        &self.measures
+    }
+
+    /// Returns the gate matrix.
+    pub fn get_matrix(&self) -> Option<Vec<Complex64>> {
+        if self.matrix.is_empty() {
+            None
+        } else {
+            Some(
+                self.matrix
+                    .iter()
+                    .map(|x| Complex64 { re: x.re, im: x.im })
+                    .collect(),
+            )
+        }
+    }
+
+    /// Returns the user data associated with this gate.
+    pub fn get_data(&self) -> &ArbData {
+        &self.data
+    }
 }

@@ -2,6 +2,7 @@
 
 use crate::{common::log::LoglevelFilter, host::configuration::PluginConfiguration};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 // Requests from simulator to plugin.
 mod simulator_to_plugin;
@@ -35,19 +36,37 @@ pub use gate::Gate;
 
 /// Represents a reference to a qubit.
 #[repr(transparent)]
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct QubitRef(usize);
+
+impl fmt::Display for QubitRef {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 /// Represents a number of simulation cycles or the current simulation time.
 #[repr(transparent)]
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Cycles(u64);
+
+impl fmt::Display for Cycles {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 /// Represents a sequence number, used to identify pipelined gatestream
 /// messages,
 #[repr(transparent)]
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct SequenceNumber(u64);
+
+impl fmt::Display for SequenceNumber {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 // TODO: remove the structures below, replacing them with the structures
 // defined in the modules above!
