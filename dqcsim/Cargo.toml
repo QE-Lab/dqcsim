@@ -34,3 +34,6 @@ humantime = "1.2"
 
 # random
 rand = "0.6"
+
+# complex numbers
+num-complex = "0.2"
