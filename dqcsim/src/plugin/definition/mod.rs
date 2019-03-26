@@ -177,6 +177,7 @@ impl PluginContext {
 /// This struct is constructed by the user (or the foreign language API). The
 /// behavior of the plugin is defined by a number of closures that the user
 /// must provide.
+#[allow(clippy::type_complexity)]
 pub struct PluginDefinition {
     /// Plugin type.
     typ: PluginType,
@@ -413,22 +414,22 @@ impl PluginDefinition {
 
     /// Returns the plugin type.
     pub fn get_type(&self) -> PluginType {
-        return self.typ;
+        self.typ
     }
 
     /// Returns the plugin name.
     pub fn get_name(&self) -> &str {
-        return &self.name;
+        &self.name
     }
 
     /// Returns the plugin author.
     pub fn get_author(&self) -> &str {
-        return &self.author;
+        &self.author
     }
 
     /// Returns the plugin version.
     pub fn get_version(&self) -> &str {
-        return &self.version;
+        &self.version
     }
 
     /// Executes the plugin using the previously specified callback functions.
