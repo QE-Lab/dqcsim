@@ -2,7 +2,7 @@ use crate::common::protocol::{ArbCmd, Cycles, Gate, QubitRef, SequenceNumber};
 use serde::{Deserialize, Serialize};
 
 /// Gatestream requests/downstream messages.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum GatestreamDown {
     /// A pipelined gatestream request.
     ///
@@ -28,7 +28,7 @@ pub enum GatestreamDown {
 }
 
 /// Enumeration of pipelined gatestream messages.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum PipelinedGatestreamDown {
     /// Requests allocation of a number of qubits.
     ///

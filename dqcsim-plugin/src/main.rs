@@ -1,9 +1,11 @@
 use dqcsim::{
-    common::protocol::Response, debug, host::configuration::PluginType, info,
-    plugin::connection::Connection,
+    common::protocol::{PluginToSimulator, SimulatorToPlugin},
+    host::configuration::PluginType,
+    info,
+    plugin::connection::{Connection, IncomingMessage, OutgoingMessage},
+    trace,
 };
 use failure::Error;
-use ipc_channel::ipc::IpcSelectionResult;
 use std::env;
 
 fn main() -> Result<(), Error> {
@@ -21,27 +23,27 @@ fn main() -> Result<(), Error> {
         PluginType::Operator
     };
 
-    let mut connection = Connection::init(server, plugin_type)?;
+    let mut connection = Connection::new(server)?;
 
     eprintln!("stderr");
     println!("stdout");
 
-    let map = connection.map.clone();
-
-    connection
-        .incoming
-        .select()?
-        .iter()
-        .for_each(|message| match message {
-            IpcSelectionResult::MessageReceived(id, message) => {
-                debug!("[{:?}] {:?}", &map[&id], message);
-                connection.response.send(Response::Success).unwrap();
-                std::process::exit(0);
+    match connection.next_request() {
+        Ok(msg) => {
+            trace!("{:?}", msg);
+            match msg {
+                Some(IncomingMessage::Simulator(req)) => match req {
+                    SimulatorToPlugin::Abort => {
+                        connection.send(OutgoingMessage::Simulator(PluginToSimulator::Success))?;
+                        std::process::exit(0);
+                    }
+                    _ => {}
+                },
+                _ => {}
             }
-            IpcSelectionResult::ChannelClosed(id) => {
-                debug!("[{:?}] Closed", &map[&id]);
-            }
-        });
+        }
+        Err(err) => panic!("{}", err),
+    }
 
     info!("Plugin down.");
 

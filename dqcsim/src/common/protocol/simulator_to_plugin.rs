@@ -5,7 +5,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 
 /// Simulator/host to plugin requests.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum SimulatorToPlugin {
     /// Request to initialize the plugin.
     ///
@@ -69,7 +69,7 @@ pub enum SimulatorToPlugin {
 }
 
 /// Plugin initialization request. See `SimulatorToPlugin::Initialize`.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct PluginInitializeRequest {
     /// Gatestream endpoint for the downstream plugin to connect to.
     ///
@@ -96,13 +96,10 @@ pub struct PluginInitializeRequest {
     /// filtering. This prevents log messages from being sent through the IPC
     /// connection (which costs performance) unnecessarily.
     pub configuration: PluginConfiguration,
-
-    /// Arbitrary commmands sent to the user code of the plugin.
-    pub arb_cmds: Vec<ArbCmd>,
 }
 
 /// Frontend run request. See `SimulatorToPlugin::RunRequest`.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct FrontendRunRequest {
     /// When specified, the frontend's `run()` callback must be called with the
     /// contained `ArbData` as argument.

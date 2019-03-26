@@ -4,7 +4,9 @@ use crate::{
     common::{
         error::{ErrorKind, Result},
         log::Record,
-        protocol::{ArbCmd, ArbData, InitializeRequest, Request, Response},
+        protocol::{
+            ArbCmd, ArbData, PluginInitializeRequest, PluginToSimulator, SimulatorToPlugin,
+        },
     },
     host::{configuration::PluginConfiguration, plugin::process::PluginProcess},
     trace,
@@ -89,22 +91,23 @@ impl Plugin {
     ) -> Result<()> {
         trace!("Initialize Plugin: {}", self.configuration.name);
         self.process_ref()
-            .request(Request::Init(InitializeRequest {
-                downstream,
-                arb_cmds: self.configuration.functional.init.clone(),
-                prefix: self.configuration.name.to_owned(),
-                level: self.configuration.nonfunctional.verbosity,
-            }))?;
-        match self.process_ref().wait_for_reply() {
-            Response::Init(response) => {
-                trace!("Got reponse: {:?}", response);
-                if let Some(upstream_plugin) = upstream.next() {
-                    trace!("Connecting to upstream plugin");
-                    upstream_plugin.init(response.upstream, upstream)?;
-                }
-                Ok(())
+            .request(SimulatorToPlugin::Initialize(Box::new(
+                PluginInitializeRequest {
+                    downstream,
+                    configuration: self.configuration.clone(),
+                },
+            )))?;
+        if let PluginToSimulator::Initialized(response) = self.process_ref().wait_for_reply() {
+            trace!("Got reponse: {:?}", response);
+            if let Some(upstream_plugin) = upstream.next() {
+                trace!("Connecting to upstream plugin");
+                upstream_plugin.init(response.upstream, upstream)?;
             }
-            _ => Err(ErrorKind::Other("bad-reply".to_string()))?,
+            Ok(())
+        } else {
+            Err(ErrorKind::InvalidOperation(
+                "Plugin intialization failed".to_string(),
+            ))?
         }
     }
 

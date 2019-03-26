@@ -1,13 +1,12 @@
 use crate::{
     common::{
-        error::{ErrorKind, Result},
-        ipc::SimulatorChannel,
+        error::Result,
         log::{router::route, stdio::proxy_stdio, Record},
-        protocol::{Request, Response},
+        protocol::{PluginToSimulator, SimulatorToPlugin},
     },
     host::{
         configuration::{PluginConfiguration, StreamCaptureMode, Timeout},
-        ipc::start,
+        ipc::{start, SimulatorChannel},
     },
     info, trace, warn,
 };
@@ -39,55 +38,47 @@ impl PluginProcess {
             &configuration.nonfunctional.stdout_mode,
         )?;
 
-        // Handshake
-        channel
-            .request
-            .send(Request::Configuration(Box::new(configuration.clone())))?;
+        route(
+            configuration.name.as_str(),
+            configuration.nonfunctional.verbosity,
+            channel.log().unwrap(),
+            sender.clone(),
+        );
 
-        match channel.response.recv() {
-            Ok(Response::Success) => {
-                route(
-                    configuration.name.as_str(),
-                    configuration.nonfunctional.verbosity,
-                    channel.log().unwrap(),
-                    sender.clone(),
-                );
-
-                // Log piped stdout/stderr
-                if let StreamCaptureMode::Capture(level) = configuration.nonfunctional.stderr_mode {
-                    proxy_stdio(
-                        format!("{}::stderr", configuration.name.as_str()),
-                        Box::new(child.stderr.take().expect("stderr")),
-                        sender.clone(),
-                        level,
-                    );
-                }
-
-                if let StreamCaptureMode::Capture(level) = configuration.nonfunctional.stdout_mode {
-                    proxy_stdio(
-                        format!("{}::stdout", configuration.name.as_str()),
-                        Box::new(child.stdout.take().expect("stdout")),
-                        sender,
-                        level,
-                    );
-                }
-
-                Ok(PluginProcess {
-                    child,
-                    channel,
-                    shutdown_timeout: configuration.nonfunctional.shutdown_timeout,
-                })
-            }
-            Ok(_) | Err(_) => Err(ErrorKind::Other("Handshake problem".to_string()))?,
+        // Log piped stdout/stderr
+        if let StreamCaptureMode::Capture(level) = configuration.nonfunctional.stderr_mode {
+            proxy_stdio(
+                format!("{}::stderr", configuration.name.as_str()),
+                Box::new(child.stderr.take().expect("stderr")),
+                sender.clone(),
+                level,
+            );
         }
+
+        if let StreamCaptureMode::Capture(level) = configuration.nonfunctional.stdout_mode {
+            proxy_stdio(
+                format!("{}::stdout", configuration.name.as_str()),
+                Box::new(child.stdout.take().expect("stdout")),
+                sender,
+                level,
+            );
+        }
+
+        Ok(PluginProcess {
+            child,
+            channel,
+            shutdown_timeout: configuration.nonfunctional.shutdown_timeout,
+        })
     }
 
-    pub fn request(&self, request: Request) -> Result<()> {
+    // TODO: remove or replace
+    pub fn request(&self, request: SimulatorToPlugin) -> Result<()> {
         self.channel.request.send(request)?;
         Ok(())
     }
 
-    pub fn wait_for_reply(&self) -> Response {
+    // TODO: remove or replace
+    pub fn wait_for_reply(&self) -> PluginToSimulator {
         self.channel.response.recv().unwrap()
     }
 }
@@ -106,7 +97,7 @@ impl Drop for PluginProcess {
                 "Aborting PluginProcess (timeout: {:?})",
                 self.shutdown_timeout
             );
-            self.request(Request::Abort)
+            self.request(SimulatorToPlugin::Abort)
                 .expect("Failed to abort PluginProcess");
 
             if let Timeout::Duration(duration) = self.shutdown_timeout {
@@ -114,7 +105,7 @@ impl Drop for PluginProcess {
                 loop {
                     if now.elapsed() < duration {
                         match self.channel.response.try_recv() {
-                            Ok(Response::Success) => break,
+                            Ok(PluginToSimulator::Success) => break,
                             Ok(_) | Err(_) => {
                                 std::thread::sleep(std::time::Duration::from_millis(10));
                             }

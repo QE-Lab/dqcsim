@@ -2,7 +2,7 @@ use crate::common::protocol::{ArbData, PluginMetadata};
 use serde::{Deserialize, Serialize};
 
 /// Plugin to simulator responses.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum PluginToSimulator {
     /// Success response to requests that don't return data..
     Success,
@@ -21,7 +21,7 @@ pub enum PluginToSimulator {
 }
 
 /// Initialization response.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct PluginInitializeResponse {
     /// Gatestream endpoint for the upstream plugin to connect to.
     ///
@@ -34,7 +34,7 @@ pub struct PluginInitializeResponse {
 }
 
 /// Frontend run response.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct FrontendRunResponse {
     /// When specified, the frontend's `run()` callback terminated with the
     /// contained return value.
