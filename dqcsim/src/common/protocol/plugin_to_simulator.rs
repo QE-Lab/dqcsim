@@ -1,4 +1,4 @@
-use crate::common::protocol::ArbData;
+use crate::common::protocol::{ArbData, PluginMetadata};
 use serde::{Deserialize, Serialize};
 
 /// Plugin to simulator responses.
@@ -28,6 +28,9 @@ pub struct PluginInitializeResponse {
     /// Must be specified for operators and backends, must not be specified for
     /// frontends.
     pub upstream: Option<String>,
+
+    /// Plugin metadata information from the `PluginDefinition` structure.
+    pub metadata: PluginMetadata,
 }
 
 /// Frontend run response.

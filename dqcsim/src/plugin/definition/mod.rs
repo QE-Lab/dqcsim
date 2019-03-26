@@ -2,7 +2,7 @@ use crate::{
     common::{
         error::{err, Result},
         log,
-        protocol::{ArbCmd, ArbData, Gate, QubitMeasurement, QubitRef},
+        protocol::{ArbCmd, ArbData, Gate, PluginMetadata, QubitMeasurement, QubitRef},
     },
     host::configuration::PluginType,
 };
@@ -155,14 +155,8 @@ pub struct PluginDefinition {
     /// Plugin type.
     typ: PluginType,
 
-    /// Name of the plugin.
-    name: String,
-
-    /// Author of the plugin.
-    author: String,
-
-    /// Version of the plugin.
-    version: String,
+    /// Name, author, and version of the plugin.
+    metadata: PluginMetadata,
 
     /// Initialization callback.
     ///
@@ -313,18 +307,11 @@ impl PluginDefinition {
     ///
     /// The callbacks can be overridden by modifying the boxed callback fields
     /// directly.
-    pub fn new(
-        typ: PluginType,
-        name: impl Into<String>,
-        author: impl Into<String>,
-        version: impl Into<String>,
-    ) -> PluginDefinition {
+    pub fn new(typ: PluginType, metadata: impl Into<PluginMetadata>) -> PluginDefinition {
         match typ {
             PluginType::Frontend => PluginDefinition {
                 typ: PluginType::Frontend,
-                name: name.into(),
-                author: author.into(),
-                version: version.into(),
+                metadata: metadata.into(),
                 initialize: Box::new(|_, _| Ok(())),
                 drop: Box::new(|_| Ok(())),
                 run: Box::new(|_, _| err("run() is not implemented")),
@@ -338,9 +325,7 @@ impl PluginDefinition {
             },
             PluginType::Operator => PluginDefinition {
                 typ: PluginType::Operator,
-                name: name.into(),
-                author: author.into(),
-                version: version.into(),
+                metadata: metadata.into(),
                 initialize: Box::new(|_, _| Ok(())),
                 drop: Box::new(|_| Ok(())),
                 run: Box::new(|_, _| err("operator.run() called")),
@@ -356,9 +341,7 @@ impl PluginDefinition {
             },
             PluginType::Backend => PluginDefinition {
                 typ: PluginType::Backend,
-                name: name.into(),
-                author: author.into(),
-                version: version.into(),
+                metadata: metadata.into(),
                 initialize: Box::new(|_, _| Ok(())),
                 drop: Box::new(|_| Ok(())),
                 run: Box::new(|_, _| err("backend.run() called")),
@@ -378,19 +361,9 @@ impl PluginDefinition {
         self.typ
     }
 
-    /// Returns the plugin name.
-    pub fn get_name(&self) -> &str {
-        &self.name
-    }
-
-    /// Returns the plugin author.
-    pub fn get_author(&self) -> &str {
-        &self.author
-    }
-
-    /// Returns the plugin version.
-    pub fn get_version(&self) -> &str {
-        &self.version
+    /// Returns the plugin metadata.
+    pub fn get_metadata(&self) -> &PluginMetadata {
+        &self.metadata
     }
 
     /// Executes the plugin using the previously specified callback functions.
