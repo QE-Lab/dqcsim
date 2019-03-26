@@ -31,19 +31,14 @@ pub use arb_cmd::ArbCmd;
 mod arb_data;
 pub use arb_data::ArbData;
 
+mod plugin_metadata;
+pub use plugin_metadata::PluginMetadata;
+
+mod qubit_ref;
+pub use qubit_ref::{QubitRef, QubitRefGenerator};
+
 mod gate;
 pub use gate::Gate;
-
-/// Represents a reference to a qubit.
-#[repr(transparent)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct QubitRef(usize);
-
-impl fmt::Display for QubitRef {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
 
 /// Represents a number of simulation cycles or the current simulation time.
 #[repr(transparent)]
@@ -75,53 +70,11 @@ pub struct QubitMeasurement {
     pub qubit: QubitRef,
 
     /// The measured value. true = 1, false = 0.
-    pub value: bool,
+    pub value: bool, // TODO: make a type-safe wrapper for this.
 
     /// Implementation-specific additional data, such as the probability for
     /// this particular measurement outcome.
     pub data: ArbData,
-}
-
-/// Contains information about a plugin implementation.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct PluginMetadata {
-    /// The name of the plugin implementation.
-    name: String,
-
-    /// The author of the plugin.
-    author: String,
-
-    /// The plugin version.
-    version: String,
-}
-
-impl PluginMetadata {
-    pub fn new(
-        name: impl Into<String>,
-        author: impl Into<String>,
-        version: impl Into<String>,
-    ) -> PluginMetadata {
-        PluginMetadata {
-            name: name.into(),
-            author: author.into(),
-            version: version.into(),
-        }
-    }
-
-    /// Returns the name of the plugin implementation.
-    pub fn get_name(&self) -> &str {
-        &self.name
-    }
-
-    /// Returns the author of the plugin.
-    pub fn get_author(&self) -> &str {
-        &self.author
-    }
-
-    /// Returns the plugin version.
-    pub fn get_version(&self) -> &str {
-        &self.version
-    }
 }
 
 // TODO: remove the structures below, replacing them with the structures
