@@ -3,7 +3,7 @@ use super::*;
 /// Enumeration of all objects that can be associated with an handle, including
 /// the object data.
 #[derive(Debug)]
-#[allow(dead_code)]
+#[allow(dead_code, clippy::large_enum_variant)] // FIXME: clippy probably has a point here
 pub enum APIObject {
     /// ArbData object.
     ArbData(ArbData),

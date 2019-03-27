@@ -1,9 +1,18 @@
 use dqcsim::{
-    common::protocol::Response, debug, host::configuration::PluginType, info,
-    plugin::connection::Connection,
+    common::{
+        protocol::{PluginToSimulator, SimulatorToPlugin},
+        types::{ArbCmd, PluginMetadata},
+    },
+    debug,
+    host::configuration::PluginType,
+    info,
+    plugin::{
+        connection::{Connection, IncomingMessage, OutgoingMessage},
+        context::PluginContext,
+    },
+    trace,
 };
 use failure::Error;
-use ipc_channel::ipc::IpcSelectionResult;
 use std::env;
 
 fn main() -> Result<(), Error> {
@@ -21,29 +30,28 @@ fn main() -> Result<(), Error> {
         PluginType::Operator
     };
 
-    let mut connection = Connection::init(server, plugin_type)?;
+    let metadata = PluginMetadata::new("example", "mb", "0.1.0");
+    // Init fn
+    let initialize: Box<dyn Fn(&mut PluginContext, Vec<ArbCmd>)> = Box::new(|_ctx, arb_cmds| {
+        trace!("Running plugin init function.");
+        for arb_cmd in arb_cmds {
+            debug!("{}", arb_cmd);
+        }
+    });
+
+    let mut connection = Connection::new(server)?.init(plugin_type, metadata, initialize)?;
 
     eprintln!("stderr");
     println!("stdout");
 
-    let map = connection.map.clone();
-
-    connection
-        .incoming
-        .select()?
-        .iter()
-        .for_each(|message| match message {
-            IpcSelectionResult::MessageReceived(id, message) => {
-                debug!("[{:?}] {:?}", &map[&id], message);
-                connection.response.send(Response::Success).unwrap();
-                std::process::exit(0);
-            }
-            IpcSelectionResult::ChannelClosed(id) => {
-                debug!("[{:?}] Closed", &map[&id]);
-            }
-        });
+    if let Ok(Some(IncomingMessage::Simulator(SimulatorToPlugin::Abort))) =
+        connection.next_request()
+    {
+        connection.send(OutgoingMessage::Simulator(PluginToSimulator::Success))?;
+    } else {
+        std::process::exit(1);
+    }
 
     info!("Plugin down.");
-
     Ok(())
 }

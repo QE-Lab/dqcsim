@@ -176,16 +176,13 @@ mod test {
         exp_json: serde_json::Value,
         exp_args: Vec<&[u8]>,
     ) {
-        let exp_args = exp_args.into_iter().map(|x| x.to_vec()).collect();
+        let exp_args: Vec<Vec<u8>> = exp_args.into_iter().map(|x| x.to_vec()).collect();
         assert_eq!(
             ArbCmd::from_str(input).unwrap(),
             ArbCmd::new(
                 exp_iface,
                 exp_oper,
-                ArbData {
-                    json: exp_json,
-                    args: exp_args
-                }
+                ArbData::from_json(exp_json.to_string(), exp_args).unwrap(),
             )
         );
     }
@@ -241,8 +238,12 @@ mod test {
         args: Vec<&[u8]>,
         exp_output: &str,
     ) {
-        let args = args.into_iter().map(|x| x.to_vec()).collect();
-        let cmd = ArbCmd::new(iface, oper, ArbData { json, args });
+        let args: Vec<Vec<u8>> = args.into_iter().map(|x| x.to_vec()).collect();
+        let cmd = ArbCmd::new(
+            iface,
+            oper,
+            ArbData::from_json(json.to_string(), args).unwrap(),
+        );
         let string = cmd.to_string();
         assert_eq!(string, exp_output);
         assert_eq!(ArbCmd::from_str(&string).unwrap(), cmd);

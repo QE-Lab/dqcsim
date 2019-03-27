@@ -1,17 +1,47 @@
 use crate::{
     common::{
         error::{err, Result},
-        ipc::SimulatorChannel,
+        log::Record,
+        protocol::{PluginToSimulator, SimulatorToPlugin},
     },
     trace,
 };
-use ipc_channel::ipc::IpcOneShotServer;
+use ipc_channel::ipc::{IpcOneShotServer, IpcReceiver, IpcSender};
+use serde::{Deserialize, Serialize};
 use std::{
     process::{Child, Command, Stdio},
     sync::{Arc, Condvar, Mutex},
     thread,
     time::Duration,
 };
+
+/// The Simulator side of a Simulator to Plugin channel.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SimulatorChannel {
+    log: Option<IpcReceiver<Record>>,
+    pub request: IpcSender<SimulatorToPlugin>,
+    pub response: IpcReceiver<PluginToSimulator>,
+}
+
+impl SimulatorChannel {
+    /// Returns a SimulatorChannel wrapper.
+    pub fn new(
+        log: IpcReceiver<Record>,
+        request: IpcSender<SimulatorToPlugin>,
+        response: IpcReceiver<PluginToSimulator>,
+    ) -> SimulatorChannel {
+        SimulatorChannel {
+            log: Some(log),
+            request,
+            response,
+        }
+    }
+
+    /// Take log channel out the channel wrapper.
+    pub fn log(&mut self) -> Option<IpcReceiver<Record>> {
+        self.log.take()
+    }
+}
 
 /// Start a [`Plugin`] child process and initialize the communication channel.
 ///

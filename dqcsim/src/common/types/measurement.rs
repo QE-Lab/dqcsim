@@ -76,7 +76,7 @@ impl From<bool> for QubitMeasurementState {
 }
 
 /// Represents a qubit measurement result.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct QubitMeasurementResult {
     /// The measured qubit.
     pub qubit: QubitRef,

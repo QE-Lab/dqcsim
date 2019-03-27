@@ -134,7 +134,7 @@ impl LogThread {
                     if supports_colors && record.level() == Loglevel::Trace {
                         t.fg(color)?;
                     }
-                    writeln!(t, "{}", record)?;
+                    writeln!(t, "{}", record.payload())?;
                     t.reset()?;
                 }
             }

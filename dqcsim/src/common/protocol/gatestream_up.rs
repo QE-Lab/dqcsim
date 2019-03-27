@@ -2,7 +2,7 @@ use crate::common::types::{ArbData, Cycles, QubitMeasurementResult, SequenceNumb
 use serde::{Deserialize, Serialize};
 
 /// Gatestream responses/upstream messages.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum GatestreamUp {
     /// Acknowledges one or more requests.
     ///
