@@ -1,4 +1,22 @@
 //! Plugin to simulator connection wrapper.
+//!
+//! The `connection` module provides a [`Connection`] wrapper, which is used by
+//! [`Plugin`] instances to wrap connection structures required for
+//! communication between [`Plugin`] and [`Simulator`], and between [`Plugin`]
+//! and [`Plugin`].
+//!
+//! This module defines two wrapper enumerations, which wrap around
+//! [`protocol`] messages for both incoming ([`IncomingMessage`]) and outgoing
+//! ([`OutgoingMessage`]) channels.
+//!
+//! [`Connection`]: ./struct.Connection.html
+//! [`IncomingMessage`]: ./enum.IncomingMessage.html
+//! [`OutgoingMessage`]: ./enum.OutgoingMessage.html
+//! [`Plugin`]: ../../host/plugin/struct.Plugin.html
+//! [`Simulator`]: ../../host/simulator/struct.Simulator.html
+//! [`protocol`]: ../../common/protocol/index.html
+
+// TODO: add example usage or link to plugin implementation instructions
 
 use crate::{
     common::{
@@ -20,14 +38,20 @@ use crate::{
 use ipc_channel::ipc::{IpcOneShotServer, IpcReceiverSet, IpcSelectionResult, IpcSender};
 use std::collections::HashMap;
 
+/// Incoming enum used to map incoming requests in the IpcReceiverSet used in
+/// the Connection wrapper.
 #[derive(Debug, Copy, Clone)]
-pub enum Incoming {
+enum Incoming {
+    /// Variant used to label incoming request ([`SimulatorToPlugin`]).
     Simulator,
+    /// Variant used to label incoming upstream requests ([`GatestreamDown`]).
     Upstream,
-    // this is a response
-    Downstream,
 }
 
+/// Incoming messages variants.
+///
+/// The different variants contain the actual message. This structure is used
+/// by Plugins to determine the origin of an incoming message.
 #[derive(Debug, PartialEq)]
 pub enum IncomingMessage {
     Simulator(SimulatorToPlugin),
@@ -35,6 +59,11 @@ pub enum IncomingMessage {
     Downstream(GatestreamUp),
 }
 
+/// Outgoing messages variants.
+///
+/// The different variants contain the actual message. This structure is used
+/// by Connection instances to make it easy for Plugins to target their
+/// outgoing messages.
 #[derive(Debug, PartialEq)]
 pub enum OutgoingMessage {
     Simulator(PluginToSimulator),
@@ -47,16 +76,16 @@ pub enum OutgoingMessage {
 /// This provides a [`Plugin`] with the ability to communicate with both a
 /// [`Simulator`] instance and other upstream and downstream plugins.
 ///
-/// Constructing a [`Connection`] instance should be the first thing a
-/// [`Plugin`] should do. The [`Simulator`] server address string is passed
-/// as an argument to all Plugins started by a [`Simulator`]. The server
-/// address string can be used to construct a [`Connection`] instance.
+/// Constructing a Connection instance should be the first thing a [`Plugin`]
+/// does. The [`Simulator`] server address string is passed as an argument to
+/// all Plugins started by a [`Simulator`]. The server address string can be
+/// used to construct a Connection instance.
 ///
-/// A [`Connection`] instance attempts to connect to the [`Simulator`] instance
-/// to receives its [`PluginConfiguration`]. Based on the configuration, the
-/// [`Connection`] instance will spawn the thread-local loggers and then wait
-/// the [`Simulator`] to send a [`Request::Init`] request, to connect to the
-/// upstream and downstream plugins.
+/// After constructin of the Connection instance, the [`Plugin`] can respond to
+/// the initialization request from the [`Simulator`].
+///
+/// [`Plugin`]: ../../host/plugin/struct.Plugin.html
+/// [`Simulator`]: ../../host/simulator/struct.Simulator.html
 pub struct Connection {
     /// Set of incoming request channels.
     /// Simulator request channel for all plugins. Incoming requests from
@@ -102,8 +131,20 @@ impl Connection {
     }
 
     /// Construct a Connection wrapper instance.
-    /// The Connection wrapper connects to the Simulator. It does however not
-    /// initialize.
+    ///
+    /// The Connection wrapper attempts to connect to the [`Simulator`] using
+    /// the address provided as argument. The required communication channels
+    /// are generated and exchanged with the [`Simulator`].
+    ///
+    /// At this point the Connection wrapper can receive requests and send
+    /// responses from and to the [`Simulator`], however logging and upstream
+    /// and downstream plugin connections are not yet available.
+    ///
+    /// The first request the [`Simulator`] sends is always an initialization
+    /// request, which should be handled with the [`init`] method.
+    ///
+    /// [`Simulator`]: ../../host/simulator/struct.Simulator.html
+    /// [`init`]: ./struct.Connection.html#method.initc
     pub fn new(simulator: impl Into<String>) -> Result<Connection> {
         // Attempt to connect to the simulator instance.
         let channel = Connection::connect(simulator)?;
@@ -111,31 +152,35 @@ impl Connection {
         // Create incoming request collections.
         let mut incoming = IpcReceiverSet::new()?;
         let mut incoming_map = HashMap::with_capacity(2);
+
+        // Put incoming (SimulatorToPlugin) channel in receiver set and map.
         incoming_map.insert(incoming.add(channel.request)?, Incoming::Simulator);
 
         Ok(Connection {
             incoming,
             incoming_map,
             incoming_buffer: Vec::new(),
-            downstream: None,
             response: channel.response,
+            downstream: None,
             upstream: None,
             log: channel.log,
         })
     }
 
-    /// Handle the Initialization request from the Simulator.
+    /// Handle the initialization request from the Simulator.
     ///
-    /// This is always the first request the Simulator sends and all Plugins
-    /// should respond accordingly in order for the Simulation to initialize.
-    /// TODO: add doc ref to SimulatorToPlugin::Initialize variant.
+    /// Respond accordingly to the initialization request
+    /// ([`SimulatorToPlugin::Initialize`]) from the [`Simulator`].
+    ///
+    /// [`SimulatorToPlugin::Initialize`]: ../../common/protocol/enum.SimulatorToPlugin.html#variant.Initialize
+    /// [`Simulator`]: ../../host/simulator/struct.Simulator.html
     pub fn init(
         mut self,
         typ: PluginType,
         metadata: PluginMetadata,
         initialize: Box<dyn Fn(&mut PluginContext, Vec<ArbCmd>)>,
     ) -> Result<Connection> {
-        // Wait for the Initialize request from the Simulator.
+        // Wait for the initialization request from the Simulator.
         match if let Ok(Some(IncomingMessage::Simulator(SimulatorToPlugin::Initialize(req)))) =
             self.next_request()
         {
@@ -261,6 +306,7 @@ impl Connection {
 
     /// Fetch next request from either the Simulator request channel or the
     /// upstream Plugin request channel.
+    ///
     /// Fails if either connection closed or if any connection is unexpectedly
     /// already closed. Returns Ok(None) if both request channels are closed.
     /// This method blocks until a new request is available.
@@ -282,7 +328,6 @@ impl Connection {
                                 self.incoming_buffer.push(match incoming {
                                     Incoming::Simulator => IncomingMessage::Simulator(msg.to()?),
                                     Incoming::Upstream => IncomingMessage::Upstream(msg.to()?),
-                                    _ => unreachable!(),
                                 });
                             }
                         }
@@ -298,8 +343,9 @@ impl Connection {
     }
 
     /// Fetch next response from downstream plugin.
-    /// This method blocks until a new response is available. Please refer to
-    /// `try_next_response` for a non-blocking method.
+    ///
+    /// This method blocks until a new response is available, and returns the
+    /// message.
     pub fn next_response(&self) -> Result<IncomingMessage> {
         Ok(IncomingMessage::Downstream(
             self.downstream_ref()?.rx_ref()?.recv()?,
@@ -307,7 +353,9 @@ impl Connection {
     }
 
     /// Attempt to fetch next response from downstream plugin.
-    /// This method is non-blocking.
+    ///
+    /// This method checks and returns a response, if it is available. This
+    /// method does not block, and returns if no responses are available.
     pub fn try_next_response(&self) -> Result<IncomingMessage> {
         Ok(IncomingMessage::Downstream(
             self.downstream_ref()?.rx_ref()?.try_recv()?,
@@ -400,5 +448,18 @@ mod tests {
         assert_eq!(res.unwrap(), PluginToSimulator::Success);
 
         assert!(plugin.join().is_ok());
+    }
+
+    #[test]
+    fn bad_address() {
+        // Attempt to connect to an non-existing server
+        let connection = Connection::new("asdf");
+        assert!(connection.is_err());
+
+        #[cfg(target_os = "macos")]
+        assert_eq!(
+            connection.err().unwrap().to_string(),
+            String::from("I/O error: Unknown Mach error: 44e")
+        );
     }
 }
