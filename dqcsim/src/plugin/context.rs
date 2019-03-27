@@ -1,10 +1,7 @@
-use crate::{
-    common::{
-        error::{err, Result},
-        log,
-        protocol::{ArbCmd, ArbData},
-    },
-    plugin::definition::{Complex, QubitRef},
+use crate::common::{
+    error::{err, Result},
+    log,
+    protocol::{ArbCmd, ArbData, Gate, QubitRef},
 };
 
 /// Temporary (?) structure that contains the functions that the user may call
@@ -53,15 +50,7 @@ impl PluginContext {
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn gate(
-        &mut self,
-        _name: Option<String>,
-        _targets: Vec<QubitRef>,
-        _controls: Vec<QubitRef>,
-        _measures: Vec<QubitRef>,
-        _matrix: Vec<Complex>,
-        _arb: ArbData,
-    ) -> Result<()> {
+    pub fn gate(&mut self, _gate: Gate) -> Result<()> {
         err("not yet implemented")
     }
 
