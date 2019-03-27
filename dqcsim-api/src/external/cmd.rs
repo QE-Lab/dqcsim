@@ -1,5 +1,5 @@
 use super::*;
-use std::ptr::null;
+use std::ptr::null_mut;
 
 /// Creates a new `ArbCmd` object.
 ///
@@ -28,8 +28,8 @@ pub extern "C" fn dqcs_cmd_new(iface: *const c_char, oper: *const c_char) -> dqc
 /// string. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure, this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_cmd_iface_get(handle: dqcs_handle_t) -> *const c_char {
-    with_cmd(handle, null, |cmd| {
+pub extern "C" fn dqcs_cmd_iface_get(handle: dqcs_handle_t) -> *mut c_char {
+    with_cmd(handle, null_mut, |cmd| {
         return_string(cmd.interface_identifier())
     })
 }
@@ -59,8 +59,8 @@ pub extern "C" fn dqcs_cmd_iface_cmp(
 /// string. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure, this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_cmd_oper_get(handle: dqcs_handle_t) -> *const c_char {
-    with_cmd(handle, null, |cmd| {
+pub extern "C" fn dqcs_cmd_oper_get(handle: dqcs_handle_t) -> *mut c_char {
+    with_cmd(handle, null_mut, |cmd| {
         return_string(cmd.operation_identifier())
     })
 }

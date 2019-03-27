@@ -73,11 +73,11 @@ TEST(args, test1) {
   EXPECT_EQ(dqcs_arb_len(a), 5);
 
   // Pop some strings.
-  const char *s;
+  char *s;
   EXPECT_STREQ(s = dqcs_arb_pop_str(a), "");
-  if (s) free((void*)s);
+  if (s) free(s);
   EXPECT_STREQ(s = dqcs_arb_pop_str(a), ")*#$()&#$");
-  if (s) free((void*)s);
+  if (s) free(s);
 
   // Length should be 2 now.
   EXPECT_EQ(dqcs_arb_len(a), 3);
@@ -218,11 +218,11 @@ TEST(args, test2) {
   char expected[2] = {0, 0};
   for (int i = 0; i < 6; i++) {
     expected[0] = i + '0';
-    const char *s;
+    char *s;
     EXPECT_STREQ(s = dqcs_arb_get_str(a, i), expected);
-    if (s) free((void*)s);
+    if (s) free(s);
     EXPECT_STREQ(s = dqcs_arb_get_str(a, i - 6), expected);
-    if (s) free((void*)s);
+    if (s) free(s);
   }
 
   // Check out of range accesses using get_str.
@@ -243,9 +243,9 @@ TEST(args, test2) {
   // Check that the removals did what we expected.
   for (int i = 0; i < 3; i++) {
     expected[0] = (i * 2 + 1) + '0';
-    const char *s;
+    char *s;
     EXPECT_STREQ(s = dqcs_arb_get_str(a, i), expected);
-    if (s) free((void*)s);
+    if (s) free(s);
   }
 
   // Make some changes using set_str.
@@ -258,13 +258,13 @@ TEST(args, test2) {
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: index out of range: 3");
 
   // Check that the setters did what we expected.
-  const char *s;
+  char *s;
   EXPECT_STREQ(s = dqcs_arb_get_str(a, 0), "hello");
-  if (s) free((void*)s);
+  if (s) free(s);
   EXPECT_STREQ(s = dqcs_arb_get_str(a, 1), ", ");
-  if (s) free((void*)s);
+  if (s) free(s);
   EXPECT_STREQ(s = dqcs_arb_get_str(a, 2), "world");
-  if (s) free((void*)s);
+  if (s) free(s);
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);

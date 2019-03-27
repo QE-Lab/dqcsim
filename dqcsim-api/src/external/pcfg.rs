@@ -1,6 +1,6 @@
 use super::*;
 use dqcsim::common::log::tee_file::TeeFile;
-use std::ptr::null;
+use std::ptr::{null, null_mut};
 
 /// Creates a new `PluginConfiguration` object using sugared syntax.
 ///
@@ -94,8 +94,8 @@ pub extern "C" fn dqcs_pcfg_type(handle: dqcs_handle_t) -> dqcs_plugin_type_t {
 /// name. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_name(handle: dqcs_handle_t) -> *const c_char {
-    with_pcfg(handle, null, |plugin| return_string(&plugin.name))
+pub extern "C" fn dqcs_pcfg_name(handle: dqcs_handle_t) -> *mut c_char {
+    with_pcfg(handle, null_mut, |plugin| return_string(&plugin.name))
 }
 
 /// Returns the configured executable path for the given plugin.
@@ -105,8 +105,8 @@ pub extern "C" fn dqcs_pcfg_name(handle: dqcs_handle_t) -> *const c_char {
 /// memory leaks.** On failure (i.e., the handle is invalid) this returns
 /// `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_executable(handle: dqcs_handle_t) -> *const c_char {
-    with_pcfg(handle, null, |plugin| {
+pub extern "C" fn dqcs_pcfg_executable(handle: dqcs_handle_t) -> *mut c_char {
+    with_pcfg(handle, null_mut, |plugin| {
         return_string(plugin.specification.executable.to_string_lossy())
     })
 }
@@ -119,8 +119,8 @@ pub extern "C" fn dqcs_pcfg_executable(handle: dqcs_handle_t) -> *const c_char {
 /// empty string will be returned if no script is configured to distinguish it
 /// from failure.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_script(handle: dqcs_handle_t) -> *const c_char {
-    with_pcfg(handle, null, |plugin| {
+pub extern "C" fn dqcs_pcfg_script(handle: dqcs_handle_t) -> *mut c_char {
+    with_pcfg(handle, null_mut, |plugin| {
         if let Some(script) = plugin.specification.script.as_ref() {
             return_string(script.to_string_lossy())
         } else {
@@ -225,8 +225,8 @@ pub extern "C" fn dqcs_pcfg_work_set(handle: dqcs_handle_t, work: *const c_char)
 /// memory leaks.** On failure (i.e., the handle is invalid) this returns
 /// `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_work_get(handle: dqcs_handle_t) -> *const c_char {
-    with_pcfg(handle, null, |plugin| {
+pub extern "C" fn dqcs_pcfg_work_get(handle: dqcs_handle_t) -> *mut c_char {
+    with_pcfg(handle, null_mut, |plugin| {
         return_string(plugin.functional.work.to_string_lossy())
     })
 }

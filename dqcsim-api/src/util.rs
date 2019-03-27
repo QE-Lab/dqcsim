@@ -27,9 +27,9 @@ pub fn receive_str<'a>(s: *const c_char) -> Result<&'a str> {
 ///
 /// On success, this **returns a newly allocated string. It must be freed
 /// with `free()` by the caller.**
-pub fn return_string(s: impl AsRef<str>) -> Result<*const c_char> {
+pub fn return_string(s: impl AsRef<str>) -> Result<*mut c_char> {
     let s = CString::new(s.as_ref())?;
-    let s = unsafe { strdup(s.as_ptr()) };
+    let s = unsafe { strdup(s.as_ptr()) as *mut c_char };
     if s.is_null() {
         err("failed to allocate return value")
     } else {

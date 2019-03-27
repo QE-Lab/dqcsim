@@ -1,5 +1,5 @@
 use super::*;
-use std::ptr::{null, null_mut};
+use std::ptr::null_mut;
 
 /// Creates a new `ArbData` object.
 ///
@@ -35,8 +35,8 @@ pub extern "C" fn dqcs_arb_json_set(handle: dqcs_handle_t, json: *const c_char) 
 /// string. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure, this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_arb_json_get(handle: dqcs_handle_t) -> *const c_char {
-    with_arb(handle, null, |arb| return_string(arb.get_json()?))
+pub extern "C" fn dqcs_arb_json_get(handle: dqcs_handle_t) -> *mut c_char {
+    with_arb(handle, null_mut, |arb| return_string(arb.get_json()?))
 }
 
 /// Sets the JSON/CBOR object of an `ArbData` object by means of a CBOR object.
@@ -60,9 +60,9 @@ pub extern "C" fn dqcs_arb_cbor_set(_handle: dqcs_handle_t, _cbor: *const c_void
 /// data. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure, this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_arb_cbor_get(_handle: dqcs_handle_t) -> *const c_void {
-    /*with_arb(handle, null, |arb| return_string(arb.get_json()?)) TODO*/
-    null()
+pub extern "C" fn dqcs_arb_cbor_get(_handle: dqcs_handle_t) -> *mut c_void {
+    /*with_arb(handle, null_mut, |arb| return_string(arb.get_json()?)) TODO*/
+    null_mut()
 }
 
 /// Pushes an unstructured string argument to the back of the list.
@@ -104,8 +104,8 @@ pub extern "C" fn dqcs_arb_push_raw(
 /// conversion from binary object to C string (i.e., embedded nulls), the
 /// data is still popped and is thus lost.
 #[no_mangle]
-pub extern "C" fn dqcs_arb_pop_str(handle: dqcs_handle_t) -> *const c_char {
-    with_arb(handle, null, |arb| {
+pub extern "C" fn dqcs_arb_pop_str(handle: dqcs_handle_t) -> *mut c_char {
+    with_arb(handle, null_mut, |arb| {
         return_string(String::from_utf8(
             arb.get_args_mut()
                 .pop()
@@ -272,8 +272,8 @@ pub extern "C" fn dqcs_arb_set_raw(
 /// string. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure, this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_arb_get_str(handle: dqcs_handle_t, index: ssize_t) -> *const c_char {
-    with_arb(handle, null, |arb| {
+pub extern "C" fn dqcs_arb_get_str(handle: dqcs_handle_t, index: ssize_t) -> *mut c_char {
+    with_arb(handle, null_mut, |arb| {
         return_string(String::from_utf8(
             arb.get_args()[receive_index(arb.get_args().len(), index, false)?].clone(),
         )?)

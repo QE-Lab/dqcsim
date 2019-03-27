@@ -51,11 +51,11 @@ TEST(cmd, getters) {
   dqcs_handle_t a;
   EXPECT_NE(a = dqcs_cmd_new("foo", "bar"), 0) << "Unexpected error: " << dqcs_error_get();
 
-  const char *s;
+  char *s;
   EXPECT_STREQ(s = dqcs_cmd_iface_get(a), "foo") << "Unexpected error: " << dqcs_error_get();
-  if (s) free((void*)s);
+  if (s) free(s);
   EXPECT_STREQ(s = dqcs_cmd_oper_get(a), "bar") << "Unexpected error: " << dqcs_error_get();
-  if (s) free((void*)s);
+  if (s) free(s);
 
   EXPECT_EQ(dqcs_cmd_iface_cmp(a, "foo"), dqcs_bool_return_t::DQCS_TRUE);
   EXPECT_EQ(dqcs_cmd_iface_cmp(a, "fOo"), dqcs_bool_return_t::DQCS_FALSE);
@@ -92,15 +92,15 @@ TEST(cmd, arb) {
 
   EXPECT_EQ(dqcs_arb_len(c), 3);
 
-  const char *s;
+  char *s;
   EXPECT_STREQ(s = dqcs_arb_json_get(c), "{\"answer\":42}");
-  if (s) free((void*)s);
+  if (s) free(s);
   EXPECT_STREQ(s = dqcs_arb_pop_str(c), "c");
-  if (s) free((void*)s);
+  if (s) free(s);
   EXPECT_STREQ(s = dqcs_arb_pop_str(c), "b");
-  if (s) free((void*)s);
+  if (s) free(s);
   EXPECT_STREQ(s = dqcs_arb_pop_str(c), "a");
-  if (s) free((void*)s);
+  if (s) free(s);
 
   EXPECT_EQ(dqcs_handle_delete(c), dqcs_return_t::DQCS_SUCCESS);
 }

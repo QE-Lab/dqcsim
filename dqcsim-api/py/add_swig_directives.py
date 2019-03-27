@@ -167,9 +167,8 @@ for line in data.split('\n\n'):
                 args = list(map(split_type, map(str.strip, arg_list)))
             ret_typ, name = split_type(name)
 
-            # RULE: all functions returning "const char *" except for
-            # dqcs_error_get return an owned string that must be freed by SWIG.
-            if ret_typ == 'const char *' and name != 'dqcs_error_get':
+            # RULE: all functions returning "char *" must be freed by SWIG.
+            if ret_typ == 'char *':
                 line = '%%newobject %s;\n%s' % (name, line)
 
             for a, b in pairwise(args):

@@ -1,5 +1,5 @@
 use super::*;
-use std::ptr::null;
+use std::ptr::null_mut;
 
 /// Returns the type of object associated with the given handle.
 #[no_mangle]
@@ -26,14 +26,14 @@ pub extern "C" fn dqcs_handle_type(h: dqcs_handle_t) -> dqcs_handle_type_t {
 /// description. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_handle_dump(h: dqcs_handle_t) -> *const c_char {
+pub extern "C" fn dqcs_handle_dump(h: dqcs_handle_t) -> *mut c_char {
     API_STATE.with(|state| {
         let mut state = state.borrow_mut();
         let result = match &state.objects.get(&h) {
             None => inv_handle(h),
             Some(x) => return_string(format!("{:#?}", x)),
         };
-        state.result_to_api(result, null)
+        state.result_to_api(result, null_mut)
     })
 }
 
