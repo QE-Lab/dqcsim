@@ -37,3 +37,6 @@ rand = "0.6"
 
 # complex numbers
 num-complex = "0.2"
+
+# foreign function stuff
+libc = "0.2"

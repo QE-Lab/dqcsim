@@ -4,7 +4,7 @@ use crate::{
     common::{
         error::{err, inv_arg, inv_op, ErrorKind, Result},
         log::Record,
-        protocol::{ArbCmd, ArbData},
+        types::{ArbCmd, ArbData},
     },
     host::{
         configuration::{PluginConfiguration, Seed},

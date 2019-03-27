@@ -1,6 +1,6 @@
 use crate::common::{
     error::{inv_arg, oe_inv_arg, Error, Result},
-    protocol::ArbData,
+    types::ArbData,
 };
 use serde::{Deserialize, Serialize};
 
@@ -165,7 +165,7 @@ impl ::std::fmt::Display for ArbCmd {
 mod test {
 
     use super::ArbCmd;
-    use crate::common::protocol::arb_data::ArbData;
+    use crate::common::types::arb_data::ArbData;
     use serde_json::json;
     use std::str::FromStr;
 

@@ -1,4 +1,4 @@
-use crate::common::protocol::{ArbData, PluginMetadata};
+use crate::common::types::{ArbData, PluginMetadata};
 use serde::{Deserialize, Serialize};
 
 /// Plugin to simulator responses.

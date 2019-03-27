@@ -1,4 +1,4 @@
-use crate::common::protocol::{ArbCmd, Cycles, Gate, QubitRef, SequenceNumber};
+use crate::common::types::{ArbCmd, Cycles, Gate, QubitRef, SequenceNumber};
 use serde::{Deserialize, Serialize};
 
 /// Gatestream requests/downstream messages.

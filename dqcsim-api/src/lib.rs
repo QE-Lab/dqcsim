@@ -70,7 +70,7 @@
 //! documentation.
 
 use dqcsim::{
-    common::{error::*, protocol::*},
+    common::{error::*, types::*},
     host::configuration::*,
 };
 use libc::*;

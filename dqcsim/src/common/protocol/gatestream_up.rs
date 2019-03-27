@@ -1,4 +1,4 @@
-use crate::common::protocol::{ArbData, Cycles, QubitMeasurement, SequenceNumber};
+use crate::common::types::{ArbData, Cycles, QubitMeasurementResult, SequenceNumber};
 use serde::{Deserialize, Serialize};
 
 /// Gatestream responses/upstream messages.
@@ -20,7 +20,7 @@ pub enum GatestreamUp {
     /// referenced qubit in its `measured` set. This is to be checked when the
     /// subsequent `CompletedUpTo` message is received, as this message does
     /// not contain the sequence number itself.
-    Measured(QubitMeasurement),
+    Measured(QubitMeasurementResult),
 
     /// Indicates that the simulation was advanced by the specified number of
     /// cycles.
