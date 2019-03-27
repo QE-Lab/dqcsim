@@ -2,6 +2,7 @@ use dqcsim::{
     common::protocol::{ArbCmd, PluginMetadata, PluginToSimulator, SimulatorToPlugin},
     host::configuration::PluginType,
     info,
+    debug,
     plugin::{
         connection::{Connection, IncomingMessage, OutgoingMessage},
         context::PluginContext,
@@ -26,10 +27,13 @@ fn main() -> Result<(), Error> {
         PluginType::Operator
     };
 
-    let metadata = PluginMetadata::new("example", "0.1.0", "mb");
+    let metadata = PluginMetadata::new("example", "mb", "0.1.0");
     // Init fn
-    let initialize: Box<dyn Fn(&mut PluginContext, Vec<ArbCmd>)> = Box::new(|_, _| {
+    let initialize: Box<dyn Fn(&mut PluginContext, Vec<ArbCmd>)> = Box::new(|_ctx, arb_cmds| {
         trace!("Running plugin init function.");
+        for arb_cmd in arb_cmds {
+            debug!("{}", arb_cmd);
+        }
     });
 
     let mut connection = Connection::new(server)?.init(plugin_type, metadata, initialize)?;
