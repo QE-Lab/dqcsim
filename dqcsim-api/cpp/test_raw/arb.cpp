@@ -27,22 +27,22 @@ TEST(json, string) {
   ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
 
   // Check default.
-  EXPECT_STREQ(dqcs_arb_json_get_str(a), "{}");
+  EXPECT_STREQ(dqcs_arb_json_get(a), "{}");
 
   // Check proper object.
-  EXPECT_EQ(dqcs_arb_json_set_str(a, "{\"hello\": \"world\"}"), dqcs_return_t::DQCS_SUCCESS);
+  EXPECT_EQ(dqcs_arb_json_set(a, "{\"hello\": \"world\"}"), dqcs_return_t::DQCS_SUCCESS);
 
   // Check proper object but wrong handle.
-  EXPECT_EQ(dqcs_arb_json_set_str(0, "{\"hello\": \"world\"}"), dqcs_return_t::DQCS_FAILURE);
+  EXPECT_EQ(dqcs_arb_json_set(0, "{\"hello\": \"world\"}"), dqcs_return_t::DQCS_FAILURE);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: handle 0 is invalid");
 
   // Check improper object.
-  EXPECT_EQ(dqcs_arb_json_set_str(a, "invalid JSON"), dqcs_return_t::DQCS_FAILURE);
+  EXPECT_EQ(dqcs_arb_json_set(a, "invalid JSON"), dqcs_return_t::DQCS_FAILURE);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: expected value at line 1 column 1");
 
   // Check that the ArbData object is what we expect.
   EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Object(\n            {\n                String(\n                    \"hello\"\n                ): String(\n                    \"world\"\n                )\n            }\n        ),\n        args: []\n    }\n)");
-  EXPECT_STREQ(dqcs_arb_json_get_str(a), "{\"hello\":\"world\"}");
+  EXPECT_STREQ(dqcs_arb_json_get(a), "{\"hello\":\"world\"}");
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);

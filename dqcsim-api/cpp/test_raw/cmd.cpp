@@ -77,7 +77,7 @@ TEST(cmd, arb) {
   dqcs_handle_t a, c;
   EXPECT_NE(c = dqcs_cmd_new("foo", "bar"), 0) << "Unexpected error: " << dqcs_error_get();
 
-  EXPECT_EQ(dqcs_arb_json_set_str(c, "{\"answer\": 42}"), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_arb_json_set(c, "{\"answer\": 42}"), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_arb_push_str(c, "a"), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_arb_push_str(c, "b"), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_arb_push_str(c, "c"), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
@@ -93,7 +93,7 @@ TEST(cmd, arb) {
   EXPECT_EQ(dqcs_arb_len(c), 3);
 
   const char *s;
-  EXPECT_STREQ(s = dqcs_arb_json_get_str(c), "{\"answer\":42}");
+  EXPECT_STREQ(s = dqcs_arb_json_get(c), "{\"answer\":42}");
   if (s) free((void*)s);
   EXPECT_STREQ(s = dqcs_arb_pop_str(c), "c");
   if (s) free((void*)s);

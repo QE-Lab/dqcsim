@@ -15,12 +15,9 @@ pub extern "C" fn dqcs_arb_new() -> dqcs_handle_t {
     })
 }
 
-/// Sets the JSON object of an `ArbData` object by means of a JSON string.
+/// Sets the JSON/CBOR object of an `ArbData` object by means of a JSON string.
 #[no_mangle]
-pub extern "C" fn dqcs_arb_json_set_str(
-    handle: dqcs_handle_t,
-    json: *const c_char,
-) -> dqcs_return_t {
+pub extern "C" fn dqcs_arb_json_set(handle: dqcs_handle_t, json: *const c_char) -> dqcs_return_t {
     with_arb(
         handle,
         || dqcs_return_t::DQCS_FAILURE,
@@ -31,14 +28,41 @@ pub extern "C" fn dqcs_arb_json_set_str(
     )
 }
 
-/// Returns the JSON object of an `ArbData` object in the form of a JSON string.
+/// Returns the JSON/CBOR object of an `ArbData` object in the form of a JSON
+/// string.
 ///
 /// On success, this **returns a newly allocated string containing the JSON
 /// string. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure, this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_arb_json_get_str(handle: dqcs_handle_t) -> *const c_char {
+pub extern "C" fn dqcs_arb_json_get(handle: dqcs_handle_t) -> *const c_char {
     with_arb(handle, null, |arb| return_string(arb.get_json()?))
+}
+
+/// Sets the JSON/CBOR object of an `ArbData` object by means of a CBOR object.
+#[no_mangle]
+pub extern "C" fn dqcs_arb_cbor_set(_handle: dqcs_handle_t, _cbor: *const c_void) -> dqcs_return_t {
+    /*with_arb( TODO
+        handle,
+        || dqcs_return_t::DQCS_FAILURE,
+        |arb| {
+            arb.set_json(receive_str(json)?)?;
+            Ok(dqcs_return_t::DQCS_SUCCESS)
+        },
+    )*/
+    dqcs_return_t::DQCS_FAILURE
+}
+
+/// Returns the JSON/CBOR object of an `ArbData` object in the form of a CBOR
+/// object.
+///
+/// On success, this **returns a newly allocated object containing the CBOR
+/// data. Free it with `free()` when you're done with it to avoid memory
+/// leaks.** On failure, this returns `NULL`.
+#[no_mangle]
+pub extern "C" fn dqcs_arb_cbor_get(_handle: dqcs_handle_t) -> *const c_void {
+    /*with_arb(handle, null, |arb| return_string(arb.get_json()?)) TODO*/
+    null()
 }
 
 /// Pushes an unstructured string argument to the back of the list.
