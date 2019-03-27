@@ -41,28 +41,43 @@ pub extern "C" fn dqcs_arb_json_get(handle: dqcs_handle_t) -> *mut c_char {
 
 /// Sets the JSON/CBOR object of an `ArbData` object by means of a CBOR object.
 #[no_mangle]
-pub extern "C" fn dqcs_arb_cbor_set(_handle: dqcs_handle_t, _cbor: *const c_void) -> dqcs_return_t {
-    /*with_arb( TODO
+pub extern "C" fn dqcs_arb_cbor_set(
+    handle: dqcs_handle_t,
+    obj: *const c_void,
+    obj_size: size_t,
+) -> dqcs_return_t {
+    with_arb(
         handle,
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
-            arb.set_json(receive_str(json)?)?;
+            arb.set_cbor(receive_raw(obj, obj_size)?)?;
             Ok(dqcs_return_t::DQCS_SUCCESS)
         },
-    )*/
-    dqcs_return_t::DQCS_FAILURE
+    )
 }
 
 /// Returns the JSON/CBOR object of an `ArbData` object in the form of a CBOR
 /// object.
 ///
-/// On success, this **returns a newly allocated object containing the CBOR
-/// data. Free it with `free()` when you're done with it to avoid memory
-/// leaks.** On failure, this returns `NULL`.
+/// If the actual size of the object differs from the specified object size,
+/// this function will copy the minimum of the actual and specified sizes
+/// number of bytes, and return what the actual size was.
+///
+/// If the specified object size is zero, `obj` is allowed to be `NULL`. You
+/// can use this to query the size before allocating an object.
+///
+/// This function returns -1 on failure.
 #[no_mangle]
-pub extern "C" fn dqcs_arb_cbor_get(_handle: dqcs_handle_t) -> *mut c_void {
-    /*with_arb(handle, null_mut, |arb| return_string(arb.get_json()?)) TODO*/
-    null_mut()
+pub extern "C" fn dqcs_arb_cbor_get(
+    handle: dqcs_handle_t,
+    obj: *mut c_void,
+    obj_size: size_t,
+) -> ssize_t {
+    with_arb(
+        handle,
+        || -1,
+        |arb| return_raw(&arb.get_cbor(), obj, obj_size),
+    )
 }
 
 /// Pushes an unstructured string argument to the back of the list.
