@@ -63,7 +63,7 @@ impl fmt::Display for SequenceNumber {
 }
 
 /// Represents a qubit measurement result.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct QubitMeasurement {
     /// The measured qubit.
     pub qubit: QubitRef,

@@ -1,8 +1,11 @@
 use dqcsim::{
-    common::protocol::{PluginToSimulator, SimulatorToPlugin},
+    common::protocol::{ArbCmd, PluginMetadata, PluginToSimulator, SimulatorToPlugin},
     host::configuration::PluginType,
     info,
-    plugin::connection::{Connection, IncomingMessage, OutgoingMessage},
+    plugin::{
+        connection::{Connection, IncomingMessage, OutgoingMessage},
+        context::PluginContext,
+    },
     trace,
 };
 use failure::Error;
@@ -23,29 +26,25 @@ fn main() -> Result<(), Error> {
         PluginType::Operator
     };
 
-    let mut connection = Connection::new(server)?;
+    let metadata = PluginMetadata::new("example", "0.1.0", "mb");
+    // Init fn
+    let initialize: Box<dyn Fn(&mut PluginContext, Vec<ArbCmd>)> = Box::new(|_, _| {
+        trace!("Running plugin init function.");
+    });
+
+    let mut connection = Connection::new(server)?.init(plugin_type, metadata, initialize)?;
 
     eprintln!("stderr");
     println!("stdout");
 
-    match connection.next_request() {
-        Ok(msg) => {
-            trace!("{:?}", msg);
-            match msg {
-                Some(IncomingMessage::Simulator(req)) => match req {
-                    SimulatorToPlugin::Abort => {
-                        connection.send(OutgoingMessage::Simulator(PluginToSimulator::Success))?;
-                        std::process::exit(0);
-                    }
-                    _ => {}
-                },
-                _ => {}
-            }
-        }
-        Err(err) => panic!("{}", err),
+    if let Ok(Some(IncomingMessage::Simulator(SimulatorToPlugin::Abort))) =
+        connection.next_request()
+    {
+        connection.send(OutgoingMessage::Simulator(PluginToSimulator::Success))?;
+    } else {
+        std::process::exit(1);
     }
 
     info!("Plugin down.");
-
     Ok(())
 }

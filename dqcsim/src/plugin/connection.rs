@@ -5,8 +5,8 @@ use crate::{
         error::{ErrorKind, Result},
         log::Record,
         protocol::{
-            ArbCmd, GatestreamDown, GatestreamUp, PluginInitializeResponse, PluginToSimulator,
-            SimulatorToPlugin,
+            ArbCmd, GatestreamDown, GatestreamUp, PluginInitializeResponse, PluginMetadata,
+            PluginToSimulator, SimulatorToPlugin,
         },
     },
     host::{configuration::PluginType, ipc::SimulatorChannel},
@@ -131,8 +131,9 @@ impl Connection {
     /// TODO: add doc ref to SimulatorToPlugin::Initialize variant.
     pub fn init(
         mut self,
-        plugin_type: PluginType,
-        plugin_initialize: Box<dyn Fn(&mut PluginContext, Vec<ArbCmd>)>,
+        typ: PluginType,
+        metadata: PluginMetadata,
+        initialize: Box<dyn Fn(&mut PluginContext, Vec<ArbCmd>)>,
     ) -> Result<Connection> {
         // Wait for the Initialize request from the Simulator.
         match if let Ok(Some(IncomingMessage::Simulator(SimulatorToPlugin::Initialize(req)))) =
@@ -143,7 +144,7 @@ impl Connection {
 
             // Make sure type reported by Plugin corresponds to
             // PluginSpecification.
-            if plugin_type != req.configuration.specification.typ {
+            if typ != req.configuration.specification.typ {
                 Err(ErrorKind::InvalidOperation(
                     "PluginType reported by Plugin does not correspond with PluginSpecification"
                         .to_string(),
@@ -169,16 +170,17 @@ impl Connection {
             // Run user init code.
             // TODO: replace this with an actual context
             let mut ctx = PluginContext {};
-            plugin_initialize(&mut ctx, req.configuration.functional.init);
+            initialize(&mut ctx, req.configuration.functional.init);
 
             // Init IPC endpoint for upstream plugin.
-            if plugin_type != PluginType::Frontend {
+            if typ != PluginType::Frontend {
                 let (upstream_server, upstream) = IpcOneShotServer::new()?;
 
                 // Send reply to simulator.
                 self.send(OutgoingMessage::Simulator(PluginToSimulator::Initialized(
                     PluginInitializeResponse {
                         upstream: Some(upstream),
+                        metadata,
                     },
                 )))?;
 
@@ -195,7 +197,10 @@ impl Connection {
             } else {
                 // Send reply to simulator.
                 self.send(OutgoingMessage::Simulator(PluginToSimulator::Initialized(
-                    PluginInitializeResponse { upstream: None },
+                    PluginInitializeResponse {
+                        upstream: None,
+                        metadata,
+                    },
                 )))?;
             }
             Ok(())
@@ -314,9 +319,8 @@ impl Connection {
 mod tests {
     use super::{Connection, IncomingMessage, OutgoingMessage};
     use crate::{
-        common::protocol::{ArbCmd, PluginToSimulator, SimulatorToPlugin},
-        host::{configuration::PluginType, ipc::SimulatorChannel},
-        plugin::context::PluginContext,
+        common::protocol::{PluginToSimulator, SimulatorToPlugin},
+        host::ipc::SimulatorChannel,
     };
     use ipc_channel::ipc::IpcOneShotServer;
 
