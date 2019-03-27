@@ -1,7 +1,7 @@
 use crate::arg_parse::{opts::*, plugins::*};
 use ansi_term::Colour;
 use dqcsim::{
-    common::protocol::*,
+    common::types::*,
     host::{configuration::*, reproduction::*},
 };
 use failure::{Error, Fail};

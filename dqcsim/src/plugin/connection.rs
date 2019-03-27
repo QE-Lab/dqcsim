@@ -23,9 +23,10 @@ use crate::{
         error::{ErrorKind, Result},
         log::Record,
         protocol::{
-            ArbCmd, GatestreamDown, GatestreamUp, PluginInitializeResponse, PluginMetadata,
-            PluginToSimulator, SimulatorToPlugin,
+            GatestreamDown, GatestreamUp, PluginInitializeResponse, PluginToSimulator,
+            SimulatorToPlugin,
         },
+        types::{ArbCmd, PluginMetadata},
     },
     host::{configuration::PluginType, ipc::SimulatorChannel},
     plugin::{

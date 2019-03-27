@@ -4,9 +4,8 @@ use crate::{
     common::{
         error::{ErrorKind, Result},
         log::Record,
-        protocol::{
-            ArbCmd, ArbData, PluginInitializeRequest, PluginToSimulator, SimulatorToPlugin,
-        },
+        protocol::{PluginInitializeRequest, PluginToSimulator, SimulatorToPlugin},
+        types::{ArbCmd, ArbData},
     },
     host::{configuration::PluginConfiguration, plugin::process::PluginProcess},
     trace,

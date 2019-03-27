@@ -1,5 +1,5 @@
 use crate::{
-    common::protocol::{ArbCmd, ArbData},
+    common::types::{ArbCmd, ArbData},
     host::configuration::PluginConfiguration,
 };
 use serde::{Deserialize, Serialize};

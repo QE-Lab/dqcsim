@@ -1,7 +1,7 @@
 use crate::common::{
     error::{err, Result},
     log,
-    protocol::{ArbCmd, ArbData, Gate, QubitRef},
+    types::{ArbCmd, ArbData, Gate, QubitRef},
 };
 
 /// Temporary (?) structure that contains the functions that the user may call

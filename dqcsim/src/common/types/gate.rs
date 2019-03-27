@@ -1,6 +1,6 @@
 use crate::common::{
     error::{inv_arg, Result},
-    protocol::{ArbData, QubitRef},
+    types::{ArbData, QubitRef},
 };
 use num_complex::Complex64;
 use serde::{Deserialize, Serialize};

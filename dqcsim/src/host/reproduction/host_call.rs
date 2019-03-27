@@ -1,6 +1,6 @@
 use crate::common::{
     error::{inv_arg, Error},
-    protocol::{ArbCmd, ArbData},
+    types::{ArbCmd, ArbData},
 };
 use enum_variants::EnumVariants;
 use serde::{Deserialize, Serialize};
@@ -106,7 +106,7 @@ impl ::std::fmt::Display for HostCall {
 mod test {
 
     use super::HostCall;
-    use crate::common::protocol::{ArbCmd, ArbData};
+    use crate::common::types::{ArbCmd, ArbData};
     use std::str::FromStr;
 
     #[test]

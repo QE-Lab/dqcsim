@@ -1,6 +1,6 @@
 use crate::arg_parse::plugins::*;
 use dqcsim::{
-    common::{log::tee_file::TeeFile, log::*, protocol::*},
+    common::{log::tee_file::TeeFile, log::*, types::*},
     host::{configuration::*, reproduction::*},
 };
 use std::path::PathBuf;

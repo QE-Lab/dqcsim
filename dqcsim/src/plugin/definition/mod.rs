@@ -1,7 +1,7 @@
 use crate::{
     common::{
         error::{err, Result},
-        protocol::{ArbCmd, ArbData, Gate, PluginMetadata, QubitMeasurement, QubitRef},
+        types::{ArbCmd, ArbData, Gate, PluginMetadata, QubitMeasurementResult, QubitRef},
     },
     host::configuration::PluginType,
     plugin::context::PluginContext,
@@ -75,7 +75,7 @@ pub struct PluginDefinition {
     ///     ctxt.gate(...)?;
     ///     let mut measurements;
     ///     for qubit in measures {
-    ///         measurements.push(QubitMeasurement {
+    ///         measurements.push(QubitMeasurementResult {
     ///             qubit,
     ///             value: !ctxt.get_measurement(qubit)?, // note the !
     ///             data: ctxt.get_measurement_arb(qubit)?,
@@ -117,7 +117,7 @@ pub struct PluginDefinition {
     /// The default for backends is to fail with a "not implemented" error;
     /// backends should always override this. This callback is never called for
     /// frontend plugins.
-    pub gate: Box<dyn Fn(&mut PluginContext, Gate) -> Result<Vec<QubitMeasurement>>>,
+    pub gate: Box<dyn Fn(&mut PluginContext, Gate) -> Result<Vec<QubitMeasurementResult>>>,
 
     /// Measurement modification callback for operators.
     ///
@@ -139,8 +139,9 @@ pub struct PluginDefinition {
     ///
     /// The default behavior for this callback is to return the measurement
     /// without modification.
-    pub modify_measurement:
-        Box<dyn Fn(&mut PluginContext, QubitMeasurement) -> Result<Vec<QubitMeasurement>>>,
+    pub modify_measurement: Box<
+        dyn Fn(&mut PluginContext, QubitMeasurementResult) -> Result<Vec<QubitMeasurementResult>>,
+    >,
 
     /// Callback for advancing time for operators and backends.
     ///
