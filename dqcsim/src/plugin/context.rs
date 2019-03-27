@@ -11,8 +11,8 @@ use crate::common::{
 pub struct PluginContext {}
 
 impl PluginContext {
-    /// Sends a log message to DQCsim by means of a Record structure.
-    pub fn log(&self, _record: log::Record) {}
+    /// Sends a log message to DQCsim by means of a LogRecord structure.
+    pub fn log(&self, _record: log::LogRecord) {}
 
     /// Sends a message to the host.
     ///

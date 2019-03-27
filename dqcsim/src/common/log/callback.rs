@@ -1,4 +1,4 @@
-use crate::common::log::{Log, Loglevel, LoglevelFilter, Record};
+use crate::common::log::{Log, LogRecord, Loglevel, LoglevelFilter};
 
 /// Log callback function structure.
 ///
@@ -9,7 +9,7 @@ pub struct LogCallback {
     /// The callback function to call.
     ///
     /// The sole argument is the log message record.
-    pub callback: Box<dyn Fn(&Record) + Send>,
+    pub callback: Box<dyn Fn(&LogRecord) + Send>,
 
     /// Verbosity level for calling the log callback function.
     pub filter: LoglevelFilter,
@@ -22,7 +22,7 @@ impl Log for LogCallback {
     fn enabled(&self, level: Loglevel) -> bool {
         LoglevelFilter::from(level) <= self.filter
     }
-    fn log(&self, record: &Record) {
+    fn log(&self, record: &LogRecord) {
         (self.callback)(record);
     }
 }

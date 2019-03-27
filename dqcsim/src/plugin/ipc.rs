@@ -2,7 +2,7 @@
 
 use crate::common::{
     error::{ErrorKind, Result},
-    log::Record,
+    log::LogRecord,
     protocol::{GatestreamDown, GatestreamUp, PluginToSimulator, SimulatorToPlugin},
 };
 use ipc_channel::ipc::{IpcReceiver, IpcSender};
@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 /// Constructed and owned by a [`Connection`] instance.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PluginChannel {
-    pub log: Option<IpcSender<Record>>,
+    pub log: Option<IpcSender<LogRecord>>,
     pub request: IpcReceiver<SimulatorToPlugin>,
     pub response: IpcSender<PluginToSimulator>,
 }
@@ -20,7 +20,7 @@ pub struct PluginChannel {
 impl PluginChannel {
     /// Returns a PluginChannel wrapper.
     pub fn new(
-        log: IpcSender<Record>,
+        log: IpcSender<LogRecord>,
         request: IpcReceiver<SimulatorToPlugin>,
         response: IpcSender<PluginToSimulator>,
     ) -> PluginChannel {
@@ -31,7 +31,7 @@ impl PluginChannel {
         }
     }
     /// Take log channel out the channel wrapper.
-    pub fn log(&mut self) -> Option<IpcSender<Record>> {
+    pub fn log(&mut self) -> Option<IpcSender<LogRecord>> {
         self.log.take()
     }
 }

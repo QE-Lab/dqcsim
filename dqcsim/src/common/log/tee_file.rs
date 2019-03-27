@@ -1,4 +1,4 @@
-use crate::common::log::{Log, Loglevel, LoglevelFilter, Record};
+use crate::common::log::{Log, LogRecord, Loglevel, LoglevelFilter};
 use failure::Fail;
 use serde::{Deserialize, Serialize};
 use std::{fs::File, io::Write, path::PathBuf};
@@ -63,7 +63,7 @@ impl Log for TeeFile {
     fn enabled(&self, level: Loglevel) -> bool {
         LoglevelFilter::from(level) <= self.filter
     }
-    fn log(&self, record: &Record) {
+    fn log(&self, record: &LogRecord) {
         if let Some(mut buffer) = self.buffer.as_ref() {
             writeln!(buffer, "{}", record).expect("Failed to write to file");
         }

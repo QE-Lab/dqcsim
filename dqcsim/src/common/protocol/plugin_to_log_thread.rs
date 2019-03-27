@@ -1,3 +1,3 @@
-use crate::common::log::Record;
+use crate::common::log::LogRecord;
 
-pub type PluginToLogThread = Record;
+pub type PluginToLogThread = LogRecord;

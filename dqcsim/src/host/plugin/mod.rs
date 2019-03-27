@@ -3,7 +3,7 @@ pub mod process;
 use crate::{
     common::{
         error::{ErrorKind, Result},
-        log::Record,
+        log::LogRecord,
         protocol::{PluginInitializeRequest, PluginToSimulator, SimulatorToPlugin},
         types::{ArbCmd, ArbData},
     },
@@ -69,7 +69,7 @@ impl Plugin {
         self.process.as_ref().unwrap()
     }
 
-    pub fn spawn(&mut self, log_sender: crossbeam_channel::Sender<Record>) -> Result<()> {
+    pub fn spawn(&mut self, log_sender: crossbeam_channel::Sender<LogRecord>) -> Result<()> {
         let process = PluginProcess::new(
             &self.configuration,
             self.command.arg(&self.configuration.name),

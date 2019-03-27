@@ -10,7 +10,7 @@
 //! [`LogProxy`]: ./struct.LogProxy.html
 //! [`Log`]: ../trait.Log.html
 
-use crate::common::log::{Log, Loglevel, LoglevelFilter, Record, Sender};
+use crate::common::log::{Log, LogRecord, Loglevel, LoglevelFilter, Sender};
 
 /// A [`LogProxy`] is a logger implementation (`Log`) which sends log records
 /// using its Sender side of a Channel.
@@ -23,7 +23,7 @@ pub struct LogProxy<T: Sender> {
     sender: T,
 }
 
-impl<T: Sender<Item = Record>> LogProxy<T> {
+impl<T: Sender<Item = LogRecord>> LogProxy<T> {
     fn new(name: impl Into<String>, level: LoglevelFilter, sender: T) -> LogProxy<T> {
         LogProxy {
             name: name.into(),
@@ -38,14 +38,14 @@ impl<T: Sender<Item = Record>> LogProxy<T> {
     }
 }
 
-impl<T: Sender<Item = Record>> Log for LogProxy<T> {
+impl<T: Sender<Item = LogRecord>> Log for LogProxy<T> {
     fn name(&self) -> &str {
         self.name.as_ref()
     }
     fn enabled(&self, level: Loglevel) -> bool {
         LoglevelFilter::from(level) <= self.level
     }
-    fn log(&self, record: &Record) {
+    fn log(&self, record: &LogRecord) {
         self.sender
             .send(record.clone())
             .expect("LogProxy failed to send record");

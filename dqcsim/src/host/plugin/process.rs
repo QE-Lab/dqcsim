@@ -1,7 +1,7 @@
 use crate::{
     common::{
         error::Result,
-        log::{router::route, stdio::proxy_stdio, Record},
+        log::{router::route, stdio::proxy_stdio, LogRecord},
         protocol::{PluginToSimulator, SimulatorToPlugin},
     },
     host::{
@@ -27,7 +27,7 @@ impl PluginProcess {
     pub fn new(
         configuration: &PluginConfiguration,
         command: &mut Command,
-        sender: Sender<Record>,
+        sender: Sender<LogRecord>,
     ) -> Result<PluginProcess> {
         trace!("Constructing PluginProcess: {:?}", command);
 

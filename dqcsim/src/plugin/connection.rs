@@ -21,7 +21,7 @@
 use crate::{
     common::{
         error::{ErrorKind, Result},
-        log::Record,
+        log::LogRecord,
         protocol::{
             GatestreamDown, GatestreamUp, PluginInitializeResponse, PluginToSimulator,
             SimulatorToPlugin,
@@ -106,7 +106,7 @@ pub struct Connection {
     upstream: Option<IpcSender<GatestreamUp>>,
 
     /// Log record sender. Consumed during log initialization.
-    log: Option<IpcSender<Record>>,
+    log: Option<IpcSender<LogRecord>>,
 }
 
 impl Connection {

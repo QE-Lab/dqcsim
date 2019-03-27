@@ -3,7 +3,7 @@
 use crate::{
     common::{
         error::Result,
-        log::{init, proxy::LogProxy, tee_file::TeeFile, Log, Record},
+        log::{init, proxy::LogProxy, tee_file::TeeFile, Log, LogRecord},
     },
     host::configuration::PluginConfiguration,
 };
@@ -20,7 +20,7 @@ use ipc_channel::ipc::IpcSender;
 /// forward log records to output files.
 pub fn setup_logging(
     configuration: &PluginConfiguration,
-    log_channel: IpcSender<Record>,
+    log_channel: IpcSender<LogRecord>,
 ) -> Result<()> {
     let mut loggers = Vec::with_capacity(1 + configuration.nonfunctional.tee_files.len());
     loggers.push(LogProxy::boxed(

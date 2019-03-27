@@ -3,7 +3,7 @@
 use crate::{
     common::{
         error::{err, inv_arg, inv_op, ErrorKind, Result},
-        log::Record,
+        log::LogRecord,
         types::{ArbCmd, ArbData},
     },
     host::{
@@ -72,7 +72,7 @@ impl Simulation {
     /// Spawn the plugins in the Simulation.
     ///
     /// Required to run before [`init`].
-    pub fn spawn(&mut self, log_sender: crossbeam_channel::Sender<Record>) -> Result<()> {
+    pub fn spawn(&mut self, log_sender: crossbeam_channel::Sender<LogRecord>) -> Result<()> {
         match self.state {
             SimulationState::Constructed => {
                 let (_, errors): (_, Vec<_>) = self

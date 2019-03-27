@@ -9,7 +9,7 @@
 //! # Usage
 //!
 //! Start by spawning a [`LogThread`] from the main thread. Next, initialize a
-//! [`LogProxy`] instance per thread or child process. A log [`Record`] can be
+//! [`LogProxy`] instance per thread or child process. A log [`LogRecord`] can be
 //! generated using the provided [`macros`]. The thread-local [`LogProxy`]
 //! forwards the records to the [`LogThread`] for logging.
 //!
@@ -30,14 +30,14 @@
 //! ## LogProxy
 //!
 //! A [`LogProxy`] forwards log [`Records`] to a [`LogThread`]. It logs records
-//! with it's logger name if the generated log [`Record`] [`Loglevel`] is
+//! with it's logger name if the generated log [`LogRecord`] [`Loglevel`] is
 //! smaller or equal than the configured [`LoglevelFilter`] of the
 //! [`LogProxy`].
 //!
 //! ## TeeFile
 //!
 //! A [`TeeFile`] forwards log [`Records`] to a file. It logs records with it's
-//! logger name if the generated log [`Record`] [`Loglevel`] is smaller or
+//! logger name if the generated log [`LogRecord`] [`Loglevel`] is smaller or
 //! equal than the configured [`LoglevelFilter`] of the [`TeeFile`].
 //!
 //! # Basic Example
@@ -92,8 +92,8 @@
 //! [`spawn`]: ./thread/struct.LogThread.html#method.spawn
 //! [`LogProxy`]: ./proxy/struct.LogProxy.html
 //! [`TeeFile`]: ./tee_file/struct.TeeFile.html
-//! [`Record`]: ./struct.Record.html
-//! [`Records`]: ./struct.Record.html
+//! [`LogRecord`]: ./struct.LogRecord.html
+//! [`Records`]: ./struct.LogRecord.html
 //! [`Loglevel`]: ./enum.Loglevel.html
 //! [`LoglevelFilter`]: ./enum.LoglevelFilter.html
 //! [`LogLevelFilter::Off`]: ./enum.LogLevelFilter.html
@@ -131,7 +131,7 @@ use std::{cell::RefCell, fmt};
 ///
 /// ```rust
 /// use dqcsim::{
-///     common::log::{Log, Loglevel, Record}
+///     common::log::{Log, Loglevel, LogRecord}
 /// };
 ///
 /// struct SimpleLogger {}
@@ -146,7 +146,7 @@ use std::{cell::RefCell, fmt};
 ///         true
 ///     }
 ///
-///     fn log(&self, record: &Record) {
+///     fn log(&self, record: &LogRecord) {
 ///         // The SimpleLogger logs to Standard Output.
 ///         println!("{}", record);
 ///     }
@@ -158,7 +158,7 @@ pub trait Log {
     /// Returns true if the provided loglevel is enabled
     fn enabled(&self, level: Loglevel) -> bool;
     /// Log the incoming record
-    fn log(&self, record: &Record);
+    fn log(&self, record: &LogRecord);
 }
 
 thread_local! {
@@ -293,9 +293,9 @@ impl From<Loglevel> for LoglevelFilter {
 
 /// Log record metadata.
 ///
-/// The log metadata attached to a [`Record`].
+/// The log metadata attached to a [`LogRecord`].
 ///
-/// [`Record`]: ./struct.Record.html
+/// [`LogRecord`]: ./struct.LogRecord.html
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Metadata {
     /// Loglevel of the log record.
@@ -312,13 +312,13 @@ pub struct Metadata {
 ///
 /// A log record consists of some metadata and a payload.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Record {
+pub struct LogRecord {
     payload: String,
     metadata: Metadata,
     logger: String,
 }
 
-impl Record {
+impl LogRecord {
     pub fn payload(&self) -> &str {
         &self.payload
     }
@@ -348,7 +348,7 @@ impl Record {
     }
 }
 
-impl Record {
+impl LogRecord {
     #[cfg_attr(feature = "cargo-clippy", allow(clippy::too_many_arguments))]
     pub fn new(
         logger: impl Into<String>,
@@ -359,8 +359,8 @@ impl Record {
         line: u32,
         process: u32,
         thread: u64,
-    ) -> Record {
-        Record {
+    ) -> LogRecord {
+        LogRecord {
             payload: payload.into(),
             metadata: Metadata {
                 level,
@@ -376,7 +376,7 @@ impl Record {
     }
 }
 
-impl fmt::Display for Record {
+impl fmt::Display for LogRecord {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -433,7 +433,7 @@ macro_rules! log {
             if let Some(ref loggers) = *loggers.borrow() {
                 loggers.iter().for_each(|logger| {
                     if logger.enabled($lvl) {
-                        logger.log(&$crate::common::log::Record::new(
+                        logger.log(&$crate::common::log::LogRecord::new(
                             logger.name(),
                             format!($($arg)+),
                             $lvl,

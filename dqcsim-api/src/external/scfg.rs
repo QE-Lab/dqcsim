@@ -226,7 +226,7 @@ pub extern "C" fn dqcs_scfg_log_callback(
 
             if let Some(callback) = callback {
                 sim.log_callback = Some(LogCallback {
-                    callback: Box::new(move |record: &log::Record| {
+                    callback: Box::new(move |record: &log::LogRecord| {
                         || -> Result<()> {
                             let ts_sec;
                             let ts_nano;

@@ -4,8 +4,8 @@ use crate::{
     common::{
         error::{oe_log_err, Result},
         log::{
-            callback::LogCallback, deinit, init, proxy::LogProxy, tee_file::TeeFile, Log, Loglevel,
-            LoglevelFilter, Record, PID,
+            callback::LogCallback, deinit, init, proxy::LogProxy, tee_file::TeeFile, Log,
+            LogRecord, Loglevel, LoglevelFilter, PID,
         },
     },
     trace,
@@ -15,7 +15,7 @@ use term::stderr;
 
 #[derive(Debug)]
 pub struct LogThread {
-    sender: Option<crossbeam_channel::Sender<Record>>,
+    sender: Option<crossbeam_channel::Sender<LogRecord>>,
     handler: Option<thread::JoinHandle<Result<()>>>,
 }
 
@@ -35,7 +35,7 @@ impl LogThread {
         tee_files: Vec<TeeFile>,
     ) -> Result<LogThread> {
         // Create the log channel.
-        let (sender, receiver): (_, crossbeam_channel::Receiver<Record>) =
+        let (sender, receiver): (_, crossbeam_channel::Receiver<LogRecord>) =
             crossbeam_channel::unbounded();
 
         // Spawn the local channel log thread.
@@ -99,7 +99,7 @@ impl LogThread {
                         t.reset()?;
                     }
 
-                    // Record level
+                    // LogRecord level
                     if supports_colors {
                         t.fg(color)?;
                     }
@@ -130,7 +130,7 @@ impl LogThread {
                     }
                     t.reset()?;
 
-                    // Record
+                    // LogRecord
                     if supports_colors && record.level() == Loglevel::Trace {
                         t.fg(color)?;
                     }
@@ -164,7 +164,7 @@ impl LogThread {
             handler: Some(handler),
         })
     }
-    pub fn get_sender(&self) -> Option<crossbeam_channel::Sender<Record>> {
+    pub fn get_sender(&self) -> Option<crossbeam_channel::Sender<LogRecord>> {
         self.sender.clone()
     }
 }

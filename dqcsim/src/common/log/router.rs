@@ -1,7 +1,7 @@
 //! Router functionality.
 
 use crate::{
-    common::log::{init, proxy::LogProxy, LoglevelFilter, Record},
+    common::log::{init, proxy::LogProxy, LogRecord, LoglevelFilter},
     trace,
 };
 use crossbeam_channel::Sender;
@@ -11,8 +11,8 @@ use ipc_channel::ipc::IpcReceiver;
 pub fn route(
     name: impl Into<String>,
     level: LoglevelFilter,
-    receiver: IpcReceiver<Record>,
-    sender: Sender<Record>,
+    receiver: IpcReceiver<LogRecord>,
+    sender: Sender<LogRecord>,
 ) {
     let name = name.into();
     std::thread::spawn(move || {

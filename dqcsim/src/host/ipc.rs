@@ -1,7 +1,7 @@
 use crate::{
     common::{
         error::{err, Result},
-        log::Record,
+        log::LogRecord,
         protocol::{PluginToSimulator, SimulatorToPlugin},
     },
     trace,
@@ -18,7 +18,7 @@ use std::{
 /// The Simulator side of a Simulator to Plugin channel.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SimulatorChannel {
-    log: Option<IpcReceiver<Record>>,
+    log: Option<IpcReceiver<LogRecord>>,
     pub request: IpcSender<SimulatorToPlugin>,
     pub response: IpcReceiver<PluginToSimulator>,
 }
@@ -26,7 +26,7 @@ pub struct SimulatorChannel {
 impl SimulatorChannel {
     /// Returns a SimulatorChannel wrapper.
     pub fn new(
-        log: IpcReceiver<Record>,
+        log: IpcReceiver<LogRecord>,
         request: IpcSender<SimulatorToPlugin>,
         response: IpcReceiver<PluginToSimulator>,
     ) -> SimulatorChannel {
@@ -38,7 +38,7 @@ impl SimulatorChannel {
     }
 
     /// Take log channel out the channel wrapper.
-    pub fn log(&mut self) -> Option<IpcReceiver<Record>> {
+    pub fn log(&mut self) -> Option<IpcReceiver<LogRecord>> {
         self.log.take()
     }
 }
