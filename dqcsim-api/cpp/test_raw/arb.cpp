@@ -41,7 +41,7 @@ TEST(json, string) {
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: expected value at line 1 column 1");
 
   // Check that the ArbData object is what we expect.
-  EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Object(\n            {\n                \"hello\": String(\n                    \"world\"\n                )\n            }\n        ),\n        args: []\n    }\n)");
+  EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Object(\n            {\n                String(\n                    \"hello\"\n                ): String(\n                    \"world\"\n                )\n            }\n        ),\n        args: []\n    }\n)");
   EXPECT_STREQ(dqcs_arb_json_get_str(a), "{\"hello\":\"world\"}");
 
   // Delete handle.

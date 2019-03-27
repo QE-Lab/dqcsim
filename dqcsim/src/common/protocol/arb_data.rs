@@ -1,13 +1,31 @@
 use crate::common::error::{inv_arg, Error, Result};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+use std::fmt;
+
+const EMPTY_CBOR: &[u8] = &[0xBF, 0xFF];
 
 /// Represents an ArbData structure, consisting of an (unparsed, TODO) JSON
 /// string and a list of binary strings.
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, PartialEq, Deserialize, Serialize)]
 pub struct ArbData {
-    pub json: serde_json::Value,
-    pub args: Vec<Vec<u8>>,
+    cbor: Vec<u8>,
+    args: Vec<Vec<u8>>,
+}
+
+impl fmt::Debug for ArbData {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        /*let mut output: Vec<u8> = vec![];
+        let mut de = serde_cbor::de::Deserializer::from_slice(&self.cbor);
+        let mut ser = serde_json::Serializer::pretty(&mut output);
+        serde_transcode::transcode(&mut de, &mut ser).unwrap();
+        let output = String::from_utf8(output).unwrap();*/
+        let value: serde_cbor::Value = serde_cbor::from_slice(&self.cbor).unwrap();
+
+        fmt.debug_struct("ArbData")
+            .field("json", &value)
+            .field("args", &self.args)
+            .finish()
+    }
 }
 
 impl ArbData {
@@ -15,7 +33,7 @@ impl ArbData {
     ///
     /// *Only* the JSON object is taken from the iterator; that is, if there is
     /// additional data behind the JSON object, this data remains.
-    fn scan_json_arg(it: &mut impl Iterator<Item = char>) -> Result<serde_json::Value> {
+    fn scan_json_arg(it: &mut impl Iterator<Item = char>) -> Result<Vec<u8>> {
         // First character must always be a {
         if it.next() != Some('{') {
             inv_arg("expected JSON argument while parsing ArbData")?
@@ -76,13 +94,16 @@ impl ArbData {
                         obj_depth -= 1;
                         if obj_depth == 0 {
                             // Finished scanning the JSON string. Now
-                            // deserialize it.
-                            match serde_json::from_str(&json) {
-                                Ok(j) => return Ok(j),
+                            // transmute it.
+                            let mut cbor = vec![];
+                            let mut de = serde_json::Deserializer::from_str(&json);
+                            let mut ser = serde_cbor::ser::Serializer::new(&mut cbor);
+                            match serde_transcode::transcode(&mut de, &mut ser) {
                                 Err(e) => inv_arg(format!(
                                     "error parsing JSON component of ArbData, {}: {}",
                                     json, e
                                 ))?,
+                                _ => return Ok(cbor),
                             };
                         }
                     }
@@ -184,9 +205,110 @@ impl ArbData {
     /// the default JSON object and zero binary arguments, use `default()`.
     pub fn from_str_args_only(s: &str) -> Result<Self> {
         Ok(ArbData {
-            json: json!({}),
+            cbor: EMPTY_CBOR.to_owned(),
             args: ArbData::scan_unstructured_args(&mut s.chars())?,
         })
+    }
+
+    /// Construct an `ArbData` with just binary arguments and {} for the
+    /// JSON/CBOR object.
+    pub fn from_args(args: impl Into<Vec<Vec<u8>>>) -> Self {
+        ArbData {
+            cbor: EMPTY_CBOR.to_owned(),
+            args: args.into(),
+        }
+    }
+
+    /// Construct an `ArbData` from a CBOR object and binary arguments, without
+    /// ensuring that the CBOR object is valid.
+    pub fn from_cbor_unchecked(cbor: impl Into<Vec<u8>>, args: impl Into<Vec<Vec<u8>>>) -> Self {
+        ArbData {
+            cbor: cbor.into(),
+            args: args.into(),
+        }
+    }
+
+    /// Construct an `ArbData` from a CBOR object and binary arguments, while
+    /// ensuring that the CBOR object is valid.
+    pub fn from_cbor(cbor: impl AsRef<[u8]>, args: impl Into<Vec<Vec<u8>>>) -> Result<Self> {
+        let mut arb_data = ArbData {
+            cbor: vec![],
+            args: args.into(),
+        };
+        arb_data.set_cbor(cbor)?;
+        Ok(arb_data)
+    }
+
+    /// Construct an `ArbData` from a JSON object and binary arguments, while
+    /// ensuring that the JSON object is valid.
+    pub fn from_json(json: impl AsRef<str>, args: impl Into<Vec<Vec<u8>>>) -> Result<Self> {
+        let mut arb_data = ArbData {
+            cbor: vec![],
+            args: args.into(),
+        };
+        arb_data.set_json(json)?;
+        Ok(arb_data)
+    }
+
+    /// Returns the JSON/CBOR data field as a JSON string.
+    pub fn get_json(&self) -> Result<String> {
+        let mut output: Vec<u8> = vec![];
+        let mut de = serde_cbor::de::Deserializer::from_slice(&self.cbor);
+        let mut ser = serde_json::Serializer::new(&mut output);
+        serde_transcode::transcode(&mut de, &mut ser)?;
+        Ok(String::from_utf8(output)?)
+    }
+
+    /// Returns the JSON/CBOR data field as a CBOR string.
+    pub fn get_cbor(&self) -> &[u8] {
+        &self.cbor
+    }
+
+    /// Provides a reference to the binary argument vector.
+    pub fn get_args(&self) -> &[Vec<u8>] {
+        &self.args
+    }
+
+    /// Provides a mutable reference to the binary argument vector.
+    pub fn get_args_mut(&mut self) -> &mut Vec<Vec<u8>> {
+        &mut self.args
+    }
+
+    /// Sets the JSON/CBOR data field by means of a JSON string.
+    pub fn set_json(&mut self, json: impl AsRef<str>) -> Result<()> {
+        let mut output: Vec<u8> = vec![];
+        let mut de = serde_json::Deserializer::from_str(json.as_ref());
+        let mut ser = serde_cbor::ser::Serializer::new(&mut output);
+        if let Err(e) = serde_transcode::transcode(&mut de, &mut ser) {
+            inv_arg(e.to_string())
+        } else {
+            self.cbor = output;
+            Ok(())
+        }
+    }
+
+    /// Sets the JSON/CBOR data field by means of a CBOR string.
+    pub fn set_cbor(&mut self, cbor: impl AsRef<[u8]>) -> Result<()> {
+        let mut output: Vec<u8> = vec![];
+        let mut de = serde_cbor::de::Deserializer::from_slice(cbor.as_ref());
+        let mut ser = serde_cbor::ser::Serializer::new(&mut output);
+        if let Err(e) = serde_transcode::transcode(&mut de, &mut ser) {
+            inv_arg(e.to_string())
+        } else {
+            self.cbor = output;
+            Ok(())
+        }
+    }
+
+    /// Sets the JSON/CBOR data field by means of a CBOR string without
+    /// ensuring that the CBOR is valid.
+    pub fn set_cbor_unchecked(&mut self, cbor: impl Into<Vec<u8>>) {
+        self.cbor = cbor.into();
+    }
+
+    /// Provides a reference to the binary argument vector.
+    pub fn set_args(&mut self, args: impl Into<Vec<Vec<u8>>>) {
+        self.args = args.into();
     }
 }
 
@@ -210,7 +332,7 @@ impl ::std::str::FromStr for ArbData {
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         let mut iterator = s.chars();
         let mut output = ArbData {
-            json: ArbData::scan_json_arg(&mut iterator)?,
+            cbor: ArbData::scan_json_arg(&mut iterator)?,
             args: vec![],
         };
         match iterator.next() {
@@ -231,7 +353,7 @@ impl ::std::fmt::Display for ArbData {
     /// Turns the ArbData object into a string representation that can be
     /// parsed by `from_str()`.
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        let mut output = self.json.to_string();
+        let mut output = self.get_json().map_err(|_| std::fmt::Error)?;
         for arg in self.args.iter() {
             output += ",";
             if arg.iter().any(|byte| *byte < 32 || *byte > 126) {
@@ -257,7 +379,7 @@ impl Default for ArbData {
     /// arguments.
     fn default() -> Self {
         ArbData {
-            json: json!({}),
+            cbor: EMPTY_CBOR.to_owned(),
             args: vec![],
         }
     }
@@ -265,19 +387,15 @@ impl Default for ArbData {
 
 #[cfg(test)]
 mod test {
-
-    use super::{json, ArbData};
+    use super::ArbData;
+    use serde_json::json;
     use std::str::FromStr;
 
     fn test_from_str_good(input: &str, exp_json: serde_json::Value, exp_args: Vec<&[u8]>) {
-        let exp_args = exp_args.into_iter().map(|x| x.to_vec()).collect();
-        assert_eq!(
-            ArbData::from_str(input).unwrap(),
-            ArbData {
-                json: exp_json,
-                args: exp_args
-            }
-        );
+        let actual = ArbData::from_str(input).unwrap();
+        let exp_args: Vec<Vec<u8>> = exp_args.into_iter().map(|x| x.to_vec()).collect();
+        assert_eq!(actual.get_args(), &exp_args[..]);
+        assert_eq!(actual.get_json().unwrap(), exp_json.to_string());
     }
 
     fn test_from_str_fail(input: &str, msg: &str) {
@@ -314,8 +432,8 @@ mod test {
     }
 
     fn test_to_str(json: serde_json::Value, args: Vec<&[u8]>, exp_output: &str) {
-        let args = args.into_iter().map(|x| x.to_vec()).collect();
-        let data = ArbData { json, args };
+        let args: Vec<Vec<u8>> = args.into_iter().map(|x| x.to_vec()).collect();
+        let data = ArbData::from_json(json.to_string(), args).unwrap();
         let string = data.to_string();
         assert_eq!(string, exp_output);
         assert_eq!(ArbData::from_str(&string).unwrap(), data);

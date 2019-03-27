@@ -25,7 +25,7 @@ pub extern "C" fn dqcs_arb_json_set_str(
         handle,
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
-            arb.json = serde_json::from_str(receive_str(json)?)?;
+            arb.set_json(receive_str(json)?)?;
             Ok(dqcs_return_t::DQCS_SUCCESS)
         },
     )
@@ -38,9 +38,7 @@ pub extern "C" fn dqcs_arb_json_set_str(
 /// leaks.** On failure, this returns `NULL`.
 #[no_mangle]
 pub extern "C" fn dqcs_arb_json_get_str(handle: dqcs_handle_t) -> *const c_char {
-    with_arb(handle, null, |arb| {
-        return_string(serde_json::to_string(&arb.json)?)
-    })
+    with_arb(handle, null, |arb| return_string(arb.get_json()?))
 }
 
 /// Pushes an unstructured string argument to the back of the list.
@@ -50,7 +48,7 @@ pub extern "C" fn dqcs_arb_push_str(handle: dqcs_handle_t, s: *const c_char) -> 
         handle,
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
-            arb.args.push(receive_str(s)?.bytes().collect());
+            arb.get_args_mut().push(receive_str(s)?.bytes().collect());
             Ok(dqcs_return_t::DQCS_SUCCESS)
         },
     )
@@ -67,7 +65,8 @@ pub extern "C" fn dqcs_arb_push_raw(
         handle,
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
-            arb.args.push(receive_raw(obj, obj_size)?.to_owned());
+            arb.get_args_mut()
+                .push(receive_raw(obj, obj_size)?.to_owned());
             Ok(dqcs_return_t::DQCS_SUCCESS)
         },
     )
@@ -84,7 +83,7 @@ pub extern "C" fn dqcs_arb_push_raw(
 pub extern "C" fn dqcs_arb_pop_str(handle: dqcs_handle_t) -> *const c_char {
     with_arb(handle, null, |arb| {
         return_string(String::from_utf8(
-            arb.args
+            arb.get_args_mut()
                 .pop()
                 .ok_or_else(oe_inv_arg("pop from empty list"))?,
         )?)
@@ -118,7 +117,7 @@ pub extern "C" fn dqcs_arb_pop_raw(
         || -1,
         |arb| {
             return_raw(
-                &arb.args
+                &arb.get_args_mut()
                     .pop()
                     .ok_or_else(oe_inv_arg("pop from empty list"))?,
                 obj,
@@ -151,8 +150,9 @@ pub extern "C" fn dqcs_arb_insert_str(
         handle,
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
-            arb.args.insert(
-                receive_index(arb.args.len(), index, true)?,
+            let len = arb.get_args().len();
+            arb.get_args_mut().insert(
+                receive_index(len, index, true)?,
                 receive_str(s)?.bytes().collect(),
             );
             Ok(dqcs_return_t::DQCS_SUCCESS)
@@ -173,8 +173,9 @@ pub extern "C" fn dqcs_arb_insert_raw(
         handle,
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
-            arb.args.insert(
-                receive_index(arb.args.len(), index, true)?,
+            let len = arb.get_args().len();
+            arb.get_args_mut().insert(
+                receive_index(len, index, true)?,
                 receive_raw(obj, obj_size)?.to_owned(),
             );
             Ok(dqcs_return_t::DQCS_SUCCESS)
@@ -189,8 +190,8 @@ pub extern "C" fn dqcs_arb_remove(handle: dqcs_handle_t, index: ssize_t) -> dqcs
         handle,
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
-            arb.args
-                .remove(receive_index(arb.args.len(), index, false)?);
+            let len = arb.get_args().len();
+            arb.get_args_mut().remove(receive_index(len, index, false)?);
             Ok(dqcs_return_t::DQCS_SUCCESS)
         },
     )
@@ -209,8 +210,8 @@ pub extern "C" fn dqcs_arb_set_str(
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
             let mut s: Vec<u8> = receive_str(s)?.bytes().collect();
-            let index = receive_index(arb.args.len(), index, false)?;
-            let arg = &mut arb.args[index];
+            let index = receive_index(arb.get_args().len(), index, false)?;
+            let arg = &mut arb.get_args_mut()[index];
             arg.clear();
             arg.append(&mut s);
             Ok(dqcs_return_t::DQCS_SUCCESS)
@@ -232,8 +233,8 @@ pub extern "C" fn dqcs_arb_set_raw(
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
             let mut s: Vec<u8> = receive_raw(obj, obj_size)?.to_owned();
-            let index = receive_index(arb.args.len(), index, false)?;
-            let arg = &mut arb.args[index];
+            let index = receive_index(arb.get_args().len(), index, false)?;
+            let arg = &mut arb.get_args_mut()[index];
             arg.clear();
             arg.append(&mut s);
             Ok(dqcs_return_t::DQCS_SUCCESS)
@@ -250,7 +251,7 @@ pub extern "C" fn dqcs_arb_set_raw(
 pub extern "C" fn dqcs_arb_get_str(handle: dqcs_handle_t, index: ssize_t) -> *const c_char {
     with_arb(handle, null, |arb| {
         return_string(String::from_utf8(
-            arb.args[receive_index(arb.args.len(), index, false)?].clone(),
+            arb.get_args()[receive_index(arb.get_args().len(), index, false)?].clone(),
         )?)
     })
 }
@@ -278,7 +279,7 @@ pub extern "C" fn dqcs_arb_get_raw(
         || -1,
         |arb| {
             return_raw(
-                &arb.args[receive_index(arb.args.len(), index, false)?],
+                &arb.get_args()[receive_index(arb.get_args().len(), index, false)?],
                 obj,
                 obj_size,
             )
@@ -298,7 +299,7 @@ pub extern "C" fn dqcs_arb_get_size(handle: dqcs_handle_t, index: ssize_t) -> ss
 /// Returns the number of unstructured arguments, or -1 to indicate failure.
 #[no_mangle]
 pub extern "C" fn dqcs_arb_len(handle: dqcs_handle_t) -> ssize_t {
-    with_arb(handle, || -1, |arb| Ok(arb.args.len() as ssize_t))
+    with_arb(handle, || -1, |arb| Ok(arb.get_args().len() as ssize_t))
 }
 
 /// Clears the unstructured argument list.
@@ -308,7 +309,7 @@ pub extern "C" fn dqcs_arb_clear(handle: dqcs_handle_t) -> dqcs_return_t {
         handle,
         || dqcs_return_t::DQCS_FAILURE,
         |arb| {
-            arb.args.clear();
+            arb.get_args_mut().clear();
             Ok(dqcs_return_t::DQCS_SUCCESS)
         },
     )
@@ -323,8 +324,8 @@ pub extern "C" fn dqcs_arb_assign(dest: dqcs_handle_t, src: dqcs_handle_t) -> dq
             dest,
             || dqcs_return_t::DQCS_FAILURE,
             |dest_arb| {
-                dest_arb.json = src_clone.json;
-                dest_arb.args = src_clone.args;
+                dest_arb.set_cbor_unchecked(src_clone.get_cbor());
+                dest_arb.set_args(src_clone.get_args());
                 Ok(dqcs_return_t::DQCS_SUCCESS)
             },
         ),

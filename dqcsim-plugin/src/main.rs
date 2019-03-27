@@ -1,8 +1,8 @@
 use dqcsim::{
     common::protocol::{ArbCmd, PluginMetadata, PluginToSimulator, SimulatorToPlugin},
+    debug,
     host::configuration::PluginType,
     info,
-    debug,
     plugin::{
         connection::{Connection, IncomingMessage, OutgoingMessage},
         context::PluginContext,
