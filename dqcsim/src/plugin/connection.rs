@@ -37,7 +37,7 @@ use crate::{
     trace,
 };
 use ipc_channel::ipc::{IpcOneShotServer, IpcReceiverSet, IpcSelectionResult, IpcSender};
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 /// Incoming enum used to map incoming requests in the IpcReceiverSet used in
 /// the Connection wrapper.
@@ -95,7 +95,7 @@ pub struct Connection {
     /// Map to label incoming requests to their channel.
     incoming_map: HashMap<u64, Incoming>,
     /// Buffer for incoming requests.
-    incoming_buffer: Vec<IncomingMessage>,
+    incoming_buffer: VecDeque<IncomingMessage>,
 
     /// Optional Downstream channel. Is None for Backend plugins.
     downstream: Option<DownstreamChannel>,
@@ -160,7 +160,7 @@ impl Connection {
         Ok(Connection {
             incoming,
             incoming_map,
-            incoming_buffer: Vec::new(),
+            incoming_buffer: VecDeque::new(),
             response: channel.response,
             downstream: None,
             upstream: None,
@@ -178,7 +178,7 @@ impl Connection {
     pub fn init(
         mut self,
         typ: PluginType,
-        metadata: PluginMetadata,
+        metadata: impl Into<PluginMetadata>,
         initialize: Box<dyn Fn(&mut PluginContext, Vec<ArbCmd>)>,
     ) -> Result<Connection> {
         // Wait for the initialization request from the Simulator.
@@ -226,7 +226,7 @@ impl Connection {
                 self.send(OutgoingMessage::Simulator(PluginToSimulator::Initialized(
                     PluginInitializeResponse {
                         upstream: Some(upstream),
-                        metadata,
+                        metadata: metadata.into(),
                     },
                 )))?;
 
@@ -245,7 +245,7 @@ impl Connection {
                 self.send(OutgoingMessage::Simulator(PluginToSimulator::Initialized(
                     PluginInitializeResponse {
                         upstream: None,
-                        metadata,
+                        metadata: metadata.into(),
                     },
                 )))?;
             }
@@ -312,35 +312,26 @@ impl Connection {
     /// already closed. Returns Ok(None) if both request channels are closed.
     /// This method blocks until a new request is available.
     pub fn next_request(&mut self) -> Result<Option<IncomingMessage>> {
-        // First drain the buffer.
-        if !self.incoming_buffer.is_empty() {
-            Ok(Some(self.incoming_buffer.remove(0)))
-        } else {
-            // Check if all channels are closed.
-            let selection = self.incoming.select()?;
-            if selection.is_empty() {
-                Ok(None)
-            } else {
-                // Store incoming message in the buffer.
-                for event in selection {
-                    match event {
-                        IpcSelectionResult::MessageReceived(id, msg) => {
-                            if let Some(incoming) = self.incoming_map.get(&id) {
-                                self.incoming_buffer.push(match incoming {
-                                    Incoming::Simulator => IncomingMessage::Simulator(msg.to()?),
-                                    Incoming::Upstream => IncomingMessage::Upstream(msg.to()?),
-                                });
-                            }
-                        }
-                        IpcSelectionResult::ChannelClosed(id) => {
-                            trace!("Channel closed: {:?}", self.incoming_map.get(&id));
+        // Fetch new stuff if buffer is empty.
+        if self.incoming_buffer.is_empty() {
+            // Store incoming message in the buffer.
+            for event in self.incoming.select()? {
+                match event {
+                    IpcSelectionResult::MessageReceived(id, msg) => {
+                        if let Some(incoming) = self.incoming_map.get(&id) {
+                            self.incoming_buffer.push_back(match incoming {
+                                Incoming::Simulator => IncomingMessage::Simulator(msg.to()?),
+                                Incoming::Upstream => IncomingMessage::Upstream(msg.to()?),
+                            });
                         }
                     }
+                    IpcSelectionResult::ChannelClosed(id) => {
+                        trace!("Channel closed: {:?}", self.incoming_map.get(&id));
+                    }
                 }
-                // Recurse.
-                self.next_request()
             }
         }
+        Ok(self.incoming_buffer.pop_front())
     }
 
     /// Fetch next response from downstream plugin.
