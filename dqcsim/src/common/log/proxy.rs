@@ -67,7 +67,7 @@ mod tests {
         )
         .unwrap();
 
-        let log_endpoint = log_thread.get_sender().unwrap();
+        let log_endpoint = log_thread.get_sender();
 
         let log_proxy = LogProxy::boxed("fatal", LoglevelFilter::Fatal, log_endpoint.clone());
         assert!(log_proxy.enabled(Loglevel::Fatal));

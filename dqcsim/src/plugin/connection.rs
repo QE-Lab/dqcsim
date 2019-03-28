@@ -21,7 +21,6 @@
 use crate::{
     common::{
         error::{ErrorKind, Result},
-        log::LogRecord,
         protocol::{
             GatestreamDown, GatestreamUp, PluginInitializeResponse, PluginToSimulator,
             SimulatorToPlugin,
@@ -104,9 +103,6 @@ pub struct Connection {
     response: IpcSender<PluginToSimulator>,
     /// Optional Upstream sender. Is None for Frontend plugins.
     upstream: Option<IpcSender<GatestreamUp>>,
-
-    /// Log record sender. Consumed during log initialization.
-    log: Option<IpcSender<LogRecord>>,
 }
 
 impl Connection {
@@ -120,15 +116,14 @@ impl Connection {
         let connect = IpcSender::connect(simulator.into())?;
 
         // Construct the Simulator and Plugin channel pair.
-        let (log, log_rx) = ipc_channel::ipc::channel()?;
         let (request_tx, request) = ipc_channel::ipc::channel()?;
         let (response, response_rx) = ipc_channel::ipc::channel()?;
 
         // Send channel to the simulator.
-        connect.send(SimulatorChannel::new(log_rx, request_tx, response_rx))?;
+        connect.send(SimulatorChannel::new(request_tx, response_rx))?;
 
         // Return the PluginChannel.
-        Ok(PluginChannel::new(log, request, response))
+        Ok(PluginChannel::new(request, response))
     }
 
     /// Construct a Connection wrapper instance.
@@ -164,7 +159,6 @@ impl Connection {
             response: channel.response,
             downstream: None,
             upstream: None,
-            log: channel.log,
         })
     }
 
@@ -186,7 +180,7 @@ impl Connection {
             self.next_request()
         {
             // Setup logging.
-            setup_logging(&req.configuration, self.log.take().unwrap())?;
+            setup_logging(&req.configuration, req.log)?;
 
             // Make sure type reported by Plugin corresponds to
             // PluginSpecification.
@@ -373,7 +367,6 @@ mod tests {
         let plugin = std::thread::spawn(move || {
             // Get the PluginChannel
             let channel = Connection::connect(server_name).unwrap();
-            assert!(channel.log.is_some());
 
             // Wait for a request.
             let req = channel.request.recv();
@@ -386,11 +379,7 @@ mod tests {
         });
 
         // Simulator gets the SimulatorChannel.
-        let (_, mut channel): (_, SimulatorChannel) = server.accept().unwrap();
-
-        // Take out the log channel.
-        assert!(channel.log().is_some());
-        assert!(channel.log().is_none());
+        let (_, channel): (_, SimulatorChannel) = server.accept().unwrap();
 
         // Send a request.
         let req = channel.request.send(SimulatorToPlugin::Abort);

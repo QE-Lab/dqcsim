@@ -13,9 +13,9 @@ use crate::{
 use std::thread;
 use term::stderr;
 
-#[derive(Debug)]
 pub struct LogThread {
     sender: Option<crossbeam_channel::Sender<LogRecord>>,
+    ipc_sender: Option<ipc_channel::ipc::IpcSender<LogRecord>>,
     handler: Option<thread::JoinHandle<Result<()>>>,
 }
 
@@ -37,6 +37,9 @@ impl LogThread {
         // Create the log channel.
         let (sender, receiver): (_, crossbeam_channel::Receiver<LogRecord>) =
             crossbeam_channel::unbounded();
+
+        // Create the IPC log channel.
+        let (ipc_sender, ipc_receiver) = ipc_channel::ipc::channel()?;
 
         // Spawn the local channel log thread.
         let handler = thread::spawn(move || {
@@ -155,17 +158,26 @@ impl LogThread {
             Ok(())
         });
 
+        // Start the IPC proxy.
+        ipc_channel::router::ROUTER
+            .route_ipc_receiver_to_crossbeam_sender(ipc_receiver, sender.clone());
+
         // Start a LogProxy for the current thread.
         init(vec![LogProxy::boxed(name, proxy_level, sender.clone())])?;
         trace!("LogThread started");
 
         Ok(LogThread {
             sender: Some(sender),
+            ipc_sender: Some(ipc_sender),
             handler: Some(handler),
         })
     }
-    pub fn get_sender(&self) -> Option<crossbeam_channel::Sender<LogRecord>> {
-        self.sender.clone()
+    pub fn get_sender(&self) -> crossbeam_channel::Sender<LogRecord> {
+        self.sender.clone().unwrap()
+    }
+
+    pub fn get_ipc_sender(&self) -> ipc_channel::ipc::IpcSender<LogRecord> {
+        self.ipc_sender.clone().unwrap()
     }
 }
 
@@ -177,8 +189,9 @@ impl Drop for LogThread {
         // Disconnect the LogProxy running in the main thread.
         deinit().expect("Failed to deinitialize thread-local logger");
 
-        // Drop the owned sender side to disconnect the log channel.
+        // Drop the owned senders to disconnect the log channels.
         self.sender = None;
+        self.ipc_sender = None;
 
         // Wait for the logger thread to be dropped.
         self.handler

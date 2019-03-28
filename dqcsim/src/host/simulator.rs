@@ -41,7 +41,7 @@ use crate::{
 /// [`SimulatorConfiguration`]: ../configuration/struct.SimulatorConfiguration.html
 /// [`Simulation`]: ../simulation/struct.Simulation.html
 /// [`LogThread`]: ../log/thread/struct.LogThread.html
-#[derive(Debug)]
+
 pub struct Simulator {
     /// LogThread used by this Simulator for logging.
     log_thread: LogThread,
@@ -105,9 +105,10 @@ impl Simulator {
     /// [`Simulation`].
     pub fn init(&mut self) -> Result<()> {
         trace!("Initialize Simulator");
-        let sender = self.log_thread.get_sender().unwrap();
+        let sender = self.log_thread.get_sender();
+        let ipc_sender = self.log_thread.get_ipc_sender();
         self.as_mut().spawn(sender)?;
-        self.as_mut().init()
+        self.as_mut().init(ipc_sender)
     }
 
     /// Optimizes the source verbosity levels, such that they are no more

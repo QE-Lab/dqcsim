@@ -1,7 +1,11 @@
 use crate::{
-    common::types::{ArbCmd, ArbData},
+    common::{
+        log::LogRecord,
+        types::{ArbCmd, ArbData},
+    },
     host::configuration::PluginConfiguration,
 };
+use ipc_channel::ipc::IpcSender;
 use serde::{Deserialize, Serialize};
 
 /// Simulator/host to plugin requests.
@@ -69,7 +73,7 @@ pub enum SimulatorToPlugin {
 }
 
 /// Plugin initialization request. See `SimulatorToPlugin::Initialize`.
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PluginInitializeRequest {
     /// Gatestream endpoint for the downstream plugin to connect to.
     ///
@@ -96,6 +100,16 @@ pub struct PluginInitializeRequest {
     /// filtering. This prevents log messages from being sent through the IPC
     /// connection (which costs performance) unnecessarily.
     pub configuration: PluginConfiguration,
+
+    /// Sender side of the log channel. Can be used by a Plugin to send log
+    /// records to the simulator.
+    pub log: IpcSender<LogRecord>,
+}
+
+impl PartialEq for PluginInitializeRequest {
+    fn eq(&self, other: &PluginInitializeRequest) -> bool {
+        self.downstream == other.downstream && self.configuration == other.configuration
+    }
 }
 
 /// Frontend run request. See `SimulatorToPlugin::RunRequest`.

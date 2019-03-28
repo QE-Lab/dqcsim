@@ -12,6 +12,7 @@ use crate::{
     },
     trace,
 };
+use ipc_channel::ipc::IpcSender;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum SimulationState {
@@ -96,14 +97,14 @@ impl Simulation {
     ///
     /// Initialize the [`Simulation`] by spawning the plugin processes and
     /// initializing the plugins.
-    pub fn init(&mut self) -> Result<()> {
+    pub fn init(&mut self, log: IpcSender<LogRecord>) -> Result<()> {
         trace!("Initialize Simulation");
         match self.state {
             SimulationState::Spawned => {
                 self.pipeline
                     .first()
                     .unwrap()
-                    .init(None, self.pipeline.iter().skip(1).by_ref())?;
+                    .init(None, self.pipeline.iter().skip(1).by_ref(), log)?;
                     self.state = SimulationState::Initialized;
                     Ok(())
             },

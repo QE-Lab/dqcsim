@@ -25,7 +25,9 @@
 //! ## LogCallback
 //!
 //! A [`LogThread`] can invoke a [`LogCallback`] function for incoming records.
-//! This is enabled by passing a [`LogCallback`] (with a [`LoglevelFilter`] bigger than [`LogLevelFilter::Off`]) to the [`callback`] argument of the [`spawn`] method of [`LogThread`].
+//! This is enabled by passing a [`LogCallback`] (with a [`LoglevelFilter`]
+//! bigger than [`LogLevelFilter::Off`]) to the [`callback`] argument of the
+//! [`spawn`] method of [`LogThread`].
 //!
 //! ## LogProxy
 //!
@@ -62,7 +64,7 @@
 //! .unwrap();
 //!
 //! // Grab a copy of the log thread sender to use in the log proxy.
-//! let log_endpoint = log_thread.get_sender().unwrap();
+//! let log_endpoint = log_thread.get_sender();
 //!
 //! // Spawn an other thread.
 //! std::thread::spawn(move || {
@@ -109,7 +111,6 @@ pub use ref_thread_local as _ref_thread_local;
 pub mod callback;
 pub mod channel;
 pub mod proxy;
-pub mod router;
 pub mod stdio;
 pub mod tee_file;
 pub mod thread;
