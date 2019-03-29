@@ -1,7 +1,7 @@
 use crate::{
     common::{
         error::Result,
-        log::{router::route, stdio::proxy_stdio, LogRecord},
+        log::{stdio::proxy_stdio, LogRecord},
         protocol::{PluginToSimulator, SimulatorToPlugin},
     },
     host::{
@@ -31,19 +31,12 @@ impl PluginProcess {
     ) -> Result<PluginProcess> {
         trace!("Constructing PluginProcess: {:?}", command);
 
-        let (mut child, mut channel) = start(
+        let (mut child, channel) = start(
             command,
             &configuration.nonfunctional.accept_timeout,
             &configuration.nonfunctional.stderr_mode,
             &configuration.nonfunctional.stdout_mode,
         )?;
-
-        route(
-            configuration.name.as_str(),
-            configuration.nonfunctional.verbosity,
-            channel.log().unwrap(),
-            sender.clone(),
-        );
 
         // Log piped stdout/stderr
         if let StreamCaptureMode::Capture(level) = configuration.nonfunctional.stderr_mode {

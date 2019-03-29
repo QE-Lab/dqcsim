@@ -10,6 +10,7 @@ use crate::{
     host::{configuration::PluginConfiguration, plugin::process::PluginProcess},
     trace,
 };
+use ipc_channel::ipc::IpcSender;
 use std::process::Command;
 
 /// The Plugin structure used in a Simulator.
@@ -87,6 +88,7 @@ impl Plugin {
         &self,
         downstream: Option<String>,
         upstream: &mut impl Iterator<Item = &'a Plugin>,
+        log: IpcSender<LogRecord>,
     ) -> Result<()> {
         trace!("Initialize Plugin: {}", self.configuration.name);
         self.process_ref()
@@ -94,13 +96,14 @@ impl Plugin {
                 PluginInitializeRequest {
                     downstream,
                     configuration: self.configuration.clone(),
+                    log: log.clone(),
                 },
             )))?;
         if let PluginToSimulator::Initialized(response) = self.process_ref().wait_for_reply() {
             trace!("Got reponse: {:?}", response);
             if let Some(upstream_plugin) = upstream.next() {
                 trace!("Connecting to upstream plugin");
-                upstream_plugin.init(response.upstream, upstream)?;
+                upstream_plugin.init(response.upstream, upstream, log)?;
             }
             Ok(())
         } else {
