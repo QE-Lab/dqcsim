@@ -117,8 +117,8 @@ use api_state::*;
 // Note that the above means that user callback functions are NOT allowed to
 // call any API function that takes a reference to DQCSIM_STATE. Fortunately,
 // there is (currently!) no need for them to ever do that.
-mod dqcsim_state;
-use dqcsim_state::*;
+//mod dqcsim_state;
+//use dqcsim_state::*;
 
 // Module containing utility functions and auxiliary data structures.
 mod util;

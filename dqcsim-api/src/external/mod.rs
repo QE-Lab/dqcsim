@@ -18,15 +18,15 @@ pub use arb::*;
 mod cmd;
 pub use cmd::*;
 
-// dqcs_pcfg_* functions, for constructing `PluginConfiguration` objects.
-mod pcfg;
-pub use pcfg::*;
-
-// dqcs_scfg_* functions, for constructing `SimulatorConfiguration` objects.
-mod scfg;
-pub use scfg::*;
-
-// dqcs_accel_* functions, for talking to the simulator from a host
-// perspective.
-mod accel;
-pub use accel::*;
+// // dqcs_pcfg_* functions, for constructing `PluginConfiguration` objects.
+// mod pcfg;
+// pub use pcfg::*;
+//
+// // dqcs_scfg_* functions, for constructing `SimulatorConfiguration` objects.
+// mod scfg;
+// pub use scfg::*;
+//
+// // dqcs_accel_* functions, for talking to the simulator from a host
+// // perspective.
+// mod accel;
+// pub use accel::*;

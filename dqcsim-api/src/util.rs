@@ -1,39 +1,11 @@
 use super::*;
 
-/// Shorthand for producing an unsupported handle error.
-pub fn unsup_handle<T>(handle: dqcs_handle_t, iface: impl AsRef<str>) -> Result<T> {
-    inv_arg(format!(
-        "handle {} does not support the {} interface",
-        handle,
-        iface.as_ref()
-    ))
-}
-
-/// Shorthand for producing an invalid handle error.
-pub fn inv_handle<T>(handle: dqcs_handle_t) -> Result<T> {
-    inv_arg(format!("handle {} is invalid", handle))
-}
-
 /// Convenience function for converting a C string to a Rust `str`.
 pub fn receive_str<'a>(s: *const c_char) -> Result<&'a str> {
     if s.is_null() {
         inv_arg("unexpected NULL string")
     } else {
         Ok(unsafe { CStr::from_ptr(s) }.to_str()?)
-    }
-}
-
-/// Convenience function for returning an owned string to C land.
-///
-/// On success, this **returns a newly allocated string. It must be freed
-/// with `free()` by the caller.**
-pub fn return_string(s: impl AsRef<str>) -> Result<*mut c_char> {
-    let s = CString::new(s.as_ref())?;
-    let s = unsafe { strdup(s.as_ptr()) as *mut c_char };
-    if s.is_null() {
-        err("failed to allocate return value")
-    } else {
-        Ok(s)
     }
 }
 
@@ -95,7 +67,7 @@ pub fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t
         inv_arg(format!("index out of range: {}", index))
     }
 }
-
+/*
 /// User data structure for callbacks.
 ///
 /// All callbacks carry a user-defined `void*` with them, which is passed to
@@ -150,113 +122,4 @@ impl CallbackUserData {
         self.data
     }
 }
-
-/// Convenience function for writing functions that operate on `ArbData`s.
-pub fn with_arb<T>(
-    handle: dqcs_handle_t,
-    error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut ArbData) -> Result<T>,
-) -> T {
-    with_api_state(error, |mut state| match state.objects.get_mut(&handle) {
-        Some(APIObject::ArbData(x)) => call(x),
-        Some(APIObject::ArbCmd(x)) => call(x.data_mut()),
-        Some(_) => unsup_handle(handle, "arb"),
-        None => inv_handle(handle),
-    })
-}
-
-/// Convenience function for taking an ArbData from the object store in the
-/// context of the accelerator or plugin interface layer.
-pub fn take_arb<T>(
-    handle: dqcs_handle_t,
-    call: impl FnOnce(&mut ArbData) -> Result<T>,
-) -> Result<T> {
-    // Take the ArbData from the object store.
-    let mut maybe_ob = API_STATE.with(|state| state.borrow_mut().objects.remove(&handle));
-
-    // Call the callback.
-    let ret = match maybe_ob.as_mut() {
-        Some(APIObject::ArbData(x)) => call(x),
-        Some(APIObject::ArbCmd(x)) => call(x.data_mut()),
-        Some(_) => unsup_handle(handle, "arb"),
-        None => inv_handle(handle),
-    };
-
-    // If the callback of handle loading failed but we did get an object,
-    // insert it back into the handle store.
-    if let Some(ob) = maybe_ob {
-        if ret.is_err() {
-            API_STATE.with(|state| state.borrow_mut().objects.insert(handle, ob));
-        }
-    }
-
-    ret
-}
-
-/// Convenience function for writing functions that operate on `ArbCmd`s.
-pub fn with_cmd<T>(
-    handle: dqcs_handle_t,
-    error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut ArbCmd) -> Result<T>,
-) -> T {
-    with_api_state(error, |mut state| match state.objects.get_mut(&handle) {
-        Some(APIObject::ArbCmd(x)) => call(x),
-        Some(_) => unsup_handle(handle, "cmd"),
-        None => inv_handle(handle),
-    })
-}
-
-/// Convenience function for taking an ArbCmd from the object store in the
-/// context of the accelerator or plugin interface layer.
-pub fn take_cmd<T>(
-    handle: dqcs_handle_t,
-    call: impl FnOnce(&mut ArbCmd) -> Result<T>,
-) -> Result<T> {
-    // Take the ArbCmd from the object store.
-    let mut maybe_ob = API_STATE.with(|state| state.borrow_mut().objects.remove(&handle));
-
-    // Call the callback.
-    let ret = match maybe_ob.as_mut() {
-        Some(APIObject::ArbCmd(x)) => call(x),
-        Some(_) => unsup_handle(handle, "cmd"),
-        None => inv_handle(handle),
-    };
-
-    // If the callback of handle loading failed but we did get an object,
-    // insert it back into the handle store.
-    if let Some(ob) = maybe_ob {
-        if ret.is_err() {
-            API_STATE.with(|state| state.borrow_mut().objects.insert(handle, ob));
-        }
-    }
-
-    ret
-}
-
-/// Convenience function for writing functions that operate on
-/// `PluginConfiguration`s.
-pub fn with_pcfg<T>(
-    handle: dqcs_handle_t,
-    error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut PluginConfiguration) -> Result<T>,
-) -> T {
-    with_api_state(error, |mut state| match state.objects.get_mut(&handle) {
-        Some(APIObject::PluginConfiguration(x)) => call(x),
-        Some(_) => unsup_handle(handle, "pcfg"),
-        None => inv_handle(handle),
-    })
-}
-
-/// Convenience function for writing functions that operate on
-/// `SimulatorConfiguration`s.
-pub fn with_scfg<T>(
-    handle: dqcs_handle_t,
-    error: impl FnOnce() -> T,
-    call: impl FnOnce(&mut SimulatorConfiguration) -> Result<T>,
-) -> T {
-    with_api_state(error, |mut state| match state.objects.get_mut(&handle) {
-        Some(APIObject::SimulatorConfiguration(x)) => call(x),
-        Some(_) => unsup_handle(handle, "scfg"),
-        None => inv_handle(handle),
-    })
-}
+*/

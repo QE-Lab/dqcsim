@@ -81,6 +81,12 @@ impl ArbCmd {
     }
 }
 
+impl Into<ArbData> for ArbCmd {
+    fn into(self) -> ArbData {
+        self.data
+    }
+}
+
 impl ::std::str::FromStr for ArbCmd {
     type Err = Error;
 
