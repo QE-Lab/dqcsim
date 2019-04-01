@@ -109,16 +109,15 @@
 pub use ref_thread_local as _ref_thread_local;
 
 pub mod callback;
-pub mod channel;
 pub mod proxy;
 pub mod stdio;
 pub mod tee_file;
 pub mod thread;
 
 use crate::common::{
+    channel::Sender,
     error,
     error::{ErrorKind, ResultExt},
-    log::channel::Sender,
 };
 use enum_variants::EnumVariants;
 use lazy_static::lazy_static;

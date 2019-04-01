@@ -1,6 +1,4 @@
 //! Simulator driver.
-//!
-//!
 
 use crate::{
     common::{
@@ -19,29 +17,10 @@ use crate::{
 /// A [`Simulator`] instance wraps around a [`Simulation`] run and a
 /// [`LogThread`]. Its behavior is defined by a [`SimulatorConfiguration`].
 ///
-/// # Example
-///
-/// ```rust
-/// use dqcsim::{
-///     host::{
-///         configuration::SimulatorConfiguration,
-///         simulator::Simulator,
-///     },
-///     common::error::Result,
-/// };
-///
-/// // Note this is an example, the default configuration is not usable.
-/// let configuration = SimulatorConfiguration::default();
-///
-/// let simulator: Result<Simulator> = Simulator::try_from(configuration);
-///
-/// ```
-///
 /// [`Simulator`]: ./struct.Simulator.html
 /// [`SimulatorConfiguration`]: ../configuration/struct.SimulatorConfiguration.html
 /// [`Simulation`]: ../simulation/struct.Simulation.html
 /// [`LogThread`]: ../log/thread/struct.LogThread.html
-
 pub struct Simulator {
     /// LogThread used by this Simulator for logging.
     log_thread: LogThread,
@@ -53,12 +32,14 @@ pub struct Simulator {
     simulation: Option<Simulation>,
 }
 
+// TODO: matthijs remove this
 impl AsRef<Simulation> for Simulator {
     fn as_ref(&self) -> &Simulation {
         self.simulation.as_ref().unwrap()
     }
 }
 
+// TODO: matthijs remove this
 impl AsMut<Simulation> for Simulator {
     fn as_mut(&mut self) -> &mut Simulation {
         self.simulation.as_mut().unwrap()
@@ -72,7 +53,6 @@ impl Simulator {
     /// Potential errors causes are related to spawning the LogThread and
     /// constructing the Simulation.
     pub fn new(mut configuration: SimulatorConfiguration) -> Result<Simulator> {
-        Simulator::optimize_loglevels(&mut configuration);
         Simulator::check_plugin_list(&mut configuration)?;
         dbg!(&configuration);
         let mut sim = Simulator::try_from(configuration)?;
@@ -91,7 +71,8 @@ impl Simulator {
 
         trace!("Constructing Simulator");
 
-        let simulation = Simulation::new(configuration.plugins, configuration.seed)?;
+        // let simulation = Simulation::new(configuration.plugins, configuration.seed)?;
+        let simulation = Simulation::new(vec![], configuration.seed)?;
 
         Ok(Simulator {
             log_thread,
@@ -105,10 +86,9 @@ impl Simulator {
     /// [`Simulation`].
     pub fn init(&mut self) -> Result<()> {
         trace!("Initialize Simulator");
-        let sender = self.log_thread.get_sender();
-        let ipc_sender = self.log_thread.get_ipc_sender();
-        self.as_mut().spawn(sender)?;
-        self.as_mut().init(ipc_sender)
+        let simulation = self.simulation.as_mut().unwrap();
+        simulation.spawn(&self.log_thread)?;
+        simulation.init(&self.log_thread)
     }
 
     /// Optimizes the source verbosity levels, such that they are no more
@@ -214,41 +194,41 @@ impl Drop for Simulator {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::Simulator;
-    use crate::host::configuration::{
-        PluginConfiguration, PluginSpecification, PluginType, SimulatorConfiguration,
-    };
-
-    #[test]
-    fn default_configuration() {
-        // Default SimulatorConfiguration is not supposed to work.
-        let simulator = Simulator::try_from(SimulatorConfiguration::default());
-        assert!(simulator.is_err());
-        assert_eq!(
-            format!("{}", simulator.err().unwrap()),
-            "Invalid argument: Simulation must consist of at least a frontend and backend"
-        );
-    }
-
-    #[test]
-    fn frontend_backend() {
-        let mut configuration = SimulatorConfiguration::default();
-
-        let frontend = PluginConfiguration::new(
-            "frontend",
-            PluginSpecification::from_sugar("/bin/sh", PluginType::Frontend).unwrap(),
-        );
-        let backend = PluginConfiguration::new(
-            "backend",
-            PluginSpecification::from_sugar("/bin/sh", PluginType::Backend).unwrap(),
-        );
-
-        configuration.plugins.push(frontend);
-        configuration.plugins.push(backend);
-
-        let simulator = Simulator::try_from(configuration);
-        assert!(simulator.is_ok());
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use super::Simulator;
+//     use crate::host::configuration::{
+//         PluginConfiguration, PluginSpecification, PluginType, SimulatorConfiguration,
+//     };
+//
+//     #[test]
+//     fn default_configuration() {
+//         // Default SimulatorConfiguration is not supposed to work.
+//         let simulator = Simulator::try_from(SimulatorConfiguration::default());
+//         assert!(simulator.is_err());
+//         assert_eq!(
+//             format!("{}", simulator.err().unwrap()),
+//             "Invalid argument: Simulation must consist of at least a frontend and backend"
+//         );
+//     }
+//
+//     #[test]
+//     fn frontend_backend() {
+//         let mut configuration = SimulatorConfiguration::default();
+//
+//         let frontend = PluginConfiguration::new(
+//             "frontend",
+//             PluginSpecification::from_sugar("/bin/sh", PluginType::Frontend).unwrap(),
+//         );
+//         let backend = PluginConfiguration::new(
+//             "backend",
+//             PluginSpecification::from_sugar("/bin/sh", PluginType::Backend).unwrap(),
+//         );
+//
+//         configuration.plugins.push(frontend);
+//         configuration.plugins.push(backend);
+//
+//         let simulator = Simulator::try_from(configuration);
+//         assert!(simulator.is_ok());
+//     }
+// }

@@ -1,153 +1,74 @@
 pub mod process;
+// pub mod thread;
 
 use crate::{
     common::{
-        error::{ErrorKind, Result},
-        log::LogRecord,
-        protocol::{PluginInitializeRequest, PluginToSimulator, SimulatorToPlugin},
+        error::{err, inv_op, Result},
+        log::thread::LogThread,
+        protocol::{
+            PluginInitializeRequest, PluginInitializeResponse, PluginToSimulator, SimulatorToPlugin,
+        },
         types::{ArbCmd, ArbData},
     },
-    host::{configuration::PluginConfiguration, plugin::process::PluginProcess},
-    trace,
+    host::configuration::{PluginConfiguration, PluginType},
 };
-use ipc_channel::ipc::IpcSender;
-use std::process::Command;
 
-/// The Plugin structure used in a Simulator.
-#[derive(Debug)]
-pub struct Plugin {
-    /// The Plugin configuration.
-    configuration: PluginConfiguration,
-    /// The Plugin process.
-    process: Option<PluginProcess>,
-    /// Command
-    command: Command,
+/// The Plugin trait, implemented by all Plugins used in a Simulation.
+pub trait Plugin {
+    /// Spawn the Plugin. The Plugin should spawn the actual plugin code and
+    /// prepare the communication channel. After spawning both the [`send`] and
+    /// [`receive`] functions should be available. The simulator will continue
+    /// to send initialization requests via the commmunication channel.
+    ///
+    /// The logger is provided by the simulator, and plugins can use the
+    /// reference to the log thread to make the neccesary copies of log senders
+    /// to use with their log proxies.k
+    fn spawn(&mut self, logger: &LogThread) -> Result<()>;
+
+    fn configuration(&self) -> PluginConfiguration;
+
+    fn send(&mut self, msg: SimulatorToPlugin) -> Result<()>;
+    fn recv(&mut self) -> Result<PluginToSimulator>;
 }
 
 impl Plugin {
-    /// Construct a new Plugin instance.
-    ///
-    /// Create a Plugin instance.
-    pub fn try_from(configuration: PluginConfiguration) -> Result<Plugin> {
-        trace!("Constructing Plugin: {}", &configuration.name);
-
-        let target = &configuration.specification.executable;
-
-        if !target.is_file() {
-            Err(ErrorKind::InvalidArgument(format!(
-                "Plugin ({:?}) not found",
-                target
-            )))?
-        }
-
-        let mut command = Command::new(target);
-
-        // We don't check for existence as this is not neccesarily a existing path.
-        // It's the responsibility of the plugin to check this.
-        if configuration.specification.script.is_some() {
-            command.arg(configuration.specification.script.as_ref().unwrap());
-        }
-
-        Ok(Plugin {
-            configuration,
-            process: None,
-            command,
-        })
+    pub fn name(&self) -> String {
+        self.configuration().name
+    }
+    pub fn plugin_type(&self) -> PluginType {
+        self.configuration().specification.typ
     }
 
-    /// Returns the name of the plugin.
-    pub fn name(&self) -> &str {
-        &self.configuration.name
-    }
-
-    /// Returns a reference to the plugin's command.
-    #[doc(hidden)]
-    pub fn command(&self) -> &Command {
-        &self.command
-    }
-
-    fn process_ref(&self) -> &PluginProcess {
-        self.process.as_ref().unwrap()
-    }
-
-    pub fn spawn(&mut self, log_sender: crossbeam_channel::Sender<LogRecord>) -> Result<()> {
-        let process = PluginProcess::new(
-            &self.configuration,
-            self.command.arg(&self.configuration.name),
-            log_sender,
-        )?;
-        self.process = Some(process);
-        Ok(())
-    }
-
-    /// Initialize the Plugin.
-    ///
-    /// Initializes the [`Plugin`] by sending an initialization
-    /// [`Request::Init`] to the [`PluginProcess`].
-    pub fn init<'a>(
-        &self,
+    /// Sends an `PluginInitializeRequest` to this plugin.
+    pub fn init(
+        &mut self,
+        logger: &LogThread,
         downstream: Option<String>,
-        upstream: &mut impl Iterator<Item = &'a Plugin>,
-        log: IpcSender<LogRecord>,
-    ) -> Result<()> {
-        trace!("Initialize Plugin: {}", self.configuration.name);
-        self.process_ref()
-            .request(SimulatorToPlugin::Initialize(Box::new(
-                PluginInitializeRequest {
-                    downstream,
-                    configuration: self.configuration.clone(),
-                    log: log.clone(),
-                },
-            )))?;
-        if let PluginToSimulator::Initialized(response) = self.process_ref().wait_for_reply() {
-            trace!("Got reponse: {:?}", response);
-            if let Some(upstream_plugin) = upstream.next() {
-                trace!("Connecting to upstream plugin");
-                upstream_plugin.init(response.upstream, upstream, log)?;
-            }
-            Ok(())
-        } else {
-            Err(ErrorKind::InvalidOperation(
-                "Plugin intialization failed".to_string(),
-            ))?
+    ) -> Result<PluginInitializeResponse> {
+        self.send(SimulatorToPlugin::Initialize(Box::new(
+            PluginInitializeRequest {
+                downstream,
+                configuration: self.configuration(),
+                log: logger.get_ipc_sender(),
+            },
+        )))?;
+
+        match self.recv()? {
+            PluginToSimulator::Initialized(response) => Ok(response),
+            PluginToSimulator::Failure(data) => err(data),
+            _ => inv_op("Unexpected response from plugin"),
         }
     }
 
     /// Sends an `ArbCmd` message to this plugin.
-    #[allow(unused)] // TODO: remove <--
     pub fn arb(&mut self, cmd: impl Into<ArbCmd>) -> Result<ArbData> {
-        // TODO
-        Err(ErrorKind::Other("Not yet implemented".to_string()))?
+        self.send(SimulatorToPlugin::ArbRequest(cmd.into()))?;
+        match self.recv()? {
+            PluginToSimulator::ArbResponse(data) => Ok(data),
+            PluginToSimulator::Failure(data) => err(data),
+            _ => inv_op("Unexpected response from plugin"),
+        }
     }
 }
 
-impl Drop for Plugin {
-    fn drop(&mut self) {
-        trace!("Dropping Plugin: {}", self.configuration.name);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::Plugin;
-    use crate::host::configuration::{PluginConfiguration, PluginSpecification, PluginType};
-    use std::process::Command;
-
-    #[test]
-    fn with_script() {
-        let current = std::env::current_exe().unwrap();
-
-        let spec =
-            PluginSpecification::new(current.clone(), Some(current.clone()), PluginType::Operator);
-
-        let configuration = PluginConfiguration::new("test", spec);
-        let plugin = Plugin::try_from(configuration);
-        assert!(plugin.is_ok());
-
-        let plugin = plugin.unwrap();
-        assert_eq!(
-            format!("{:?}", plugin.command()),
-            format!("{:?}", Command::new(current.clone()).arg(current))
-        );
-    }
-}
+// pub trait FrontEnd {}?
