@@ -107,7 +107,7 @@ pub struct Gate {
     matrix: Vec<InternalComplex64>,
 
     /// User-defined classical data to pass along with the gate.
-    data: ArbData,
+    pub data: ArbData,
 }
 
 impl Gate {
@@ -281,10 +281,5 @@ impl Gate {
                     .collect(),
             )
         }
-    }
-
-    /// Returns the user data associated with this gate.
-    pub fn get_data(&self) -> &ArbData {
-        &self.data
     }
 }

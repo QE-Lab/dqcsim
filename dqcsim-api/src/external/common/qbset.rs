@@ -14,6 +14,7 @@ pub extern "C" fn dqcs_qbset_new() -> dqcs_handle_t {
 /// Returns whether the given qubit set contains the given qubit,
 ///
 /// This function will fail if the specified qubit was already part of the set.
+#[no_mangle]
 pub extern "C" fn dqcs_qbset_contains(
     qbset: dqcs_handle_t,
     qubit: dqcs_qubit_t,
@@ -29,6 +30,7 @@ pub extern "C" fn dqcs_qbset_contains(
 /// Pushes a qubit reference into a qubit reference set.
 ///
 /// This function will fail if the specified qubit was already part of the set.
+#[no_mangle]
 pub extern "C" fn dqcs_qbset_push(qbset: dqcs_handle_t, qubit: dqcs_qubit_t) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(qbset as &mut QubitReferenceSet);
@@ -47,6 +49,7 @@ pub extern "C" fn dqcs_qbset_push(qbset: dqcs_handle_t, qubit: dqcs_qubit_t) -> 
 ///
 /// Qubits are popped in the same order in which they were pushed. That is,
 /// they are FIFO-ordered.
+#[no_mangle]
 pub extern "C" fn dqcs_qbset_pop(qbset: dqcs_handle_t) -> dqcs_qubit_t {
     api_return(0, || {
         resolve!(qbset as &mut QubitReferenceSet);
@@ -61,6 +64,7 @@ pub extern "C" fn dqcs_qbset_pop(qbset: dqcs_handle_t) -> dqcs_qubit_t {
 /// Returns the number of qubits in the given set.
 ///
 /// This function returns -1 to indicate failure.
+#[no_mangle]
 pub extern "C" fn dqcs_qbset_len(qbset: dqcs_handle_t) -> ssize_t {
     api_return(-1, || {
         resolve!(qbset as &QubitReferenceSet);
@@ -84,6 +88,7 @@ pub extern "C" fn dqcs_qbset_len(qbset: dqcs_handle_t) -> ssize_t {
 ///
 /// Of course, if you don't care about keeping the set intact, you don't have
 /// to make a copy.
+#[no_mangle]
 pub extern "C" fn dqcs_qbset_copy(qbset: dqcs_handle_t) -> dqcs_handle_t {
     api_return(0, || {
         resolve!(qbset as &QubitReferenceSet);

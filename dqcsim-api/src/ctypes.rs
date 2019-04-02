@@ -112,7 +112,10 @@ pub enum dqcs_handle_type_t {
     DQCS_HTYPE_ARB_CMD_QUEUE = 102,
 
     /// Indicates that the given handle belongs to a set of qubit references.
-    DQCS_QUBIT_REFERENCE_SET = 103,
+    DQCS_HTYPE_QUBIT_SET = 103,
+
+    /// Indicates that the given handle belongs to a quantum gate description.
+    DQCS_HTYPE_GATE = 104,
 
     /// Indicates that the given handle belongs to a frontend plugin
     /// configuration object.
@@ -319,38 +322,6 @@ impl From<LoglevelFilter> for dqcs_loglevel_t {
             LoglevelFilter::Trace => dqcs_loglevel_t::DQCS_LOG_TRACE,
         }
     }
-}
-
-/// Enumeration of the different qubit sets associated with a gate.
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq)]
-#[allow(non_camel_case_types)]
-pub enum dqcs_qubit_set_type_t {
-    /// The qubit list containing the target qubits.
-    ///
-    /// The target qubit list is the list of qubits that are affected by the
-    /// gate matrix. Thus, the size of this list dictates the correct size of
-    /// the gate matrix.
-    DQCS_TARGET = 1,
-
-    /// Set containing additional control qubits.
-    ///
-    /// These qubits are omitted from the gate matrix; the complete gate matrix
-    /// including control qubits is inferred by the backend. Of course, it is
-    /// also fine for operators or frontend to provide the complete matrix
-    /// including control qubits, by putting the control qubits in the target
-    /// list instead.
-    DQCS_CONTROL = 2,
-
-    /// Set containing all the qubit measurement registers affected by the
-    /// associated gate.
-    ///
-    /// DQCsim uses this set to determine up to what point it needs to
-    /// synchronize with the downstream plugins when a measurement register is
-    /// read. Therefore, this set must be correctly specified regardless of
-    /// whether the backend infers anything from it. For instance, a
-    /// `measure_all` gate *must* include all qubits in this set.
-    DQCS_MEASURE = 3,
 }
 
 /// Default return type for functions that don't need to return anything.

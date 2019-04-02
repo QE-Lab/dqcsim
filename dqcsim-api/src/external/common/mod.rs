@@ -25,3 +25,7 @@ pub use cq::*;
 // dqcs_qbset_* functions, for operating on sets of qubit references.
 mod qbset;
 pub use qbset::*;
+
+// dqcs_gate_* functions, for operating on quantum gate descriptions.
+mod gate;
+pub use gate::*;
