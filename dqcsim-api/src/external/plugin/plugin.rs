@@ -17,11 +17,7 @@ pub extern "C" fn dqcs_plugin_log(
 ) -> dqcs_return_t {
     api_return_none(|| {
         let plugin = plugin.resolve()?;
-        let line_nr = if line_nr == 0 {
-            None
-        } else {
-            Some(line_nr)
-        };
+        let line_nr = if line_nr == 0 { None } else { Some(line_nr) };
         plugin.log(
             receive_str(message)?,
             level.into_loglevel()?,

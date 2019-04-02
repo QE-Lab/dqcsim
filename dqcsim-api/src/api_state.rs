@@ -4,6 +4,8 @@ use std::ptr::null_mut;
 
 pub type ArbCmdQueue = VecDeque<ArbCmd>;
 
+pub type QubitReferenceSet = VecDeque<QubitRef>;
+
 macro_rules! api_object_types {
     ($($(#[$m:meta])* $i:ident,)+) => (
         /// Enumeration of all objects that can be associated with an handle, including
@@ -34,6 +36,8 @@ api_object_types!(
     ArbCmd,
     /// Queue of `ArbCmd` objects.
     ArbCmdQueue,
+    /// Set of qubit references.
+    QubitReferenceSet,
     /// `PluginConfiguration` object.
     PluginConfiguration,
     /// `SimulatorConfiguration` object.
@@ -340,6 +344,10 @@ mutate_api_object_as! {ArbCmd, cmd:
 
 mutate_api_object_as! {ArbCmdQueue, cq:
     APIObject::ArbCmdQueue(x) => x, x, x,
+}
+
+mutate_api_object_as! {QubitReferenceSet, cq:
+    APIObject::QubitReferenceSet(x) => x, x, x,
 }
 
 mutate_api_object_as! {PluginConfiguration, pcfg:

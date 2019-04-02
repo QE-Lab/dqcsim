@@ -21,3 +21,7 @@ pub use cmd::*;
 // dqcs_cq_* functions, for operating on `ArbCmd` queues.
 mod cq;
 pub use cq::*;
+
+// dqcs_qbset_* functions, for operating on sets of qubit references.
+mod qbset;
+pub use qbset::*;

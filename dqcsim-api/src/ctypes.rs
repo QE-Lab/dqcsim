@@ -97,50 +97,53 @@ pub enum dqcs_handle_type_t {
     /// Indicates that the given handle belongs to an `ArbData` object.
     ///
     /// This means that the handle supports the `handle` and `arb` interfaces.
-    DQCS_HTYPE_ARB_DATA = 1,
+    DQCS_HTYPE_ARB_DATA = 100,
 
     /// Indicates that the given handle belongs to an `ArbCmd` object.
     ///
     /// This means that the handle supports the `handle`, `arb`, and `cmd`
     /// interfaces.
-    DQCS_HTYPE_ARB_CMD = 2,
+    DQCS_HTYPE_ARB_CMD = 101,
 
     /// Indicates that the given handle belongs to a queue of `ArbCmd` object.
     ///
     /// This means that the handle supports the `handle`, `arb`, `cmd`, and
     /// `cq` interfaces.
-    DQCS_HTYPE_ARB_CMD_QUEUE = 3,
+    DQCS_HTYPE_ARB_CMD_QUEUE = 102,
+
+    /// Indicates that the given handle belongs to a set of qubit references.
+    DQCS_QUBIT_REFERENCE_SET = 103,
 
     /// Indicates that the given handle belongs to a frontend plugin
     /// configuration object.
-    DQCS_HTYPE_FRONT_CONFIG = 4,
+    DQCS_HTYPE_FRONT_CONFIG = 200,
 
     /// Indicates that the given handle belongs to an operator plugin
     /// configuration object.
-    DQCS_HTYPE_OPER_CONFIG = 5,
+    DQCS_HTYPE_OPER_CONFIG = 201,
 
     /// Indicates that the given handle belongs to a backend plugin
     /// configuration object.
-    DQCS_HTYPE_BACK_CONFIG = 6,
+    DQCS_HTYPE_BACK_CONFIG = 203,
 
     /// Indicates that the given handle belongs to a simulator configuration
     /// object.
-    DQCS_HTYPE_SIM_CONFIG = 7,
+    DQCS_HTYPE_SIM_CONFIG = 204,
 
     /// Indicates that the given handle belongs to a simulator instance.
-    DQCS_HTYPE_SIM = 8,
+    DQCS_HTYPE_SIM = 205,
 
     /// Indicates that the given handle belongs to a frontend plugin
     /// definition object.
-    DQCS_HTYPE_FRONT_DEF = 9,
+    DQCS_HTYPE_FRONT_DEF = 300,
 
     /// Indicates that the given handle belongs to an operator plugin
     /// definition object.
-    DQCS_HTYPE_OPER_DEF = 10,
+    DQCS_HTYPE_OPER_DEF = 301,
 
     /// Indicates that the given handle belongs to a backend plugin
     /// definition object.
-    DQCS_HTYPE_BACK_DEF = 11,
+    DQCS_HTYPE_BACK_DEF = 302,
 }
 
 /// Enumeration of the three types of plugins.
