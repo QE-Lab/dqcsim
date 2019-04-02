@@ -85,9 +85,11 @@ impl Simulation {
         self.pipeline.as_mut()
     }
 
+    #[allow(clippy::borrowed_box)]
     pub fn frontend(&self) -> &Box<dyn Plugin> {
         unsafe { self.pipeline.get_unchecked(0) }
     }
+    #[allow(clippy::borrowed_box)]
     pub fn frontend_mut(&mut self) -> &mut Box<dyn Plugin> {
         unsafe { self.pipeline.get_unchecked_mut(0) }
     }

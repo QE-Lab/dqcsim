@@ -29,7 +29,7 @@ pub extern "C" fn dqcs_sim_init(scfg: dqcs_handle_t) -> dqcs_handle_t {
 pub extern "C" fn dqcs_sim_yield(sim: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(sim as &mut Simulator);
-        sim.as_mut().yield_to_frontend()?;
+        sim.simulation.yield_to_frontend()?;
         Ok(())
     })
 }
@@ -57,7 +57,7 @@ pub extern "C" fn dqcs_sim_arb(
             let x: &ArbCmd = cmd.as_ref().unwrap();
             x.clone()
         };
-        let data = sim.as_mut().arb(receive_str(name)?, cmd_ob)?;
+        let data = sim.simulation.arb(receive_str(name)?, cmd_ob)?;
         take!(resolved cmd as ArbCmd);
         let _ = cmd;
         Ok(insert(data))
@@ -94,7 +94,7 @@ pub extern "C" fn dqcs_sim_arb_idx(
             let x: &ArbCmd = cmd.as_ref().unwrap();
             x.clone()
         };
-        let data = sim.as_mut().arb_idx(index, cmd_ob)?;
+        let data = sim.simulation.arb_idx(index, cmd_ob)?;
         take!(resolved cmd as ArbCmd);
         let _ = cmd;
         Ok(insert(data))
@@ -112,7 +112,7 @@ pub extern "C" fn dqcs_sim_get_name(sim: dqcs_handle_t, name: *const c_char) -> 
     api_return_string(|| {
         resolve!(sim as &Simulator);
         Ok(sim
-            .as_ref()
+            .simulation
             .get_metadata(receive_str(name)?)?
             .get_name()
             .to_string())
@@ -128,7 +128,11 @@ pub extern "C" fn dqcs_sim_get_name(sim: dqcs_handle_t, name: *const c_char) -> 
 pub extern "C" fn dqcs_sim_get_name_idx(sim: dqcs_handle_t, index: ssize_t) -> *mut c_char {
     api_return_string(|| {
         resolve!(sim as &Simulator);
-        Ok(sim.as_ref().get_metadata_idx(index)?.get_name().to_string())
+        Ok(sim
+            .simulation
+            .get_metadata_idx(index)?
+            .get_name()
+            .to_string())
     })
 }
 
@@ -142,7 +146,7 @@ pub extern "C" fn dqcs_sim_get_author(sim: dqcs_handle_t, name: *const c_char) -
     api_return_string(|| {
         resolve!(sim as &Simulator);
         Ok(sim
-            .as_ref()
+            .simulation
             .get_metadata(receive_str(name)?)?
             .get_author()
             .to_string())
@@ -159,7 +163,7 @@ pub extern "C" fn dqcs_sim_get_author_idx(sim: dqcs_handle_t, index: ssize_t) ->
     api_return_string(|| {
         resolve!(sim as &Simulator);
         Ok(sim
-            .as_ref()
+            .simulation
             .get_metadata_idx(index)?
             .get_author()
             .to_string())
@@ -176,7 +180,7 @@ pub extern "C" fn dqcs_sim_get_version(sim: dqcs_handle_t, name: *const c_char) 
     api_return_string(|| {
         resolve!(sim as &Simulator);
         Ok(sim
-            .as_ref()
+            .simulation
             .get_metadata(receive_str(name)?)?
             .get_version()
             .to_string())
@@ -193,7 +197,7 @@ pub extern "C" fn dqcs_sim_get_version_idx(sim: dqcs_handle_t, index: ssize_t) -
     api_return_string(|| {
         resolve!(sim as &Simulator);
         Ok(sim
-            .as_ref()
+            .simulation
             .get_metadata_idx(index)?
             .get_version()
             .to_string())

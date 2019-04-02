@@ -9,16 +9,16 @@ use crate::{
 };
 use std::{fmt, thread};
 
+pub type PluginThreadClosure = Box<
+    dyn Fn(
+            CrossbeamChannel<PluginToSimulator, SimulatorToPlugin>,
+            crossbeam_channel::Sender<LogRecord>,
+        ) -> ()
+        + Send,
+>;
+
 pub struct PluginThread {
-    thread: Option<
-        Box<
-            dyn Fn(
-                    CrossbeamChannel<PluginToSimulator, SimulatorToPlugin>,
-                    crossbeam_channel::Sender<LogRecord>,
-                ) -> ()
-                + Send,
-        >,
-    >,
+    thread: Option<PluginThreadClosure>,
     handle: Option<thread::JoinHandle<()>>,
     channel: Option<CrossbeamChannel<SimulatorToPlugin, PluginToSimulator>>,
 }
@@ -26,7 +26,7 @@ pub struct PluginThread {
 impl fmt::Debug for PluginThread {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("PluginThread")
-            .field("thread", &format!("..."))
+            .field("thread", &"...".to_string())
             .field("handle", &self.handle)
             .field("channel", &self.channel)
             .finish()

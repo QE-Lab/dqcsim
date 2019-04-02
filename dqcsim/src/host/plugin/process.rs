@@ -122,7 +122,7 @@ impl Plugin for PluginProcess {
                     .wait_timeout(
                         lock.lock()
                             .expect("Plugin IPC connection start lock poisoned"),
-                        timeout.into(),
+                        timeout,
                     )
                     .expect("Plugin IPC connection start lock poisoned");
                 if *started && !wait_result.timed_out() {
