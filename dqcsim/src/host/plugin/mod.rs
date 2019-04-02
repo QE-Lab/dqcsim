@@ -1,5 +1,5 @@
 pub mod process;
-// pub mod thread;
+pub mod thread;
 
 use crate::{
     common::{
@@ -25,16 +25,23 @@ pub trait Plugin {
     /// to use with their log proxies.k
     fn spawn(&mut self, logger: &LogThread) -> Result<()>;
 
+    /// Returns the PluginConfiguration for this plugin.
     fn configuration(&self) -> PluginConfiguration;
 
+    /// Send the SimulatorToPlugin message to the plugin.
     fn send(&mut self, msg: SimulatorToPlugin) -> Result<()>;
+
+    /// Receive the next PluginToSimulator message.
     fn recv(&mut self) -> Result<PluginToSimulator>;
 }
 
 impl Plugin {
+    /// Returns the name of this plugin from its configuration.
     pub fn name(&self) -> String {
         self.configuration().name
     }
+
+    /// Returns the PluginType of this plugin from its configuration.
     pub fn plugin_type(&self) -> PluginType {
         self.configuration().specification.typ
     }
@@ -70,5 +77,3 @@ impl Plugin {
         }
     }
 }
-
-// pub trait FrontEnd {}?

@@ -22,6 +22,8 @@ fn main() -> Result<(), Error> {
     let name: &str = args[1].as_ref();
     let server = args[2].as_ref();
 
+    eprintln!("{:#?}", args);
+
     let plugin_type = if name.starts_with("front") {
         PluginType::Frontend
     } else if name.starts_with("back") {

@@ -85,7 +85,7 @@ pub extern "C" fn dqcs_accel_start(data: dqcs_handle_t) -> dqcs_return_t {
         |accel| {
             take_arb(data, |data| {
                 accel
-                    .as_mut()
+                    .simulation
                     .start(data.clone())
                     .map(|_| dqcs_return_t::DQCS_SUCCESS)
                     .map_err(Error::from) // TODO: jeroen
@@ -107,7 +107,7 @@ pub extern "C" fn dqcs_accel_wait() -> dqcs_handle_t {
         || 0,
         |accel| {
             accel
-                .as_mut()
+                .simulation
                 .wait()
                 .map(|d| API_STATE.with(|state| state.borrow_mut().push(APIObject::ArbData(d))))
                 .map_err(Error::from) // TODO: jeroen
@@ -130,7 +130,7 @@ pub extern "C" fn dqcs_accel_send(data: dqcs_handle_t) -> dqcs_return_t {
         |accel| {
             take_arb(data, |data| {
                 accel
-                    .as_mut()
+                    .simulation
                     .send(data.clone())
                     .map(|_| dqcs_return_t::DQCS_SUCCESS)
                     .map_err(Error::from) // TODO: jeroen
@@ -151,7 +151,7 @@ pub extern "C" fn dqcs_accel_recv() -> dqcs_handle_t {
         || 0,
         |accel| {
             accel
-                .as_mut()
+                .simulation
                 .recv()
                 .map(|d| API_STATE.with(|state| state.borrow_mut().push(APIObject::ArbData(d))))
                 .map_err(Error::from) // TODO: jeroen
@@ -175,7 +175,7 @@ pub extern "C" fn dqcs_accel_yield() -> dqcs_return_t {
         || dqcs_return_t::DQCS_FAILURE,
         |accel| {
             accel
-                .as_mut()
+                .simulation
                 .yield_to_frontend()
                 .map(|_| dqcs_return_t::DQCS_SUCCESS)
                 .map_err(Error::from) // TODO: jeroen
@@ -200,7 +200,7 @@ pub extern "C" fn dqcs_accel_arb(name: *const c_char, cmd: dqcs_handle_t) -> dqc
         |accel| {
             take_cmd(cmd, |cmd| {
                 accel
-                    .as_mut()
+                    .simulation
                     .arb(receive_str(name)?, cmd.clone())
                     .map(|d| API_STATE.with(|state| state.borrow_mut().push(APIObject::ArbData(d))))
                     .map_err(Error::from) // TODO: jeroen
@@ -233,7 +233,7 @@ pub extern "C" fn dqcs_accel_arb_idx(index: ssize_t, cmd: dqcs_handle_t) -> dqcs
         |accel| {
             take_cmd(cmd, |cmd| {
                 accel
-                    .as_mut()
+                    .simulation
                     .arb_idx(index, cmd.clone())
                     .map(|d| API_STATE.with(|state| state.borrow_mut().push(APIObject::ArbData(d))))
                     .map_err(Error::from) // TODO: jeroen

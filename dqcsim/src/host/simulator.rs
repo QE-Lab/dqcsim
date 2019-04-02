@@ -7,12 +7,13 @@ use crate::{
     },
     host::{
         configuration::{PluginType, SimulatorConfiguration},
+        plugin::{process::PluginProcess, Plugin},
         simulation::Simulation,
     },
     trace,
 };
 
-/// Simulator instance.
+/// Simulator driver instance.
 ///
 /// A [`Simulator`] instance wraps around a [`Simulation`] run and a
 /// [`LogThread`]. Its behavior is defined by a [`SimulatorConfiguration`].
@@ -25,42 +26,20 @@ pub struct Simulator {
     /// LogThread used by this Simulator for logging.
     log_thread: LogThread,
 
-    /// The Simulation running in this Simulator.
-    /// Wrapped in an option container to control Drop order of the
-    /// Simulator fields. The Simulation is always dropped before
-    /// the LogThread.
-    simulation: Option<Simulation>,
-}
-
-// TODO: matthijs remove this
-impl AsRef<Simulation> for Simulator {
-    fn as_ref(&self) -> &Simulation {
-        self.simulation.as_ref().unwrap()
-    }
-}
-
-// TODO: matthijs remove this
-impl AsMut<Simulation> for Simulator {
-    fn as_mut(&mut self) -> &mut Simulation {
-        self.simulation.as_mut().unwrap()
-    }
+    /// The Simulation pipeline running in this Simulator.
+    pub simulation: Simulation,
 }
 
 impl Simulator {
-    /// Construct a Simulator instance from a SimulatorConfiguration.
+    /// Construct a Simulator driver instance from a SimulatorConfiguration.
     ///
-    /// Returns the Simulator instance or an Error.
-    /// Potential errors causes are related to spawning the LogThread and
-    /// constructing the Simulation.
+    /// Spawns the log thread and constructs the inner Simulation instance.
+    /// Returns the Simulator driver instance.
     pub fn new(mut configuration: SimulatorConfiguration) -> Result<Simulator> {
         Simulator::check_plugin_list(&mut configuration)?;
-        dbg!(&configuration);
-        let mut sim = Simulator::try_from(configuration)?;
-        sim.init()?;
-        Ok(sim)
-    }
 
-    pub fn try_from(configuration: SimulatorConfiguration) -> Result<Simulator> {
+        dbg!(&configuration);
+
         let log_thread = LogThread::spawn(
             "dqcsim",
             configuration.dqcsim_level,
@@ -71,24 +50,49 @@ impl Simulator {
 
         trace!("Constructing Simulator");
 
-        // let simulation = Simulation::new(configuration.plugins, configuration.seed)?;
-        let simulation = Simulation::new(vec![], configuration.seed)?;
+        let simulation = Simulation::new(
+            configuration
+                .plugins
+                .into_iter()
+                // TODO: matthijs
+                .map(PluginProcess::new)
+                .map(Box::new)
+                .map(|x| x as Box<dyn Plugin>)
+                .collect(),
+            configuration.seed,
+        )?;
 
         Ok(Simulator {
             log_thread,
-            simulation: Some(simulation),
+            simulation,
         })
     }
 
     /// Initalize the Simulator.
     ///
-    /// Initialize the [`Simulator`] by initializing the plugins in the
-    /// [`Simulation`].
+    /// Initialize the [`Simulator`] by spawning and initializing the plugins
+    /// in the [`Simulation`].
     pub fn init(&mut self) -> Result<()> {
         trace!("Initialize Simulator");
-        let simulation = self.simulation.as_mut().unwrap();
-        simulation.spawn(&self.log_thread)?;
-        simulation.init(&self.log_thread)
+        // let logger = &self.log_thread;
+        // let (_, errors): (_, Vec<_>) = self
+        //     .simulation
+        //     .iter_mut()
+        //     .map(|plugin| plugin.spawn(logger))
+        //     .partition(Result::is_ok);
+        // if !errors.is_empty() {
+        //     err("Failed to spawn plugin(s)")?
+        // } else {
+        //     let mut downstream = None;
+        //     for plugin in self.simulation.iter_mut().rev() {
+        //         let res = plugin.init(logger, downstream)?;
+        //         downstream = res.upstream;
+        //     }
+        //     Ok(())
+        // }
+        // let simulation = self.simulation.as_mut();
+        self.simulation.spawn(&self.log_thread)?;
+        self.simulation.init(&self.log_thread)
     }
 
     /// Optimizes the source verbosity levels, such that they are no more
@@ -189,46 +193,8 @@ impl Drop for Simulator {
     fn drop(&mut self) {
         trace!("Dropping Simulator");
 
-        // Drop the Simulation to allow the LogThread to outlive Simulation deconstruction.
-        self.simulation.take();
+        // Drain the simulation pipeline to drop the Plugin instances before
+        // dropping the log thread.
+        self.simulation.pipeline_mut().drain(..);
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::Simulator;
-//     use crate::host::configuration::{
-//         PluginConfiguration, PluginSpecification, PluginType, SimulatorConfiguration,
-//     };
-//
-//     #[test]
-//     fn default_configuration() {
-//         // Default SimulatorConfiguration is not supposed to work.
-//         let simulator = Simulator::try_from(SimulatorConfiguration::default());
-//         assert!(simulator.is_err());
-//         assert_eq!(
-//             format!("{}", simulator.err().unwrap()),
-//             "Invalid argument: Simulation must consist of at least a frontend and backend"
-//         );
-//     }
-//
-//     #[test]
-//     fn frontend_backend() {
-//         let mut configuration = SimulatorConfiguration::default();
-//
-//         let frontend = PluginConfiguration::new(
-//             "frontend",
-//             PluginSpecification::from_sugar("/bin/sh", PluginType::Frontend).unwrap(),
-//         );
-//         let backend = PluginConfiguration::new(
-//             "backend",
-//             PluginSpecification::from_sugar("/bin/sh", PluginType::Backend).unwrap(),
-//         );
-//
-//         configuration.plugins.push(frontend);
-//         configuration.plugins.push(backend);
-//
-//         let simulator = Simulator::try_from(configuration);
-//         assert!(simulator.is_ok());
-//     }
-// }

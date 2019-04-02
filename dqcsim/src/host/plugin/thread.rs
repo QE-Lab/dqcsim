@@ -1,28 +1,69 @@
-use crate::{common::error::Result, host::{configuration::PluginConfiguration, plugin::Plugin}};
+use crate::{
+    common::{
+        channel::CrossbeamChannel,
+        error::Result,
+        log::{thread::LogThread, LogRecord},
+        protocol::{PluginToSimulator, SimulatorToPlugin},
+    },
+    host::{configuration::PluginConfiguration, plugin::Plugin},
+};
 use std::thread;
 
 pub struct PluginThread {
-    thread: Option<Box<dyn Fn(String) -> () + Send>>,
+    thread: Option<
+        Box<
+            dyn Fn(
+                    CrossbeamChannel<PluginToSimulator, SimulatorToPlugin>,
+                    crossbeam_channel::Sender<LogRecord>,
+                ) -> ()
+                + Send,
+        >,
+    >,
     handle: Option<thread::JoinHandle<()>>,
+    channel: Option<CrossbeamChannel<SimulatorToPlugin, PluginToSimulator>>,
 }
 
 impl PluginThread {
-    pub fn new(thread: impl Fn(String) -> () + Send + 'static) -> PluginThread {
+    pub fn new(
+        thread: impl Fn(
+                CrossbeamChannel<PluginToSimulator, SimulatorToPlugin>,
+                crossbeam_channel::Sender<LogRecord>,
+            ) -> ()
+            + Send
+            + 'static,
+    ) -> PluginThread {
         PluginThread {
             thread: Some(Box::new(thread)),
             handle: None,
+            channel: None,
         }
     }
 }
 
 impl Plugin for PluginThread {
-    fn configuration(&self) -> &PluginConfiguration {
-        &PluginConfiguration::default()
-    }
-    fn spawn(&mut self, simulator: String) -> Result<()> {
+    fn spawn(&mut self, logger: &LogThread) -> Result<()> {
         let thread = self.thread.take().unwrap();
-        self.handle = Some(thread::spawn(move || thread(simulator)));
+        let (request_tx, request) = crossbeam_channel::unbounded();
+        let (response, response_rx) = crossbeam_channel::unbounded();
+        let logger = logger.get_sender();
+        self.handle = Some(thread::spawn(move || thread((response, request), logger)));
+        self.channel = Some((request_tx, response_rx));
         Ok(())
+    }
+
+    /// Send the SimulatorToPlugin message to the plugin.
+    fn send(&mut self, msg: SimulatorToPlugin) -> Result<()> {
+        self.channel.as_ref().unwrap().0.send(msg)?;
+        Ok(())
+    }
+
+    /// Receive the next PluginToSimulator message.
+    fn recv(&mut self) -> Result<PluginToSimulator> {
+        Ok(self.channel.as_ref().unwrap().1.recv()?)
+    }
+
+    fn configuration(&self) -> PluginConfiguration {
+        unimplemented!()
     }
 }
 

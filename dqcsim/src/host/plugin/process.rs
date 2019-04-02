@@ -1,12 +1,12 @@
 use crate::{
     common::{
+        channel::IpcChannel,
         error::{err, ErrorKind, Result},
         log::{stdio::proxy_stdio, thread::LogThread},
         protocol::{PluginToSimulator, SimulatorToPlugin},
     },
     host::{
         configuration::{EnvMod, PluginConfiguration, StreamCaptureMode, Timeout},
-        ipc::SimulatorChannel,
         plugin::Plugin,
     },
     info, trace, warn,
@@ -28,7 +28,7 @@ pub struct PluginProcess {
     child: Option<process::Child>,
     /// The SimulatorChannel is populated by the spawn method of the Plugin
     /// trait.
-    channel: Option<SimulatorChannel>,
+    channel: Option<IpcChannel<SimulatorToPlugin, PluginToSimulator>>,
 }
 
 impl PluginProcess {
@@ -63,6 +63,8 @@ impl Plugin for PluginProcess {
         }
 
         command
+            // TODO: matthijs remove this
+            .arg(&self.configuration.name)
             // Pass simulator address
             .arg(server_name)
             // Set working directory
@@ -89,24 +91,6 @@ impl Plugin for PluginProcess {
         // Spawn child process
         self.child = Some(command.spawn()?);
 
-        // Setup pipes
-        if let StreamCaptureMode::Capture(level) = self.configuration.nonfunctional.stderr_mode {
-            proxy_stdio(
-                format!("{}::stderr", self.configuration.name),
-                Box::new(self.child.as_mut().unwrap().stderr.take().expect("stderr")),
-                logger.get_sender(),
-                level,
-            );
-        }
-        if let StreamCaptureMode::Capture(level) = self.configuration.nonfunctional.stdout_mode {
-            proxy_stdio(
-                format!("{}::stdout", self.configuration.name),
-                Box::new(self.child.as_mut().unwrap().stderr.take().expect("stdout")),
-                logger.get_sender(),
-                level,
-            );
-        }
-
         // Connect and get channel from child process
         match self.configuration.nonfunctional.accept_timeout {
             Timeout::Infinite => {
@@ -117,20 +101,21 @@ impl Plugin for PluginProcess {
                 #[cfg_attr(feature = "cargo-clippy", allow(clippy::mutex_atomic))]
                 let pair = sync::Arc::new((sync::Mutex::new(false), sync::Condvar::new()));
                 let pair2 = pair.clone();
-                let handle: thread::JoinHandle<Result<SimulatorChannel>> =
-                    thread::spawn(move || {
-                        {
-                            let &(ref lock, _) = &*pair2;
-                            let mut started = lock.lock().expect("Unable to aquire lock");
-                            *started = true;
-                        }
-                        let (_, channel) = server.accept()?;
-                        {
-                            let &(_, ref cvar) = &*pair2;
-                            cvar.notify_one();
-                        }
-                        Ok(channel)
-                    });
+                let handle: thread::JoinHandle<
+                    Result<IpcChannel<SimulatorToPlugin, PluginToSimulator>>,
+                > = thread::spawn(move || {
+                    {
+                        let &(ref lock, _) = &*pair2;
+                        let mut started = lock.lock().expect("Unable to aquire lock");
+                        *started = true;
+                    }
+                    let (_, channel) = server.accept()?;
+                    {
+                        let &(_, ref cvar) = &*pair2;
+                        cvar.notify_one();
+                    }
+                    Ok(channel)
+                });
                 let &(ref lock, ref cvar) = &*pair;
                 let (started, wait_result) = cvar
                     .wait_timeout(
@@ -152,6 +137,24 @@ impl Plugin for PluginProcess {
             }
         }
 
+        // Setup pipes
+        if let StreamCaptureMode::Capture(level) = self.configuration.nonfunctional.stderr_mode {
+            proxy_stdio(
+                format!("{}::stderr", self.configuration.name),
+                Box::new(self.child.as_mut().unwrap().stderr.take().expect("stderr")),
+                logger.get_sender(),
+                level,
+            );
+        }
+        if let StreamCaptureMode::Capture(level) = self.configuration.nonfunctional.stdout_mode {
+            proxy_stdio(
+                format!("{}::stdout", self.configuration.name),
+                Box::new(self.child.as_mut().unwrap().stderr.take().expect("stdout")),
+                logger.get_sender(),
+                level,
+            );
+        }
+
         Ok(())
     }
 
@@ -160,12 +163,12 @@ impl Plugin for PluginProcess {
     }
 
     fn send(&mut self, msg: SimulatorToPlugin) -> Result<()> {
-        self.channel.as_ref().unwrap().request.send(msg)?;
+        self.channel.as_ref().unwrap().0.send(msg)?;
         Ok(())
     }
 
     fn recv(&mut self) -> Result<PluginToSimulator> {
-        Ok(self.channel.as_ref().unwrap().response.recv()?)
+        Ok(self.channel.as_ref().unwrap().1.recv()?)
     }
 }
 
@@ -192,7 +195,7 @@ impl Drop for PluginProcess {
                 let now = time::Instant::now();
                 loop {
                     if now.elapsed() < duration {
-                        match self.channel.as_ref().unwrap().response.try_recv() {
+                        match self.channel.as_ref().unwrap().1.try_recv() {
                             Ok(PluginToSimulator::Success) => break,
                             Ok(_) | Err(_) => {
                                 std::thread::sleep(std::time::Duration::from_millis(10));

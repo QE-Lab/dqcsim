@@ -28,7 +28,7 @@ use crate::{
         },
         types::{ArbCmd, ArbData, Gate, PluginMetadata, QubitRef},
     },
-    host::{configuration::PluginType, ipc::SimulatorChannel},
+    host::configuration::PluginType,
     plugin::{
         context::PluginContext,
         ipc::{DownstreamChannel, PluginChannel, UpstreamChannel},
@@ -256,7 +256,7 @@ impl Connection {
         let (response, response_rx) = ipc_channel::ipc::channel()?;
 
         // Send channel to the simulator.
-        connect.send(SimulatorChannel::new(request_tx, response_rx))?;
+        connect.send((request_tx, response_rx))?;
 
         // Return the PluginChannel.
         Ok(PluginChannel::new(request, response))
@@ -488,10 +488,7 @@ impl Connection {
 #[cfg(test)]
 mod tests {
     use super::{Connection, IncomingMessage, OutgoingMessage};
-    use crate::{
-        common::protocol::{PluginToSimulator, SimulatorToPlugin},
-        host::ipc::SimulatorChannel,
-    };
+    use crate::common::protocol::{PluginToSimulator, SimulatorToPlugin};
     use ipc_channel::ipc::IpcOneShotServer;
 
     #[test]
@@ -515,7 +512,7 @@ mod tests {
         });
 
         // Simulator gets the SimulatorChannel.
-        let (_, channel): (_, SimulatorChannel) = server.accept().unwrap();
+        let (_, channel) = server.accept().unwrap();
 
         // Send a request.
         let req = channel.request.send(SimulatorToPlugin::Abort);
@@ -553,7 +550,7 @@ mod tests {
         });
 
         // Simulator gets the SimulatorChannel.
-        let (_, channel): (_, SimulatorChannel) = server.accept().unwrap();
+        let (_, channel) = server.accept().unwrap();
 
         // Send a request.
         let req = channel.request.send(SimulatorToPlugin::Abort);

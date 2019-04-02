@@ -9,28 +9,30 @@ use crate::{
     host::{configuration::Seed, plugin::Plugin},
     trace,
 };
-// use std::collections::HashMap;
+
+pub type Pipeline = Vec<Box<dyn Plugin>>;
 
 /// Simulation instance.
 ///
-/// Contains a pipeline of [`PluginInstance`] and a random [`Seed`].
-///
-/// [`PluginInstance`]: ../plugin/struct.PluginInstance.html
 pub struct Simulation {
+    pipeline: Pipeline,
     seed: Seed,
-    pipeline: Vec<Box<dyn Plugin>>,
-    // map: HashMap<usize, PluginMetadata>,
 }
 
 impl Simulation {
     /// Constructs a Simulation from a collection of PluginInstance and a random seed.
-    pub fn new(pipeline: Vec<Box<dyn Plugin>>, seed: Seed) -> Result<Simulation> {
+    pub fn new(pipeline: Pipeline, seed: Seed) -> Result<Simulation> {
         trace!("Constructing Simulation");
         if pipeline.len() < 2 {
             inv_arg("Simulation must consist of at least a frontend and backend")?
         }
 
         Ok(Simulation { seed, pipeline })
+    }
+
+    /// Returns a mutable reference to the pipeline.
+    pub fn pipeline_mut(&mut self) -> &mut Pipeline {
+        self.pipeline.as_mut()
     }
 
     /// Spawn the plugins in the Simulation.
@@ -201,6 +203,6 @@ impl Simulation {
 impl Drop for Simulation {
     fn drop(&mut self) {
         trace!("Dropping Simulation");
-        // TODO: send abort to all plugins. Then wait and collect exit.
+        // TODO: matthijs send abort to all plugins. Then wait and collect exit.
     }
 }

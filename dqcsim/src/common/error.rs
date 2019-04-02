@@ -251,6 +251,15 @@ impl From<std::ffi::NulError> for Error {
     }
 }
 
+impl From<crossbeam_channel::RecvError> for Error {
+    fn from(error: crossbeam_channel::RecvError) -> Error {
+        let msg = error.to_string();
+        Error {
+            ctx: Context::new(ErrorKind::ITCError(msg)),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
