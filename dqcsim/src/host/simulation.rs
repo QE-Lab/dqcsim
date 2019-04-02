@@ -2,9 +2,9 @@
 
 use crate::{
     common::{
-        error::{err, inv_arg, inv_op, Result},
-        log::thread::LogThread,
-        types::{ArbCmd, ArbData},
+        error::{err, inv_arg, inv_op, ErrorKind, Result},
+        log::LogRecord,
+        types::{ArbCmd, ArbData, PluginMetadata},
     },
     host::{configuration::Seed, plugin::Plugin},
     trace,
@@ -92,7 +92,7 @@ impl Simulation {
     #[allow(unused)] // TODO: remove <--
     pub fn send(&mut self, args: impl Into<ArbData>) -> Result<()> {
         // TODO
-        inv_op("Not yet implemented")
+        inv_op("not yet implemented")
     }
 
     /// Waits for the accelerator to send a message to us.
@@ -100,7 +100,7 @@ impl Simulation {
     /// Deadlocks are detected and prevented by throwing an error message.
     pub fn recv(&mut self) -> Result<ArbData> {
         // TODO
-        inv_op("Not yet implemented")
+        inv_op("not yet implemented")
     }
 
     /// Yields to the accelerator.
@@ -115,7 +115,7 @@ impl Simulation {
     /// sent yet.
     pub fn yield_to_frontend(&mut self) -> Result<()> {
         // TODO
-        inv_op("Not yet implemented")
+        inv_op("not yet implemented")
     }
 
     /// Sends an `ArbCmd` message to one of the plugins, referenced by name.
@@ -130,7 +130,7 @@ impl Simulation {
                 return self.arb_idx(idx as isize, cmd);
             }
         }
-        inv_arg(format!("Plugin {} not found", name))
+        inv_arg(format!("plugin {} not found", name))
     }
 
     /// Sends an `ArbCmd` message to one of the plugins, referenced by index.
@@ -151,16 +151,60 @@ impl Simulation {
         if index < 0 {
             index += n_plugins as isize;
             if index < 0 {
-                inv_arg(format!("Index {} out of range", index))?
+                inv_arg(format!("index {} out of range", index))?
             }
         }
         let index = index as usize;
         if index >= n_plugins {
-            inv_arg(format!("Index {} out of range", index))?
+            inv_arg(format!("index {} out of range", index))?
         }
         self.yield_to_frontend()?;
         self.pipeline[index].arb(cmd)
     }
+
+    /// Returns a reference to the metadata object belonging to the plugin
+    /// referenced by instance name.
+    pub fn get_metadata(&self, name: impl AsRef<str>) -> Result<&PluginMetadata> {
+        let name = name.as_ref();
+        for (idx, plugin) in self.pipeline.iter().enumerate() {
+            if plugin.name() == name {
+                return self.get_metadata_idx(idx as isize);
+            }
+        }
+        inv_arg(format!("plugin {} not found", name))
+    }
+
+    /// Returns a reference to the metadata object belonging to the plugin
+    /// referenced by index.
+    pub fn get_metadata_idx(&self, index: isize) -> Result<&PluginMetadata> {
+        let mut index = index;
+        let n_plugins = self.pipeline.len();
+        if index < 0 {
+            index += n_plugins as isize;
+            if index < 0 {
+                inv_arg(format!("index {} out of range", index))?
+            }
+        }
+        let index = index as usize;
+        if index >= n_plugins {
+            inv_arg(format!("index {} out of range", index))?
+        }
+        // TODO: get the metadata object
+        inv_op("not yet implemented")
+    }
+
+    // /// Abort the simulation.
+    // ///
+    // /// Graceful flag can be set to gracefully abort.
+    // /// Non-graceful termination should only be used in case of pre-
+    // /// initialization problems.
+    // pub fn abort(&mut self, graceful: bool) -> Result<(), Error> {
+    //     trace!("Aborting simulation. (graceful: {})", graceful);
+    //     self.pipeline
+    //         .iter_mut()
+    //         .for_each(|plugin| plugin.abort(graceful));
+    //     Ok(())
+    // }
 }
 // /// Sends an `PluginInitializeRequest` to this plugin.
 // pub fn init(
