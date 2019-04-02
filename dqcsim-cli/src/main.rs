@@ -1,5 +1,5 @@
 use dqcsim::{
-    host::{reproduction::HostCall, simulator::Simulator},
+    host::{reproduction::HostCall, simulator::Simulator, accelerator::Accelerator},
     info, note,
 };
 

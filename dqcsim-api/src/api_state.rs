@@ -1,47 +1,48 @@
 use super::*;
+use std::collections::VecDeque;
 use std::ptr::null_mut;
 
-/// Enumeration of all objects that can be associated with an handle, including
-/// the object data.
-#[derive(Debug)]
-#[allow(dead_code, clippy::large_enum_variant)] // FIXME: clippy probably has a point here
-pub enum APIObject {
-    /// ArbData object.
-    ArbData(ArbData),
+pub type ArbCmdQueue = VecDeque<ArbCmd>;
 
-    /// ArbData object.
-    ArbCmd(ArbCmd),
+macro_rules! api_object_types {
+    ($($(#[$m:meta])* $i:ident,)+) => (
+        /// Enumeration of all objects that can be associated with an handle, including
+        /// the object data.
+        #[derive(Debug)]
+        #[allow(dead_code, clippy::large_enum_variant)]
+        pub enum APIObject {
+            $(
+                $(#[$m])*
+                $i($i),
+            )+
+        }
 
-    /// PluginConfiguration object.
-    PluginConfiguration(PluginConfiguration),
-
-    /// SimulatorConfiguration object.
-    SimulatorConfiguration(SimulatorConfiguration),
+        $(
+            impl From<$i> for APIObject {
+                fn from(x: $i) -> APIObject {
+                    APIObject::$i(x)
+                }
+            }
+        )+
+    )
 }
 
-impl From<ArbData> for APIObject {
-    fn from(x: ArbData) -> APIObject {
-        APIObject::ArbData(x)
-    }
-}
-
-impl From<ArbCmd> for APIObject {
-    fn from(x: ArbCmd) -> APIObject {
-        APIObject::ArbCmd(x)
-    }
-}
-
-impl From<PluginConfiguration> for APIObject {
-    fn from(x: PluginConfiguration) -> APIObject {
-        APIObject::PluginConfiguration(x)
-    }
-}
-
-impl From<SimulatorConfiguration> for APIObject {
-    fn from(x: SimulatorConfiguration) -> APIObject {
-        APIObject::SimulatorConfiguration(x)
-    }
-}
+api_object_types!(
+    /// `ArbData` object.
+    ArbData,
+    /// `ArbCmd` object.
+    ArbCmd,
+    /// Queue of `ArbCmd` objects.
+    ArbCmdQueue,
+    /// `PluginConfiguration` object.
+    PluginConfiguration,
+    /// `SimulatorConfiguration` object.
+    SimulatorConfiguration,
+    /// DQCsim simulation instance, behaving as an accelerator.
+    Simulator,
+    /// `PluginDefinition` object.
+    PluginDefinition,
+);
 
 /// Thread-local state storage structure.
 pub struct APIState {
@@ -53,6 +54,11 @@ pub struct APIState {
     /// This variable stores the handle value that will be used for the next
     /// allocation.
     pub handle_counter: dqcs_handle_t,
+
+    /// The handle that currently owns DQCsim's thread-local resources. This
+    /// serves as a lock to ensure that no more than one object using
+    /// thread-locals is constructed.
+    pub thread_locals_used_by: Option<dqcs_handle_t>,
 
     /// This variable records the error message associated with the latest
     /// failure.
@@ -68,6 +74,36 @@ impl APIState {
         self.handle_counter = handle + 1;
         handle
     }
+
+    /// Claims the thread-local storage lock for the given handle.
+    ///
+    /// The lock is released when the handle becomes invalid.
+    pub fn thread_locals_claim(&mut self, handle: dqcs_handle_t) -> Result<()> {
+        self.thread_locals_assert_free()?;
+        self.thread_locals_used_by.replace(handle);
+        Ok(())
+    }
+
+    /// Returns whether DQCsim's thread-locals are currently in use.
+    pub fn thread_locals_claimed(&self) -> bool {
+        if let Some(h) = self.thread_locals_used_by {
+            self.objects.contains_key(&h)
+        } else {
+            false
+        }
+    }
+
+    /// Asserts that DQCsim's thread-locals are not in use.
+    pub fn thread_locals_assert_free(&self) -> Result<()> {
+        if self.thread_locals_claimed() {
+            inv_op(format!(
+                "cannot claim DQCsim thread-local storage; already claimed by handle {}",
+                self.thread_locals_used_by.unwrap()
+            ))
+        } else {
+            Ok(())
+        }
+    }
 }
 
 thread_local! {
@@ -80,6 +116,7 @@ thread_local! {
     pub static API_STATE: RefCell<APIState> = RefCell::new(APIState {
         objects: HashMap::new(),
         handle_counter: 1,
+        thread_locals_used_by: None,
         last_error: None,
     });
 }
@@ -132,6 +169,38 @@ pub fn api_return_string(call: impl FnOnce() -> Result<String>) -> *mut c_char {
             }
         })
     })
+}
+
+/// Convenience function for converting an API callback return value to a
+/// Result object.
+///
+/// If `actual_value` equals `error_value`, `Err` is returned, taking the
+/// message from the `last_error` field in the `APIState`. Otherwise, `Ok`
+/// is returned, containing `actual_value`.
+pub fn cb_return<T>(error_value: T, actual_value: T) -> Result<T>
+where
+    T: std::cmp::PartialEq,
+{
+    if actual_value != error_value {
+        Ok(actual_value)
+    } else {
+        API_STATE.with(|state| {
+            let state = state.borrow();
+            if let Some(e) = state.last_error.as_ref() {
+                err(e
+                    .clone()
+                    .into_string()
+                    .unwrap_or_else(|_| "Unknown error".to_string()))
+            } else {
+                err("Unknown error")
+            }
+        })
+    }
+}
+
+/// Same as `cb_return()`, but specialized for `dqcs_return_t`.
+pub fn cb_return_none(actual_value: dqcs_return_t) -> Result<()> {
+    cb_return(dqcs_return_t::DQCS_FAILURE, actual_value).map(|_| ())
 }
 
 /// Structure used to access objects stored in the thread-local object pool.
@@ -223,10 +292,54 @@ macro_rules! mutate_api_object_as {
 mutate_api_object_as! {ArbData, arb:
     APIObject::ArbData(x) => x, x, x,
     APIObject::ArbCmd(x) => x.data(), x.data_mut(), x.into(),
+    APIObject::ArbCmdQueue(x) => {
+        if let Some(x) = x.front() {
+            x.data()
+        } else {
+            return inv_arg("empty command queue does not support arb interface");
+        }
+    }, {
+        if let Some(x) = x.front_mut() {
+            x.data_mut()
+        } else {
+            return inv_arg("empty command queue does not support arb interface");
+        }
+    }, {
+        let mut x = x;
+        if let Some(x) = x.pop_front() {
+            x.into()
+        } else {
+            return inv_arg("empty command queue does not support arb interface");
+        }
+    },
 }
 
 mutate_api_object_as! {ArbCmd, cmd:
     APIObject::ArbCmd(x) => x, x, x,
+    APIObject::ArbCmdQueue(x) => {
+        if let Some(x) = x.front() {
+            x
+        } else {
+            return inv_arg("empty command queue does not support arb interface");
+        }
+    }, {
+        if let Some(x) = x.front_mut() {
+            x
+        } else {
+            return inv_arg("empty command queue does not support arb interface");
+        }
+    }, {
+        let mut x = x;
+        if let Some(x) = x.pop_front() {
+            x
+        } else {
+            return inv_arg("empty command queue does not support arb interface");
+        }
+    },
+}
+
+mutate_api_object_as! {ArbCmdQueue, cq:
+    APIObject::ArbCmdQueue(x) => x, x, x,
 }
 
 mutate_api_object_as! {PluginConfiguration, pcfg:
@@ -235,6 +348,14 @@ mutate_api_object_as! {PluginConfiguration, pcfg:
 
 mutate_api_object_as! {SimulatorConfiguration, scfg:
     APIObject::SimulatorConfiguration(x) => x, x, x,
+}
+
+mutate_api_object_as! {Simulator, sim:
+    APIObject::Simulator(x) => x, x, x,
+}
+
+mutate_api_object_as! {PluginDefinition, scfg:
+    APIObject::PluginDefinition(x) => x, x, x,
 }
 
 /// Resolves an object from a handle.
@@ -253,22 +374,6 @@ pub fn resolve(handle: dqcs_handle_t) -> Result<ResolvedHandle> {
         inv_arg(format!("handle {} is invalid", handle))
     }
 }
-
-/*
-/// Resolves an optional object from an optional handle.
-///
-/// This takes an object from the thread-local pool, so no reference is
-/// maintained. The object is reinserted into the pool when the returned
-/// container object is dropped, unless ownership of the object was taken
-/// over.
-pub fn resolve_opt(handle: dqcs_handle_t) -> Result<Option<ResolvedHandle>> {
-    if handle == 0 {
-        Ok(None)
-    } else {
-        Ok(Some(resolve(handle)?))
-    }
-}
-*/
 
 /// Resolves a handle into an underlying object.
 ///

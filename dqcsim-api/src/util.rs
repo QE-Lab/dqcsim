@@ -9,6 +9,15 @@ pub fn receive_str<'a>(s: *const c_char) -> Result<&'a str> {
     }
 }
 
+/// Convenience function for converting a C string to an optional Rust `str`.
+pub fn receive_optional_str<'a>(s: *const c_char) -> Result<Option<&'a str>> {
+    if s.is_null() {
+        Ok(None)
+    } else {
+        Ok(Some(unsafe { CStr::from_ptr(s) }.to_str()?))
+    }
+}
+
 /// Convenience function for converting a C const buffer to a Rust `&[u8]`.
 pub fn receive_raw<'a>(obj: *const c_void, obj_size: usize) -> Result<&'a [u8]> {
     if obj_size == 0 {
@@ -67,7 +76,7 @@ pub fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t
         inv_arg(format!("index out of range: {}", index))
     }
 }
-/*
+
 /// User data structure for callbacks.
 ///
 /// All callbacks carry a user-defined `void*` with them, which is passed to
@@ -122,4 +131,3 @@ impl CallbackUserData {
         self.data
     }
 }
-*/

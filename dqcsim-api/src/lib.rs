@@ -71,7 +71,8 @@
 
 use dqcsim::{
     common::{error::*, types::*},
-    host::configuration::*,
+    host::{configuration::*, simulator::Simulator},
+    plugin::{context::*, definition::*},
 };
 use libc::*;
 use std::{

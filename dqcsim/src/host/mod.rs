@@ -4,3 +4,4 @@ pub mod plugin;
 pub mod reproduction;
 pub mod simulation;
 pub mod simulator;
+pub mod accelerator;

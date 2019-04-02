@@ -53,6 +53,12 @@ pub struct Simulator {
     simulation: Option<Simulation>,
 }
 
+impl std::fmt::Debug for Simulator {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Simulator {{ ... }}")
+    }
+}
+
 impl AsRef<Simulation> for Simulator {
     fn as_ref(&self) -> &Simulation {
         self.simulation.as_ref().unwrap()

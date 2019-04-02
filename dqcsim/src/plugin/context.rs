@@ -1,6 +1,6 @@
 use crate::common::{
     error::{err, Result},
-    log,
+    log::Loglevel,
     types::{ArbCmd, ArbData, Gate, QubitRef},
 };
 
@@ -12,7 +12,14 @@ pub struct PluginContext {}
 
 impl PluginContext {
     /// Sends a log message to DQCsim by means of a LogRecord structure.
-    pub fn log(&self, _record: log::LogRecord) {}
+    pub fn log<T, S>(
+        &mut self,
+        _message: impl Into<String>,
+        _level: impl Into<Loglevel>,
+        _module: Option<T>,
+        _file: Option<S>,
+        _line_nr: impl Into<Option<u32>>
+    ) where T: Into<String>, S: Into<String> {}
 
     /// Sends a message to the host.
     ///

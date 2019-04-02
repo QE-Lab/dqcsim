@@ -1,6 +1,6 @@
 use super::*;
 use dqcsim::common::log::tee_file::TeeFile;
-use std::ptr::{null, null_mut};
+use std::ptr::null;
 
 /// Creates a new `PluginConfiguration` object using sugared syntax.
 ///
@@ -16,21 +16,16 @@ pub extern "C" fn dqcs_pcfg_new(
     name: *const c_char,
     spec: *const c_char,
 ) -> dqcs_handle_t {
-    with_api_state(
-        || 0,
-        |mut state| {
-            let spec = receive_str(spec)?;
-            if spec.is_empty() {
-                return inv_arg("plugin specification must not be empty");
-            }
-            Ok(
-                state.push(APIObject::PluginConfiguration(PluginConfiguration::new(
-                    receive_str(name)?,
-                    PluginSpecification::from_sugar(spec, typ.into())?,
-                ))),
-            )
-        },
-    )
+    api_return(0, || {
+        let spec = receive_str(spec)?;
+        if spec.is_empty() {
+            return inv_arg("plugin specification must not be empty");
+        }
+        Ok(insert(PluginConfiguration::new(
+            receive_str(name)?,
+            PluginSpecification::from_sugar(spec, typ.into())?,
+        )))
+    })
 }
 
 /// Creates a new `PluginConfiguration` object using raw paths.
@@ -50,42 +45,36 @@ pub extern "C" fn dqcs_pcfg_new_raw(
     executable: *const c_char,
     script: *const c_char,
 ) -> dqcs_handle_t {
-    with_api_state(
-        || 0,
-        |mut state| {
-            let executable = receive_str(executable)?;
-            if executable.is_empty() {
-                return inv_arg("plugin executable must not be empty");
-            }
-            let script_path;
-            if script.is_null() {
+    api_return(0, || {
+        let executable = receive_str(executable)?;
+        if executable.is_empty() {
+            return inv_arg("plugin executable must not be empty");
+        }
+        let script_path;
+        if script.is_null() {
+            script_path = None;
+        } else {
+            let script = receive_str(script)?;
+            if script.is_empty() {
                 script_path = None;
             } else {
-                let script = receive_str(script)?;
-                if script.is_empty() {
-                    script_path = None;
-                } else {
-                    script_path = Some(script);
-                }
+                script_path = Some(script);
             }
-            Ok(
-                state.push(APIObject::PluginConfiguration(PluginConfiguration::new(
-                    receive_str(name)?,
-                    PluginSpecification::new(executable, script_path, typ),
-                ))),
-            )
-        },
-    )
+        }
+        Ok(insert(PluginConfiguration::new(
+            receive_str(name)?,
+            PluginSpecification::new(executable, script_path, typ),
+        )))
+    })
 }
 
 /// Returns the type of the given plugin configuration.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_type(handle: dqcs_handle_t) -> dqcs_plugin_type_t {
-    with_pcfg(
-        handle,
-        || dqcs_plugin_type_t::DQCS_PTYPE_INVALID,
-        |plugin| Ok(plugin.specification.typ.into()),
-    )
+pub extern "C" fn dqcs_pcfg_type(pcfg: dqcs_handle_t) -> dqcs_plugin_type_t {
+    api_return(dqcs_plugin_type_t::DQCS_PTYPE_INVALID, || {
+        resolve!(pcfg as &PluginConfiguration);
+        Ok(pcfg.specification.typ.into())
+    })
 }
 
 /// Returns the configured name for the given plugin.
@@ -94,8 +83,11 @@ pub extern "C" fn dqcs_pcfg_type(handle: dqcs_handle_t) -> dqcs_plugin_type_t {
 /// name. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_name(handle: dqcs_handle_t) -> *mut c_char {
-    with_pcfg(handle, null_mut, |plugin| return_string(&plugin.name))
+pub extern "C" fn dqcs_pcfg_name(pcfg: dqcs_handle_t) -> *mut c_char {
+    api_return_string(|| {
+        resolve!(pcfg as &PluginConfiguration);
+        Ok(pcfg.name.to_string())
+    })
 }
 
 /// Returns the configured executable path for the given plugin.
@@ -105,9 +97,10 @@ pub extern "C" fn dqcs_pcfg_name(handle: dqcs_handle_t) -> *mut c_char {
 /// memory leaks.** On failure (i.e., the handle is invalid) this returns
 /// `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_executable(handle: dqcs_handle_t) -> *mut c_char {
-    with_pcfg(handle, null_mut, |plugin| {
-        return_string(plugin.specification.executable.to_string_lossy())
+pub extern "C" fn dqcs_pcfg_executable(pcfg: dqcs_handle_t) -> *mut c_char {
+    api_return_string(|| {
+        resolve!(pcfg as &PluginConfiguration);
+        Ok(pcfg.specification.executable.to_string_lossy().to_string())
     })
 }
 
@@ -119,12 +112,13 @@ pub extern "C" fn dqcs_pcfg_executable(handle: dqcs_handle_t) -> *mut c_char {
 /// empty string will be returned if no script is configured to distinguish it
 /// from failure.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_script(handle: dqcs_handle_t) -> *mut c_char {
-    with_pcfg(handle, null_mut, |plugin| {
-        if let Some(script) = plugin.specification.script.as_ref() {
-            return_string(script.to_string_lossy())
+pub extern "C" fn dqcs_pcfg_script(pcfg: dqcs_handle_t) -> *mut c_char {
+    api_return_string(|| {
+        resolve!(pcfg as &PluginConfiguration);
+        if let Some(script) = pcfg.specification.script.as_ref() {
+            Ok(script.to_string_lossy().to_string())
         } else {
-            return_string("")
+            Ok("".to_string())
         }
     })
 }
@@ -134,34 +128,13 @@ pub extern "C" fn dqcs_pcfg_script(handle: dqcs_handle_t) -> *mut c_char {
 /// The `ArbCmd` handle is consumed by this function, and is thus invalidated,
 /// if and only if it is successful.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_init_arb(
-    handle: dqcs_handle_t,
-    cmd_handle: dqcs_handle_t,
-) -> dqcs_return_t {
-    with_api_state(
-        || dqcs_return_t::DQCS_FAILURE,
-        |mut state| match state.objects.remove(&cmd_handle) {
-            Some(APIObject::ArbCmd(cmd_ob)) => match state.objects.get_mut(&handle) {
-                Some(APIObject::PluginConfiguration(pcfg)) => {
-                    pcfg.functional.init.push(cmd_ob);
-                    Ok(dqcs_return_t::DQCS_SUCCESS)
-                }
-                Some(_) => {
-                    state.objects.insert(cmd_handle, APIObject::ArbCmd(cmd_ob));
-                    unsup_handle(handle, "pcfg")
-                }
-                None => {
-                    state.objects.insert(cmd_handle, APIObject::ArbCmd(cmd_ob));
-                    inv_handle(handle)
-                }
-            },
-            Some(ob) => {
-                state.objects.insert(cmd_handle, ob);
-                unsup_handle(cmd_handle, "cmd")
-            }
-            None => inv_handle(cmd_handle),
-        },
-    )
+pub extern "C" fn dqcs_pcfg_init_arb(pcfg: dqcs_handle_t, cmd: dqcs_handle_t) -> dqcs_return_t {
+    api_return_none(|| {
+        resolve!(pcfg as &mut PluginConfiguration);
+        take!(cmd as ArbCmd);
+        pcfg.functional.init.push(cmd);
+        Ok(())
+    })
 }
 
 /// Overrides an environment variable for the plugin process.
@@ -172,28 +145,21 @@ pub extern "C" fn dqcs_pcfg_init_arb(
 /// If value is `NULL`, the environment variable `key` is unset instead.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_env_set(
-    handle: dqcs_handle_t,
+    pcfg: dqcs_handle_t,
     key: *const c_char,
     value: *const c_char,
 ) -> dqcs_return_t {
-    with_pcfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |plugin| {
-            if value.is_null() {
-                plugin
-                    .functional
-                    .env
-                    .push(EnvMod::remove(receive_str(key)?));
-            } else {
-                plugin
-                    .functional
-                    .env
-                    .push(EnvMod::set(receive_str(key)?, receive_str(value)?));
-            }
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+    api_return_none(|| {
+        resolve!(pcfg as &mut PluginConfiguration);
+        if value.is_null() {
+            pcfg.functional.env.push(EnvMod::remove(receive_str(key)?));
+        } else {
+            pcfg.functional
+                .env
+                .push(EnvMod::set(receive_str(key)?, receive_str(value)?));
+        }
+        Ok(())
+    })
 }
 
 /// Removes/unsets an environment variable for the plugin process.
@@ -201,21 +167,18 @@ pub extern "C" fn dqcs_pcfg_env_set(
 /// The environment variable `key` is unset regardless of whether it exists in
 /// the parent environment variable scope.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_env_unset(handle: dqcs_handle_t, key: *const c_char) -> dqcs_return_t {
-    dqcs_pcfg_env_set(handle, key, null())
+pub extern "C" fn dqcs_pcfg_env_unset(pcfg: dqcs_handle_t, key: *const c_char) -> dqcs_return_t {
+    dqcs_pcfg_env_set(pcfg, key, null())
 }
 
 /// Overrides the working directory for the plugin process.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_work_set(handle: dqcs_handle_t, work: *const c_char) -> dqcs_return_t {
-    with_pcfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |plugin| {
-            plugin.functional.work = receive_str(work)?.into();
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+pub extern "C" fn dqcs_pcfg_work_set(pcfg: dqcs_handle_t, work: *const c_char) -> dqcs_return_t {
+    api_return_none(|| {
+        resolve!(pcfg as &mut PluginConfiguration);
+        pcfg.functional.work = receive_str(work)?.into();
+        Ok(())
+    })
 }
 
 /// Returns the configured working directory for the given plugin.
@@ -225,36 +188,33 @@ pub extern "C" fn dqcs_pcfg_work_set(handle: dqcs_handle_t, work: *const c_char)
 /// memory leaks.** On failure (i.e., the handle is invalid) this returns
 /// `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_work_get(handle: dqcs_handle_t) -> *mut c_char {
-    with_pcfg(handle, null_mut, |plugin| {
-        return_string(plugin.functional.work.to_string_lossy())
+pub extern "C" fn dqcs_pcfg_work_get(pcfg: dqcs_handle_t) -> *mut c_char {
+    api_return_string(|| {
+        resolve!(pcfg as &PluginConfiguration);
+        Ok(pcfg.functional.work.to_string_lossy().to_string())
     })
 }
 
 /// Configures the logging verbosity for the given plugin.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_verbosity_set(
-    handle: dqcs_handle_t,
+    pcfg: dqcs_handle_t,
     level: dqcs_loglevel_t,
 ) -> dqcs_return_t {
-    with_pcfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |plugin| {
-            plugin.nonfunctional.verbosity = level.into_loglevel_filter()?;
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+    api_return_none(|| {
+        resolve!(pcfg as &mut PluginConfiguration);
+        pcfg.nonfunctional.verbosity = level.into_loglevel_filter()?;
+        Ok(())
+    })
 }
 
 /// Returns the configured verbosity for the given plugin.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_verbosity_get(handle: dqcs_handle_t) -> dqcs_loglevel_t {
-    with_pcfg(
-        handle,
-        || dqcs_loglevel_t::DQCS_LOG_INVALID,
-        |plugin| Ok(plugin.nonfunctional.verbosity.into()),
-    )
+pub extern "C" fn dqcs_pcfg_verbosity_get(pcfg: dqcs_handle_t) -> dqcs_loglevel_t {
+    api_return(dqcs_loglevel_t::DQCS_LOG_INVALID, || {
+        resolve!(pcfg as &PluginConfiguration);
+        Ok(pcfg.nonfunctional.verbosity.into())
+    })
 }
 
 /// Configures a plugin to also output its log messages to a file.
@@ -262,73 +222,62 @@ pub extern "C" fn dqcs_pcfg_verbosity_get(handle: dqcs_handle_t) -> dqcs_logleve
 /// `verbosity` configures the verbosity level for the file only.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_tee(
-    handle: dqcs_handle_t,
+    pcfg: dqcs_handle_t,
     verbosity: dqcs_loglevel_t,
     filename: *const c_char,
 ) -> dqcs_return_t {
-    with_pcfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |plugin| {
-            plugin.nonfunctional.tee_files.push(TeeFile::new(
-                verbosity.into_loglevel_filter()?,
-                receive_str(filename)?,
-            ));
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+    api_return_none(|| {
+        resolve!(pcfg as &mut PluginConfiguration);
+        pcfg.nonfunctional.tee_files.push(TeeFile::new(
+            verbosity.into_loglevel_filter()?,
+            receive_str(filename)?,
+        ));
+        Ok(())
+    })
 }
 
 /// Configures the capture mode for the stdout stream of the specified plugin.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_stdout_mode_set(
-    handle: dqcs_handle_t,
+    pcfg: dqcs_handle_t,
     level: dqcs_loglevel_t,
 ) -> dqcs_return_t {
-    with_pcfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |plugin| {
-            plugin.nonfunctional.stdout_mode = level.into();
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+    api_return_none(|| {
+        resolve!(pcfg as &mut PluginConfiguration);
+        pcfg.nonfunctional.stdout_mode = level.into();
+        Ok(())
+    })
 }
 
 /// Returns the configured stdout capture mode for the specified plugin.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_stdout_mode_get(handle: dqcs_handle_t) -> dqcs_loglevel_t {
-    with_pcfg(
-        handle,
-        || dqcs_loglevel_t::DQCS_LOG_INVALID,
-        |plugin| Ok(plugin.nonfunctional.stdout_mode.clone().into()),
-    )
+pub extern "C" fn dqcs_pcfg_stdout_mode_get(pcfg: dqcs_handle_t) -> dqcs_loglevel_t {
+    api_return(dqcs_loglevel_t::DQCS_LOG_INVALID, || {
+        resolve!(pcfg as &PluginConfiguration);
+        Ok(pcfg.nonfunctional.stdout_mode.clone().into())
+    })
 }
 
 /// Configures the capture mode for the stderr stream of the specified plugin.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_stderr_mode_set(
-    handle: dqcs_handle_t,
+    pcfg: dqcs_handle_t,
     level: dqcs_loglevel_t,
 ) -> dqcs_return_t {
-    with_pcfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |plugin| {
-            plugin.nonfunctional.stderr_mode = level.into();
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+    api_return_none(|| {
+        resolve!(pcfg as &mut PluginConfiguration);
+        pcfg.nonfunctional.stderr_mode = level.into();
+        Ok(())
+    })
 }
 
 /// Returns the configured stderr capture mode for the specified plugin.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_stderr_mode_get(handle: dqcs_handle_t) -> dqcs_loglevel_t {
-    with_pcfg(
-        handle,
-        || dqcs_loglevel_t::DQCS_LOG_INVALID,
-        |plugin| Ok(plugin.nonfunctional.stderr_mode.clone().into()),
-    )
+pub extern "C" fn dqcs_pcfg_stderr_mode_get(pcfg: dqcs_handle_t) -> dqcs_loglevel_t {
+    api_return(dqcs_loglevel_t::DQCS_LOG_INVALID, || {
+        resolve!(pcfg as &PluginConfiguration);
+        Ok(pcfg.nonfunctional.stderr_mode.clone().into())
+    })
 }
 
 /// Configures the timeout for the plugin to connect to DQCsim.
@@ -339,18 +288,12 @@ pub extern "C" fn dqcs_pcfg_stderr_mode_get(handle: dqcs_handle_t) -> dqcs_logle
 /// The time unit is seconds. Use IEEE positive infinity to specify an infinite
 /// timeout.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_accept_timeout_set(
-    handle: dqcs_handle_t,
-    timeout: f64,
-) -> dqcs_return_t {
-    with_pcfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |plugin| {
-            plugin.nonfunctional.accept_timeout = Timeout::try_from_double(timeout)?;
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+pub extern "C" fn dqcs_pcfg_accept_timeout_set(pcfg: dqcs_handle_t, timeout: f64) -> dqcs_return_t {
+    api_return_none(|| {
+        resolve!(pcfg as &mut PluginConfiguration);
+        pcfg.nonfunctional.accept_timeout = Timeout::try_from_double(timeout)?;
+        Ok(())
+    })
 }
 
 /// Returns the configured timeout for the plugin to connect to DQCsim.
@@ -358,12 +301,11 @@ pub extern "C" fn dqcs_pcfg_accept_timeout_set(
 /// The time unit is in seconds. Returns positive inifinity for an infinite
 /// timeout. Returns -1 when the function fails.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_accept_timeout_get(handle: dqcs_handle_t) -> f64 {
-    with_pcfg(
-        handle,
-        || -1.0,
-        |plugin| Ok(plugin.nonfunctional.accept_timeout.to_double()),
-    )
+pub extern "C" fn dqcs_pcfg_accept_timeout_get(pcfg: dqcs_handle_t) -> f64 {
+    api_return(-1.0, || {
+        resolve!(pcfg as &PluginConfiguration);
+        Ok(pcfg.nonfunctional.accept_timeout.to_double())
+    })
 }
 
 /// Configures the timeout for the plugin to shut down gracefully.
@@ -375,17 +317,14 @@ pub extern "C" fn dqcs_pcfg_accept_timeout_get(handle: dqcs_handle_t) -> f64 {
 /// timeout.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_shutdown_timeout_set(
-    handle: dqcs_handle_t,
+    pcfg: dqcs_handle_t,
     timeout: f64,
 ) -> dqcs_return_t {
-    with_pcfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |plugin| {
-            plugin.nonfunctional.shutdown_timeout = Timeout::try_from_double(timeout)?;
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+    api_return_none(|| {
+        resolve!(pcfg as &mut PluginConfiguration);
+        pcfg.nonfunctional.shutdown_timeout = Timeout::try_from_double(timeout)?;
+        Ok(())
+    })
 }
 
 /// Returns the configured timeout for the plugin to shut down gracefully.
@@ -393,10 +332,9 @@ pub extern "C" fn dqcs_pcfg_shutdown_timeout_set(
 /// The time unit is in seconds. Returns positive inifinity for an infinite
 /// timeout. Returns -1 when the function fails.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_shutdown_timeout_get(handle: dqcs_handle_t) -> f64 {
-    with_pcfg(
-        handle,
-        || -1.0,
-        |plugin| Ok(plugin.nonfunctional.shutdown_timeout.to_double()),
-    )
+pub extern "C" fn dqcs_pcfg_shutdown_timeout_get(pcfg: dqcs_handle_t) -> f64 {
+    api_return(-1.0, || {
+        resolve!(pcfg as &PluginConfiguration);
+        Ok(pcfg.nonfunctional.shutdown_timeout.to_double())
+    })
 }

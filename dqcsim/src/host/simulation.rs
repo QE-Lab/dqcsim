@@ -8,6 +8,7 @@ use crate::{
     },
     host::{
         configuration::{PluginConfiguration, Seed},
+        accelerator::Accelerator,
         plugin::Plugin,
     },
     trace,
@@ -127,49 +128,6 @@ impl Simulation {
         Ok(())
     }
 
-    /// Starts a program on the accelerator.
-    ///
-    /// This is an asynchronous call: nothing happens until `yield()`,
-    /// `recv()`, or `wait()` is called.
-    #[allow(unused)] // TODO: remove <--
-    pub fn start(&mut self, args: impl Into<ArbData>) -> Result<()> {
-        if self.state != SimulationState::Initialized {
-            inv_op(format!("init functions requires the simulation to be in the Initialized state. Current state: {:?}", self.state))?
-        }
-        Ok(())
-    }
-
-    /// Waits for the accelerator to finish its current program.
-    ///
-    /// When this succeeds, the return value of the accelerator's `run()`
-    /// function is returned.
-    ///
-    /// Deadlocks are detected and prevented by throwing an error message.
-    pub fn wait(&mut self) -> Result<ArbData> {
-        if self.state != SimulationState::Initialized {
-            inv_op(format!("init functions requires the simulation to be in the Initialized state. Current state: {:?}", self.state))?
-        }
-        Ok(ArbData::default())
-    }
-
-    /// Sends a message to the accelerator.
-    ///
-    /// This is an asynchronous call: nothing happens until `yield()`,
-    /// `recv()`, or `wait()` is called.
-    #[allow(unused)] // TODO: remove <--
-    pub fn send(&mut self, args: impl Into<ArbData>) -> Result<()> {
-        // TODO
-        inv_op("not yet implemented")
-    }
-
-    /// Waits for the accelerator to send a message to us.
-    ///
-    /// Deadlocks are detected and prevented by throwing an error message.
-    pub fn recv(&mut self) -> Result<ArbData> {
-        // TODO
-        inv_op("not yet implemented")
-    }
-
     /// Yields to the accelerator.
     ///
     /// The accelerator simulation runs until it blocks again. This is useful
@@ -272,6 +230,51 @@ impl Simulation {
     //         .for_each(|plugin| plugin.abort(graceful));
     //     Ok(())
     // }
+}
+
+impl Accelerator for Simulation {
+    /// Starts a program on the accelerator.
+    ///
+    /// This is an asynchronous call: nothing happens until `yield()`,
+    /// `recv()`, or `wait()` is called.
+    #[allow(unused)] // TODO: remove <--
+    fn start(&mut self, args: impl Into<ArbData>) -> Result<()> {
+        if self.state != SimulationState::Initialized {
+            inv_op(format!("init functions requires the simulation to be in the Initialized state. Current state: {:?}", self.state))?
+        }
+        Ok(())
+    }
+
+    /// Waits for the accelerator to finish its current program.
+    ///
+    /// When this succeeds, the return value of the accelerator's `run()`
+    /// function is returned.
+    ///
+    /// Deadlocks are detected and prevented by throwing an error message.
+    fn wait(&mut self) -> Result<ArbData> {
+        if self.state != SimulationState::Initialized {
+            inv_op(format!("init functions requires the simulation to be in the Initialized state. Current state: {:?}", self.state))?
+        }
+        Ok(ArbData::default())
+    }
+
+    /// Sends a message to the accelerator.
+    ///
+    /// This is an asynchronous call: nothing happens until `yield()`,
+    /// `recv()`, or `wait()` is called.
+    #[allow(unused)] // TODO: remove <--
+    fn send(&mut self, args: impl Into<ArbData>) -> Result<()> {
+        // TODO
+        inv_op("not yet implemented")
+    }
+
+    /// Waits for the accelerator to send a message to us.
+    ///
+    /// Deadlocks are detected and prevented by throwing an error message.
+    fn recv(&mut self) -> Result<ArbData> {
+        // TODO
+        inv_op("not yet implemented")
+    }
 }
 
 impl Drop for Simulation {

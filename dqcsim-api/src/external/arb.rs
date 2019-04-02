@@ -6,7 +6,7 @@ use std::ptr::null_mut;
 /// Returns the handle of the newly created `ArbData`. The `ArbData` is
 /// initialized with JSON object `{}` and an empty binary argument list.
 ///
-/// `ArbData` objects support the `handle` and `arb`.
+/// `ArbData` objects support the `handle` and `arb` APIs.
 #[no_mangle]
 pub extern "C" fn dqcs_arb_new() -> dqcs_handle_t {
     insert(ArbData::default())
