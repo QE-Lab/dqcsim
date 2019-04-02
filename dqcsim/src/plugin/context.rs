@@ -18,8 +18,12 @@ impl PluginContext {
         _level: impl Into<Loglevel>,
         _module: Option<T>,
         _file: Option<S>,
-        _line_nr: impl Into<Option<u32>>
-    ) where T: Into<String>, S: Into<String> {}
+        _line_nr: impl Into<Option<u32>>,
+    ) where
+        T: Into<String>,
+        S: Into<String>,
+    {
+    }
 
     /// Sends a message to the host.
     ///

@@ -7,8 +7,8 @@ use crate::{
         types::{ArbCmd, ArbData, PluginMetadata},
     },
     host::{
-        configuration::{PluginConfiguration, Seed},
         accelerator::Accelerator,
+        configuration::{PluginConfiguration, Seed},
         plugin::Plugin,
     },
     trace,

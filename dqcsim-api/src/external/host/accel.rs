@@ -20,7 +20,7 @@ pub extern "C" fn dqcs_accel_start(accel: dqcs_handle_t, data: dqcs_handle_t) ->
         };
         match accel {
             APIObject::Simulator(x) => x.as_mut().start(data_ob)?,
-            _ => inv_arg(format!("object does not support the accel interface"))?,
+            _ => inv_arg("object does not support the accel interface".to_string())?,
         }
         take!(resolved data as ArbData);
         let _ = data;
@@ -41,7 +41,7 @@ pub extern "C" fn dqcs_accel_wait(accel: dqcs_handle_t) -> dqcs_handle_t {
         resolve!(accel as &mut APIObject);
         Ok(insert(match accel {
             APIObject::Simulator(x) => x.as_mut().wait()?,
-            _ => inv_arg(format!("object does not support the accel interface"))?,
+            _ => inv_arg("object does not support the accel interface".to_string())?,
         }))
     })
 }
@@ -65,7 +65,7 @@ pub extern "C" fn dqcs_accel_send(accel: dqcs_handle_t, data: dqcs_handle_t) -> 
         };
         match accel {
             APIObject::Simulator(x) => x.as_mut().send(data_ob)?,
-            _ => inv_arg(format!("object does not support the accel interface"))?,
+            _ => inv_arg("object does not support the accel interface".to_string())?,
         }
         take!(resolved data as ArbData);
         let _ = data;
@@ -85,7 +85,7 @@ pub extern "C" fn dqcs_accel_recv(accel: dqcs_handle_t) -> dqcs_handle_t {
         resolve!(accel as &mut APIObject);
         Ok(insert(match accel {
             APIObject::Simulator(x) => x.as_mut().recv()?,
-            _ => inv_arg(format!("object does not support the accel interface"))?,
+            _ => inv_arg("object does not support the accel interface".to_string())?,
         }))
     })
 }

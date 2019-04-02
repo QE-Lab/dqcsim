@@ -79,7 +79,11 @@ pub fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t
 
 /// Convenience function for converting a C array of doubles representing a
 /// unitary matrix to its Rust representation.
-pub fn receive_matrix(ptr: *const c_double, matrix_len: size_t, num_qubits: usize) -> Result<Option<Vec<Complex64>>> {
+pub fn receive_matrix(
+    ptr: *const c_double,
+    matrix_len: size_t,
+    num_qubits: usize,
+) -> Result<Option<Vec<Complex64>>> {
     let num_entries = 4 << (num_qubits - 1);
     if matrix_len == 0 {
         Ok(None)

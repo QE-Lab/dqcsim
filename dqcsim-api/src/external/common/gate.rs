@@ -1,6 +1,6 @@
 use super::*;
-use std::ptr::null_mut;
 use std::mem::size_of;
+use std::ptr::null_mut;
 
 /// Constructs a new unitary gate.
 ///
@@ -376,7 +376,8 @@ pub extern "C" fn dqcs_gate_matrix(gate: dqcs_handle_t) -> *mut c_double {
         resolve!(gate as &Gate);
         let matrix = gate.get_matrix();
         if let Some(matrix) = matrix {
-            let ffi_matrix = unsafe { calloc(2 * matrix.len(), size_of::<c_double>()) as *mut c_double };
+            let ffi_matrix =
+                unsafe { calloc(2 * matrix.len(), size_of::<c_double>()) as *mut c_double };
             if ffi_matrix.is_null() {
                 err("failed to allocate return value")
             } else {
