@@ -245,7 +245,12 @@ pub extern "C" fn dqcs_accel_arb_idx(index: ssize_t, cmd: dqcs_handle_t) -> dqcs
 #[no_mangle]
 pub extern "C" fn dqcs_accel_get_name(name: *const c_char) -> *mut c_char {
     with_accel(null_mut, |accel| {
-        return_string(accel.as_ref().get_metadata(receive_str(name)?)?.get_name())
+        return_string(
+            accel
+                .simulation
+                .get_metadata(receive_str(name)?)?
+                .get_name(),
+        )
     })
 }
 
@@ -257,7 +262,7 @@ pub extern "C" fn dqcs_accel_get_name(name: *const c_char) -> *mut c_char {
 #[no_mangle]
 pub extern "C" fn dqcs_accel_get_name_idx(index: ssize_t) -> *mut c_char {
     with_accel(null_mut, |accel| {
-        return_string(accel.as_ref().get_metadata_idx(index)?.get_name())
+        return_string(accel.simulation.get_metadata_idx(index)?.get_name())
     })
 }
 
@@ -271,7 +276,7 @@ pub extern "C" fn dqcs_accel_get_author(name: *const c_char) -> *mut c_char {
     with_accel(null_mut, |accel| {
         return_string(
             accel
-                .as_ref()
+                .simulation
                 .get_metadata(receive_str(name)?)?
                 .get_author(),
         )
@@ -286,7 +291,7 @@ pub extern "C" fn dqcs_accel_get_author(name: *const c_char) -> *mut c_char {
 #[no_mangle]
 pub extern "C" fn dqcs_accel_get_author_idx(index: ssize_t) -> *mut c_char {
     with_accel(null_mut, |accel| {
-        return_string(accel.as_ref().get_metadata_idx(index)?.get_author())
+        return_string(accel.simulation.get_metadata_idx(index)?.get_author())
     })
 }
 
@@ -300,7 +305,7 @@ pub extern "C" fn dqcs_accel_get_version(name: *const c_char) -> *mut c_char {
     with_accel(null_mut, |accel| {
         return_string(
             accel
-                .as_ref()
+                .simulation
                 .get_metadata(receive_str(name)?)?
                 .get_version(),
         )
@@ -315,6 +320,6 @@ pub extern "C" fn dqcs_accel_get_version(name: *const c_char) -> *mut c_char {
 #[no_mangle]
 pub extern "C" fn dqcs_accel_get_version_idx(index: ssize_t) -> *mut c_char {
     with_accel(null_mut, |accel| {
-        return_string(accel.as_ref().get_metadata_idx(index)?.get_version())
+        return_string(accel.simulation.get_metadata_idx(index)?.get_version())
     })
 }

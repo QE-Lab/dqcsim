@@ -19,6 +19,7 @@ use std::{process, sync, thread, time};
 /// PluginProcess implements the [`Plugin`] trait to enable the [`Simulator`]
 /// to spawn and connect the plugin.
 /// A PluginProcess is defined by its [`PluginConfiguration`].
+#[derive(Debug)]
 pub struct PluginProcess {
     /// The complete plugin configuration.
     configuration: PluginConfiguration,
@@ -234,5 +235,11 @@ impl Drop for PluginProcess {
             }
             None => warn!("PluginProcess terminated by signal"),
         }
+    }
+}
+
+impl Into<Box<dyn Plugin>> for PluginProcess {
+    fn into(self) -> Box<dyn Plugin> {
+        Box::new(self) as Box<dyn Plugin>
     }
 }

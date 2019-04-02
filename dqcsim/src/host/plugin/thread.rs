@@ -7,7 +7,7 @@ use crate::{
     },
     host::{configuration::PluginConfiguration, plugin::Plugin},
 };
-use std::thread;
+use std::{fmt, thread};
 
 pub struct PluginThread {
     thread: Option<
@@ -21,6 +21,16 @@ pub struct PluginThread {
     >,
     handle: Option<thread::JoinHandle<()>>,
     channel: Option<CrossbeamChannel<SimulatorToPlugin, PluginToSimulator>>,
+}
+
+impl fmt::Debug for PluginThread {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("PluginThread")
+            .field("thread", &format!("..."))
+            .field("handle", &self.handle)
+            .field("channel", &self.channel)
+            .finish()
+    }
 }
 
 impl PluginThread {
@@ -69,4 +79,10 @@ impl Plugin for PluginThread {
 
 impl Drop for PluginThread {
     fn drop(&mut self) {}
+}
+
+impl Into<Box<dyn Plugin>> for PluginThread {
+    fn into(self) -> Box<dyn Plugin> {
+        Box::new(self) as Box<dyn Plugin>
+    }
 }

@@ -12,9 +12,10 @@ use crate::{
     },
     host::configuration::{PluginConfiguration, PluginType},
 };
+use std::fmt::Debug;
 
 /// The Plugin trait, implemented by all Plugins used in a Simulation.
-pub trait Plugin {
+pub trait Plugin: Debug {
     /// Spawn the Plugin. The Plugin should spawn the actual plugin code and
     /// prepare the communication channel. After spawning both the [`send`] and
     /// [`receive`] functions should be available. The simulator will continue
@@ -50,11 +51,11 @@ impl Plugin {
     pub fn init(
         &mut self,
         logger: &LogThread,
-        downstream: Option<String>,
+        downstream: &Option<String>,
     ) -> Result<PluginInitializeResponse> {
         self.send(SimulatorToPlugin::Initialize(Box::new(
             PluginInitializeRequest {
-                downstream,
+                downstream: downstream.clone(),
                 configuration: self.configuration(),
                 log: logger.get_ipc_sender(),
             },

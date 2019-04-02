@@ -18,7 +18,6 @@ fn main() -> Result<(), Error> {
         eprintln!("Failed to construct simulator: {}", e);
         std::process::exit(1);
     });
-    sim.init()?;
 
     for host_call in cfg.host_calls.into_iter() {
         match host_call {
