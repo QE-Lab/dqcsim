@@ -1,88 +1,128 @@
 use crate::common::{
-    error::Result,
-    log,
+    error::{err, Result},
+    log::Loglevel,
     types::{ArbCmd, ArbData, Gate, QubitRef},
 };
 
-/// Trait which defines methods available in PluginDefinition closure functions.
-pub trait PluginContext {
+/// Temporary (?) structure that contains the functions that the user may call
+/// from the closures in the plugin definition.
+///
+/// TODO: move me?
+pub struct PluginContext {}
+
+impl PluginContext {
     /// Sends a log message to DQCsim by means of a LogRecord structure.
-    fn log(&self, _record: log::LogRecord) {}
+    pub fn log<T, S>(
+        &mut self,
+        _message: impl Into<String>,
+        _level: impl Into<Loglevel>,
+        _module: Option<T>,
+        _file: Option<S>,
+        _line_nr: impl Into<Option<u32>>,
+    ) where
+        T: Into<String>,
+        S: Into<String>,
+    {
+    }
 
     /// Sends a message to the host.
     ///
     /// It is only legal to call this function from within the `run()`
     /// callback. Any other source will result in an `Err` return value.
-    fn send(&mut self, _msg: ArbData) -> Result<()>;
+    pub fn send(&mut self, _msg: ArbData) -> Result<()> {
+        err("not yet implemented")
+    }
 
     /// Waits for a message from the host.
     ///
     /// It is only legal to call this function from within the `run()`
     /// callback. Any other source will result in an `Err` return value.
-    fn recv(&mut self) -> Result<ArbData>;
+    pub fn recv(&mut self) -> Result<ArbData> {
+        err("not yet implemented")
+    }
 
     /// Allocate the given number of downstream qubits.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    fn allocate(&mut self, _num_qubits: usize, _arbs: Vec<ArbCmd>) -> Result<Vec<QubitRef>>;
+    pub fn allocate(&mut self, _num_qubits: usize, _arbs: Vec<ArbCmd>) -> Result<Vec<QubitRef>> {
+        err("not yet implemented")
+    }
 
     /// Free the given downstream qubits.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    fn free(&mut self, _qubits: Vec<QubitRef>) -> Result<()>;
+    pub fn free(&mut self, _qubits: Vec<QubitRef>) -> Result<()> {
+        err("not yet implemented")
+    }
 
     /// Tells the downstream plugin to execute a gate.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    fn gate(&mut self, _gate: Gate) -> Result<()>;
+    pub fn gate(&mut self, _gate: Gate) -> Result<()> {
+        err("not yet implemented")
+    }
 
     /// Returns the latest measurement of the given downstream qubit.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    fn get_measurement(&self, _qubit: QubitRef) -> Result<bool>;
+    pub fn get_measurement(&self, _qubit: QubitRef) -> Result<bool> {
+        err("not yet implemented")
+    }
 
     /// Returns the additional data associated with the latest measurement of
     /// the given downstream qubit.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    fn get_measurement_arb(&self, _qubit: QubitRef) -> Result<ArbData>;
+    pub fn get_measurement_arb(&self, _qubit: QubitRef) -> Result<ArbData> {
+        err("not yet implemented")
+    }
 
     /// Returns the number of downstream cycles since the latest measurement
     /// of the given downstream qubit.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    fn get_cycles_since_measure(&self, _qubit: QubitRef) -> Result<usize>;
+    pub fn get_cycles_since_measure(&self, _qubit: QubitRef) -> Result<usize> {
+        err("not yet implemented")
+    }
 
     /// Returns the number of downstream cycles between the last two
     /// measurements of the given downstream qubit.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    fn get_cycles_between_measures(&self, _qubit: QubitRef) -> Result<usize>;
+    pub fn get_cycles_between_measures(&self, _qubit: QubitRef) -> Result<usize> {
+        err("not yet implemented")
+    }
 
     /// Advances the downstream cycle counter.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    fn advance(&mut self, _cycles: usize) -> Result<usize>;
+    pub fn advance(&mut self, _cycles: usize) -> Result<usize> {
+        err("not yet implemented")
+    }
 
     /// Returns the current value of the downstream cycle counter.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    fn get_cycle(&self) -> Result<usize>;
+    pub fn get_cycle(&self) -> Result<usize> {
+        err("not yet implemented")
+    }
 
     /// Sends an arbitrary command downstream.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    fn arb(&mut self, _cmd: ArbCmd) -> Result<ArbData>;
+    pub fn arb(&mut self, _cmd: ArbCmd) -> Result<ArbData> {
+        err("not yet implemented")
+    }
 
     /// Generates a random unsigned 64-bit number using the simulator random
     /// seed.
@@ -93,7 +133,7 @@ pub trait PluginContext {
     /// called by `modify_measurements()`). This is to ensure that the order in
     /// which the RNG functions are called per state does not depend on OS
     /// scheduling.
-    fn random_u64(&mut self) -> u64 {
+    pub fn random_u64(&mut self) -> u64 {
         0
     }
 
@@ -108,7 +148,7 @@ pub trait PluginContext {
     /// called by `modify_measurements()`). This is to ensure that the order in
     /// which the RNG functions are called per state does not depend on OS
     /// scheduling.
-    fn random_f64(&mut self) -> f64 {
+    pub fn random_f64(&mut self) -> f64 {
         0.0
     }
 }

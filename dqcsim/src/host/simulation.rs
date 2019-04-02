@@ -2,12 +2,12 @@
 
 use crate::{
     common::{
-        error::{err, inv_arg, Result},
+        error::{err, inv_arg, inv_op, Result},
         log::thread::LogThread,
         protocol::SimulatorToPlugin,
         types::{ArbCmd, ArbData, PluginMetadata},
     },
-    host::{configuration::Seed, plugin::Plugin},
+    host::{accelerator::Accelerator, configuration::Seed, plugin::Plugin},
     trace,
 };
 use std::collections::VecDeque;
@@ -100,7 +100,7 @@ impl Simulation {
     ///
     /// This is an asynchronous call: nothing happens until `yield()`,
     /// `recv()`, or `wait()` is called.
-    pub fn start(&mut self, args: impl Into<ArbData>) -> Result<()> {
+    pub fn start(&mut self, _args: impl Into<ArbData>) -> Result<()> {
         unimplemented!()
     }
 
@@ -118,7 +118,7 @@ impl Simulation {
     ///
     /// This is an asynchronous call: nothing happens until `yield()`,
     /// `recv()`, or `wait()` is called.
-    pub fn send(&mut self, args: impl Into<ArbData>) -> Result<()> {
+    pub fn send(&mut self, _args: impl Into<ArbData>) -> Result<()> {
         unimplemented!()
     }
 
@@ -216,6 +216,45 @@ impl Simulation {
         }
         // TODO: get the metadata object
         unimplemented!()
+    }
+}
+
+impl Accelerator for Simulation {
+    /// Starts a program on the accelerator.
+    ///
+    /// This is an asynchronous call: nothing happens until `yield()`,
+    /// `recv()`, or `wait()` is called.
+    #[allow(unused)] // TODO: remove <--
+    fn start(&mut self, args: impl Into<ArbData>) -> Result<()> {
+        Ok(())
+    }
+
+    /// Waits for the accelerator to finish its current program.
+    ///
+    /// When this succeeds, the return value of the accelerator's `run()`
+    /// function is returned.
+    ///
+    /// Deadlocks are detected and prevented by throwing an error message.
+    fn wait(&mut self) -> Result<ArbData> {
+        Ok(ArbData::default())
+    }
+
+    /// Sends a message to the accelerator.
+    ///
+    /// This is an asynchronous call: nothing happens until `yield()`,
+    /// `recv()`, or `wait()` is called.
+    #[allow(unused)] // TODO: remove <--
+    fn send(&mut self, args: impl Into<ArbData>) -> Result<()> {
+        // TODO
+        inv_op("not yet implemented")
+    }
+
+    /// Waits for the accelerator to send a message to us.
+    ///
+    /// Deadlocks are detected and prevented by throwing an error message.
+    fn recv(&mut self) -> Result<ArbData> {
+        // TODO
+        inv_op("not yet implemented")
     }
 }
 

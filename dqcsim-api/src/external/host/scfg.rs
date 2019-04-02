@@ -16,21 +16,16 @@ use std::time::*;
 /// line interface. Refer to its help for more information.
 #[no_mangle]
 pub extern "C" fn dqcs_scfg_new() -> dqcs_handle_t {
-    with_api_state(
-        || 0,
-        |mut state| {
-            Ok(state.push(APIObject::SimulatorConfiguration(
-                SimulatorConfiguration::default(),
-            )))
-        },
-    )
+    insert(SimulatorConfiguration::default())
 }
 
 /// Appends a plugin to a simulation configuration.
 ///
 /// Frontend and backend plugins will automatically be inserted at the front
 /// and back of the pipeline when the simulation is created. Operators are
-/// inserted in front to back order.
+/// inserted in front to back order. This function does not provide safeguards
+/// against multiple frontends/backends; such errors will only be reported when
+/// the simulation is started.
 ///
 /// The `PluginConfiguration` handle is consumed by this function, and is thus
 /// invalidated, if and only if it is successful.
@@ -40,53 +35,25 @@ pub extern "C" fn dqcs_scfg_new() -> dqcs_handle_t {
 /// do this for some reason, you should maintain your own data structures, and
 /// only build the DQCsim structures from them when you're done.
 #[no_mangle]
-pub extern "C" fn dqcs_scfg_push_plugin(
-    handle: dqcs_handle_t,
-    pcfg_handle: dqcs_handle_t,
-) -> dqcs_return_t {
-    with_api_state(
-        || dqcs_return_t::DQCS_FAILURE,
-        |mut state| match state.objects.remove(&pcfg_handle) {
-            Some(APIObject::PluginConfiguration(pcfg_ob)) => match state.objects.get_mut(&handle) {
-                Some(APIObject::SimulatorConfiguration(scfg)) => {
-                    scfg.plugins.push(pcfg_ob);
-                    Ok(dqcs_return_t::DQCS_SUCCESS)
-                }
-                Some(_) => {
-                    state
-                        .objects
-                        .insert(pcfg_handle, APIObject::PluginConfiguration(pcfg_ob));
-                    unsup_handle(handle, "scfg")
-                }
-                None => {
-                    state
-                        .objects
-                        .insert(pcfg_handle, APIObject::PluginConfiguration(pcfg_ob));
-                    inv_handle(handle)
-                }
-            },
-            Some(ob) => {
-                state.objects.insert(pcfg_handle, ob);
-                unsup_handle(pcfg_handle, "pcfg")
-            }
-            None => inv_handle(pcfg_handle),
-        },
-    )
+pub extern "C" fn dqcs_scfg_push_plugin(scfg: dqcs_handle_t, pcfg: dqcs_handle_t) -> dqcs_return_t {
+    api_return_none(|| {
+        resolve!(scfg as &mut SimulatorConfiguration);
+        take!(pcfg as PluginConfiguration);
+        scfg.plugins.push(pcfg);
+        Ok(())
+    })
 }
 
 /// Configures the random seed that the simulation should use.
 ///
 /// Note that the seed is randomized by default.
 #[no_mangle]
-pub extern "C" fn dqcs_scfg_seed_set(handle: dqcs_handle_t, seed: u64) -> dqcs_return_t {
-    with_scfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |sim| {
-            sim.seed.value = seed;
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+pub extern "C" fn dqcs_scfg_seed_set(scfg: dqcs_handle_t, seed: u64) -> dqcs_return_t {
+    api_return_none(|| {
+        resolve!(scfg as &mut SimulatorConfiguration);
+        scfg.seed.value = seed;
+        Ok(())
+    })
 }
 
 /// Returns the configured random seed.
@@ -94,8 +61,11 @@ pub extern "C" fn dqcs_scfg_seed_set(handle: dqcs_handle_t, seed: u64) -> dqcs_r
 /// This function will return 0 when it fails, but this can unfortunately not
 /// be reliably distinguished from a seed that was set to 0.
 #[no_mangle]
-pub extern "C" fn dqcs_scfg_seed_get(handle: dqcs_handle_t) -> u64 {
-    with_scfg(handle, || 0, |sim| Ok(sim.seed.value))
+pub extern "C" fn dqcs_scfg_seed_get(scfg: dqcs_handle_t) -> u64 {
+    api_return(0, || {
+        resolve!(scfg as &SimulatorConfiguration);
+        Ok(scfg.seed.value)
+    })
 }
 
 /// Configures the stderr sink verbosity for a simulation.
@@ -104,17 +74,14 @@ pub extern "C" fn dqcs_scfg_seed_get(handle: dqcs_handle_t) -> u64 {
 /// printed to stderr.
 #[no_mangle]
 pub extern "C" fn dqcs_scfg_stderr_verbosity_set(
-    handle: dqcs_handle_t,
+    scfg: dqcs_handle_t,
     level: dqcs_loglevel_t,
 ) -> dqcs_return_t {
-    with_scfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |sim| {
-            sim.stderr_level = level.into_loglevel_filter()?;
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+    api_return_none(|| {
+        resolve!(scfg as &mut SimulatorConfiguration);
+        scfg.stderr_level = level.into_loglevel_filter()?;
+        Ok(())
+    })
 }
 
 /// Returns the configured stderr sink verbosity for a simulation.
@@ -122,12 +89,11 @@ pub extern "C" fn dqcs_scfg_stderr_verbosity_set(
 /// That is, the minimum loglevel that a messages needs to have for it to be
 /// printed to stderr.
 #[no_mangle]
-pub extern "C" fn dqcs_scfg_stderr_verbosity_get(handle: dqcs_handle_t) -> dqcs_loglevel_t {
-    with_scfg(
-        handle,
-        || dqcs_loglevel_t::DQCS_LOG_INVALID,
-        |sim| Ok(sim.stderr_level.into()),
-    )
+pub extern "C" fn dqcs_scfg_stderr_verbosity_get(scfg: dqcs_handle_t) -> dqcs_loglevel_t {
+    api_return(dqcs_loglevel_t::DQCS_LOG_INVALID, || {
+        resolve!(scfg as &SimulatorConfiguration);
+        Ok(scfg.stderr_level.into())
+    })
 }
 
 /// Configures DQCsim to also output its log messages to a file.
@@ -135,21 +101,18 @@ pub extern "C" fn dqcs_scfg_stderr_verbosity_get(handle: dqcs_handle_t) -> dqcs_
 /// `verbosity` configures the verbosity level for the file only.
 #[no_mangle]
 pub extern "C" fn dqcs_scfg_tee(
-    handle: dqcs_handle_t,
+    scfg: dqcs_handle_t,
     verbosity: dqcs_loglevel_t,
     filename: *const c_char,
 ) -> dqcs_return_t {
-    with_scfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |sim| {
-            sim.tee_files.push(TeeFile::new(
-                verbosity.into_loglevel_filter()?,
-                receive_str(filename)?,
-            ));
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+    api_return_none(|| {
+        resolve!(scfg as &mut SimulatorConfiguration);
+        scfg.tee_files.push(TeeFile::new(
+            verbosity.into_loglevel_filter()?,
+            receive_str(filename)?,
+        ));
+        Ok(())
+    })
 }
 
 /// Configures DQCsim to also output its log messages to callback function.
@@ -198,7 +161,7 @@ pub extern "C" fn dqcs_scfg_tee(
 #[no_mangle]
 #[allow(unused_must_use)]
 pub extern "C" fn dqcs_scfg_log_callback(
-    handle: dqcs_handle_t,
+    scfg: dqcs_handle_t,
     verbosity: dqcs_loglevel_t,
     callback: Option<
         extern "C" fn(
@@ -218,84 +181,75 @@ pub extern "C" fn dqcs_scfg_log_callback(
     user_free: Option<extern "C" fn(*mut c_void)>,
     user_data: *mut c_void,
 ) -> dqcs_return_t {
-    with_scfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |sim| {
-            let data = CallbackUserData::new(user_free, user_data);
+    api_return_none(|| {
+        resolve!(scfg as &mut SimulatorConfiguration);
+        let data = CallbackUserData::new(user_free, user_data);
 
-            if let Some(callback) = callback {
-                sim.log_callback = Some(LogCallback {
-                    callback: Box::new(move |record: &log::LogRecord| {
-                        || -> Result<()> {
-                            let ts_sec;
-                            let ts_nano;
-                            if let Ok(ts) =
-                                record.timestamp().duration_since(SystemTime::UNIX_EPOCH)
-                            {
-                                ts_sec = ts.as_secs();
-                                ts_nano = ts.subsec_nanos();
-                            } else {
-                                ts_sec = 0;
-                                ts_nano = 0;
-                            }
-                            callback(
-                                data.data(),
-                                CString::new(record.payload())?.as_ptr(),
-                                CString::new(record.logger())?.as_ptr(),
-                                record.level().into(),
-                                match record.module_path() {
-                                    Some(x) => CString::new(x)?.as_ptr(),
-                                    None => null(),
-                                },
-                                match record.file() {
-                                    Some(x) => CString::new(x)?.as_ptr(),
-                                    None => null(),
-                                },
-                                match record.line() {
-                                    Some(x) => x,
-                                    None => 0,
-                                },
-                                ts_sec,
-                                ts_nano,
-                                record.process(),
-                                record.thread(),
-                            );
-                            Ok(())
-                        }();
-                    }),
-                    filter: verbosity.into_loglevel_filter()?,
-                });
-            } else {
-                sim.log_callback = None;
-            }
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+        if let Some(callback) = callback {
+            scfg.log_callback = Some(LogCallback {
+                callback: Box::new(move |record: &log::LogRecord| {
+                    || -> Result<()> {
+                        let ts_sec;
+                        let ts_nano;
+                        if let Ok(ts) = record.timestamp().duration_since(SystemTime::UNIX_EPOCH) {
+                            ts_sec = ts.as_secs();
+                            ts_nano = ts.subsec_nanos();
+                        } else {
+                            ts_sec = 0;
+                            ts_nano = 0;
+                        }
+                        callback(
+                            data.data(),
+                            CString::new(record.payload())?.as_ptr(),
+                            CString::new(record.logger())?.as_ptr(),
+                            record.level().into(),
+                            match record.module_path() {
+                                Some(x) => CString::new(x)?.as_ptr(),
+                                None => null(),
+                            },
+                            match record.file() {
+                                Some(x) => CString::new(x)?.as_ptr(),
+                                None => null(),
+                            },
+                            match record.line() {
+                                Some(x) => x,
+                                None => 0,
+                            },
+                            ts_sec,
+                            ts_nano,
+                            record.process(),
+                            record.thread(),
+                        );
+                        Ok(())
+                    }();
+                }),
+                filter: verbosity.into_loglevel_filter()?,
+            });
+        } else {
+            scfg.log_callback = None;
+        }
+        Ok(())
+    })
 }
 
 /// Configures the logging verbosity for DQCsim's own messages.
 #[no_mangle]
 pub extern "C" fn dqcs_scfg_dqcsim_verbosity_set(
-    handle: dqcs_handle_t,
+    scfg: dqcs_handle_t,
     level: dqcs_loglevel_t,
 ) -> dqcs_return_t {
-    with_scfg(
-        handle,
-        || dqcs_return_t::DQCS_FAILURE,
-        |sim| {
-            sim.dqcsim_level = level.into_loglevel_filter()?;
-            Ok(dqcs_return_t::DQCS_SUCCESS)
-        },
-    )
+    api_return_none(|| {
+        resolve!(scfg as &mut SimulatorConfiguration);
+        scfg.dqcsim_level = level.into_loglevel_filter()?;
+        Ok(())
+    })
 }
 
 /// Returns the configured verbosity for DQCsim's own messages.
 #[no_mangle]
-pub extern "C" fn dqcs_scfg_dqcsim_verbosity_get(handle: dqcs_handle_t) -> dqcs_loglevel_t {
-    with_scfg(
-        handle,
-        || dqcs_loglevel_t::DQCS_LOG_INVALID,
-        |sim| Ok(sim.dqcsim_level.into()),
-    )
+pub extern "C" fn dqcs_scfg_dqcsim_verbosity_get(scfg: dqcs_handle_t) -> dqcs_loglevel_t {
+    api_return(dqcs_loglevel_t::DQCS_LOG_INVALID, || {
+        resolve!(scfg as &SimulatorConfiguration);
+        Ok(scfg.dqcsim_level.into())
+    })
 }

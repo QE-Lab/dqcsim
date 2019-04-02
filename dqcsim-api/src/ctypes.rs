@@ -44,9 +44,45 @@ pub type dqcs_qubit_t = c_ulonglong;
 #[allow(non_camel_case_types)]
 pub type dqcs_cycle_t = c_longlong;
 
+/// Type for a plugin context.
+///
+/// This is an opaque type that is passed along to plugin implementation
+/// callback functions, which those callbacks can then use to interact with the
+/// plugin instance. User code shall not create or modify values of this type,
+/// and shall only use the values when calling `dqcs_plugin_*` functions.
+#[allow(non_camel_case_types)]
+#[repr(transparent)]
+#[derive(Clone, Copy)]
+pub struct dqcs_plugin_context_t(*mut c_void);
+
+impl From<&mut PluginContext> for dqcs_plugin_context_t {
+    /// Convert a plugin context reference to its FFI representation.
+    fn from(pc: &mut PluginContext) -> dqcs_plugin_context_t {
+        dqcs_plugin_context_t(pc as *mut PluginContext as *mut c_void)
+    }
+}
+
+impl Into<&mut PluginContext> for dqcs_plugin_context_t {
+    /// Convert the FFI representation of a plugin context back to a Rust
+    /// reference.
+    fn into(self) -> &'static mut PluginContext {
+        unsafe { &mut *(self.0 as *mut PluginContext) }
+    }
+}
+
+impl dqcs_plugin_context_t {
+    pub fn resolve(self) -> Result<&'static mut PluginContext> {
+        if self.0.is_null() {
+            inv_arg("invalid plugin context")
+        } else {
+            Ok(self.into())
+        }
+    }
+}
+
 /// Enumeration of types that can be associated with a handle.
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum dqcs_handle_type_t {
     /// Indicates that the given handle is invalid.
@@ -69,11 +105,11 @@ pub enum dqcs_handle_type_t {
     /// interfaces.
     DQCS_HTYPE_ARB_CMD = 2,
 
-    /// Indicates that the given handle belongs to a `Gate` object.
+    /// Indicates that the given handle belongs to a queue of `ArbCmd` object.
     ///
-    /// This means that the handle supports the `handle`, `arb`, and `gate`
-    /// interfaces.
-    DQCS_HTYPE_GATE = 3,
+    /// This means that the handle supports the `handle`, `arb`, `cmd`, and
+    /// `cq` interfaces.
+    DQCS_HTYPE_ARB_CMD_QUEUE = 3,
 
     /// Indicates that the given handle belongs to a frontend plugin
     /// configuration object.
@@ -90,11 +126,26 @@ pub enum dqcs_handle_type_t {
     /// Indicates that the given handle belongs to a simulator configuration
     /// object.
     DQCS_HTYPE_SIM_CONFIG = 7,
+
+    /// Indicates that the given handle belongs to a simulator instance.
+    DQCS_HTYPE_SIM = 8,
+
+    /// Indicates that the given handle belongs to a frontend plugin
+    /// definition object.
+    DQCS_HTYPE_FRONT_DEF = 9,
+
+    /// Indicates that the given handle belongs to an operator plugin
+    /// definition object.
+    DQCS_HTYPE_OPER_DEF = 10,
+
+    /// Indicates that the given handle belongs to a backend plugin
+    /// definition object.
+    DQCS_HTYPE_BACK_DEF = 11,
 }
 
 /// Enumeration of the three types of plugins.
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum dqcs_plugin_type_t {
     /// Invalid plugin type. Used to indicate failure of an API that returns
@@ -134,7 +185,7 @@ impl Into<PluginType> for dqcs_plugin_type_t {
 
 /// Enumeration of loglevels and logging modes.
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum dqcs_loglevel_t {
     /// Invalid loglevel. Used to indicate failure of an API that returns a
@@ -269,7 +320,7 @@ impl From<LoglevelFilter> for dqcs_loglevel_t {
 
 /// Enumeration of the different qubit sets associated with a gate.
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum dqcs_qubit_set_type_t {
     /// The qubit list containing the target qubits.
@@ -301,7 +352,7 @@ pub enum dqcs_qubit_set_type_t {
 
 /// Default return type for functions that don't need to return anything.
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum dqcs_return_t {
     /// The function has failed. More information may be obtained through
@@ -314,7 +365,7 @@ pub enum dqcs_return_t {
 
 /// Return type for functions that normally return a boolean but can also fail.
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum dqcs_bool_return_t {
     /// The function has failed. More information may be obtained through

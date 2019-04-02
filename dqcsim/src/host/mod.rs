@@ -1,3 +1,4 @@
+pub mod accelerator;
 pub mod configuration;
 pub mod plugin;
 pub mod reproduction;

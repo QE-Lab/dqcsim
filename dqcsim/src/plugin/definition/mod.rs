@@ -6,6 +6,7 @@ use crate::{
     host::configuration::PluginType,
     plugin::context::PluginContext,
 };
+use std::fmt;
 
 /// Defines a plugin.
 ///
@@ -163,6 +164,15 @@ pub struct PluginDefinition {
     ///
     /// The default behavior for this is no-op.
     pub host_arb: Box<dyn Fn(&mut PluginContext, ArbCmd) -> Result<ArbData>>,
+}
+
+impl fmt::Debug for PluginDefinition {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct("PluginDefinition")
+            .field("typ", &self.typ)
+            .field("metadata", &self.metadata)
+            .finish()
+    }
 }
 
 impl PluginDefinition {
