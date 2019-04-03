@@ -80,47 +80,99 @@ pub extern "C" fn dqcs_pdef_get_version(pdef: dqcs_handle_t) -> *mut c_char {
     })
 }
 
-/// Overrides the default initialization behavior using a callback.
-///
-/// This is always called before any of the other callbacks are run. The
-/// downstream plugin has already been initialized at this stage, so it is
-/// legal to send it commands.
-///
-/// The default behavior is no-op.
-///
-/// The callback takes the following arguments:
-///  - `void*`: user defined data.
-///  - `dqcs_plugin_state_t`: plugin context, needed to call the
-///    `dqcs_plugin_*` functions.
-///  - `dqcs_handle_t`: handle to an `ArbCmd` queue (`dqcs_cq_*`, `dqcs_cmd_*`,
-///     and `dqcs_arb_*` interfaces) containing user-defined initialization
-///     commands. It is up to the callback to delete this handle.
-///
-/// The callback can return an error by setting an error message using
-/// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should
-/// return `DQCS_SUCCESS`.
-#[no_mangle]
-#[allow(unused_must_use)]
-pub extern "C" fn dqcs_pdef_set_initialize_cb(
-    pdef: dqcs_handle_t,
-    callback: Option<
-        extern "C" fn(*mut c_void, dqcs_plugin_state_t, dqcs_handle_t) -> dqcs_return_t,
-    >,
-    user_free: Option<extern "C" fn(*mut c_void)>,
-    user_data: *mut c_void,
-) -> dqcs_return_t {
-    api_return_none(|| {
-        let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
-        resolve!(pdef as &mut PluginDefinition);
-        let data = CallbackUserData::new(user_free, user_data);
-        pdef.initialize = Box::new(
-            move |ctxt: &mut PluginState, init_cmds: Vec<ArbCmd>| -> Result<()> {
-                let init_cmds: ArbCmdQueue = init_cmds.into_iter().collect();
-                cb_return_none(callback(data.data(), ctxt.into(), insert(init_cmds)))
-            },
-        );
-        Ok(())
-    })
+/// Macro for generating the boilerplate code for the plugin callback setters.
+macro_rules! define_callback {
+    (
+        // Docstring.
+        $(#[$doc:meta])*
+
+        // Name of the API function and name of the callback in the
+        // PluginDefinition structure:
+        $setter:ident::$name:ident
+
+        // Argument list, supplying first the type name in the Rust domain and
+        // then the type in the foreign domain:
+        ($($ai:ident: $atr:ty as $atf:ty),*)
+
+        // Return value (excluding Result<>), again first the type in the Rust
+        // domain and then the type in the foreign domain:
+        -> $rtr:ty as $rtf:ty
+
+        // Closure going from Rust to foreign. Needs to start with `callback,
+        // state, data` due to macro hygiene rules, followed by the contents of
+        // the closure.
+        = $callback:ident, $state:ident, $data:ident $contents:tt
+    ) => {
+        $(#[$doc])*
+        #[no_mangle]
+        pub extern "C" fn $setter(
+            pdef: dqcs_handle_t,
+            callback: Option<
+                extern "C" fn(data: *mut c_void, state: dqcs_plugin_state_t, $($ai: $atf),*) -> $rtf,
+            >,
+            user_free: Option<extern "C" fn(data: *mut c_void)>,
+            user_data: *mut c_void,
+        ) -> dqcs_return_t {
+            api_return_none(|| {
+                let $callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
+                resolve!(pdef as &mut PluginDefinition);
+                let $data = CallbackUserData::new(user_free, user_data);
+                pdef.$name = Box::new(
+                    move |$state: &mut PluginState, $($ai: $atr),*| -> Result<$rtr> $contents,
+                );
+                Ok(())
+            })
+        }
+    }
 }
 
-// TODO: all the other callbacks
+define_callback!(
+    /// Sets the user logic initialization callback.
+    ///
+    /// This is always called before any of the other callbacks are run. The
+    /// downstream plugin has already been initialized at this stage, so it is
+    /// legal to send it commands.
+    ///
+    /// The default behavior is no-op.
+    ///
+    /// The callback takes the following arguments:
+    ///  - `void*`: user defined data.
+    ///  - `dqcs_plugin_state_t`: plugin context, needed to call the
+    ///    `dqcs_plugin_*` functions.
+    ///  - `dqcs_handle_t`: handle to an `ArbCmd` queue (`dqcs_cq_*`,
+    ///     `dqcs_cmd_*`, and `dqcs_arb_*` interfaces) containing user-defined
+    ///     initialization commands. It is up to the callback to delete this
+    ///     handle.
+    ///
+    /// The callback can return an error by setting an error message using
+    /// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should
+    /// return `DQCS_SUCCESS`.
+    dqcs_pdef_set_initialize_cb::initialize(
+        init_cmds: Vec<ArbCmd> as dqcs_handle_t
+    ) -> () as dqcs_return_t = callback, state, data {
+        let init_cmds: ArbCmdQueue = init_cmds.into_iter().collect();
+        cb_return_none(callback(data.data(), state.into(), insert(init_cmds)))
+    }
+);
+
+define_callback!(
+    /// Sets the user logic drop/cleanup callback.
+    ///
+    /// This is called when a plugin is gracefully terminated. It is not
+    /// recommended to execute any downstream instructions at this time, but it
+    /// is supported in case this is really necessary.
+    ///
+    /// The default behavior is no-op.
+    ///
+    /// The callback takes the following arguments:
+    ///  - `void*`: user defined data.
+    ///  - `dqcs_plugin_state_t`: plugin context, needed to call the
+    ///    `dqcs_plugin_*` functions.
+    ///
+    /// The callback can return an error by setting an error message using
+    /// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should
+    /// return `DQCS_SUCCESS`.
+    dqcs_pdef_set_drop_cb::drop() -> () as dqcs_return_t = callback, state, data {
+        cb_return_none(callback(data.data(), state.into()))
+    }
+);
