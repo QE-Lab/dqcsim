@@ -8,8 +8,9 @@ use crate::{
         protocol::{FrontendRunRequest, PluginToSimulator},
         types::{ArbCmd, ArbData, PluginMetadata},
     },
+    debug,
     host::{accelerator::Accelerator, configuration::Seed, plugin::Plugin},
-    trace, debug,
+    trace,
 };
 use std::collections::VecDeque;
 
@@ -175,11 +176,7 @@ impl Simulation {
         }
 
         // Fix up the metadata vector.
-        let metadata: Vec<_> = metadata
-            .into_iter()
-            .map(Result::unwrap)
-            .rev()
-            .collect();
+        let metadata: Vec<_> = metadata.into_iter().map(Result::unwrap).rev().collect();
 
         let pipeline: Vec<_> = pipeline
             .into_iter()

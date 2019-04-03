@@ -444,5 +444,10 @@ mod tests {
             connection.err().unwrap().to_string(),
             String::from("I/O error: Unknown Mach error: 44e")
         );
+        #[cfg(target_os = "linux")]
+        assert_eq!(
+            connection.err().unwrap().to_string(),
+            String::from("I/O error: No such file or directory (os error 2)")
+        );
     }
 }
