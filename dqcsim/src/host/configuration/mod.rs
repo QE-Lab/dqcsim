@@ -12,17 +12,16 @@ pub use seed::Seed;
 mod timeout;
 pub use timeout::Timeout;
 
-mod plugin_process;
-pub use plugin_process::{
-    PluginProcessConfiguration, PluginProcessFunctionalConfiguration,
-    PluginProcessNonfunctionalConfiguration, PluginProcessSpecification,
+mod plugin;
+pub use plugin::{
+    log::PluginLogConfiguration,
+    process::{
+        PluginProcessConfiguration, PluginProcessFunctionalConfiguration,
+        PluginProcessNonfunctionalConfiguration, PluginProcessSpecification,
+    },
+    thread::PluginThreadConfiguration,
+    PluginConfiguration,
 };
-
-mod plugin_thread;
-pub use plugin_thread::PluginThreadConfiguration;
-
-mod plugin_log;
-pub use plugin_log::PluginLogConfiguration;
 
 mod simulator;
 pub use simulator::SimulatorConfiguration;

@@ -3,7 +3,8 @@
 use crate::{
     common::{error::Result, log::thread::LogThread},
     host::{
-        configuration::SimulatorConfiguration, plugin::process::PluginProcess,
+        configuration::{PluginConfiguration, SimulatorConfiguration},
+        plugin::Plugin,
         simulation::Simulation,
     },
     trace,
@@ -56,18 +57,15 @@ impl Simulator {
             configuration.tee_files,
         )?;
 
+        // Construct plugin pipeline.
+        let pipeline: Result<Vec<Box<dyn Plugin>>> = configuration
+            .plugins
+            .into_iter()
+            .map(PluginConfiguration::instantiate)
+            .collect();
+
         // Construct simulation.
-        let simulation = Simulation::new(
-            configuration
-                .plugins
-                .into_iter()
-                // TODO: matthijs
-                .map(PluginProcess::new)
-                .map(Into::into)
-                .collect(),
-            configuration.seed,
-            &log_thread,
-        )?;
+        let simulation = Simulation::new(pipeline?, configuration.seed, &log_thread)?;
 
         Ok(Simulator {
             log_thread,

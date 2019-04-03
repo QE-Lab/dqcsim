@@ -1,5 +1,9 @@
 use crate::{
-    common::types::ArbCmd, host::configuration::PluginLogConfiguration,
+    common::{error::Result, types::ArbCmd},
+    host::{
+        configuration::{PluginConfiguration, PluginLogConfiguration},
+        plugin::{thread::PluginThread, Plugin},
+    },
     plugin::definition::PluginDefinition,
 };
 
@@ -35,5 +39,11 @@ impl PluginThreadConfiguration {
             init_cmds: vec![],
             log_configuration,
         }
+    }
+}
+
+impl PluginConfiguration for PluginThreadConfiguration {
+    fn instantiate(self) -> Result<Box<dyn Plugin>> {
+        Ok(Box::new(PluginThread::new(self)))
     }
 }

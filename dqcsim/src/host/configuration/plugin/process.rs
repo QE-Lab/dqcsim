@@ -4,8 +4,12 @@ use crate::{
         log::{tee_file::TeeFile, Loglevel, LoglevelFilter},
         types::{ArbCmd, PluginType},
     },
-    host::configuration::{
-        env_mod::EnvMod, stream_capture_mode::StreamCaptureMode, timeout::Timeout,
+    host::{
+        configuration::{
+            env_mod::EnvMod, stream_capture_mode::StreamCaptureMode, timeout::Timeout,
+            PluginConfiguration,
+        },
+        plugin::{process::PluginProcess, Plugin},
     },
 };
 use serde::{Deserialize, Serialize};
@@ -271,5 +275,11 @@ impl PluginProcessConfiguration {
             functional: PluginProcessFunctionalConfiguration::default(),
             nonfunctional: PluginProcessNonfunctionalConfiguration::default(),
         }
+    }
+}
+
+impl PluginConfiguration for PluginProcessConfiguration {
+    fn instantiate(self) -> Result<Box<dyn Plugin>> {
+        Ok(Box::new(PluginProcess::new(self)))
     }
 }

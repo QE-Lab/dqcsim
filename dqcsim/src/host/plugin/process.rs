@@ -248,9 +248,3 @@ impl Drop for PluginProcess {
         }
     }
 }
-
-impl Into<Box<dyn Plugin>> for PluginProcess {
-    fn into(self) -> Box<dyn Plugin> {
-        Box::new(self) as Box<dyn Plugin>
-    }
-}

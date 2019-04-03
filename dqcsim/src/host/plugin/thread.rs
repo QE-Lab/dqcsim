@@ -114,9 +114,3 @@ impl Plugin for PluginThread {
 impl Drop for PluginThread {
     fn drop(&mut self) {}
 }
-
-impl Into<Box<dyn Plugin>> for PluginThread {
-    fn into(self) -> Box<dyn Plugin> {
-        Box::new(self) as Box<dyn Plugin>
-    }
-}
