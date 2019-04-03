@@ -240,9 +240,9 @@ impl From<&PluginStructOpt> for PluginNonfunctionalOpts {
     }
 }
 
-impl From<&PluginStructOpt> for PluginFunctionalConfiguration {
+impl From<&PluginStructOpt> for PluginProcessFunctionalConfiguration {
     fn from(opts: &PluginStructOpt) -> Self {
-        PluginFunctionalConfiguration {
+        PluginProcessFunctionalConfiguration {
             init: opts.init.clone(),
             env: opts.env.clone(),
             work: opts.work.clone().unwrap_or_else(|| PathBuf::from(".")),

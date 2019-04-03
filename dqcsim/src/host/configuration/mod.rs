@@ -14,8 +14,8 @@ pub use timeout::Timeout;
 
 mod plugin_process;
 pub use plugin_process::{
-    PluginConfiguration, PluginFunctionalConfiguration, PluginNonfunctionalConfiguration,
-    PluginSpecification,
+    PluginProcessConfiguration, PluginProcessFunctionalConfiguration,
+    PluginProcessNonfunctionalConfiguration, PluginProcessSpecification,
 };
 
 mod plugin_log;

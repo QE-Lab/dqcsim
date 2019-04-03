@@ -3,7 +3,7 @@ use crate::{
         error::{inv_arg, Result},
         log::{callback::LogCallback, tee_file::TeeFile, LoglevelFilter},
     },
-    host::configuration::{PluginConfiguration, PluginType, Seed},
+    host::configuration::{PluginProcessConfiguration, PluginType, Seed},
 };
 use serde::{Deserialize, Serialize};
 
@@ -28,7 +28,7 @@ pub struct SimulatorConfiguration {
     pub dqcsim_level: LoglevelFilter,
 
     /// The plugin configurations, from front to back.
-    pub plugins: Vec<PluginConfiguration>,
+    pub plugins: Vec<PluginProcessConfiguration>,
 }
 
 impl SimulatorConfiguration {

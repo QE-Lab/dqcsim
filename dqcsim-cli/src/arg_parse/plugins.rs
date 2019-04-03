@@ -7,9 +7,9 @@ use failure::{Error, Fail};
 /// Structure containing the NONfunctional options for a plugin, i.e. the
 /// options that only affect how the plugin represents its output.
 ///
-/// This differs from `PluginNonfunctionalConfiguration` in that unspecified values
-/// have not yet been replaced with their defaults. This allows the structure
-/// to be built incrementally (see `apply()`).
+/// This differs from `PluginProcessNonfunctionalConfiguration` in that
+/// unspecified values have not yet been replaced with their defaults. This
+/// allows the structure to be built incrementally (see `apply()`).
 #[derive(Debug)]
 pub struct PluginNonfunctionalOpts {
     /// Specifies the verbosity of the messages sent to DQCsim. If this is
@@ -42,7 +42,7 @@ impl PluginNonfunctionalOpts {
     ///
     /// An error is returned if the referenced plugin cannot be found in the
     /// vector, otherwise `Ok(())` is returned.
-    pub fn apply(&self, to: &mut PluginNonfunctionalConfiguration) {
+    pub fn apply(&self, to: &mut PluginProcessNonfunctionalConfiguration) {
         if let Some(verbosity) = self.verbosity {
             to.verbosity = verbosity;
         }
@@ -61,13 +61,13 @@ impl PluginNonfunctionalOpts {
         }
     }
 
-    /// Converts this structure to a PluginNonfunctionalConfiguration structure by
-    /// replacing unset values with their defaults.
+    /// Converts this structure to a `PluginProcessNonfunctionalConfiguration`
+    /// structure by replacing unset values with their defaults.
     pub fn into_config(
         self,
         default_verbosity: LoglevelFilter,
-    ) -> PluginNonfunctionalConfiguration {
-        PluginNonfunctionalConfiguration {
+    ) -> PluginProcessNonfunctionalConfiguration {
+        PluginProcessNonfunctionalConfiguration {
             verbosity: self.verbosity.unwrap_or(default_verbosity),
             tee_files: self.tee_files,
             stdout_mode: self
@@ -111,11 +111,11 @@ pub struct PluginDefinition {
 
     /// Plugin specification, i.e. the plugin executable and optionally the
     /// script it should execute.
-    pub specification: PluginSpecification,
+    pub specification: PluginProcessSpecification,
 
     /// The functional configuration of the plugin, i.e. the options
     /// configuring how the plugin behaves (besides the specification).
-    pub functional: PluginFunctionalConfiguration,
+    pub functional: PluginProcessFunctionalConfiguration,
 
     /// The nonfunctional configuration of the plugin, i.e. any options that
     /// do not affect how the plugin behaves functionally, but only affect its
@@ -124,10 +124,10 @@ pub struct PluginDefinition {
 }
 
 impl PluginDefinition {
-    /// Converts this structure to a PluginConfiguration structure by
+    /// Converts this structure to a PluginProcessConfiguration structure by
     /// replacing unset values with their defaults.
-    pub fn into_config(self, default_verbosity: LoglevelFilter) -> PluginConfiguration {
-        PluginConfiguration {
+    pub fn into_config(self, default_verbosity: LoglevelFilter) -> PluginProcessConfiguration {
+        PluginProcessConfiguration {
             name: self.name,
             specification: self.specification,
             functional: self.functional,
@@ -164,7 +164,7 @@ impl PluginModification {
     ///
     /// An error is returned if the referenced plugin cannot be found in the
     /// vector, otherwise `Ok(())` is returned.
-    pub fn apply(self, to: &mut Vec<PluginConfiguration>) -> Result<(), Error> {
+    pub fn apply(self, to: &mut Vec<PluginProcessConfiguration>) -> Result<(), Error> {
         for plugin_config in &mut to.iter_mut() {
             if plugin_config.name == self.name {
                 self.nonfunctional.apply(&mut plugin_config.nonfunctional);

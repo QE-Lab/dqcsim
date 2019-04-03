@@ -19,7 +19,7 @@ use std::{
 /// and an optional script filename for it to execute for when the executable
 /// is an interpreter.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub struct PluginSpecification {
+pub struct PluginProcessSpecification {
     /// The original, sugared specification, if any.
     #[serde(skip)]
     pub sugared: Option<PathBuf>,
@@ -36,17 +36,17 @@ pub struct PluginSpecification {
     pub typ: PluginType,
 }
 
-impl PluginSpecification {
+impl PluginProcessSpecification {
     /// Constructs a new plugin specification.
     pub fn new<T>(
         executable: impl Into<PathBuf>,
         script: Option<T>,
         typ: impl Into<PluginType>,
-    ) -> PluginSpecification
+    ) -> PluginProcessSpecification
     where
         T: Into<PathBuf>,
     {
-        PluginSpecification {
+        PluginProcessSpecification {
             sugared: None,
             executable: executable.into(),
             script: script.map(std::convert::Into::into),
@@ -72,12 +72,12 @@ impl PluginSpecification {
     pub fn from_sugar(
         specification: impl Into<PathBuf>,
         typ: PluginType,
-    ) -> Result<PluginSpecification> {
+    ) -> Result<PluginProcessSpecification> {
         // Generate the default specification. This default assumes that the
         // specification is a valid path to an executable. We'll fix the
         // structure later if this assumption turns out to be incorrect.
         let specification = specification.into();
-        let mut specification = PluginSpecification {
+        let mut specification = PluginProcessSpecification {
             sugared: Some(specification.clone()),
             executable: specification,
             script: None,
@@ -177,7 +177,7 @@ impl PluginSpecification {
 /// Structure describing the functional configuration of a plugin, i.e. the
 /// parameters that affect a plugin's behavior.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub struct PluginFunctionalConfiguration {
+pub struct PluginProcessFunctionalConfiguration {
     /// ArbCmd objects passed to the plugin initialization RPC.
     pub init: Vec<ArbCmd>,
 
@@ -188,9 +188,9 @@ pub struct PluginFunctionalConfiguration {
     pub work: PathBuf,
 }
 
-impl Default for PluginFunctionalConfiguration {
-    fn default() -> PluginFunctionalConfiguration {
-        PluginFunctionalConfiguration {
+impl Default for PluginProcessFunctionalConfiguration {
+    fn default() -> PluginProcessFunctionalConfiguration {
+        PluginProcessFunctionalConfiguration {
             init: vec![],
             env: vec![],
             work: ".".into(),
@@ -201,7 +201,7 @@ impl Default for PluginFunctionalConfiguration {
 /// Structure describing the NONfunctional configuration of a plugin, i.e. the
 /// parameters that only affect how the plugin represents its output.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub struct PluginNonfunctionalConfiguration {
+pub struct PluginProcessNonfunctionalConfiguration {
     /// Specifies the verbosity of the messages sent to DQCsim.
     pub verbosity: LoglevelFilter,
 
@@ -223,9 +223,9 @@ pub struct PluginNonfunctionalConfiguration {
     pub shutdown_timeout: Timeout,
 }
 
-impl Default for PluginNonfunctionalConfiguration {
-    fn default() -> PluginNonfunctionalConfiguration {
-        PluginNonfunctionalConfiguration {
+impl Default for PluginProcessNonfunctionalConfiguration {
+    fn default() -> PluginProcessNonfunctionalConfiguration {
+        PluginProcessNonfunctionalConfiguration {
             verbosity: LoglevelFilter::Info,
             tee_files: vec![],
             stdout_mode: StreamCaptureMode::Capture(Loglevel::Info),
@@ -241,34 +241,37 @@ impl Default for PluginNonfunctionalConfiguration {
 /// In combination with some modifiers and defaults set by DQCsim itself, this
 /// contains everything needed to construct a plugin.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub struct PluginConfiguration {
+pub struct PluginProcessConfiguration {
     /// Name of the plugin, used to refer to the plugin by the log system.
     pub name: String,
 
     /// Plugin specification, i.e. the plugin executable and optionally the
     /// script it should execute.
-    pub specification: PluginSpecification,
+    pub specification: PluginProcessSpecification,
 
     /// The functional configuration of the plugin, i.e. the options
     /// configuring how the plugin behaves (besides the specification).
-    pub functional: PluginFunctionalConfiguration,
+    pub functional: PluginProcessFunctionalConfiguration,
 
     /// The nonfunctional configuration of the plugin, i.e. any options that
     /// do not affect how the plugin behaves functionally, but only affect its
     /// output representation.
-    pub nonfunctional: PluginNonfunctionalConfiguration,
+    pub nonfunctional: PluginProcessNonfunctionalConfiguration,
 }
 
-impl PluginConfiguration {
+impl PluginProcessConfiguration {
     /// Creates a new plugin configuration.
     ///
     /// The default values are inserted for the configuration options.
-    pub fn new(name: impl Into<String>, specification: PluginSpecification) -> PluginConfiguration {
-        PluginConfiguration {
+    pub fn new(
+        name: impl Into<String>,
+        specification: PluginProcessSpecification,
+    ) -> PluginProcessConfiguration {
+        PluginProcessConfiguration {
             name: name.into(),
             specification,
-            functional: PluginFunctionalConfiguration::default(),
-            nonfunctional: PluginNonfunctionalConfiguration::default(),
+            functional: PluginProcessFunctionalConfiguration::default(),
+            nonfunctional: PluginProcessNonfunctionalConfiguration::default(),
         }
     }
 }

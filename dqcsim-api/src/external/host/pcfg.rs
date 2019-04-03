@@ -2,7 +2,7 @@ use super::*;
 use dqcsim::common::log::tee_file::TeeFile;
 use std::ptr::null;
 
-/// Creates a new `PluginConfiguration` object using sugared syntax.
+/// Creates a new `PluginProcessConfiguration` object using sugared syntax.
 ///
 /// `typ` specifies the type of plugin. `name` specifies the name used to refer
 /// to the plugin later, which much be unique within a simulation; if it is
@@ -21,14 +21,14 @@ pub extern "C" fn dqcs_pcfg_new(
         if spec.is_empty() {
             return inv_arg("plugin specification must not be empty");
         }
-        Ok(insert(PluginConfiguration::new(
+        Ok(insert(PluginProcessConfiguration::new(
             receive_str(name)?,
-            PluginSpecification::from_sugar(spec, typ.into())?,
+            PluginProcessSpecification::from_sugar(spec, typ.into())?,
         )))
     })
 }
 
-/// Creates a new `PluginConfiguration` object using raw paths.
+/// Creates a new `PluginProcessConfiguration` object using raw paths.
 ///
 /// This works the same as `dqcs_pcfg_new()`, but instead of the sugared,
 /// command-line style specification you have to specify the path to the plugin
@@ -61,9 +61,9 @@ pub extern "C" fn dqcs_pcfg_new_raw(
                 script_path = Some(script);
             }
         }
-        Ok(insert(PluginConfiguration::new(
+        Ok(insert(PluginProcessConfiguration::new(
             receive_str(name)?,
-            PluginSpecification::new(executable, script_path, typ),
+            PluginProcessSpecification::new(executable, script_path, typ),
         )))
     })
 }
@@ -72,7 +72,7 @@ pub extern "C" fn dqcs_pcfg_new_raw(
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_type(pcfg: dqcs_handle_t) -> dqcs_plugin_type_t {
     api_return(dqcs_plugin_type_t::DQCS_PTYPE_INVALID, || {
-        resolve!(pcfg as &PluginConfiguration);
+        resolve!(pcfg as &PluginProcessConfiguration);
         Ok(pcfg.specification.typ.into())
     })
 }
@@ -85,7 +85,7 @@ pub extern "C" fn dqcs_pcfg_type(pcfg: dqcs_handle_t) -> dqcs_plugin_type_t {
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_name(pcfg: dqcs_handle_t) -> *mut c_char {
     api_return_string(|| {
-        resolve!(pcfg as &PluginConfiguration);
+        resolve!(pcfg as &PluginProcessConfiguration);
         Ok(pcfg.name.to_string())
     })
 }
@@ -99,7 +99,7 @@ pub extern "C" fn dqcs_pcfg_name(pcfg: dqcs_handle_t) -> *mut c_char {
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_executable(pcfg: dqcs_handle_t) -> *mut c_char {
     api_return_string(|| {
-        resolve!(pcfg as &PluginConfiguration);
+        resolve!(pcfg as &PluginProcessConfiguration);
         Ok(pcfg.specification.executable.to_string_lossy().to_string())
     })
 }
@@ -114,7 +114,7 @@ pub extern "C" fn dqcs_pcfg_executable(pcfg: dqcs_handle_t) -> *mut c_char {
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_script(pcfg: dqcs_handle_t) -> *mut c_char {
     api_return_string(|| {
-        resolve!(pcfg as &PluginConfiguration);
+        resolve!(pcfg as &PluginProcessConfiguration);
         if let Some(script) = pcfg.specification.script.as_ref() {
             Ok(script.to_string_lossy().to_string())
         } else {
@@ -130,7 +130,7 @@ pub extern "C" fn dqcs_pcfg_script(pcfg: dqcs_handle_t) -> *mut c_char {
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_init_arb(pcfg: dqcs_handle_t, cmd: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
-        resolve!(pcfg as &mut PluginConfiguration);
+        resolve!(pcfg as &mut PluginProcessConfiguration);
         take!(cmd as ArbCmd);
         pcfg.functional.init.push(cmd);
         Ok(())
@@ -150,7 +150,7 @@ pub extern "C" fn dqcs_pcfg_env_set(
     value: *const c_char,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        resolve!(pcfg as &mut PluginConfiguration);
+        resolve!(pcfg as &mut PluginProcessConfiguration);
         if value.is_null() {
             pcfg.functional.env.push(EnvMod::remove(receive_str(key)?));
         } else {
@@ -175,7 +175,7 @@ pub extern "C" fn dqcs_pcfg_env_unset(pcfg: dqcs_handle_t, key: *const c_char) -
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_work_set(pcfg: dqcs_handle_t, work: *const c_char) -> dqcs_return_t {
     api_return_none(|| {
-        resolve!(pcfg as &mut PluginConfiguration);
+        resolve!(pcfg as &mut PluginProcessConfiguration);
         pcfg.functional.work = receive_str(work)?.into();
         Ok(())
     })
@@ -190,7 +190,7 @@ pub extern "C" fn dqcs_pcfg_work_set(pcfg: dqcs_handle_t, work: *const c_char) -
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_work_get(pcfg: dqcs_handle_t) -> *mut c_char {
     api_return_string(|| {
-        resolve!(pcfg as &PluginConfiguration);
+        resolve!(pcfg as &PluginProcessConfiguration);
         Ok(pcfg.functional.work.to_string_lossy().to_string())
     })
 }
@@ -202,7 +202,7 @@ pub extern "C" fn dqcs_pcfg_verbosity_set(
     level: dqcs_loglevel_t,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        resolve!(pcfg as &mut PluginConfiguration);
+        resolve!(pcfg as &mut PluginProcessConfiguration);
         pcfg.nonfunctional.verbosity = level.into_loglevel_filter()?;
         Ok(())
     })
@@ -212,7 +212,7 @@ pub extern "C" fn dqcs_pcfg_verbosity_set(
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_verbosity_get(pcfg: dqcs_handle_t) -> dqcs_loglevel_t {
     api_return(dqcs_loglevel_t::DQCS_LOG_INVALID, || {
-        resolve!(pcfg as &PluginConfiguration);
+        resolve!(pcfg as &PluginProcessConfiguration);
         Ok(pcfg.nonfunctional.verbosity.into())
     })
 }
@@ -227,7 +227,7 @@ pub extern "C" fn dqcs_pcfg_tee(
     filename: *const c_char,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        resolve!(pcfg as &mut PluginConfiguration);
+        resolve!(pcfg as &mut PluginProcessConfiguration);
         pcfg.nonfunctional.tee_files.push(TeeFile::new(
             verbosity.into_loglevel_filter()?,
             receive_str(filename)?,
@@ -243,7 +243,7 @@ pub extern "C" fn dqcs_pcfg_stdout_mode_set(
     level: dqcs_loglevel_t,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        resolve!(pcfg as &mut PluginConfiguration);
+        resolve!(pcfg as &mut PluginProcessConfiguration);
         pcfg.nonfunctional.stdout_mode = level.into();
         Ok(())
     })
@@ -253,7 +253,7 @@ pub extern "C" fn dqcs_pcfg_stdout_mode_set(
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_stdout_mode_get(pcfg: dqcs_handle_t) -> dqcs_loglevel_t {
     api_return(dqcs_loglevel_t::DQCS_LOG_INVALID, || {
-        resolve!(pcfg as &PluginConfiguration);
+        resolve!(pcfg as &PluginProcessConfiguration);
         Ok(pcfg.nonfunctional.stdout_mode.clone().into())
     })
 }
@@ -265,7 +265,7 @@ pub extern "C" fn dqcs_pcfg_stderr_mode_set(
     level: dqcs_loglevel_t,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        resolve!(pcfg as &mut PluginConfiguration);
+        resolve!(pcfg as &mut PluginProcessConfiguration);
         pcfg.nonfunctional.stderr_mode = level.into();
         Ok(())
     })
@@ -275,7 +275,7 @@ pub extern "C" fn dqcs_pcfg_stderr_mode_set(
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_stderr_mode_get(pcfg: dqcs_handle_t) -> dqcs_loglevel_t {
     api_return(dqcs_loglevel_t::DQCS_LOG_INVALID, || {
-        resolve!(pcfg as &PluginConfiguration);
+        resolve!(pcfg as &PluginProcessConfiguration);
         Ok(pcfg.nonfunctional.stderr_mode.clone().into())
     })
 }
@@ -290,7 +290,7 @@ pub extern "C" fn dqcs_pcfg_stderr_mode_get(pcfg: dqcs_handle_t) -> dqcs_logleve
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_accept_timeout_set(pcfg: dqcs_handle_t, timeout: f64) -> dqcs_return_t {
     api_return_none(|| {
-        resolve!(pcfg as &mut PluginConfiguration);
+        resolve!(pcfg as &mut PluginProcessConfiguration);
         pcfg.nonfunctional.accept_timeout = Timeout::try_from_double(timeout)?;
         Ok(())
     })
@@ -303,7 +303,7 @@ pub extern "C" fn dqcs_pcfg_accept_timeout_set(pcfg: dqcs_handle_t, timeout: f64
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_accept_timeout_get(pcfg: dqcs_handle_t) -> f64 {
     api_return(-1.0, || {
-        resolve!(pcfg as &PluginConfiguration);
+        resolve!(pcfg as &PluginProcessConfiguration);
         Ok(pcfg.nonfunctional.accept_timeout.to_double())
     })
 }
@@ -321,7 +321,7 @@ pub extern "C" fn dqcs_pcfg_shutdown_timeout_set(
     timeout: f64,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        resolve!(pcfg as &mut PluginConfiguration);
+        resolve!(pcfg as &mut PluginProcessConfiguration);
         pcfg.nonfunctional.shutdown_timeout = Timeout::try_from_double(timeout)?;
         Ok(())
     })
@@ -334,7 +334,7 @@ pub extern "C" fn dqcs_pcfg_shutdown_timeout_set(
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_shutdown_timeout_get(pcfg: dqcs_handle_t) -> f64 {
     api_return(-1.0, || {
-        resolve!(pcfg as &PluginConfiguration);
+        resolve!(pcfg as &PluginProcessConfiguration);
         Ok(pcfg.nonfunctional.shutdown_timeout.to_double())
     })
 }

@@ -8,8 +8,8 @@ use crate::{
     },
     host::{
         configuration::{
-            EnvMod, PluginConfiguration, PluginLogConfiguration, PluginType, StreamCaptureMode,
-            Timeout,
+            EnvMod, PluginLogConfiguration, PluginProcessConfiguration, PluginType,
+            StreamCaptureMode, Timeout,
         },
         plugin::Plugin,
     },
@@ -22,11 +22,11 @@ use std::{process, sync, thread, time};
 ///
 /// PluginProcess implements the [`Plugin`] trait to enable the [`Simulator`]
 /// to spawn and connect the plugin.
-/// A PluginProcess is defined by its [`PluginConfiguration`].
+/// A PluginProcess is defined by its [`PluginProcessConfiguration`].
 #[derive(Debug)]
 pub struct PluginProcess {
     /// The complete plugin configuration.
-    configuration: PluginConfiguration,
+    configuration: PluginProcessConfiguration,
     /// A handle to the child process which runs the plugin.
     /// Wrapped in an option, which is None until the [`Simulator`] spawns the
     /// plugin.
@@ -37,11 +37,11 @@ pub struct PluginProcess {
 }
 
 impl PluginProcess {
-    /// Constructs a new PluginProcess based on a PluginConfiguration.
+    /// Constructs a new PluginProcess based on a PluginProcessConfiguration.
     /// Returns the constructed PluginProcess. The child process is not spawned
     /// at construction. The [`Plugin`] trait's [`spawn`] method spawns the
     /// child process.
-    pub fn new(configuration: PluginConfiguration) -> PluginProcess {
+    pub fn new(configuration: PluginProcessConfiguration) -> PluginProcess {
         PluginProcess {
             configuration,
             child: None,

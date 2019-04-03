@@ -42,8 +42,8 @@ api_object_types!(
     Gate,
     /// Qubit measurement object.
     QubitMeasurementResult,
-    /// `PluginConfiguration` object.
-    PluginConfiguration,
+    /// `PluginProcessConfiguration` object.
+    PluginProcessConfiguration,
     /// `SimulatorConfiguration` object.
     SimulatorConfiguration,
     /// DQCsim simulation instance, behaving as an accelerator.
@@ -364,8 +364,8 @@ mutate_api_object_as! {QubitMeasurementResult, meas:
     APIObject::QubitMeasurementResult(x) => x, x, x,
 }
 
-mutate_api_object_as! {PluginConfiguration, pcfg:
-    APIObject::PluginConfiguration(x) => x, x, x,
+mutate_api_object_as! {PluginProcessConfiguration, pcfg:
+    APIObject::PluginProcessConfiguration(x) => x, x, x,
 }
 
 mutate_api_object_as! {SimulatorConfiguration, scfg:

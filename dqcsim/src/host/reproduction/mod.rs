@@ -30,7 +30,7 @@ pub struct PluginReproduction {
     /// The functional configuration of the plugin, i.e. the options
     /// configuring how the plugin behaves (besides the specification).
     #[serde(flatten)]
-    pub functional: PluginFunctionalConfiguration,
+    pub functional: PluginProcessFunctionalConfiguration,
 }
 
 /// The contents of a reproduction file.
@@ -96,7 +96,7 @@ impl Reproduction {
                         name: x.name.clone(),
                         executable: path_style.convert_path(&x.specification.executable)?,
                         script: path_style.convert_path_option(&x.specification.script)?,
-                        functional: PluginFunctionalConfiguration {
+                        functional: PluginProcessFunctionalConfiguration {
                             init: x.functional.init.clone(),
                             env: x.functional.env.clone(),
                             work: path_style.convert_path(&x.functional.work)?,
@@ -132,15 +132,15 @@ impl Reproduction {
             .plugins
             .iter()
             .map(|x| {
-                Ok(PluginConfiguration {
+                Ok(PluginProcessConfiguration {
                     name: x.name.clone(),
-                    specification: PluginSpecification::new(
+                    specification: PluginProcessSpecification::new(
                         &x.executable,
                         x.script.clone(),
                         PluginType::Operator,
                     ),
                     functional: x.functional.clone(),
-                    nonfunctional: PluginNonfunctionalConfiguration::default(),
+                    nonfunctional: PluginProcessNonfunctionalConfiguration::default(),
                 })
             })
             .collect::<Result<_>>()?;

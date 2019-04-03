@@ -27,18 +27,21 @@ pub extern "C" fn dqcs_scfg_new() -> dqcs_handle_t {
 /// against multiple frontends/backends; such errors will only be reported when
 /// the simulation is started.
 ///
-/// The `PluginConfiguration` handle is consumed by this function, and is thus
-/// invalidated, if and only if it is successful.
+/// The `PluginProcessConfiguration` handle is consumed by this function, and
+/// is thus invalidated, if and only if it is successful.
 ///
 /// Note that it is not possible to observe or mutate a plugin configuration
 /// once it has been added to a simulator configuration handle. If you want to
 /// do this for some reason, you should maintain your own data structures, and
 /// only build the DQCsim structures from them when you're done.
 #[no_mangle]
-pub extern "C" fn dqcs_scfg_push_plugin(scfg: dqcs_handle_t, pcfg: dqcs_handle_t) -> dqcs_return_t {
+pub extern "C" fn dqcs_scfg_push_plugin_process(
+    scfg: dqcs_handle_t,
+    pcfg: dqcs_handle_t,
+) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(scfg as &mut SimulatorConfiguration);
-        take!(pcfg as PluginConfiguration);
+        take!(pcfg as PluginProcessConfiguration);
         scfg.plugins.push(pcfg);
         Ok(())
     })

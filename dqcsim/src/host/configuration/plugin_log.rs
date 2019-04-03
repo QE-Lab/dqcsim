@@ -1,6 +1,6 @@
 use crate::{
     common::log::{tee_file::TeeFile, LoglevelFilter},
-    host::configuration::PluginConfiguration,
+    host::configuration::PluginProcessConfiguration,
 };
 use serde::{Deserialize, Serialize};
 
@@ -17,8 +17,8 @@ pub struct PluginLogConfiguration {
     pub tee_files: Vec<TeeFile>,
 }
 
-impl From<&PluginConfiguration> for PluginLogConfiguration {
-    fn from(cfg: &PluginConfiguration) -> PluginLogConfiguration {
+impl From<&PluginProcessConfiguration> for PluginLogConfiguration {
+    fn from(cfg: &PluginProcessConfiguration) -> PluginLogConfiguration {
         PluginLogConfiguration {
             name: cfg.name.clone(),
             verbosity: cfg.nonfunctional.verbosity,
