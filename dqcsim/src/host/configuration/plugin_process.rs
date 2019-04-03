@@ -5,7 +5,7 @@ use crate::{
         types::ArbCmd,
     },
     host::configuration::{
-        env_mod::EnvMod, stream_capture_mode::StreamCaptureMode, timeout::Timeout,
+        env_mod::EnvMod, stream_capture_mode::StreamCaptureMode, timeout::Timeout, PluginType,
     },
 };
 use serde::{Deserialize, Serialize};
@@ -14,14 +14,6 @@ use std::{
     ffi::OsString,
     path::PathBuf,
 };
-
-/// Enumeration of the three types of plugins.
-#[derive(Debug, Copy, Clone, PartialEq, Deserialize, Serialize)]
-pub enum PluginType {
-    Frontend,
-    Operator,
-    Backend,
-}
 
 /// Plugin specification, consisting of the executable filename for the plugin
 /// and an optional script filename for it to execute for when the executable
@@ -277,29 +269,6 @@ impl PluginConfiguration {
             specification,
             functional: PluginFunctionalConfiguration::default(),
             nonfunctional: PluginNonfunctionalConfiguration::default(),
-        }
-    }
-}
-
-/// Configuration structure for the plugin logging system.
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub struct PluginLogConfiguration {
-    /// Instance name of the plugin used to identify it in log messages.
-    pub name: String,
-
-    /// Specifies the verbosity of the messages sent to DQCsim.
-    pub verbosity: LoglevelFilter,
-
-    /// Specifies the tee files for this plugin.
-    pub tee_files: Vec<TeeFile>,
-}
-
-impl From<&PluginConfiguration> for PluginLogConfiguration {
-    fn from(cfg: &PluginConfiguration) -> PluginLogConfiguration {
-        PluginLogConfiguration {
-            name: cfg.name.clone(),
-            verbosity: cfg.nonfunctional.verbosity,
-            tee_files: cfg.nonfunctional.tee_files.clone(),
         }
     }
 }
