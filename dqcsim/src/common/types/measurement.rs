@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 /// Represents the state of a single qubit measurement register.
 use std::fmt;
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
-pub enum QubitMeasurementState {
+pub enum QubitMeasurementValue {
     /// The value is unknown because the qubit has not been measured yet, or
     /// the most recent measurement failed.
     ///
@@ -21,56 +21,56 @@ pub enum QubitMeasurementState {
     One,
 }
 
-impl fmt::Display for QubitMeasurementState {
+impl fmt::Display for QubitMeasurementValue {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            QubitMeasurementState::Undefined => write!(f, "?"),
-            QubitMeasurementState::Zero => write!(f, "0"),
-            QubitMeasurementState::One => write!(f, "1"),
+            QubitMeasurementValue::Undefined => write!(f, "?"),
+            QubitMeasurementValue::Zero => write!(f, "0"),
+            QubitMeasurementValue::One => write!(f, "1"),
         }
     }
 }
 
-impl QubitMeasurementState {
+impl QubitMeasurementValue {
     pub fn is_undefined(self) -> bool {
-        self == QubitMeasurementState::Undefined
+        self == QubitMeasurementValue::Undefined
     }
 
     pub fn is_zero(self) -> bool {
-        self == QubitMeasurementState::Zero
+        self == QubitMeasurementValue::Zero
     }
 
     pub fn is_one(self) -> bool {
-        self == QubitMeasurementState::One
+        self == QubitMeasurementValue::One
     }
 }
 
-impl Into<Option<bool>> for QubitMeasurementState {
+impl Into<Option<bool>> for QubitMeasurementValue {
     fn into(self) -> Option<bool> {
         match self {
-            QubitMeasurementState::Undefined => None,
-            QubitMeasurementState::Zero => Some(false),
-            QubitMeasurementState::One => Some(true),
+            QubitMeasurementValue::Undefined => None,
+            QubitMeasurementValue::Zero => Some(false),
+            QubitMeasurementValue::One => Some(true),
         }
     }
 }
 
-impl From<Option<bool>> for QubitMeasurementState {
-    fn from(source: Option<bool>) -> QubitMeasurementState {
+impl From<Option<bool>> for QubitMeasurementValue {
+    fn from(source: Option<bool>) -> QubitMeasurementValue {
         match source {
-            None => QubitMeasurementState::Undefined,
-            Some(false) => QubitMeasurementState::Zero,
-            Some(true) => QubitMeasurementState::One,
+            None => QubitMeasurementValue::Undefined,
+            Some(false) => QubitMeasurementValue::Zero,
+            Some(true) => QubitMeasurementValue::One,
         }
     }
 }
 
-impl From<bool> for QubitMeasurementState {
-    fn from(source: bool) -> QubitMeasurementState {
+impl From<bool> for QubitMeasurementValue {
+    fn from(source: bool) -> QubitMeasurementValue {
         if source {
-            QubitMeasurementState::One
+            QubitMeasurementValue::One
         } else {
-            QubitMeasurementState::Zero
+            QubitMeasurementValue::Zero
         }
     }
 }
@@ -82,7 +82,7 @@ pub struct QubitMeasurementResult {
     pub qubit: QubitRef,
 
     /// The measured value.
-    pub value: QubitMeasurementState,
+    pub value: QubitMeasurementValue,
 
     /// Implementation-specific additional data, such as the probability for
     /// this particular measurement outcome.
@@ -92,7 +92,7 @@ pub struct QubitMeasurementResult {
 impl QubitMeasurementResult {
     pub fn new(
         qubit: impl Into<QubitRef>,
-        value: impl Into<QubitMeasurementState>,
+        value: impl Into<QubitMeasurementValue>,
         data: impl Into<ArbData>,
     ) -> QubitMeasurementResult {
         QubitMeasurementResult {

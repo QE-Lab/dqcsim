@@ -40,6 +40,8 @@ api_object_types!(
     QubitReferenceSet,
     /// Quantum gate object.
     Gate,
+    /// Qubit measurement object.
+    QubitMeasurementResult,
     /// `PluginConfiguration` object.
     PluginConfiguration,
     /// `SimulatorConfiguration` object.
@@ -319,6 +321,7 @@ mutate_api_object_as! {ArbData, arb:
         }
     },
     APIObject::Gate(x) => &x.data, &mut x.data, x.data,
+    APIObject::QubitMeasurementResult(x) => &x.data, &mut x.data, x.data,
 }
 
 mutate_api_object_as! {ArbCmd, cmd:
@@ -355,6 +358,10 @@ mutate_api_object_as! {QubitReferenceSet, qbset:
 
 mutate_api_object_as! {Gate, gate:
     APIObject::Gate(x) => x, x, x,
+}
+
+mutate_api_object_as! {QubitMeasurementResult, meas:
+    APIObject::QubitMeasurementResult(x) => x, x, x,
 }
 
 mutate_api_object_as! {PluginConfiguration, pcfg:

@@ -117,6 +117,9 @@ pub enum dqcs_handle_type_t {
     /// Indicates that the given handle belongs to a quantum gate description.
     DQCS_HTYPE_GATE = 104,
 
+    /// Indicates that the given handle belongs to a qubit measurement result.
+    DQCS_HTYPE_MEAS = 105,
+
     /// Indicates that the given handle belongs to a frontend plugin
     /// configuration object.
     DQCS_HTYPE_FRONT_CONFIG = 200,
@@ -359,6 +362,45 @@ impl From<bool> for dqcs_bool_return_t {
             dqcs_bool_return_t::DQCS_TRUE
         } else {
             dqcs_bool_return_t::DQCS_FALSE
+        }
+    }
+}
+
+/// Qubit measurement value.
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+#[allow(non_camel_case_types)]
+pub enum dqcs_measurement_t {
+    /// Error value used to indicate that something went wrong.
+    DQCS_MEAS_INVALID = -1,
+
+    /// Indicates that the qubit was measured to be zero.
+    DQCS_MEAS_ZERO = 0,
+
+    /// Indicates that the qubit was measured to be one.
+    DQCS_MEAS_ONE = 1,
+
+    /// Indicates that the measurement value is unknown for whatever reason.
+    DQCS_MEAS_UNDEFINED = 2,
+}
+
+impl Into<Option<QubitMeasurementValue>> for dqcs_measurement_t {
+    fn into(self) -> Option<QubitMeasurementValue> {
+        match self {
+            dqcs_measurement_t::DQCS_MEAS_INVALID => None,
+            dqcs_measurement_t::DQCS_MEAS_ZERO => Some(QubitMeasurementValue::Zero),
+            dqcs_measurement_t::DQCS_MEAS_ONE => Some(QubitMeasurementValue::One),
+            dqcs_measurement_t::DQCS_MEAS_UNDEFINED => Some(QubitMeasurementValue::Undefined),
+        }
+    }
+}
+
+impl From<QubitMeasurementValue> for dqcs_measurement_t {
+    fn from(x: QubitMeasurementValue) -> dqcs_measurement_t {
+        match x {
+            QubitMeasurementValue::Undefined => dqcs_measurement_t::DQCS_MEAS_UNDEFINED,
+            QubitMeasurementValue::Zero => dqcs_measurement_t::DQCS_MEAS_ZERO,
+            QubitMeasurementValue::One => dqcs_measurement_t::DQCS_MEAS_ONE,
         }
     }
 }

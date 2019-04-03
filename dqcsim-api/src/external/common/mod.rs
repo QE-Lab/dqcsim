@@ -29,3 +29,7 @@ pub use qbset::*;
 // dqcs_gate_* functions, for operating on quantum gate descriptions.
 mod gate;
 pub use gate::*;
+
+// dqcs_meas_* functions, for operating on qubit measurement objects.
+mod meas;
+pub use meas::*;

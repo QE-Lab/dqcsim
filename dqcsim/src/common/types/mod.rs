@@ -27,7 +27,7 @@ pub use gate::Gate;
 
 // Generic representation of a qubit measurement result.
 mod measurement;
-pub use measurement::{QubitMeasurementResult, QubitMeasurementState};
+pub use measurement::{QubitMeasurementResult, QubitMeasurementValue};
 
 // Metadata used to identify plugins.
 mod plugin_metadata;
