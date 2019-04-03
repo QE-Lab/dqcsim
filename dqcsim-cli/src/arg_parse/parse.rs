@@ -2,10 +2,10 @@ use crate::arg_parse::{opts::*, plugins::*};
 use ansi_term::Colour;
 use dqcsim::{
     common::types::*,
+    host::configuration::PluginConfiguration,
     host::{configuration::*, reproduction::*},
 };
 use failure::{Error, Fail};
-use serde::{Deserialize, Serialize};
 use std::{ffi::OsString, path::PathBuf, str::FromStr};
 use structopt::{clap::AppSettings, StructOpt};
 
@@ -190,7 +190,7 @@ impl<'a, 'b> PluginConfigParser<'a, 'b> {
 }
 
 /// The complete configuration for a DQCsim run.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug)]
 pub struct CommandLineConfiguration {
     /// The sequence of host calls to make.
     ///
@@ -349,6 +349,7 @@ impl CommandLineConfiguration {
                 .get_defs()?
                 .into_iter()
                 .map(|x| x.into_config(dqcsim_opts.plugin_level))
+                .map(|plugin| PluginConfiguration::instantiate(Box::new(plugin)))
                 .collect();
 
             // If the user did not explicitly request a start() host call, add

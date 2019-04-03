@@ -1,8 +1,12 @@
 use crate::{
-    common::{error::Result, types::ArbCmd},
+    common::{
+        error::{inv_op, Result},
+        types::{ArbCmd, PluginType},
+    },
     host::{
         configuration::{PluginConfiguration, PluginLogConfiguration},
         plugin::{thread::PluginThread, Plugin},
+        reproduction::{PluginReproduction, ReproductionPathStyle},
     },
     plugin::definition::PluginDefinition,
 };
@@ -43,7 +47,27 @@ impl PluginThreadConfiguration {
 }
 
 impl PluginConfiguration for PluginThreadConfiguration {
-    fn instantiate(self) -> Result<Box<dyn Plugin>> {
-        Ok(Box::new(PluginThread::new(self)))
+    fn instantiate(self: Box<Self>) -> Box<dyn Plugin> {
+        Box::new(PluginThread::new(*self))
+    }
+
+    fn log_configuration(&self) -> PluginLogConfiguration {
+        self.log_configuration.clone()
+    }
+
+    fn get_type(&self) -> PluginType {
+        self.definition.get_type()
+    }
+
+    fn set_type(&mut self, typ: PluginType) {
+        self.definition.set_type(typ);
+    }
+
+    fn set_name(&mut self, name: String) {
+        self.definition.get_metadata_mut().set_name(name);
+    }
+
+    fn get_reproduction(&self, _: &ReproductionPathStyle) -> Result<PluginReproduction> {
+        inv_op("It's not possible to build a plugin reproduction for PluginThreads")
     }
 }

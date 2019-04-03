@@ -239,9 +239,18 @@ impl PluginDefinition {
         self.typ
     }
 
+    /// Sets the type of the plugin.
+    pub fn set_type(&mut self, typ: PluginType) {
+        self.typ = typ;
+    }
+
     /// Returns the plugin metadata.
     pub fn get_metadata(&self) -> &PluginMetadata {
         &self.metadata
+    }
+
+    pub fn get_metadata_mut(&mut self) -> &mut PluginMetadata {
+        &mut self.metadata
     }
 
     /// Executes the plugin using the previously specified callback functions.

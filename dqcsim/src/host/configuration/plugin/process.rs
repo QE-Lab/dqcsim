@@ -6,10 +6,11 @@ use crate::{
     },
     host::{
         configuration::{
-            env_mod::EnvMod, stream_capture_mode::StreamCaptureMode, timeout::Timeout,
-            PluginConfiguration,
+            env_mod::EnvMod, plugin::log::PluginLogConfiguration,
+            stream_capture_mode::StreamCaptureMode, timeout::Timeout, PluginConfiguration,
         },
         plugin::{process::PluginProcess, Plugin},
+        reproduction::{PluginReproduction, ReproductionPathStyle},
     },
 };
 use serde::{Deserialize, Serialize};
@@ -279,7 +280,36 @@ impl PluginProcessConfiguration {
 }
 
 impl PluginConfiguration for PluginProcessConfiguration {
-    fn instantiate(self) -> Result<Box<dyn Plugin>> {
-        Ok(Box::new(PluginProcess::new(self)))
+    fn instantiate(self: Box<Self>) -> Box<dyn Plugin> {
+        Box::new(PluginProcess::new(*self))
+    }
+
+    fn log_configuration(&self) -> PluginLogConfiguration {
+        self.into()
+    }
+
+    fn get_type(&self) -> PluginType {
+        self.specification.typ
+    }
+
+    fn set_type(&mut self, typ: PluginType) {
+        self.specification.typ = typ;
+    }
+
+    fn set_name(&mut self, name: String) {
+        self.name = name;
+    }
+
+    fn get_reproduction(&self, path_style: &ReproductionPathStyle) -> Result<PluginReproduction> {
+        Ok(PluginReproduction {
+            name: self.name.clone(),
+            executable: path_style.convert_path(&self.specification.executable)?,
+            script: path_style.convert_path_option(&self.specification.script)?,
+            functional: PluginProcessFunctionalConfiguration {
+                init: self.functional.init.clone(),
+                env: self.functional.env.clone(),
+                work: path_style.convert_path(&self.functional.work)?,
+            },
+        })
     }
 }

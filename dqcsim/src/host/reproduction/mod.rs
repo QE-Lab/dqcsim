@@ -94,18 +94,7 @@ impl Reproduction {
             plugins: config
                 .plugins
                 .iter()
-                .map(|x| {
-                    Ok(PluginReproduction {
-                        name: x.name.clone(),
-                        executable: path_style.convert_path(&x.specification.executable)?,
-                        script: path_style.convert_path_option(&x.specification.script)?,
-                        functional: PluginProcessFunctionalConfiguration {
-                            init: x.functional.init.clone(),
-                            env: x.functional.env.clone(),
-                            work: path_style.convert_path(&x.functional.work)?,
-                        },
-                    })
-                })
+                .map(|x| x.get_reproduction(&path_style))
                 .collect::<Result<Vec<PluginReproduction>>>()?,
             hostname: whoami::hostname(),
             username: whoami::username(),
@@ -134,19 +123,18 @@ impl Reproduction {
         config.plugins = self
             .plugins
             .iter()
-            .map(|x| {
-                Ok(PluginProcessConfiguration {
-                    name: x.name.clone(),
-                    specification: PluginProcessSpecification::new(
-                        &x.executable,
-                        x.script.clone(),
-                        PluginType::Operator,
-                    ),
-                    functional: x.functional.clone(),
-                    nonfunctional: PluginProcessNonfunctionalConfiguration::default(),
-                })
+            .map(|x| PluginProcessConfiguration {
+                name: x.name.clone(),
+                specification: PluginProcessSpecification::new(
+                    &x.executable,
+                    x.script.clone(),
+                    PluginType::Operator,
+                ),
+                functional: x.functional.clone(),
+                nonfunctional: PluginProcessNonfunctionalConfiguration::default(),
             })
-            .collect::<Result<_>>()?;
+            .map(|plugin| Box::new(plugin) as Box<dyn PluginConfiguration>)
+            .collect::<Vec<Box<dyn PluginConfiguration>>>();
 
         // Set the plugin types and make sure we have at least a frontend
         // and a backend.
@@ -154,8 +142,8 @@ impl Reproduction {
         if plugin_count < 2 {
             err("reproduction file corrupted: less than two plugins specified")?;
         }
-        config.plugins[0].specification.typ = PluginType::Frontend;
-        config.plugins[plugin_count - 1].specification.typ = PluginType::Frontend;
+        config.plugins[0].set_type(PluginType::Frontend);
+        config.plugins[plugin_count - 1].set_type(PluginType::Backend);
 
         Ok(self.host_calls.clone())
     }
