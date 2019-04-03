@@ -13,6 +13,7 @@ use crate::{
 use std::thread;
 use term::stderr;
 
+#[derive(Debug)]
 pub struct LogThread {
     sender: Option<crossbeam_channel::Sender<LogRecord>>,
     ipc_sender: Option<ipc_channel::ipc::IpcSender<LogRecord>>,

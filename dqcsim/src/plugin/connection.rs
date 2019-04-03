@@ -27,7 +27,7 @@ use crate::{
         },
         types::{ArbCmd, PluginMetadata},
     },
-    host::{configuration::PluginType, ipc::SimulatorChannel},
+    host::configuration::PluginType,
     plugin::{
         context::PluginState,
         ipc::{DownstreamChannel, PluginChannel, UpstreamChannel},
@@ -120,7 +120,7 @@ impl Connection {
         let (response, response_rx) = ipc_channel::ipc::channel()?;
 
         // Send channel to the simulator.
-        connect.send(SimulatorChannel::new(request_tx, response_rx))?;
+        connect.send((request_tx, response_rx))?;
 
         // Return the PluginChannel.
         Ok(PluginChannel::new(request, response))
@@ -352,9 +352,9 @@ impl Connection {
 #[cfg(test)]
 mod tests {
     use super::{Connection, IncomingMessage, OutgoingMessage};
-    use crate::{
-        common::protocol::{PluginToSimulator, SimulatorToPlugin},
-        host::ipc::SimulatorChannel,
+    use crate::common::{
+        channel::IpcChannel,
+        protocol::{PluginToSimulator, SimulatorToPlugin},
     };
     use ipc_channel::ipc::IpcOneShotServer;
 
@@ -379,14 +379,15 @@ mod tests {
         });
 
         // Simulator gets the SimulatorChannel.
-        let (_, channel): (_, SimulatorChannel) = server.accept().unwrap();
+        let (_, channel): (_, IpcChannel<SimulatorToPlugin, PluginToSimulator>) =
+            server.accept().unwrap();
 
         // Send a request.
-        let req = channel.request.send(SimulatorToPlugin::Abort);
+        let req = channel.0.send(SimulatorToPlugin::Abort);
         assert!(req.is_ok());
 
         // Get a response.
-        let res = channel.response.recv();
+        let res = channel.1.recv();
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), PluginToSimulator::Success);
 
@@ -417,14 +418,15 @@ mod tests {
         });
 
         // Simulator gets the SimulatorChannel.
-        let (_, channel): (_, SimulatorChannel) = server.accept().unwrap();
+        let (_, channel): (_, IpcChannel<SimulatorToPlugin, PluginToSimulator>) =
+            server.accept().unwrap();
 
         // Send a request.
-        let req = channel.request.send(SimulatorToPlugin::Abort);
+        let req = channel.0.send(SimulatorToPlugin::Abort);
         assert!(req.is_ok());
 
         // Get a response.
-        let res = channel.response.recv();
+        let res = channel.1.recv();
         assert!(res.is_ok());
         assert_eq!(res.unwrap(), PluginToSimulator::Success);
 

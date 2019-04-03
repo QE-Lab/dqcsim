@@ -14,21 +14,20 @@ fn main() -> Result<(), Error> {
         std::process::exit(1);
     });
 
-    let mut sim = Simulator::try_from(cfg.dqcsim).unwrap_or_else(|e| {
+    let mut sim = Simulator::new(cfg.dqcsim).unwrap_or_else(|e| {
         eprintln!("Failed to construct simulator: {}", e);
         std::process::exit(1);
     });
-    sim.init()?;
 
     for host_call in cfg.host_calls.into_iter() {
         match host_call {
             HostCall::Start(d) => {
                 info!("Executing 'start(...)' host call...");
-                sim.as_mut().start(d)?;
+                sim.simulation.start(d)?;
             }
             HostCall::Wait => {
                 info!("Executing 'wait()' host call...");
-                let ret = sim.as_mut().wait()?;
+                let ret = sim.simulation.wait()?;
                 note!("'wait()' returned {}", &ret);
                 if cfg.host_stdout {
                     println!("wait(): {}", ret);
@@ -36,11 +35,11 @@ fn main() -> Result<(), Error> {
             }
             HostCall::Send(d) => {
                 info!("Executing 'send(...)' host call...");
-                sim.as_mut().send(d)?;
+                sim.simulation.send(d)?;
             }
             HostCall::Recv => {
                 info!("Executing 'recv()' host call...");
-                let ret = sim.as_mut().recv()?;
+                let ret = sim.simulation.recv()?;
                 note!("'recv()' returned {}", &ret);
                 if cfg.host_stdout {
                     println!("recv: {}", ret);
@@ -48,11 +47,11 @@ fn main() -> Result<(), Error> {
             }
             HostCall::Yield => {
                 info!("Executing 'yield()' host call...");
-                sim.as_mut().yield_to_frontend()?;
+                sim.simulation.yield_to_accelerator()?;
             }
             HostCall::Arb(n, d) => {
                 info!("Executing 'arb(...)' host call...");
-                let ret = sim.as_mut().arb(n, d)?;
+                let ret = sim.simulation.arb(n, d)?;
                 note!("'arb()' returned {}", &ret);
                 if cfg.host_stdout {
                     println!("arb: {}", ret);
@@ -61,6 +60,6 @@ fn main() -> Result<(), Error> {
         }
     }
 
-    sim.as_mut().abort(true)?;
+    sim.simulation.abort(true)?;
     Ok(())
 }

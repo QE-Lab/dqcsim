@@ -6,7 +6,7 @@ test: build/cmake-stamp
 
 # Make sure cmake is called again when any CMakeLists.txt files outside of the
 # build tree have been modified.
-CMAKEFILES = $(shell find -name CMakeLists.txt -not -path './build/*')
+CMAKEFILES = $(shell find . -name CMakeLists.txt -not -path './build/*')
 build/cmake-stamp: $(CMAKEFILES)
 	rm -f $@
 	mkdir -p build

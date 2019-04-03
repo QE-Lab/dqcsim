@@ -38,7 +38,7 @@ pub struct PluginInitializeResponse {
 pub struct FrontendRunResponse {
     /// When specified, the frontend's `run()` callback terminated with the
     /// contained return value.
-    pub complete: Option<ArbData>,
+    pub return_value: Option<ArbData>,
 
     /// Messages queued up through the frontend's `send()` function, to be
     /// consumed by the host's `recv()` function.

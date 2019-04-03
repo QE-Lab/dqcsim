@@ -2,130 +2,107 @@
 
 use crate::{
     common::{
-        error::{err, inv_arg, inv_op, ErrorKind, Result},
-        log::LogRecord,
+        error::{err, inv_arg, inv_op, Result},
+        log::thread::LogThread,
+        protocol::{FrontendRunRequest, PluginToSimulator, SimulatorToPlugin},
         types::{ArbCmd, ArbData, PluginMetadata},
     },
-    host::{
-        accelerator::Accelerator,
-        configuration::{PluginConfiguration, Seed},
-        plugin::Plugin,
-    },
+    host::{accelerator::Accelerator, configuration::Seed, plugin::Plugin},
     trace,
 };
-use ipc_channel::ipc::IpcSender;
+use std::collections::VecDeque;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+/// Type alias for a pipeline of Plugin trait objects.
+pub type Pipeline = Vec<Box<dyn Plugin>>;
+
+/// Tracks the state of a Simulation.
+#[derive(Debug, PartialEq)]
 pub enum SimulationState {
-    /// Simulation pipeline is constructed.
-    Constructed,
-    /// Simulation spawned plugins in pipeline.
-    Spawned,
-    /// Simulation initalized plugins in pipeline.
-    ///
-    /// This includes upstream and downstream channel setup.
-    Initialized,
+    /// Simulation pipeline is idle.
+    Idle,
+    /// start() was called, but was not yet forwarded to the front-end.
+    /// Contained value holds the start ArbData.
+    Pending(ArbData),
+    /// yield() returned, but the simulation program has not returned yet.
+    Blocked,
+    /// The simulation program has returned, but wait() has not yet been
+    /// called
+    /// Contained valus is the return value.
+    Zombie(ArbData),
 }
 
 /// Simulation instance.
-///
-/// Contains a pipeline of [`Plugin`] instances.
-///
-/// [`Plugin`]: ../plugin/struct.Plugin.html
 #[derive(Debug)]
 pub struct Simulation {
+    /// Tracks the state of this Simulation.
     state: SimulationState,
+    /// The Plugin pipeline of this Simulation.
+    pipeline: Pipeline,
+
+    send_queue: VecDeque<ArbData>,
+    recv_queue: VecDeque<ArbData>,
+
+    /// Random seed for this Simulation.
     seed: Seed,
-    pipeline: Vec<Plugin>,
 }
 
 impl Simulation {
-    /// Constructs a [`Simulation`] based on the provided [`PluginConfiguration`]s.
-    pub fn new(plugins: Vec<PluginConfiguration>, seed: Seed) -> Result<Simulation> {
+    /// Constructs a Simulation from a collection of PluginInstance and a random seed.
+    pub fn new(mut pipeline: Pipeline, seed: Seed, logger: &LogThread) -> Result<Simulation> {
         trace!("Constructing Simulation");
-        if plugins.len() < 2 {
+        if pipeline.len() < 2 {
             inv_arg("Simulation must consist of at least a frontend and backend")?
         }
 
-        let (plugins, errors): (Vec<_>, Vec<_>) = plugins
-            .into_iter()
-            .rev()
-            .map(Plugin::try_from)
+        // Spawn the plugins.
+        let (_, errors): (_, Vec<_>) = pipeline
+            .iter_mut()
+            .map(|plugin| plugin.spawn(logger))
             .partition(Result::is_ok);
-
-        let pipeline: Vec<Plugin> = plugins.into_iter().map(Result::unwrap).collect();
-
         if !errors.is_empty() {
-            Err(ErrorKind::Multiple(
-                errors
-                    .into_iter()
-                    .map(|x| ErrorKind::Other(x.unwrap_err().to_string()))
-                    .collect(),
-            ))?
+            err("Failed to spawn plugin(s)")?
+        }
+
+        // Initialize the plugins.
+        let mut downstream = None;
+        let (_, errors): (_, Vec<_>) = pipeline
+            .iter_mut()
+            .rev()
+            .map(|plugin| {
+                let res = plugin.init(logger, &downstream)?;
+                downstream = res.upstream;
+                Ok(())
+            })
+            .partition(Result::is_ok);
+        if !errors.is_empty() {
+            err("Failed to initialize plugin(s)")?
         }
 
         Ok(Simulation {
-            state: SimulationState::Constructed,
-            seed,
+            state: SimulationState::Idle,
             pipeline,
+            send_queue: VecDeque::new(),
+            recv_queue: VecDeque::new(),
+            seed,
         })
     }
 
-    /// Spawn the plugins in the Simulation.
-    ///
-    /// Required to run before [`init`].
-    pub fn spawn(&mut self, log_sender: crossbeam_channel::Sender<LogRecord>) -> Result<()> {
-        match self.state {
-            SimulationState::Constructed => {
-                let (_, errors): (_, Vec<_>) = self
-                    .pipeline
-                    .iter_mut()
-                    .map(|plugin| plugin.spawn(log_sender.clone()))
-                    .partition(Result::is_ok);
-                if !errors.is_empty() {
-                    err("Failed to spawn plugin(s)")?
-                }
-            }
-            _ => {
-                inv_op(format!("spawn functions requires the simulation to be in the Constructed state. Current state: {:?}", self.state))?
-            }
-        }
-        self.state = SimulationState::Spawned;
-        Ok(())
+    /// Returns a mutable reference to the pipeline.
+    pub fn pipeline_mut(&mut self) -> &mut Pipeline {
+        self.pipeline.as_mut()
     }
 
-    /// Initialize the Simulation.
-    ///
-    /// Initialize the [`Simulation`] by spawning the plugin processes and
-    /// initializing the plugins.
-    pub fn init(&mut self, log: IpcSender<LogRecord>) -> Result<()> {
-        trace!("Initialize Simulation");
-        match self.state {
-            SimulationState::Spawned => {
-                self.pipeline
-                    .first()
-                    .unwrap()
-                    .init(None, self.pipeline.iter().skip(1).by_ref(), log)?;
-                    self.state = SimulationState::Initialized;
-                    Ok(())
-            },
-            _ => {
-                inv_op(format!("init functions requires the simulation to be in the Spawned state. Current state: {:?}", self.state))?
-            }
-        }
+    #[allow(clippy::borrowed_box)]
+    pub fn accelerator(&self) -> &Box<dyn Plugin> {
+        unsafe { self.pipeline.get_unchecked(0) }
+    }
+    #[allow(clippy::borrowed_box)]
+    pub fn accelerator_mut(&mut self) -> &mut Box<dyn Plugin> {
+        unsafe { self.pipeline.get_unchecked_mut(0) }
     }
 
-    /// Abort the simulation.
-    ///
-    /// Graceful flag can be set to gracefully abort.
-    /// Non-graceful termination should only be used in case of pre-
-    /// initialization problems.
     pub fn abort(&mut self, _graceful: bool) -> Result<()> {
-        // trace!("Aborting simulation. (graceful: {})", graceful);
-        // self.pipeline
-        //     .iter_mut()
-        //     .for_each(|plugin| plugin.abort(graceful));
-        Ok(())
+        unimplemented!()
     }
 
     /// Yields to the accelerator.
@@ -138,9 +115,29 @@ impl Simulation {
     /// This function silently returns immediately if no asynchronous data was
     /// pending or if the simulator is waiting for something that has not been
     /// sent yet.
-    pub fn yield_to_frontend(&mut self) -> Result<()> {
-        // TODO
-        inv_op("not yet implemented")
+    pub fn yield_to_accelerator(&mut self) -> Result<()> {
+        let start = if let SimulationState::Pending(ref args) = self.state {
+            Some(args.clone())
+        } else {
+            None
+        };
+        if start.is_some() {
+            self.state = SimulationState::Blocked;
+        }
+        let messages = self.send_queue.drain(..).collect();
+        if let Ok(PluginToSimulator::RunResponse(res)) =
+            self.accelerator_mut()
+                .rpc(SimulatorToPlugin::RunRequest(FrontendRunRequest {
+                    start,
+                    messages,
+                }))
+        {
+            self.recv_queue.extend(res.messages);
+            if let Some(return_value) = res.return_value {
+                self.state = SimulationState::Zombie(return_value);
+            }
+        }
+        Ok(())
     }
 
     /// Sends an `ArbCmd` message to one of the plugins, referenced by name.
@@ -183,7 +180,7 @@ impl Simulation {
         if index >= n_plugins {
             inv_arg(format!("index {} out of range", index))?
         }
-        self.yield_to_frontend()?;
+        self.yield_to_accelerator()?;
         self.pipeline[index].arb(cmd)
     }
 
@@ -215,21 +212,8 @@ impl Simulation {
             inv_arg(format!("index {} out of range", index))?
         }
         // TODO: get the metadata object
-        inv_op("not yet implemented")
+        unimplemented!()
     }
-
-    // /// Abort the simulation.
-    // ///
-    // /// Graceful flag can be set to gracefully abort.
-    // /// Non-graceful termination should only be used in case of pre-
-    // /// initialization problems.
-    // pub fn abort(&mut self, graceful: bool) -> Result<(), Error> {
-    //     trace!("Aborting simulation. (graceful: {})", graceful);
-    //     self.pipeline
-    //         .iter_mut()
-    //         .for_each(|plugin| plugin.abort(graceful));
-    //     Ok(())
-    // }
 }
 
 impl Accelerator for Simulation {
@@ -237,11 +221,9 @@ impl Accelerator for Simulation {
     ///
     /// This is an asynchronous call: nothing happens until `yield()`,
     /// `recv()`, or `wait()` is called.
-    #[allow(unused)] // TODO: remove <--
     fn start(&mut self, args: impl Into<ArbData>) -> Result<()> {
-        if self.state != SimulationState::Initialized {
-            inv_op(format!("init functions requires the simulation to be in the Initialized state. Current state: {:?}", self.state))?
-        }
+        assert_eq!(self.state, SimulationState::Idle);
+        self.state = SimulationState::Pending(args.into());
         Ok(())
     }
 
@@ -252,10 +234,16 @@ impl Accelerator for Simulation {
     ///
     /// Deadlocks are detected and prevented by throwing an error message.
     fn wait(&mut self) -> Result<ArbData> {
-        if self.state != SimulationState::Initialized {
-            inv_op(format!("init functions requires the simulation to be in the Initialized state. Current state: {:?}", self.state))?
+        if let SimulationState::Zombie(ref return_value) = self.state {
+            Ok(return_value.clone())
+        } else {
+            self.yield_to_accelerator()?;
+            if let SimulationState::Zombie(ref return_value) = self.state {
+                Ok(return_value.clone())
+            } else {
+                inv_op("Accelerator is blocked (unmatched recv()?)")
+            }
         }
-        Ok(ArbData::default())
     }
 
     /// Sends a message to the accelerator.
@@ -280,7 +268,6 @@ impl Accelerator for Simulation {
 impl Drop for Simulation {
     fn drop(&mut self) {
         trace!("Dropping Simulation");
-
-        // TODO: send abort to all plugins. Then wait and collect exit.
+        // TODO: matthijs send abort to all plugins. Then wait and collect exit.
     }
 }
