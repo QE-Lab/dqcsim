@@ -60,6 +60,5 @@ fn main() -> Result<(), Error> {
         }
     }
 
-    sim.simulation.abort(true)?;
     Ok(())
 }

@@ -101,10 +101,6 @@ impl Simulation {
         unsafe { self.pipeline.get_unchecked_mut(0) }
     }
 
-    pub fn abort(&mut self, _graceful: bool) -> Result<()> {
-        unimplemented!()
-    }
-
     /// Yields to the accelerator.
     ///
     /// The accelerator simulation runs until it blocks again. This is useful
@@ -268,6 +264,5 @@ impl Accelerator for Simulation {
 impl Drop for Simulation {
     fn drop(&mut self) {
         trace!("Dropping Simulation");
-        // TODO: matthijs send abort to all plugins. Then wait and collect exit.
     }
 }

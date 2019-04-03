@@ -1,7 +1,7 @@
 use dqcsim::{
     common::{
-        protocol::{PluginToSimulator, SimulatorToPlugin},
-        types::{ArbCmd, PluginMetadata},
+        protocol::{FrontendRunResponse, PluginToSimulator, SimulatorToPlugin},
+        types::{ArbCmd, ArbData, PluginMetadata},
     },
     debug,
     host::configuration::PluginType,
@@ -46,12 +46,25 @@ fn main() -> Result<(), Error> {
     eprintln!("stderr");
     println!("stdout");
 
-    if let Ok(Some(IncomingMessage::Simulator(SimulatorToPlugin::Abort))) =
-        connection.next_request()
-    {
-        connection.send(OutgoingMessage::Simulator(PluginToSimulator::Success))?;
-    } else {
-        std::process::exit(1);
+    while let Ok(next) = connection.next_request() {
+        match next {
+            Some(IncomingMessage::Simulator(SimulatorToPlugin::Abort)) => {
+                connection.send(OutgoingMessage::Simulator(PluginToSimulator::Success))?;
+                break;
+            }
+            Some(IncomingMessage::Simulator(SimulatorToPlugin::RunRequest(_))) => {
+                connection.send(OutgoingMessage::Simulator(PluginToSimulator::RunResponse(
+                    FrontendRunResponse {
+                        return_value: Some(ArbData::default()),
+                        messages: vec![],
+                    },
+                )))?;
+            }
+            _ => {
+                eprintln!("{:?}", next);
+                connection.send(OutgoingMessage::Simulator(PluginToSimulator::Success))?;
+            }
+        }
     }
 
     info!("Plugin down.");
