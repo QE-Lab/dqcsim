@@ -120,6 +120,10 @@ pub enum dqcs_handle_type_t {
     /// Indicates that the given handle belongs to a qubit measurement result.
     DQCS_HTYPE_MEAS = 105,
 
+    /// Indicates that the given handle belongs to a set of qubit measurement
+    /// results.
+    DQCS_HTYPE_MEAS_SET = 106,
+
     /// Indicates that the given handle belongs to a frontend plugin
     /// configuration object.
     DQCS_HTYPE_FRONT_CONFIG = 200,

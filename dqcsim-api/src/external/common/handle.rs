@@ -13,6 +13,9 @@ pub extern "C" fn dqcs_handle_type(handle: dqcs_handle_t) -> dqcs_handle_type_t 
             Some(APIObject::QubitReferenceSet(_)) => dqcs_handle_type_t::DQCS_HTYPE_QUBIT_SET,
             Some(APIObject::Gate(_)) => dqcs_handle_type_t::DQCS_HTYPE_GATE,
             Some(APIObject::QubitMeasurementResult(_)) => dqcs_handle_type_t::DQCS_HTYPE_MEAS,
+            Some(APIObject::QubitMeasurementResultSet(_)) => {
+                dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET
+            }
             Some(APIObject::PluginProcessConfiguration(x)) => match x.specification.typ {
                 PluginType::Frontend => dqcs_handle_type_t::DQCS_HTYPE_FRONT_CONFIG,
                 PluginType::Operator => dqcs_handle_type_t::DQCS_HTYPE_OPER_CONFIG,

@@ -6,6 +6,8 @@ pub type ArbCmdQueue = VecDeque<ArbCmd>;
 
 pub type QubitReferenceSet = VecDeque<QubitRef>;
 
+pub type QubitMeasurementResultSet = HashMap<QubitRef, QubitMeasurementResult>;
+
 macro_rules! api_object_types {
     ($($(#[$m:meta])* $i:ident,)+) => (
         /// Enumeration of all objects that can be associated with an handle, including
@@ -42,6 +44,8 @@ api_object_types!(
     Gate,
     /// Qubit measurement object.
     QubitMeasurementResult,
+    /// Set of qubit measurement objects.
+    QubitMeasurementResultSet,
     /// `PluginProcessConfiguration` object.
     PluginProcessConfiguration,
     /// `SimulatorConfiguration` object.
@@ -362,6 +366,10 @@ mutate_api_object_as! {Gate, gate:
 
 mutate_api_object_as! {QubitMeasurementResult, meas:
     APIObject::QubitMeasurementResult(x) => x, x, x,
+}
+
+mutate_api_object_as! {QubitMeasurementResultSet, mset:
+    APIObject::QubitMeasurementResultSet(x) => x, x, x,
 }
 
 mutate_api_object_as! {PluginProcessConfiguration, pcfg:

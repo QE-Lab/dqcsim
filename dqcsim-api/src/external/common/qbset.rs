@@ -12,8 +12,6 @@ pub extern "C" fn dqcs_qbset_new() -> dqcs_handle_t {
 }
 
 /// Returns whether the given qubit set contains the given qubit,
-///
-/// This function will fail if the specified qubit was already part of the set.
 #[no_mangle]
 pub extern "C" fn dqcs_qbset_contains(
     qbset: dqcs_handle_t,
