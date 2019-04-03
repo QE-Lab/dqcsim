@@ -150,7 +150,7 @@ impl Plugin for PluginProcess {
         if let StreamCaptureMode::Capture(level) = self.configuration.nonfunctional.stdout_mode {
             proxy_stdio(
                 format!("{}::stdout", self.configuration.name),
-                Box::new(self.child.as_mut().unwrap().stderr.take().expect("stdout")),
+                Box::new(self.child.as_mut().unwrap().stdout.take().expect("stdout")),
                 logger.get_sender(),
                 level,
             );
