@@ -5,7 +5,7 @@ use crate::{
             ArbCmd, ArbData, Gate, PluginMetadata, PluginType, QubitMeasurementResult, QubitRef,
         },
     },
-    plugin::context::PluginState,
+    plugin::state::PluginState,
 };
 use std::fmt;
 

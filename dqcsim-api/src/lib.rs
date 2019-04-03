@@ -72,7 +72,7 @@
 use dqcsim::{
     common::{error::*, types::*},
     host::{configuration::*, simulator::Simulator},
-    plugin::{context::*, definition::*},
+    plugin::{definition::*, state::*},
 };
 use libc::*;
 use num_complex::Complex64;

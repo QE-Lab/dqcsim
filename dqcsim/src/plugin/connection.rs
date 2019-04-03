@@ -28,9 +28,9 @@ use crate::{
         types::{ArbCmd, PluginMetadata, PluginType},
     },
     plugin::{
-        context::PluginState,
         ipc::{DownstreamChannel, PluginChannel, UpstreamChannel},
         log::setup_logging,
+        state::PluginState,
     },
     trace,
 };

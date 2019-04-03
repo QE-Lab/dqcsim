@@ -6,7 +6,7 @@ use dqcsim::{
     debug, info,
     plugin::{
         connection::{Connection, IncomingMessage, OutgoingMessage},
-        context::PluginState,
+        state::PluginState,
     },
     trace,
 };
