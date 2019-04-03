@@ -44,7 +44,7 @@ pub type dqcs_qubit_t = c_ulonglong;
 #[allow(non_camel_case_types)]
 pub type dqcs_cycle_t = c_longlong;
 
-/// Type for a plugin context.
+/// Type for a plugin state.
 ///
 /// This is an opaque type that is passed along to plugin implementation
 /// callback functions, which those callbacks can then use to interact with the
@@ -53,27 +53,27 @@ pub type dqcs_cycle_t = c_longlong;
 #[allow(non_camel_case_types)]
 #[repr(transparent)]
 #[derive(Clone, Copy)]
-pub struct dqcs_plugin_context_t(*mut c_void);
+pub struct dqcs_plugin_state_t(*mut c_void);
 
-impl From<&mut PluginContext> for dqcs_plugin_context_t {
-    /// Convert a plugin context reference to its FFI representation.
-    fn from(pc: &mut PluginContext) -> dqcs_plugin_context_t {
-        dqcs_plugin_context_t(pc as *mut PluginContext as *mut c_void)
+impl From<&mut PluginState> for dqcs_plugin_state_t {
+    /// Convert a plugin state reference to its FFI representation.
+    fn from(pc: &mut PluginState) -> dqcs_plugin_state_t {
+        dqcs_plugin_state_t(pc as *mut PluginState as *mut c_void)
     }
 }
 
-impl Into<&mut PluginContext> for dqcs_plugin_context_t {
-    /// Convert the FFI representation of a plugin context back to a Rust
+impl Into<&mut PluginState> for dqcs_plugin_state_t {
+    /// Convert the FFI representation of a plugin state back to a Rust
     /// reference.
-    fn into(self) -> &'static mut PluginContext {
-        unsafe { &mut *(self.0 as *mut PluginContext) }
+    fn into(self) -> &'static mut PluginState {
+        unsafe { &mut *(self.0 as *mut PluginState) }
     }
 }
 
-impl dqcs_plugin_context_t {
-    pub fn resolve(self) -> Result<&'static mut PluginContext> {
+impl dqcs_plugin_state_t {
+    pub fn resolve(self) -> Result<&'static mut PluginState> {
         if self.0.is_null() {
-            inv_arg("invalid plugin context")
+            inv_arg("plugin state pointer is null")
         } else {
             Ok(self.into())
         }

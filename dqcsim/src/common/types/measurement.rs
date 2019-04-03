@@ -81,7 +81,7 @@ pub struct QubitMeasurementResult {
     /// The measured qubit.
     pub qubit: QubitRef,
 
-    /// The measured value. true = 1, false = 0.
+    /// The measured value.
     pub value: QubitMeasurementState,
 
     /// Implementation-specific additional data, such as the probability for

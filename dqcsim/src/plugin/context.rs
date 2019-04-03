@@ -8,9 +8,9 @@ use crate::common::{
 /// from the closures in the plugin definition.
 ///
 /// TODO: move me?
-pub struct PluginContext {}
+pub struct PluginState {}
 
-impl PluginContext {
+impl PluginState {
     /// Sends a log message to DQCsim by means of a LogRecord structure.
     pub fn log<T, S>(
         &mut self,
