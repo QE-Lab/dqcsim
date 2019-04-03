@@ -62,13 +62,8 @@ impl Plugin for PluginThread {
     }
 
     /// Send the SimulatorToPlugin message to the plugin.
-    fn send(&mut self, msg: SimulatorToPlugin) -> Result<()> {
+    fn rpc(&mut self, msg: SimulatorToPlugin) -> Result<PluginToSimulator> {
         self.channel.as_ref().unwrap().0.send(msg)?;
-        Ok(())
-    }
-
-    /// Receive the next PluginToSimulator message.
-    fn recv(&mut self) -> Result<PluginToSimulator> {
         Ok(self.channel.as_ref().unwrap().1.recv()?)
     }
 

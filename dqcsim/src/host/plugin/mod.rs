@@ -30,10 +30,7 @@ pub trait Plugin: Debug {
     fn configuration(&self) -> PluginConfiguration;
 
     /// Send the SimulatorToPlugin message to the plugin.
-    fn send(&mut self, msg: SimulatorToPlugin) -> Result<()>;
-
-    /// Receive the next PluginToSimulator message.
-    fn recv(&mut self) -> Result<PluginToSimulator>;
+    fn rpc(&mut self, msg: SimulatorToPlugin) -> Result<PluginToSimulator>;
 }
 
 impl Plugin {
@@ -53,15 +50,13 @@ impl Plugin {
         logger: &LogThread,
         downstream: &Option<String>,
     ) -> Result<PluginInitializeResponse> {
-        self.send(SimulatorToPlugin::Initialize(Box::new(
+        match self.rpc(SimulatorToPlugin::Initialize(Box::new(
             PluginInitializeRequest {
                 downstream: downstream.clone(),
                 configuration: self.configuration(),
                 log: logger.get_ipc_sender(),
             },
-        )))?;
-
-        match self.recv()? {
+        )))? {
             PluginToSimulator::Initialized(response) => Ok(response),
             PluginToSimulator::Failure(data) => err(data),
             _ => inv_op("Unexpected response from plugin"),
@@ -70,8 +65,7 @@ impl Plugin {
 
     /// Sends an `ArbCmd` message to this plugin.
     pub fn arb(&mut self, cmd: impl Into<ArbCmd>) -> Result<ArbData> {
-        self.send(SimulatorToPlugin::ArbRequest(cmd.into()))?;
-        match self.recv()? {
+        match self.rpc(SimulatorToPlugin::ArbRequest(cmd.into()))? {
             PluginToSimulator::ArbResponse(data) => Ok(data),
             PluginToSimulator::Failure(data) => err(data),
             _ => inv_op("Unexpected response from plugin"),

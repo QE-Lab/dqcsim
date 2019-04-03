@@ -1,5 +1,5 @@
 use dqcsim::{
-    host::{reproduction::HostCall, simulator::Simulator},
+    host::{accelerator::Accelerator, reproduction::HostCall, simulator::Simulator},
     info, note,
 };
 
@@ -47,7 +47,7 @@ fn main() -> Result<(), Error> {
             }
             HostCall::Yield => {
                 info!("Executing 'yield()' host call...");
-                sim.simulation.yield_to_frontend()?;
+                sim.simulation.yield_to_accelerator()?;
             }
             HostCall::Arb(n, d) => {
                 info!("Executing 'arb(...)' host call...");

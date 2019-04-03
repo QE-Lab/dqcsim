@@ -4,7 +4,7 @@ use crate::{
     common::{
         error::{err, inv_arg, inv_op, Result},
         log::thread::LogThread,
-        protocol::SimulatorToPlugin,
+        protocol::{FrontendRunRequest, PluginToSimulator, SimulatorToPlugin},
         types::{ArbCmd, ArbData, PluginMetadata},
     },
     host::{accelerator::Accelerator, configuration::Seed, plugin::Plugin},
@@ -16,27 +16,33 @@ use std::collections::VecDeque;
 pub type Pipeline = Vec<Box<dyn Plugin>>;
 
 /// Tracks the state of a Simulation.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum SimulationState {
     /// Simulation pipeline is idle.
     Idle,
     /// start() was called, but was not yet forwarded to the front-end.
-    Pending,
+    /// Contained value holds the start ArbData.
+    Pending(ArbData),
     /// yield() returned, but the simulation program has not returned yet.
     Blocked,
     /// The simulation program has returned, but wait() has not yet been
     /// called
-    Zombie,
+    /// Contained valus is the return value.
+    Zombie(ArbData),
 }
 
 /// Simulation instance.
-///
-///
 #[derive(Debug)]
 pub struct Simulation {
+    /// Tracks the state of this Simulation.
     state: SimulationState,
+    /// The Plugin pipeline of this Simulation.
     pipeline: Pipeline,
-    queue: VecDeque<SimulatorToPlugin>,
+
+    send_queue: VecDeque<ArbData>,
+    recv_queue: VecDeque<ArbData>,
+
+    /// Random seed for this Simulation.
     seed: Seed,
 }
 
@@ -75,7 +81,8 @@ impl Simulation {
         Ok(Simulation {
             state: SimulationState::Idle,
             pipeline,
-            queue: VecDeque::new(),
+            send_queue: VecDeque::new(),
+            recv_queue: VecDeque::new(),
             seed,
         })
     }
@@ -86,48 +93,15 @@ impl Simulation {
     }
 
     #[allow(clippy::borrowed_box)]
-    pub fn frontend(&self) -> &Box<dyn Plugin> {
+    pub fn accelerator(&self) -> &Box<dyn Plugin> {
         unsafe { self.pipeline.get_unchecked(0) }
     }
     #[allow(clippy::borrowed_box)]
-    pub fn frontend_mut(&mut self) -> &mut Box<dyn Plugin> {
+    pub fn accelerator_mut(&mut self) -> &mut Box<dyn Plugin> {
         unsafe { self.pipeline.get_unchecked_mut(0) }
     }
 
     pub fn abort(&mut self, _graceful: bool) -> Result<()> {
-        unimplemented!()
-    }
-
-    /// Starts a program on the accelerator.
-    ///
-    /// This is an asynchronous call: nothing happens until `yield()`,
-    /// `recv()`, or `wait()` is called.
-    pub fn start(&mut self, _args: impl Into<ArbData>) -> Result<()> {
-        unimplemented!()
-    }
-
-    /// Waits for the accelerator to finish its current program.
-    ///
-    /// When this succeeds, the return value of the accelerator's `run()`
-    /// function is returned.
-    ///
-    /// Deadlocks are detected and prevented by throwing an error message.
-    pub fn wait(&mut self) -> Result<ArbData> {
-        unimplemented!()
-    }
-
-    /// Sends a message to the accelerator.
-    ///
-    /// This is an asynchronous call: nothing happens until `yield()`,
-    /// `recv()`, or `wait()` is called.
-    pub fn send(&mut self, _args: impl Into<ArbData>) -> Result<()> {
-        unimplemented!()
-    }
-
-    /// Waits for the accelerator to send a message to us.
-    ///
-    /// Deadlocks are detected and prevented by throwing an error message.
-    pub fn recv(&mut self) -> Result<ArbData> {
         unimplemented!()
     }
 
@@ -141,8 +115,29 @@ impl Simulation {
     /// This function silently returns immediately if no asynchronous data was
     /// pending or if the simulator is waiting for something that has not been
     /// sent yet.
-    pub fn yield_to_frontend(&mut self) -> Result<()> {
-        unimplemented!()
+    pub fn yield_to_accelerator(&mut self) -> Result<()> {
+        let start = if let SimulationState::Pending(ref args) = self.state {
+            Some(args.clone())
+        } else {
+            None
+        };
+        if start.is_some() {
+            self.state = SimulationState::Blocked;
+        }
+        let messages = self.send_queue.drain(..).collect();
+        if let Ok(PluginToSimulator::RunResponse(res)) =
+            self.accelerator_mut()
+                .rpc(SimulatorToPlugin::RunRequest(FrontendRunRequest {
+                    start,
+                    messages,
+                }))
+        {
+            self.recv_queue.extend(res.messages);
+            if let Some(return_value) = res.return_value {
+                self.state = SimulationState::Zombie(return_value);
+            }
+        }
+        Ok(())
     }
 
     /// Sends an `ArbCmd` message to one of the plugins, referenced by name.
@@ -185,7 +180,7 @@ impl Simulation {
         if index >= n_plugins {
             inv_arg(format!("index {} out of range", index))?
         }
-        self.yield_to_frontend()?;
+        self.yield_to_accelerator()?;
         self.pipeline[index].arb(cmd)
     }
 
@@ -226,8 +221,9 @@ impl Accelerator for Simulation {
     ///
     /// This is an asynchronous call: nothing happens until `yield()`,
     /// `recv()`, or `wait()` is called.
-    #[allow(unused)] // TODO: remove <--
     fn start(&mut self, args: impl Into<ArbData>) -> Result<()> {
+        assert_eq!(self.state, SimulationState::Idle);
+        self.state = SimulationState::Pending(args.into());
         Ok(())
     }
 
@@ -238,7 +234,16 @@ impl Accelerator for Simulation {
     ///
     /// Deadlocks are detected and prevented by throwing an error message.
     fn wait(&mut self) -> Result<ArbData> {
-        Ok(ArbData::default())
+        if let SimulationState::Zombie(ref return_value) = self.state {
+            Ok(return_value.clone())
+        } else {
+            self.yield_to_accelerator()?;
+            if let SimulationState::Zombie(ref return_value) = self.state {
+                Ok(return_value.clone())
+            } else {
+                inv_op("Accelerator is blocked (unmatched recv()?)")
+            }
+        }
     }
 
     /// Sends a message to the accelerator.

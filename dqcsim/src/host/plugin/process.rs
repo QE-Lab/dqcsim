@@ -163,12 +163,8 @@ impl Plugin for PluginProcess {
         self.configuration.clone()
     }
 
-    fn send(&mut self, msg: SimulatorToPlugin) -> Result<()> {
+    fn rpc(&mut self, msg: SimulatorToPlugin) -> Result<PluginToSimulator> {
         self.channel.as_ref().unwrap().0.send(msg)?;
-        Ok(())
-    }
-
-    fn recv(&mut self) -> Result<PluginToSimulator> {
         Ok(self.channel.as_ref().unwrap().1.recv()?)
     }
 }
@@ -189,7 +185,11 @@ impl Drop for PluginProcess {
                 "Aborting PluginProcess (timeout: {:?})",
                 self.configuration.nonfunctional.shutdown_timeout
             );
-            self.send(SimulatorToPlugin::Abort)
+            self.channel
+                .as_ref()
+                .unwrap()
+                .0
+                .send(SimulatorToPlugin::Abort)
                 .expect("Failed to abort PluginProcess");
 
             if let Timeout::Duration(duration) = self.configuration.nonfunctional.shutdown_timeout {

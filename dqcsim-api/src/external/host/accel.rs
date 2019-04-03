@@ -1,4 +1,5 @@
 use super::*;
+use dqcsim::host::accelerator::Accelerator;
 
 /// Starts a program on the accelerator.
 ///

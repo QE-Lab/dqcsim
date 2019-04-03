@@ -29,7 +29,7 @@ pub extern "C" fn dqcs_sim_init(scfg: dqcs_handle_t) -> dqcs_handle_t {
 pub extern "C" fn dqcs_sim_yield(sim: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(sim as &mut Simulator);
-        sim.simulation.yield_to_frontend()?;
+        sim.simulation.yield_to_accelerator()?;
         Ok(())
     })
 }
