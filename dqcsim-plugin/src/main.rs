@@ -32,7 +32,7 @@ fn main() -> Result<(), Error> {
         PluginType::Operator
     };
 
-    let metadata = PluginMetadata::new("example", "mb", "0.1.0");
+    let metadata = PluginMetadata::new(format!{"example: {}", name}, "mb", "0.1.0");
     // Init fn
     let initialize: Box<dyn Fn(&mut PluginState, Vec<ArbCmd>)> = Box::new(|_ctx, arb_cmds| {
         trace!("Running plugin init function.");

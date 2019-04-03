@@ -72,6 +72,12 @@ pub enum SimulatorToPlugin {
     ArbRequest(ArbCmd),
 }
 
+impl Into<SimulatorToPlugin> for ArbCmd {
+    fn into(self) -> SimulatorToPlugin {
+        SimulatorToPlugin::ArbRequest(self)
+    }
+}
+
 /// Plugin initialization request. See `SimulatorToPlugin::Initialize`.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PluginInitializeRequest {
@@ -106,6 +112,12 @@ pub struct PluginInitializeRequest {
     pub log: IpcSender<LogRecord>,
 }
 
+impl Into<SimulatorToPlugin> for PluginInitializeRequest {
+    fn into(self) -> SimulatorToPlugin {
+        SimulatorToPlugin::Initialize(Box::new(self))
+    }
+}
+
 impl PartialEq for PluginInitializeRequest {
     fn eq(&self, other: &PluginInitializeRequest) -> bool {
         self.downstream == other.downstream && self.configuration == other.configuration
@@ -122,4 +134,10 @@ pub struct FrontendRunRequest {
     /// Messages queued up through the host's `send()` function, to be consumed
     /// by the plugin's `recv()` function.
     pub messages: Vec<ArbData>,
+}
+
+impl Into<SimulatorToPlugin> for FrontendRunRequest {
+    fn into(self) -> SimulatorToPlugin {
+        SimulatorToPlugin::RunRequest(self)
+    }
 }

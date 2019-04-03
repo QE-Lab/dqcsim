@@ -3,7 +3,7 @@ pub mod thread;
 
 use crate::{
     common::{
-        error::{err, inv_op, Result},
+        error::{err, Result},
         log::thread::LogThread,
         protocol::{
             PluginInitializeRequest, PluginInitializeResponse, PluginToSimulator, SimulatorToPlugin,
@@ -13,6 +13,26 @@ use crate::{
     host::configuration::{PluginConfiguration, PluginType},
 };
 use std::fmt::Debug;
+
+#[macro_export]
+macro_rules! checked_rpc {
+    ($plugin:expr, $message:expr, expect $t:ident) => {
+        match $plugin.rpc($message.into()) {
+            Ok(PluginToSimulator::$t(x)) => Ok(x),
+            Ok(PluginToSimulator::Failure(e)) => err(e),
+            Ok(_) => err("Protocol error: unexpected response from plugin"),
+            Err(e) => Err(e),
+        }
+    };
+    ($plugin:expr, $message:expr) => {
+        match $plugin.rpc($message.into()) {
+            Ok(PluginToSimulator::Success) => Ok(()),
+            Ok(PluginToSimulator::Failure(e)) => err(e),
+            Ok(_) => err("Protocol error: unexpected response from plugin"),
+            Err(e) => Err(e),
+        }
+    };
+}
 
 /// The Plugin trait, implemented by all Plugins used in a Simulation.
 pub trait Plugin: Debug {
@@ -50,25 +70,23 @@ impl Plugin {
         logger: &LogThread,
         downstream: &Option<String>,
     ) -> Result<PluginInitializeResponse> {
-        match self.rpc(SimulatorToPlugin::Initialize(Box::new(
+        checked_rpc!(
+            self,
             PluginInitializeRequest {
                 downstream: downstream.clone(),
                 configuration: self.configuration(),
                 log: logger.get_ipc_sender(),
             },
-        )))? {
-            PluginToSimulator::Initialized(response) => Ok(response),
-            PluginToSimulator::Failure(data) => err(data),
-            _ => inv_op("Unexpected response from plugin"),
-        }
+            expect Initialized
+        )
     }
 
     /// Sends an `ArbCmd` message to this plugin.
     pub fn arb(&mut self, cmd: impl Into<ArbCmd>) -> Result<ArbData> {
-        match self.rpc(SimulatorToPlugin::ArbRequest(cmd.into()))? {
-            PluginToSimulator::ArbResponse(data) => Ok(data),
-            PluginToSimulator::Failure(data) => err(data),
-            _ => inv_op("Unexpected response from plugin"),
-        }
+        checked_rpc!(
+            self,
+            cmd.into(),
+            expect ArbResponse
+        )
     }
 }

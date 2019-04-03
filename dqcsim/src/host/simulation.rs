@@ -1,49 +1,134 @@
 //! Simulation instance.
 
 use crate::{
+    checked_rpc,
     common::{
         error::{err, inv_arg, inv_op, Result},
         log::thread::LogThread,
-        protocol::{FrontendRunRequest, PluginToSimulator, SimulatorToPlugin},
+        protocol::{FrontendRunRequest, PluginToSimulator},
         types::{ArbCmd, ArbData, PluginMetadata},
     },
     host::{accelerator::Accelerator, configuration::Seed, plugin::Plugin},
-    trace,
+    trace, debug,
 };
 use std::collections::VecDeque;
 
 /// Type alias for a pipeline of Plugin trait objects.
 pub type Pipeline = Vec<Box<dyn Plugin>>;
 
-/// Tracks the state of a Simulation.
+#[derive(Debug)]
+struct InitializedPlugin {
+    pub plugin: Box<dyn Plugin>,
+    pub metadata: PluginMetadata,
+}
+
+/// Tracks the state of the simulated accelerator.
 #[derive(Debug, PartialEq)]
-pub enum SimulationState {
-    /// Simulation pipeline is idle.
+enum AcceleratorState {
+    /// The accelerator is idle.
     Idle,
-    /// start() was called, but was not yet forwarded to the front-end.
-    /// Contained value holds the start ArbData.
-    Pending(ArbData),
-    /// yield() returned, but the simulation program has not returned yet.
+
+    /// `start()` was called, but was not yet forwarded to the frontend. The
+    /// contained value holds the argument to the `run()` frontend callback.
+    StartPending(ArbData),
+
+    /// yield() returned, but the `run()` frontend callback has not returned
+    /// yet. We're not allowed to start a new program in this state.
     Blocked,
-    /// The simulation program has returned, but wait() has not yet been
-    /// called
-    /// Contained valus is the return value.
-    Zombie(ArbData),
+
+    /// The `run()` frontend callback has returned with the contained return
+    /// value, but `wait()` has not yet been called.
+    WaitPending(ArbData),
+}
+
+impl AcceleratorState {
+    pub fn is_idle(&self) -> bool {
+        if let AcceleratorState::Idle = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn is_start_pending(&self) -> bool {
+        if let AcceleratorState::StartPending(_) = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn is_blocked(&self) -> bool {
+        if let AcceleratorState::Blocked = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn is_wait_pending(&self) -> bool {
+        if let AcceleratorState::WaitPending(_) = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    fn data(self) -> ArbData {
+        match self {
+            AcceleratorState::StartPending(x) => x,
+            AcceleratorState::WaitPending(x) => x,
+            _ => panic!("no data pending"),
+        }
+    }
+
+    pub fn put_data(&mut self, data: ArbData) -> Result<()> {
+        match self {
+            AcceleratorState::Idle => {
+                std::mem::replace(self, AcceleratorState::StartPending(data));
+                Ok(())
+            }
+            AcceleratorState::StartPending(_) => inv_op("data is already pending"),
+            AcceleratorState::Blocked => {
+                std::mem::replace(self, AcceleratorState::WaitPending(data));
+                Ok(())
+            }
+            AcceleratorState::WaitPending(_) => inv_op("data is already pending"),
+        }
+    }
+
+    pub fn take_data(&mut self) -> Result<ArbData> {
+        match self {
+            AcceleratorState::Idle => inv_op("no data pending"),
+            AcceleratorState::StartPending(_) => {
+                Ok(std::mem::replace(self, AcceleratorState::Blocked).data())
+            }
+            AcceleratorState::Blocked => inv_op("no data pending"),
+            AcceleratorState::WaitPending(_) => {
+                Ok(std::mem::replace(self, AcceleratorState::Idle).data())
+            }
+        }
+    }
 }
 
 /// Simulation instance.
 #[derive(Debug)]
 pub struct Simulation {
-    /// Tracks the state of this Simulation.
-    state: SimulationState,
     /// The Plugin pipeline of this Simulation.
-    pipeline: Pipeline,
-
-    send_queue: VecDeque<ArbData>,
-    recv_queue: VecDeque<ArbData>,
+    pipeline: Vec<InitializedPlugin>,
 
     /// Random seed for this Simulation.
     seed: Seed,
+
+    /// Tracks the state of the accelerator/frontend.
+    state: AcceleratorState,
+
+    /// Objects queued with `send()`, to be sent to the accelerator by the next
+    /// yield.
+    host_to_accelerator_data: VecDeque<ArbData>,
+
+    /// Objects received from the accelerator, to be consumed using `recv()`.
+    accelerator_to_host_data: VecDeque<ArbData>,
 }
 
 impl Simulation {
@@ -65,40 +150,76 @@ impl Simulation {
 
         // Initialize the plugins.
         let mut downstream = None;
-        let (_, errors): (_, Vec<_>) = pipeline
+        let (metadata, errors): (Vec<_>, Vec<_>) = pipeline
             .iter_mut()
             .rev()
             .map(|plugin| {
                 let res = plugin.init(logger, &downstream)?;
                 downstream = res.upstream;
-                Ok(())
+                Ok(res.metadata)
             })
             .partition(Result::is_ok);
+
+        // Check for initialization errors.
         if !errors.is_empty() {
-            err("Failed to initialize plugin(s)")?
+            let mut messages = String::new();
+            for e in errors {
+                let e = e.unwrap_err();
+                if messages.is_empty() {
+                    messages = e.to_string();
+                } else {
+                    messages = format!("{}; {}", messages, e.to_string());
+                }
+            }
+            err(format!("Failed to initialize plugin(s): {}", messages))?
+        }
+
+        // Fix up the metadata vector.
+        let metadata: Vec<_> = metadata
+            .into_iter()
+            .map(Result::unwrap)
+            .rev()
+            .collect();
+
+        let pipeline: Vec<_> = pipeline
+            .into_iter()
+            .zip(metadata.into_iter())
+            .map(|(plugin, metadata)| InitializedPlugin { plugin, metadata })
+            .collect();
+
+        for (i, p) in pipeline.iter().enumerate() {
+            debug!(
+                "Plugin {} with instance name {} is {} version {} by {}",
+                i,
+                p.plugin.name(),
+                p.metadata.get_name(),
+                p.metadata.get_version(),
+                p.metadata.get_author()
+            );
         }
 
         Ok(Simulation {
-            state: SimulationState::Idle,
-            pipeline,
-            send_queue: VecDeque::new(),
-            recv_queue: VecDeque::new(),
             seed,
+            pipeline,
+            state: AcceleratorState::Idle,
+            host_to_accelerator_data: VecDeque::new(),
+            accelerator_to_host_data: VecDeque::new(),
         })
     }
 
-    /// Returns a mutable reference to the pipeline.
-    pub fn pipeline_mut(&mut self) -> &mut Pipeline {
-        self.pipeline.as_mut()
+    /// Drains the plugin pipeline so their drop() implementations get called.
+    pub fn drop_plugins(&mut self) {
+        self.pipeline.drain(..);
     }
 
     #[allow(clippy::borrowed_box)]
     pub fn accelerator(&self) -> &Box<dyn Plugin> {
-        unsafe { self.pipeline.get_unchecked(0) }
+        unsafe { &self.pipeline.get_unchecked(0).plugin }
     }
+
     #[allow(clippy::borrowed_box)]
     pub fn accelerator_mut(&mut self) -> &mut Box<dyn Plugin> {
-        unsafe { self.pipeline.get_unchecked_mut(0) }
+        unsafe { &mut self.pipeline.get_unchecked_mut(0).plugin }
     }
 
     /// Yields to the accelerator.
@@ -112,27 +233,40 @@ impl Simulation {
     /// pending or if the simulator is waiting for something that has not been
     /// sent yet.
     pub fn yield_to_accelerator(&mut self) -> Result<()> {
-        let start = if let SimulationState::Pending(ref args) = self.state {
-            Some(args.clone())
+        // If a `start()` is pending, move the state to `Blocked` and send the
+        // start command to the accelerator.
+        let start = if self.state.is_start_pending() {
+            Some(self.state.take_data().unwrap())
         } else {
             None
         };
-        if start.is_some() {
-            self.state = SimulationState::Blocked;
-        }
-        let messages = self.send_queue.drain(..).collect();
-        if let Ok(PluginToSimulator::RunResponse(res)) =
-            self.accelerator_mut()
-                .rpc(SimulatorToPlugin::RunRequest(FrontendRunRequest {
-                    start,
-                    messages,
-                }))
-        {
-            self.recv_queue.extend(res.messages);
-            if let Some(return_value) = res.return_value {
-                self.state = SimulationState::Zombie(return_value);
+
+        // Drain the pending messages into the appropriate data format for
+        // transmission.
+        let messages = self.host_to_accelerator_data.drain(..).collect();
+
+        // Send the run RPC.
+        let response = checked_rpc!(
+            self.accelerator_mut(),
+            FrontendRunRequest {
+                start,
+                messages,
+            },
+            expect RunResponse
+        )?;
+
+        // Queue up the messages sent to us by the accelerator.
+        self.accelerator_to_host_data.extend(response.messages);
+
+        // If we received a `run()` return value from accelerator, move to the
+        // zombie state.
+        if let Some(return_value) = response.return_value {
+            if !self.state.is_blocked() {
+                return err("Protocol error: unexpected run() return value");
             }
+            self.state.put_data(return_value).unwrap();
         }
+
         Ok(())
     }
 
@@ -143,9 +277,9 @@ impl Simulation {
     /// `ArbCmd`.
     pub fn arb(&mut self, name: impl AsRef<str>, cmd: impl Into<ArbCmd>) -> Result<ArbData> {
         let name = name.as_ref();
-        for (idx, plugin) in self.pipeline.iter().enumerate() {
-            if plugin.name() == name {
-                return self.arb_idx(idx as isize, cmd);
+        for (i, p) in self.pipeline.iter().enumerate() {
+            if p.plugin.name() == name {
+                return self.arb_idx(i as isize, cmd);
             }
         }
         inv_arg(format!("plugin {} not found", name))
@@ -177,16 +311,16 @@ impl Simulation {
             inv_arg(format!("index {} out of range", index))?
         }
         self.yield_to_accelerator()?;
-        self.pipeline[index].arb(cmd)
+        self.pipeline[index].plugin.arb(cmd)
     }
 
     /// Returns a reference to the metadata object belonging to the plugin
     /// referenced by instance name.
     pub fn get_metadata(&self, name: impl AsRef<str>) -> Result<&PluginMetadata> {
         let name = name.as_ref();
-        for (idx, plugin) in self.pipeline.iter().enumerate() {
-            if plugin.name() == name {
-                return self.get_metadata_idx(idx as isize);
+        for (i, p) in self.pipeline.iter().enumerate() {
+            if p.plugin.name() == name {
+                return self.get_metadata_idx(i as isize);
             }
         }
         inv_arg(format!("plugin {} not found", name))
@@ -207,8 +341,7 @@ impl Simulation {
         if index >= n_plugins {
             inv_arg(format!("index {} out of range", index))?
         }
-        // TODO: get the metadata object
-        unimplemented!()
+        Ok(&self.pipeline[index].metadata)
     }
 }
 
@@ -218,9 +351,12 @@ impl Accelerator for Simulation {
     /// This is an asynchronous call: nothing happens until `yield()`,
     /// `recv()`, or `wait()` is called.
     fn start(&mut self, args: impl Into<ArbData>) -> Result<()> {
-        assert_eq!(self.state, SimulationState::Idle);
-        self.state = SimulationState::Pending(args.into());
-        Ok(())
+        if self.state.is_idle() {
+            self.state.put_data(args.into()).unwrap();
+            Ok(())
+        } else {
+            inv_op("accelerator is already running; call wait() first")
+        }
     }
 
     /// Waits for the accelerator to finish its current program.
@@ -230,14 +366,14 @@ impl Accelerator for Simulation {
     ///
     /// Deadlocks are detected and prevented by throwing an error message.
     fn wait(&mut self) -> Result<ArbData> {
-        if let SimulationState::Zombie(ref return_value) = self.state {
-            Ok(return_value.clone())
+        if self.state.is_wait_pending() {
+            self.state.take_data()
         } else {
             self.yield_to_accelerator()?;
-            if let SimulationState::Zombie(ref return_value) = self.state {
-                Ok(return_value.clone())
+            if self.state.is_wait_pending() {
+                self.state.take_data()
             } else {
-                inv_op("Accelerator is blocked (unmatched recv()?)")
+                err("Deadlock: accelerator is blocked on recv() while we are expecting it to return")
             }
         }
     }
@@ -246,18 +382,25 @@ impl Accelerator for Simulation {
     ///
     /// This is an asynchronous call: nothing happens until `yield()`,
     /// `recv()`, or `wait()` is called.
-    #[allow(unused)] // TODO: remove <--
     fn send(&mut self, args: impl Into<ArbData>) -> Result<()> {
-        // TODO
-        inv_op("not yet implemented")
+        self.host_to_accelerator_data.push_back(args.into());
+        Ok(())
     }
 
     /// Waits for the accelerator to send a message to us.
     ///
     /// Deadlocks are detected and prevented by throwing an error message.
     fn recv(&mut self) -> Result<ArbData> {
-        // TODO
-        inv_op("not yet implemented")
+        if let Some(data) = self.accelerator_to_host_data.pop_front() {
+            Ok(data)
+        } else {
+            self.yield_to_accelerator()?;
+            if let Some(data) = self.accelerator_to_host_data.pop_front() {
+                Ok(data)
+            } else {
+                err("Deadlock: recv() called while queue is empty and accelerator is idle")
+            }
+        }
     }
 }
 

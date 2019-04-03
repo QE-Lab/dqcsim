@@ -82,6 +82,6 @@ impl Drop for Simulator {
 
         // Drain the simulation pipeline to drop the Plugin instances before
         // dropping the log thread.
-        self.simulation.pipeline_mut().drain(..);
+        self.simulation.drop_plugins();
     }
 }
