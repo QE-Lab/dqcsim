@@ -22,6 +22,7 @@ setup(
         ['gen/dqcsim.c'],
         library_dirs = [libdir],
         runtime_library_dirs = [os.environ['DQCSIM_HOME'] + '/lib'],
-        libraries = ['dqcsim']
+        libraries = ['dqcsim'],
+        extra_compile_args = ['-std=c99']
     )]
 )

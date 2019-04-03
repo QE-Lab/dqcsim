@@ -17,13 +17,13 @@ use std::fmt::Debug;
 /// The Plugin trait, implemented by all Plugins used in a Simulation.
 pub trait Plugin: Debug {
     /// Spawn the Plugin. The Plugin should spawn the actual plugin code and
-    /// prepare the communication channel. After spawning both the [`send`] and
-    /// [`receive`] functions should be available. The simulator will continue
-    /// to send initialization requests via the commmunication channel.
+    /// prepare the communication channel. After spawning the [`rpc`] method
+    /// should be available. The simulator will continue to send initialization
+    /// requests via the commmunication channel.
     ///
     /// The logger is provided by the simulator, and plugins can use the
     /// reference to the log thread to make the neccesary copies of log senders
-    /// to use with their log proxies.k
+    /// to use with their log proxies.
     fn spawn(&mut self, logger: &LogThread) -> Result<()>;
 
     /// Returns the PluginConfiguration for this plugin.
