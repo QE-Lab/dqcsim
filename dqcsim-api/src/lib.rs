@@ -75,6 +75,7 @@ use dqcsim::{
     plugin::{context::*, definition::*},
 };
 use libc::*;
+use num_complex::Complex64;
 use std::{
     cell::RefCell,
     collections::HashMap,

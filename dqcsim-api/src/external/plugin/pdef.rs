@@ -90,7 +90,7 @@ pub extern "C" fn dqcs_pdef_get_version(pdef: dqcs_handle_t) -> *mut c_char {
 ///
 /// The callback takes the following arguments:
 ///  - `void*`: user defined data.
-///  - `dqcs_plugin_context_t`: plugin context, needed to call the
+///  - `dqcs_plugin_state_t`: plugin context, needed to call the
 ///    `dqcs_plugin_*` functions.
 ///  - `dqcs_handle_t`: handle to an `ArbCmd` queue (`dqcs_cq_*`, `dqcs_cmd_*`,
 ///     and `dqcs_arb_*` interfaces) containing user-defined initialization
@@ -104,7 +104,7 @@ pub extern "C" fn dqcs_pdef_get_version(pdef: dqcs_handle_t) -> *mut c_char {
 pub extern "C" fn dqcs_pdef_set_initialize_cb(
     pdef: dqcs_handle_t,
     callback: Option<
-        extern "C" fn(*mut c_void, dqcs_plugin_context_t, dqcs_handle_t) -> dqcs_return_t,
+        extern "C" fn(*mut c_void, dqcs_plugin_state_t, dqcs_handle_t) -> dqcs_return_t,
     >,
     user_free: Option<extern "C" fn(*mut c_void)>,
     user_data: *mut c_void,
@@ -114,7 +114,7 @@ pub extern "C" fn dqcs_pdef_set_initialize_cb(
         resolve!(pdef as &mut PluginDefinition);
         let data = CallbackUserData::new(user_free, user_data);
         pdef.initialize = Box::new(
-            move |ctxt: &mut PluginContext, init_cmds: Vec<ArbCmd>| -> Result<()> {
+            move |ctxt: &mut PluginState, init_cmds: Vec<ArbCmd>| -> Result<()> {
                 let init_cmds: ArbCmdQueue = init_cmds.into_iter().collect();
                 cb_return_none(callback(data.data(), ctxt.into(), insert(init_cmds)))
             },

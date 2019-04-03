@@ -8,7 +8,7 @@ use super::*;
 /// or 0 if they are unknown.
 #[no_mangle]
 pub extern "C" fn dqcs_plugin_log(
-    plugin: dqcs_plugin_context_t,
+    plugin: dqcs_plugin_state_t,
     message: *const c_char,
     level: dqcs_loglevel_t,
     module: *const c_char,

@@ -1,11 +1,10 @@
-use libc::size_t;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// Represents a reference to a qubit.
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct QubitRef(usize);
+pub struct QubitRef(u64);
 
 impl fmt::Display for QubitRef {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -16,26 +15,26 @@ impl fmt::Display for QubitRef {
 impl QubitRef {
     /// Converts the foreign representation of a qubit reference to the
     /// type-safe Rust representation.
-    pub fn from_foreign(qubit: size_t) -> Option<QubitRef> {
+    pub fn from_foreign(qubit: u64) -> Option<QubitRef> {
         if qubit == 0 {
             None
         } else {
-            Some(QubitRef(qubit as usize))
+            Some(QubitRef(qubit as u64))
         }
     }
 
     /// Converts the type-safe Rust representation of a qubit reference to the
     /// foreign representation.
-    pub fn to_foreign(self) -> size_t {
+    pub fn to_foreign(self) -> u64 {
         assert_ne!(self.0, 0);
-        self.0 as size_t
+        self.0 as u64
     }
 
     /// Converts the type-safe Rust representation of a qubit reference to the
     /// foreign representation.
-    pub fn option_to_foreign(qubit: Option<QubitRef>) -> size_t {
+    pub fn option_to_foreign(qubit: Option<QubitRef>) -> u64 {
         if let Some(x) = qubit {
-            x.0 as size_t
+            x.0 as u64
         } else {
             0
         }
@@ -49,7 +48,7 @@ impl QubitRef {
 /// counts references up from 1 when a qubit is allocated, i.e. it does not
 /// reuse references.
 pub struct QubitRefGenerator {
-    counter: std::ops::RangeFrom<usize>,
+    counter: std::ops::RangeFrom<u64>,
 }
 
 impl Default for QubitRefGenerator {

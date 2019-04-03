@@ -4,6 +4,8 @@ use std::ptr::null_mut;
 
 pub type ArbCmdQueue = VecDeque<ArbCmd>;
 
+pub type QubitReferenceSet = VecDeque<QubitRef>;
+
 macro_rules! api_object_types {
     ($($(#[$m:meta])* $i:ident,)+) => (
         /// Enumeration of all objects that can be associated with an handle, including
@@ -34,6 +36,10 @@ api_object_types!(
     ArbCmd,
     /// Queue of `ArbCmd` objects.
     ArbCmdQueue,
+    /// Set of qubit references.
+    QubitReferenceSet,
+    /// Quantum gate object.
+    Gate,
     /// `PluginConfiguration` object.
     PluginConfiguration,
     /// `SimulatorConfiguration` object.
@@ -312,6 +318,7 @@ mutate_api_object_as! {ArbData, arb:
             return inv_arg("empty command queue does not support arb interface");
         }
     },
+    APIObject::Gate(x) => &x.data, &mut x.data, x.data,
 }
 
 mutate_api_object_as! {ArbCmd, cmd:
@@ -340,6 +347,14 @@ mutate_api_object_as! {ArbCmd, cmd:
 
 mutate_api_object_as! {ArbCmdQueue, cq:
     APIObject::ArbCmdQueue(x) => x, x, x,
+}
+
+mutate_api_object_as! {QubitReferenceSet, qbset:
+    APIObject::QubitReferenceSet(x) => x, x, x,
+}
+
+mutate_api_object_as! {Gate, gate:
+    APIObject::Gate(x) => x, x, x,
 }
 
 mutate_api_object_as! {PluginConfiguration, pcfg:
@@ -404,6 +419,28 @@ macro_rules! resolve {
     ($i:ident as pending $t:ty) => {
         let mut $i = resolve($i)?;
         let _: &mut $t = $i.as_mut()?;
+    };
+    (optional $i:ident as &$t:ty) => {
+        let $i = resolve($i).ok();
+        let $i: Option<&$t> = if let Some($i) = $i.as_ref() {
+            Some($i.as_ref()?)
+        } else {
+            None
+        };
+    };
+    (optional $i:ident as &mut $t:ty) => {
+        let mut $i = resolve($i).ok();
+        let $i: Option<&$t> = if let Some($i) = $i.as_mut() {
+            Some($i.as_ref()?)
+        } else {
+            None
+        };
+    };
+    (optional $i:ident as pending $t:ty) => {
+        let mut $i = resolve($i).ok();
+        if let Some($i) = $i.as_mut() {
+            let _: &mut $t = $i.as_mut()?;
+        }
     };
 }
 

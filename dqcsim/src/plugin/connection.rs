@@ -29,7 +29,7 @@ use crate::{
     },
     host::configuration::PluginType,
     plugin::{
-        context::PluginContext,
+        context::PluginState,
         ipc::{DownstreamChannel, PluginChannel, UpstreamChannel},
         log::setup_logging,
     },
@@ -173,7 +173,7 @@ impl Connection {
         mut self,
         typ: PluginType,
         metadata: impl Into<PluginMetadata>,
-        initialize: Box<dyn Fn(&mut PluginContext, Vec<ArbCmd>)>,
+        initialize: Box<dyn Fn(&mut PluginState, Vec<ArbCmd>)>,
     ) -> Result<Connection> {
         // Wait for the initialization request from the Simulator.
         match if let Ok(Some(IncomingMessage::Simulator(SimulatorToPlugin::Initialize(req)))) =
@@ -209,7 +209,7 @@ impl Connection {
 
             // Run user init code.
             // TODO: replace this with an actual context
-            let mut ctx = PluginContext {};
+            let mut ctx = PluginState {};
             initialize(&mut ctx, req.configuration.functional.init);
 
             // Init IPC endpoint for upstream plugin.

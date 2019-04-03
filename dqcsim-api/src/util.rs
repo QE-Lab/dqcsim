@@ -77,6 +77,33 @@ pub fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t
     }
 }
 
+/// Convenience function for converting a C array of doubles representing a
+/// unitary matrix to its Rust representation.
+pub fn receive_matrix(
+    ptr: *const c_double,
+    matrix_len: size_t,
+    num_qubits: usize,
+) -> Result<Option<Vec<Complex64>>> {
+    let num_entries = 4 << (num_qubits - 1);
+    if matrix_len == 0 {
+        Ok(None)
+    } else if matrix_len != num_entries {
+        inv_arg("matrix has the wrong number of entries")
+    } else if ptr.is_null() {
+        inv_arg("matrix pointer is null")
+    } else if num_qubits == 0 {
+        inv_arg("cannot read matrix for 0 qubits")
+    } else {
+        let mut vec = Vec::with_capacity(num_entries);
+        for i in 0..num_entries {
+            let re: f64 = unsafe { *ptr.add(i * 2) };
+            let im: f64 = unsafe { *ptr.add(i * 2 + 1) };
+            vec.push(Complex64::new(re, im));
+        }
+        Ok(Some(vec))
+    }
+}
+
 /// User data structure for callbacks.
 ///
 /// All callbacks carry a user-defined `void*` with them, which is passed to

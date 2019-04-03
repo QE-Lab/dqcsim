@@ -44,7 +44,7 @@ pub type dqcs_qubit_t = c_ulonglong;
 #[allow(non_camel_case_types)]
 pub type dqcs_cycle_t = c_longlong;
 
-/// Type for a plugin context.
+/// Type for a plugin state.
 ///
 /// This is an opaque type that is passed along to plugin implementation
 /// callback functions, which those callbacks can then use to interact with the
@@ -53,27 +53,27 @@ pub type dqcs_cycle_t = c_longlong;
 #[allow(non_camel_case_types)]
 #[repr(transparent)]
 #[derive(Clone, Copy)]
-pub struct dqcs_plugin_context_t(*mut c_void);
+pub struct dqcs_plugin_state_t(*mut c_void);
 
-impl From<&mut PluginContext> for dqcs_plugin_context_t {
-    /// Convert a plugin context reference to its FFI representation.
-    fn from(pc: &mut PluginContext) -> dqcs_plugin_context_t {
-        dqcs_plugin_context_t(pc as *mut PluginContext as *mut c_void)
+impl From<&mut PluginState> for dqcs_plugin_state_t {
+    /// Convert a plugin state reference to its FFI representation.
+    fn from(pc: &mut PluginState) -> dqcs_plugin_state_t {
+        dqcs_plugin_state_t(pc as *mut PluginState as *mut c_void)
     }
 }
 
-impl Into<&mut PluginContext> for dqcs_plugin_context_t {
-    /// Convert the FFI representation of a plugin context back to a Rust
+impl Into<&mut PluginState> for dqcs_plugin_state_t {
+    /// Convert the FFI representation of a plugin state back to a Rust
     /// reference.
-    fn into(self) -> &'static mut PluginContext {
-        unsafe { &mut *(self.0 as *mut PluginContext) }
+    fn into(self) -> &'static mut PluginState {
+        unsafe { &mut *(self.0 as *mut PluginState) }
     }
 }
 
-impl dqcs_plugin_context_t {
-    pub fn resolve(self) -> Result<&'static mut PluginContext> {
+impl dqcs_plugin_state_t {
+    pub fn resolve(self) -> Result<&'static mut PluginState> {
         if self.0.is_null() {
-            inv_arg("invalid plugin context")
+            inv_arg("plugin state pointer is null")
         } else {
             Ok(self.into())
         }
@@ -97,50 +97,56 @@ pub enum dqcs_handle_type_t {
     /// Indicates that the given handle belongs to an `ArbData` object.
     ///
     /// This means that the handle supports the `handle` and `arb` interfaces.
-    DQCS_HTYPE_ARB_DATA = 1,
+    DQCS_HTYPE_ARB_DATA = 100,
 
     /// Indicates that the given handle belongs to an `ArbCmd` object.
     ///
     /// This means that the handle supports the `handle`, `arb`, and `cmd`
     /// interfaces.
-    DQCS_HTYPE_ARB_CMD = 2,
+    DQCS_HTYPE_ARB_CMD = 101,
 
     /// Indicates that the given handle belongs to a queue of `ArbCmd` object.
     ///
     /// This means that the handle supports the `handle`, `arb`, `cmd`, and
     /// `cq` interfaces.
-    DQCS_HTYPE_ARB_CMD_QUEUE = 3,
+    DQCS_HTYPE_ARB_CMD_QUEUE = 102,
+
+    /// Indicates that the given handle belongs to a set of qubit references.
+    DQCS_HTYPE_QUBIT_SET = 103,
+
+    /// Indicates that the given handle belongs to a quantum gate description.
+    DQCS_HTYPE_GATE = 104,
 
     /// Indicates that the given handle belongs to a frontend plugin
     /// configuration object.
-    DQCS_HTYPE_FRONT_CONFIG = 4,
+    DQCS_HTYPE_FRONT_CONFIG = 200,
 
     /// Indicates that the given handle belongs to an operator plugin
     /// configuration object.
-    DQCS_HTYPE_OPER_CONFIG = 5,
+    DQCS_HTYPE_OPER_CONFIG = 201,
 
     /// Indicates that the given handle belongs to a backend plugin
     /// configuration object.
-    DQCS_HTYPE_BACK_CONFIG = 6,
+    DQCS_HTYPE_BACK_CONFIG = 203,
 
     /// Indicates that the given handle belongs to a simulator configuration
     /// object.
-    DQCS_HTYPE_SIM_CONFIG = 7,
+    DQCS_HTYPE_SIM_CONFIG = 204,
 
     /// Indicates that the given handle belongs to a simulator instance.
-    DQCS_HTYPE_SIM = 8,
+    DQCS_HTYPE_SIM = 205,
 
     /// Indicates that the given handle belongs to a frontend plugin
     /// definition object.
-    DQCS_HTYPE_FRONT_DEF = 9,
+    DQCS_HTYPE_FRONT_DEF = 300,
 
     /// Indicates that the given handle belongs to an operator plugin
     /// definition object.
-    DQCS_HTYPE_OPER_DEF = 10,
+    DQCS_HTYPE_OPER_DEF = 301,
 
     /// Indicates that the given handle belongs to a backend plugin
     /// definition object.
-    DQCS_HTYPE_BACK_DEF = 11,
+    DQCS_HTYPE_BACK_DEF = 302,
 }
 
 /// Enumeration of the three types of plugins.
@@ -316,38 +322,6 @@ impl From<LoglevelFilter> for dqcs_loglevel_t {
             LoglevelFilter::Trace => dqcs_loglevel_t::DQCS_LOG_TRACE,
         }
     }
-}
-
-/// Enumeration of the different qubit sets associated with a gate.
-#[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq)]
-#[allow(non_camel_case_types)]
-pub enum dqcs_qubit_set_type_t {
-    /// The qubit list containing the target qubits.
-    ///
-    /// The target qubit list is the list of qubits that are affected by the
-    /// gate matrix. Thus, the size of this list dictates the correct size of
-    /// the gate matrix.
-    DQCS_TARGET = 1,
-
-    /// Set containing additional control qubits.
-    ///
-    /// These qubits are omitted from the gate matrix; the complete gate matrix
-    /// including control qubits is inferred by the backend. Of course, it is
-    /// also fine for operators or frontend to provide the complete matrix
-    /// including control qubits, by putting the control qubits in the target
-    /// list instead.
-    DQCS_CONTROL = 2,
-
-    /// Set containing all the qubit measurement registers affected by the
-    /// associated gate.
-    ///
-    /// DQCsim uses this set to determine up to what point it needs to
-    /// synchronize with the downstream plugins when a measurement register is
-    /// read. Therefore, this set must be correctly specified regardless of
-    /// whether the backend infers anything from it. For instance, a
-    /// `measure_all` gate *must* include all qubits in this set.
-    DQCS_MEASURE = 3,
 }
 
 /// Default return type for functions that don't need to return anything.
