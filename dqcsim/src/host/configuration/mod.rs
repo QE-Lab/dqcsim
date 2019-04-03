@@ -18,6 +18,9 @@ pub use plugin_process::{
     PluginProcessNonfunctionalConfiguration, PluginProcessSpecification,
 };
 
+mod plugin_thread;
+pub use plugin_thread::PluginThreadConfiguration;
+
 mod plugin_log;
 pub use plugin_log::PluginLogConfiguration;
 

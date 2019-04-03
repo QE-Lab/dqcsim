@@ -236,10 +236,8 @@ impl Default for PluginProcessNonfunctionalConfiguration {
     }
 }
 
-/// Represents the complete configuration for a plugin.
-///
-/// In combination with some modifiers and defaults set by DQCsim itself, this
-/// contains everything needed to construct a plugin.
+/// Represents the complete configuration for a plugin running in an external
+/// process.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct PluginProcessConfiguration {
     /// Name of the plugin, used to refer to the plugin by the log system.

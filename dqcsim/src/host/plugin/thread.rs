@@ -6,8 +6,10 @@ use crate::{
         protocol::{PluginToSimulator, SimulatorToPlugin},
         types::{ArbCmd, PluginType},
     },
-    host::{configuration::PluginLogConfiguration, plugin::Plugin},
-    plugin::definition::PluginDefinition,
+    host::{
+        configuration::{PluginLogConfiguration, PluginThreadConfiguration},
+        plugin::Plugin,
+    },
 };
 use std::{fmt, thread};
 
@@ -40,11 +42,8 @@ impl fmt::Debug for PluginThread {
 
 impl PluginThread {
     /// Constructs a plugin thread from a plugin definition and configuration.
-    pub fn new(
-        definition: PluginDefinition,
-        init_cmds: Vec<ArbCmd>,
-        log_configuration: PluginLogConfiguration,
-    ) -> PluginThread {
+    pub fn new(configuration: PluginThreadConfiguration) -> PluginThread {
+        let definition = configuration.definition;
         let plugin_type = definition.get_type();
         PluginThread::new_raw(
             move |_, _| {
@@ -52,8 +51,8 @@ impl PluginThread {
                 // TODO start controller, stuff, etc
             },
             plugin_type,
-            init_cmds,
-            log_configuration,
+            configuration.init_cmds,
+            configuration.log_configuration,
         )
     }
 
