@@ -2,8 +2,9 @@ use crate::{
     common::{
         error::{inv_arg, Result},
         log::{callback::LogCallback, tee_file::TeeFile, LoglevelFilter},
+        types::PluginType,
     },
-    host::configuration::{PluginProcessConfiguration, PluginType, Seed},
+    host::configuration::{PluginProcessConfiguration, Seed},
 };
 use serde::{Deserialize, Serialize};
 

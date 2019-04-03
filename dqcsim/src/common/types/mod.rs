@@ -29,6 +29,10 @@ pub use gate::Gate;
 mod measurement;
 pub use measurement::{QubitMeasurementResult, QubitMeasurementValue};
 
+// Plugin type enumeration (frontend, operator, backend).
+mod plugin_type;
+pub use plugin_type::PluginType;
+
 // Metadata used to identify plugins.
 mod plugin_metadata;
 pub use plugin_metadata::PluginMetadata;

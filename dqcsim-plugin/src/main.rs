@@ -1,11 +1,9 @@
 use dqcsim::{
     common::{
         protocol::{FrontendRunResponse, PluginToSimulator, SimulatorToPlugin},
-        types::{ArbCmd, ArbData, PluginMetadata},
+        types::{ArbCmd, ArbData, PluginMetadata, PluginType},
     },
-    debug,
-    host::configuration::PluginType,
-    info,
+    debug, info,
     plugin::{
         connection::{Connection, IncomingMessage, OutgoingMessage},
         context::PluginState,

@@ -1,9 +1,9 @@
 use crate::{
     common::{
         log::LogRecord,
-        types::{ArbCmd, ArbData},
+        types::{ArbCmd, ArbData, PluginType},
     },
-    host::configuration::{PluginLogConfiguration, PluginType},
+    host::configuration::PluginLogConfiguration,
 };
 use ipc_channel::ipc::IpcSender;
 use serde::{Deserialize, Serialize};

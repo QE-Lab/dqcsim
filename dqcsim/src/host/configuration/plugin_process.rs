@@ -2,10 +2,10 @@ use crate::{
     common::{
         error::{inv_arg, oe_err, Result},
         log::{tee_file::TeeFile, Loglevel, LoglevelFilter},
-        types::ArbCmd,
+        types::{ArbCmd, PluginType},
     },
     host::configuration::{
-        env_mod::EnvMod, stream_capture_mode::StreamCaptureMode, timeout::Timeout, PluginType,
+        env_mod::EnvMod, stream_capture_mode::StreamCaptureMode, timeout::Timeout,
     },
 };
 use serde::{Deserialize, Serialize};

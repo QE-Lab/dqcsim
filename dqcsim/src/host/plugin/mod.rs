@@ -8,9 +8,9 @@ use crate::{
         protocol::{
             PluginInitializeRequest, PluginInitializeResponse, PluginToSimulator, SimulatorToPlugin,
         },
-        types::{ArbCmd, ArbData},
+        types::{ArbCmd, ArbData, PluginType},
     },
-    host::configuration::{PluginLogConfiguration, PluginType},
+    host::configuration::PluginLogConfiguration,
 };
 use std::fmt::Debug;
 

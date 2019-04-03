@@ -4,12 +4,9 @@ use crate::{
         error::Result,
         log::{thread::LogThread, LogRecord},
         protocol::{PluginToSimulator, SimulatorToPlugin},
-        types::ArbCmd,
+        types::{ArbCmd, PluginType},
     },
-    host::{
-        configuration::{PluginLogConfiguration, PluginType},
-        plugin::Plugin,
-    },
+    host::{configuration::PluginLogConfiguration, plugin::Plugin},
     plugin::definition::PluginDefinition,
 };
 use std::{fmt, thread};

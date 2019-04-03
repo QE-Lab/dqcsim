@@ -1,7 +1,10 @@
 //! Simulation run reproduction functionality.
 
 use crate::{
-    common::error::{err, Result},
+    common::{
+        error::{err, Result},
+        types::PluginType,
+    },
     host::configuration::*,
 };
 use serde::{Deserialize, Serialize};

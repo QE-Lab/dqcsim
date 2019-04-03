@@ -1,9 +1,10 @@
 use crate::{
     common::{
         error::{err, Result},
-        types::{ArbCmd, ArbData, Gate, PluginMetadata, QubitMeasurementResult, QubitRef},
+        types::{
+            ArbCmd, ArbData, Gate, PluginMetadata, PluginType, QubitMeasurementResult, QubitRef,
+        },
     },
-    host::configuration::PluginType,
     plugin::context::PluginState,
 };
 use std::fmt;

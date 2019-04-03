@@ -4,12 +4,11 @@ use crate::{
         error::{err, ErrorKind, Result},
         log::{stdio::proxy_stdio, thread::LogThread},
         protocol::{PluginToSimulator, SimulatorToPlugin},
-        types::ArbCmd,
+        types::{ArbCmd, PluginType},
     },
     host::{
         configuration::{
-            EnvMod, PluginLogConfiguration, PluginProcessConfiguration, PluginType,
-            StreamCaptureMode, Timeout,
+            EnvMod, PluginLogConfiguration, PluginProcessConfiguration, StreamCaptureMode, Timeout,
         },
         plugin::Plugin,
     },

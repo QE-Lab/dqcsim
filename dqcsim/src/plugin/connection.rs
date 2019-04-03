@@ -25,9 +25,8 @@ use crate::{
             GatestreamDown, GatestreamUp, PluginInitializeResponse, PluginToSimulator,
             SimulatorToPlugin,
         },
-        types::{ArbCmd, PluginMetadata},
+        types::{ArbCmd, PluginMetadata, PluginType},
     },
-    host::configuration::PluginType,
     plugin::{
         context::PluginState,
         ipc::{DownstreamChannel, PluginChannel, UpstreamChannel},
