@@ -22,8 +22,7 @@ pub extern "C" fn dqcs_accel_start(accel: dqcs_handle_t, data: dqcs_handle_t) ->
             APIObject::Simulator(x) => x.simulation.start(data_ob)?,
             _ => inv_arg("object does not support the accel interface".to_string())?,
         }
-        take!(resolved data as ArbData);
-        let _ = data;
+        delete!(resolved data);
         Ok(())
     })
 }
@@ -67,8 +66,7 @@ pub extern "C" fn dqcs_accel_send(accel: dqcs_handle_t, data: dqcs_handle_t) -> 
             APIObject::Simulator(x) => x.simulation.send(data_ob)?,
             _ => inv_arg("object does not support the accel interface".to_string())?,
         }
-        take!(resolved data as ArbData);
-        let _ = data;
+        delete!(resolved data);
         Ok(())
     })
 }

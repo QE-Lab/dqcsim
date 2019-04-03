@@ -58,8 +58,7 @@ pub extern "C" fn dqcs_sim_arb(
             x.clone()
         };
         let data = sim.simulation.arb(receive_str(name)?, cmd_ob)?;
-        take!(resolved cmd as ArbCmd);
-        let _ = cmd;
+        delete!(resolved cmd);
         Ok(insert(data))
     })
 }
@@ -95,8 +94,7 @@ pub extern "C" fn dqcs_sim_arb_idx(
             x.clone()
         };
         let data = sim.simulation.arb_idx(index, cmd_ob)?;
-        take!(resolved cmd as ArbCmd);
-        let _ = cmd;
+        delete!(resolved cmd);
         Ok(insert(data))
     })
 }

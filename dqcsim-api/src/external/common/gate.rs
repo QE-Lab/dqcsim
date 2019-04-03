@@ -73,11 +73,9 @@ pub extern "C" fn dqcs_gate_new_unitary(
 
         // Everything went OK. Now make sure that the target and control set
         // handles are deleted.
-        take!(resolved targets as QubitReferenceSet);
-        let _ = targets;
+        delete!(resolved targets);
         if let Some(mut controls) = controls {
-            take!(resolved controls as QubitReferenceSet);
-            let _ = controls;
+            delete!(resolved controls);
         }
         Ok(gate)
     })
@@ -107,8 +105,7 @@ pub extern "C" fn dqcs_gate_new_measurement(measures: dqcs_handle_t) -> dqcs_han
 
         // Everything went OK. Now make sure that the measure set handle is
         // deleted.
-        take!(resolved measures as QubitReferenceSet);
-        let _ = measures;
+        delete!(resolved measures);
         Ok(gate)
     })
 }
@@ -211,16 +208,13 @@ pub extern "C" fn dqcs_gate_new_custom(
         // Everything went OK. Now make sure that the specified qubit set
         // handles are deleted.
         if let Some(mut targets) = targets {
-            take!(resolved targets as QubitReferenceSet);
-            let _ = targets;
+            delete!(resolved targets);
         }
         if let Some(mut controls) = controls {
-            take!(resolved controls as QubitReferenceSet);
-            let _ = controls;
+            delete!(resolved controls);
         }
         if let Some(mut measures) = measures {
-            take!(resolved measures as QubitReferenceSet);
-            let _ = measures;
+            delete!(resolved measures);
         }
         Ok(gate)
     })

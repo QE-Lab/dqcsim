@@ -485,6 +485,23 @@ macro_rules! take {
     };
 }
 
+/// Deletes a handle.
+///
+/// This never returns an error, and "double deletes" are fine (the second
+/// delete will be no-op).
+#[macro_export]
+macro_rules! delete {
+    ($i:ident) => {
+        let $i = resolve($i);
+        if let Ok(mut $i) = $i {
+            let _: APIObject = $i.take().unwrap();
+        }
+    };
+    (resolved $i:ident) => {
+        let _: APIObject = $i.take().unwrap();
+    };
+}
+
 /// Inserts an object into the thread-local pool.
 ///
 /// The handle to the object is returned.

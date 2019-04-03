@@ -48,6 +48,8 @@ pub extern "C" fn dqcs_handle_dump(handle: dqcs_handle_t) -> *mut c_char {
 #[no_mangle]
 pub extern "C" fn dqcs_handle_delete(handle: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
+        // Use take! vs. delete! so an error is returned if the handle was
+        // invalid or already freed.
         take!(handle as APIObject);
         let _ = handle;
         Ok(())
