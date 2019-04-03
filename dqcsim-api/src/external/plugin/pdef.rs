@@ -81,8 +81,8 @@ pub extern "C" fn dqcs_pdef_get_version(pdef: dqcs_handle_t) -> *mut c_char {
 }
 
 /// Macro for generating the boilerplate code for the plugin callback setters.
-macro_rules! define_callback {
-    (
+macro_rules! define_callbacks {
+    ($(
         // Docstring.
         $(#[$doc:meta])*
 
@@ -102,7 +102,7 @@ macro_rules! define_callback {
         // state, data` due to macro hygiene rules, followed by the contents of
         // the closure.
         = $callback:ident, $state:ident, $data:ident $contents:tt
-    ) => {
+    )+) => {$(
         $(#[$doc])*
         #[no_mangle]
         pub extern "C" fn $setter(
@@ -123,10 +123,10 @@ macro_rules! define_callback {
                 Ok(())
             })
         }
-    }
+    )+}
 }
 
-define_callback!(
+define_callbacks!(
     /// Sets the user logic initialization callback.
     ///
     /// This is always called before any of the other callbacks are run. The
@@ -152,9 +152,7 @@ define_callback!(
         delete!(init_cmds);
         result
     }
-);
 
-define_callback!(
     /// Sets the user logic drop/cleanup callback.
     ///
     /// This is called when a plugin is gracefully terminated. It is not
@@ -169,9 +167,7 @@ define_callback!(
     dqcs_pdef_set_drop_cb::drop() -> () as dqcs_return_t = callback, state, data {
         cb_return_none(callback(data.data(), state.into()))
     }
-);
 
-define_callback!(
     /// Sets the run callback for frontends.
     ///
     /// This is called in response to a `start()` host API call. The return
@@ -204,14 +200,12 @@ define_callback!(
         delete!(args);
         result
     }
-);
 
-define_callback!(
     /// Sets the qubit allocation callback for operators and backends.
     ///
-    /// The default for operators is to pass through to `state.allocate()`. The
-    /// default for backends is no-op. This callback is never called for
-    /// frontend plugins.
+    /// The default for operators is to pass through to
+    /// `dqcs_plugin_allocate()`. The default for backends is no-op. This
+    /// callback is never called for frontend plugins.
     ///
     /// Besides the common arguments, the callback receives a handle to a qubit
     /// set containing the references that are to be used for the
@@ -235,13 +229,11 @@ define_callback!(
         delete!(alloc_cmds);
         result
     }
-);
 
-define_callback!(
     /// Sets the qubit deallocation callback for operators and backends.
     ///
-    /// The default for operators is to pass through to `state.free()`. The
-    /// default for backends is no-op. This callback is never called for
+    /// The default for operators is to pass through to `dqcs_plugin_free()`.
+    /// The default for backends is no-op. This callback is never called for
     /// frontend plugins.
     ///
     /// Besides the common arguments, the callback receives a handle to a qubit
@@ -258,6 +250,187 @@ define_callback!(
         let qubits = insert(qubits);
         let result = cb_return_none(callback(data.data(), state.into(), qubits));
         delete!(qubits);
+        result
+    }
+
+    /// Sets the gate execution callback for operators and backends.
+    ///
+    /// Besides the common arguments, the callback receives a handle to the
+    /// to-be-executed gate. This is a borrowed handle; the caller will delete
+    /// it.
+    ///
+    /// The callback must return one of the following things:
+    ///
+    ///  - a valid handle to a measurement set, created using
+    ///    `dqcs_mset_new()` (this object is automatically deleted after the
+    ///    callback returns);
+    ///  - a valid handle to a single qubit measurement, created using
+    ///    `dqcs_meas_new()` (this object is automatically deleted after the
+    ///    callback returns);
+    ///  - the handle to the supplied gate, a shortcut for not returning any
+    ///    measurements (this is less clear than returning an empty measurement
+    ///    set, but slightly faster); or
+    ///  - 0 to report an error, after calling the error string using
+    ///    `dqcs_set_error()`.
+    ///
+    /// Backend plugins must return a measurement result set containing exactly
+    /// those qubits specified in the measurement set. For operators, however,
+    /// the story is more complicated. Let's say we want to make a silly
+    /// operator that inverts all measurements. The trivial way to do
+    /// this would be to forward the gate, query all the measurement results
+    /// using `dqcs_plugin_get_measurement()`, invert them, stick them in a
+    /// measurement result set, and return that result set. However, this
+    /// approach is not very efficient, because `dqcs_plugin_get_measurement()`
+    /// has to wait for all downstream plugins to finish executing the gate,
+    /// forcing the OS to switch threads, etc. Instead, operators are allowed
+    /// to return only a subset (or none) of the measured qubits, as long as
+    /// they return the measurements as they arrive through the
+    /// `modify_measurement()` callback.
+    ///
+    /// The default implementation for this callback for operators is to pass
+    /// the gate through to the downstream plugin and return an empty set of
+    /// measurements. Combined with the default implementation of
+    /// `modify_measurement()`, this behavior is sane. Backends must override
+    /// this callback; the default is to return a not-implemented error.
+    ///
+    /// Note that for our silly example operator, the default behavior for this
+    /// function is sufficient; you'd only have to override
+    /// `modify_measurement()` to, well, modify the measurements.
+    dqcs_pdef_set_gate_cb::gate(
+        gate: Gate as dqcs_handle_t
+    ) -> Vec<QubitMeasurementResult> as dqcs_handle_t = callback, state, data {
+        let gate_handle = insert(gate);
+        let result = cb_return(0, callback(data.data(), state.into(), gate_handle)).and_then(|result| {
+            if result == gate_handle {
+                Ok(vec![])
+            } else {
+                take!(result as QubitMeasurementResultSet);
+                Ok(result.into_iter().map(|(_, m)| m).collect())
+            }
+        });
+        delete!(gate_handle);
+        result
+    }
+
+    /// Sets the measurement modification callback for operators.
+    ///
+    /// This callback is called for every measurement result received from the
+    /// downstream plugin, and returns the measurements that should be reported
+    /// to the upstream plugin. Note that the results from our plugin's
+    /// `dqcs_plugin_get_measurement()` and friends are consistent with the
+    /// results received from downstream; they are not affected by this
+    /// function.
+    ///
+    /// The callback takes a handle to a single qubit measurement object as an
+    /// argument, and must return one of the following things:
+    ///
+    ///  - a valid handle to a measurement set, created using
+    ///    `dqcs_mset_new()` (this object is automatically deleted after the
+    ///    callback returns);
+    ///  - a valid handle to a single qubit measurement object, which may or
+    ///    may not be the supplied one (this object is automatically deleted
+    ///    after the callback returns); or
+    ///  - 0 to report an error, after calling the error string using
+    ///    `dqcs_set_error()`.
+    ///
+    /// This callback is somewhat special in that it is not allowed to call
+    /// any plugin command other than logging and the pseudorandom number
+    /// generator functions. This is because this function is called
+    /// asynchronously with respect to the downstream functions, making the
+    /// timing of these calls non-deterministic based on operating system
+    /// scheduling.
+    ///
+    /// Note that while this function is called for only a single measurement
+    /// at a time, it is allowed to produce a vector of measurements. This
+    /// allows you to cancel propagation of the measurement by returning an
+    /// empty vector, to just modify the measurement data itself, or to
+    /// generate additional measurements from a single measurement. However,
+    /// if you need to modify the qubit references for operators that remap
+    /// qubits, take care to only send measurement data upstream when these
+    /// were explicitly requested through the associated upstream gate
+    /// function's `measured` list.
+    ///
+    /// The default behavior for this callback is to return the measurement
+    /// without modification.
+    dqcs_pdef_set_modify_measurement_cb::modify_measurement(
+        meas: QubitMeasurementResult as dqcs_handle_t
+    ) -> Vec<QubitMeasurementResult> as dqcs_handle_t = callback, state, data {
+        let meas_handle = insert(meas);
+        let result = cb_return(0, callback(data.data(), state.into(), meas_handle)).and_then(|result| {
+            take!(result as QubitMeasurementResultSet);
+            Ok(result.into_iter().map(|(_, m)| m).collect())
+        });
+        delete!(meas_handle);
+        result
+    }
+
+    /// Sets the callback for advancing time for operators and backends.
+    ///
+    /// The default behavior for operators is to pass through to
+    /// `dqcs_plugin_advance()`. The default for backends is no-op. This
+    /// callback is never called for frontend plugins.
+    ///
+    /// Besides the common arguments, the callback receives an unsigned integer
+    /// specifying the number of cycles to advance by.
+    ///
+    /// The callback can return an error by setting an error message using
+    /// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should
+    /// return `DQCS_SUCCESS`.
+    dqcs_pdef_set_advance_cb::advance(
+        cycles: u64 as dqcs_cycle_t
+    ) -> () as dqcs_return_t = callback, state, data {
+        cb_return_none(callback(data.data(), state.into(), cycles as dqcs_cycle_t))
+    }
+
+    /// Sets the callback function for handling an arb from upstream for
+    /// operators and backends.
+    ///
+    /// The default behavior for operators is to pass through to
+    /// `dqcs_plugin_arb()`; operators that do not support the requested
+    /// interface should always do this. The default for backends is no-op.
+    /// This callback is never called for frontend plugins.
+    ///
+    /// Besides the common arguments, the callback receives a handle to the
+    /// `ArbCmd` object representing the request. It must return a valid
+    /// `ArbData` handle containing the response. Both objects are deleted
+    /// automatically after invocation.
+    ///
+    /// The callback can return an error by setting an error message using
+    /// `dqcs_error_set()` and returning 0. Otherwise, it should return a valid
+    /// `ArbData` handle.
+    dqcs_pdef_set_upstream_arb_cb::upstream_arb(
+        cmd: ArbCmd as dqcs_handle_t
+    ) -> ArbData as dqcs_handle_t = callback, state, data {
+        let cmd_handle = insert(cmd);
+        let result = cb_return(0, callback(data.data(), state.into(), cmd_handle)).and_then(|result| {
+            take!(result as ArbData);
+            Ok(result)
+        });
+        delete!(cmd_handle);
+        result
+    }
+
+    /// Sets the callback function function for handling an arb from the host.
+    ///
+    /// The default behavior for this is no-op.
+    ///
+    /// Besides the common arguments, the callback receives a handle to the
+    /// `ArbCmd` object representing the request. It must return a valid
+    /// `ArbData` handle containing the response. Both objects are deleted
+    /// automatically after invocation.
+    ///
+    /// The callback can return an error by setting an error message using
+    /// `dqcs_error_set()` and returning 0. Otherwise, it should return a valid
+    /// `ArbData` handle.
+    dqcs_pdef_set_host_arb_cb::host_arb(
+        cmd: ArbCmd as dqcs_handle_t
+    ) -> ArbData as dqcs_handle_t = callback, state, data {
+        let cmd_handle = insert(cmd);
+        let result = cb_return(0, callback(data.data(), state.into(), cmd_handle)).and_then(|result| {
+            take!(result as ArbData);
+            Ok(result)
+        });
+        delete!(cmd_handle);
         result
     }
 );

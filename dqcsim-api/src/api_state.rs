@@ -274,6 +274,7 @@ impl UseHandleAs<APIObject> for ResolvedHandle {
 macro_rules! mutate_api_object_as {
     {$x:ty, $y:ident: $($p:pat=>$r:expr,$m:expr,$t:expr,)+} => (
         impl UseHandleAs<$x> for ResolvedHandle {
+            #[allow(unreachable_code, unused_variables)]
             fn as_ref(&self) -> Result<&$x> {
                 match self.ob.as_ref().expect("object ownership was already given away") {
                     $($p => Ok($r),)+
@@ -281,6 +282,7 @@ macro_rules! mutate_api_object_as {
                 }
             }
 
+            #[allow(unreachable_code, unused_variables)]
             fn as_mut(&mut self) -> Result<&mut $x> {
                 match self.ob.as_mut().expect("object ownership was already given away") {
                     $($p => Ok($m),)+
@@ -288,6 +290,7 @@ macro_rules! mutate_api_object_as {
                 }
             }
 
+            #[allow(unreachable_code, unused_variables)]
             fn take(&mut self) -> Result<$x> {
                 match self.ob.take().expect("object ownership was already given away") {
                     $($p => Ok($t),)+
@@ -334,20 +337,20 @@ mutate_api_object_as! {ArbCmd, cmd:
         if let Some(x) = x.front() {
             x
         } else {
-            return inv_arg("empty command queue does not support arb interface");
+            return inv_arg("empty command queue does not support cmd interface");
         }
     }, {
         if let Some(x) = x.front_mut() {
             x
         } else {
-            return inv_arg("empty command queue does not support arb interface");
+            return inv_arg("empty command queue does not support cmd interface");
         }
     }, {
         let mut x = x;
         if let Some(x) = x.pop_front() {
             x
         } else {
-            return inv_arg("empty command queue does not support arb interface");
+            return inv_arg("empty command queue does not support cmd interface");
         }
     },
 }
@@ -369,6 +372,15 @@ mutate_api_object_as! {QubitMeasurementResult, meas:
 }
 
 mutate_api_object_as! {QubitMeasurementResultSet, mset:
+    APIObject::QubitMeasurementResult(x) => {
+        return inv_arg("empty command queue does not support cmd interface");
+    }, {
+        return inv_arg("empty command queue does not support cmd interface");
+    }, {
+        let mut s = QubitMeasurementResultSet::new();
+        s.insert(x.qubit, x);
+        s
+    },
     APIObject::QubitMeasurementResultSet(x) => x, x, x,
 }
 
@@ -421,6 +433,7 @@ pub fn resolve(handle: dqcs_handle_t) -> Result<ResolvedHandle> {
 ///
 /// Note that this macro uses `?` to throw errors, so the callee must return
 /// `Result<_>`.
+#[doc(hidden)]
 #[macro_export]
 macro_rules! resolve {
     ($i:ident as &$t:ty) => {
@@ -475,6 +488,7 @@ macro_rules! resolve {
 /// The downcast should have been previously checked by the user through the
 /// appropriate `resolve!` macro; this will only fail if the types specified
 /// for `resolve!` and `take!` differ (don't do this).
+#[doc(hidden)]
 #[macro_export]
 macro_rules! take {
     ($i:ident as $t:ty) => {
@@ -497,6 +511,7 @@ macro_rules! take {
 ///
 /// This never returns an error, and "double deletes" are fine (the second
 /// delete will be no-op).
+#[doc(hidden)]
 #[macro_export]
 macro_rules! delete {
     ($i:ident) => {

@@ -87,7 +87,7 @@ impl PluginState {
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn get_cycles_since_measure(&self, _qubit: QubitRef) -> Result<usize> {
+    pub fn get_cycles_since_measure(&self, _qubit: QubitRef) -> Result<u64> {
         err("not yet implemented")
     }
 
@@ -96,7 +96,7 @@ impl PluginState {
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn get_cycles_between_measures(&self, _qubit: QubitRef) -> Result<usize> {
+    pub fn get_cycles_between_measures(&self, _qubit: QubitRef) -> Result<u64> {
         err("not yet implemented")
     }
 
@@ -104,7 +104,7 @@ impl PluginState {
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn advance(&mut self, _cycles: usize) -> Result<usize> {
+    pub fn advance(&mut self, _cycles: u64) -> Result<u64> {
         err("not yet implemented")
     }
 
@@ -112,7 +112,7 @@ impl PluginState {
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn get_cycle(&self) -> Result<usize> {
+    pub fn get_cycle(&self) -> Result<u64> {
         err("not yet implemented")
     }
 
