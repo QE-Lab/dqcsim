@@ -10,7 +10,7 @@ use crate::{
         },
         types::{ArbCmd, ArbData},
     },
-    host::configuration::{PluginConfiguration, PluginType},
+    host::configuration::{PluginLogConfiguration, PluginType},
 };
 use std::fmt::Debug;
 
@@ -46,22 +46,24 @@ pub trait Plugin: Debug {
     /// to use with their log proxies.
     fn spawn(&mut self, logger: &LogThread) -> Result<()>;
 
-    /// Returns the PluginConfiguration for this plugin.
-    fn configuration(&self) -> PluginConfiguration;
+    /// Returns the PluginType of this plugin.
+    fn plugin_type(&self) -> PluginType;
+
+    /// Returns the vector of `ArbCmd`s that are to be passed to the plugin's
+    /// `initialize()` callback.
+    fn init_cmds(&self) -> Vec<ArbCmd>;
+
+    /// Returns the logging configuration for this plugin.
+    fn log_configuration(&self) -> PluginLogConfiguration;
 
     /// Send the SimulatorToPlugin message to the plugin.
     fn rpc(&mut self, msg: SimulatorToPlugin) -> Result<PluginToSimulator>;
 }
 
 impl Plugin {
-    /// Returns the name of this plugin from its configuration.
+    /// Returns the name of this plugin from its logging configuration.
     pub fn name(&self) -> String {
-        self.configuration().name
-    }
-
-    /// Returns the PluginType of this plugin from its configuration.
-    pub fn plugin_type(&self) -> PluginType {
-        self.configuration().specification.typ
+        self.log_configuration().name
     }
 
     /// Sends an `PluginInitializeRequest` to this plugin.
@@ -74,8 +76,10 @@ impl Plugin {
             self,
             PluginInitializeRequest {
                 downstream: downstream.clone(),
-                configuration: self.configuration(),
-                log: logger.get_ipc_sender(),
+                plugin_type: self.plugin_type(),
+                init_cmds: self.init_cmds(),
+                log_configuration: self.log_configuration(),
+                log_channel: logger.get_ipc_sender(),
             },
             expect Initialized
         )

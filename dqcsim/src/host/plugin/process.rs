@@ -4,9 +4,13 @@ use crate::{
         error::{err, ErrorKind, Result},
         log::{stdio::proxy_stdio, thread::LogThread},
         protocol::{PluginToSimulator, SimulatorToPlugin},
+        types::ArbCmd,
     },
     host::{
-        configuration::{EnvMod, PluginConfiguration, StreamCaptureMode, Timeout},
+        configuration::{
+            EnvMod, PluginConfiguration, PluginLogConfiguration, PluginType, StreamCaptureMode,
+            Timeout,
+        },
         plugin::Plugin,
     },
     info, trace, warn,
@@ -159,8 +163,16 @@ impl Plugin for PluginProcess {
         Ok(())
     }
 
-    fn configuration(&self) -> PluginConfiguration {
-        self.configuration.clone()
+    fn plugin_type(&self) -> PluginType {
+        self.configuration.specification.typ
+    }
+
+    fn init_cmds(&self) -> Vec<ArbCmd> {
+        self.configuration.functional.init.clone()
+    }
+
+    fn log_configuration(&self) -> PluginLogConfiguration {
+        PluginLogConfiguration::from(&self.configuration)
     }
 
     fn rpc(&mut self, msg: SimulatorToPlugin) -> Result<PluginToSimulator> {

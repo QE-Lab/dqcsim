@@ -14,8 +14,8 @@ pub use timeout::Timeout;
 
 mod plugin;
 pub use plugin::{
-    PluginConfiguration, PluginFunctionalConfiguration, PluginNonfunctionalConfiguration,
-    PluginSpecification, PluginType,
+    PluginConfiguration, PluginFunctionalConfiguration, PluginLogConfiguration,
+    PluginNonfunctionalConfiguration, PluginSpecification, PluginType,
 };
 
 mod simulator;

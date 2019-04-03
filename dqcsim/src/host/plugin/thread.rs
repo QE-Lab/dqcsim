@@ -4,8 +4,13 @@ use crate::{
         error::Result,
         log::{thread::LogThread, LogRecord},
         protocol::{PluginToSimulator, SimulatorToPlugin},
+        types::ArbCmd,
     },
-    host::{configuration::PluginConfiguration, plugin::Plugin},
+    host::{
+        configuration::{PluginLogConfiguration, PluginType},
+        plugin::Plugin,
+    },
+    plugin::definition::PluginDefinition,
 };
 use std::{fmt, thread};
 
@@ -21,6 +26,9 @@ pub struct PluginThread {
     thread: Option<PluginThreadClosure>,
     handle: Option<thread::JoinHandle<()>>,
     channel: Option<CrossbeamChannel<SimulatorToPlugin, PluginToSimulator>>,
+    plugin_type: PluginType,
+    init_cmds: Vec<ArbCmd>,
+    log_configuration: PluginLogConfiguration,
 }
 
 impl fmt::Debug for PluginThread {
@@ -34,18 +42,45 @@ impl fmt::Debug for PluginThread {
 }
 
 impl PluginThread {
+    /// Constructs a plugin thread from a plugin definition and configuration.
     pub fn new(
+        definition: PluginDefinition,
+        init_cmds: Vec<ArbCmd>,
+        log_configuration: PluginLogConfiguration,
+    ) -> PluginThread {
+        let plugin_type = definition.get_type();
+        PluginThread::new_raw(
+            move |_, _| {
+                let _ = definition;
+                // TODO start controller, stuff, etc
+            },
+            plugin_type,
+            init_cmds,
+            log_configuration,
+        )
+    }
+
+    /// Construct a plugin thread given the actual function that runs in the
+    /// spawned thread and the configuration. This is to be used for testing
+    /// only.
+    fn new_raw(
         thread: impl Fn(
                 CrossbeamChannel<PluginToSimulator, SimulatorToPlugin>,
                 crossbeam_channel::Sender<LogRecord>,
             ) -> ()
             + Send
             + 'static,
+        plugin_type: PluginType,
+        init_cmds: Vec<ArbCmd>,
+        log_configuration: PluginLogConfiguration,
     ) -> PluginThread {
         PluginThread {
             thread: Some(Box::new(thread)),
             handle: None,
             channel: None,
+            plugin_type,
+            init_cmds,
+            log_configuration,
         }
     }
 }
@@ -67,8 +102,16 @@ impl Plugin for PluginThread {
         Ok(self.channel.as_ref().unwrap().1.recv()?)
     }
 
-    fn configuration(&self) -> PluginConfiguration {
-        unimplemented!()
+    fn plugin_type(&self) -> PluginType {
+        self.plugin_type
+    }
+
+    fn init_cmds(&self) -> Vec<ArbCmd> {
+        self.init_cmds.clone()
+    }
+
+    fn log_configuration(&self) -> PluginLogConfiguration {
+        self.log_configuration.clone()
     }
 }
 

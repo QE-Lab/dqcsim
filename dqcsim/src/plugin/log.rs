@@ -5,7 +5,7 @@ use crate::{
         error::Result,
         log::{init, proxy::LogProxy, tee_file::TeeFile, Log, LogRecord},
     },
-    host::configuration::PluginConfiguration,
+    host::configuration::PluginLogConfiguration,
 };
 use ipc_channel::ipc::IpcSender;
 
@@ -19,18 +19,17 @@ use ipc_channel::ipc::IpcSender;
 /// Starts [`TeeFile`] loggers, given a non-empty vector of [`TeeFile`], to
 /// forward log records to output files.
 pub fn setup_logging(
-    configuration: &PluginConfiguration,
+    configuration: &PluginLogConfiguration,
     log_channel: IpcSender<LogRecord>,
 ) -> Result<()> {
-    let mut loggers = Vec::with_capacity(1 + configuration.nonfunctional.tee_files.len());
+    let mut loggers = Vec::with_capacity(1 + configuration.tee_files.len());
     loggers.push(LogProxy::boxed(
         configuration.name.as_str(),
-        configuration.nonfunctional.verbosity,
+        configuration.verbosity,
         log_channel,
     ) as Box<dyn Log>);
     loggers.extend(
         configuration
-            .nonfunctional
             .tee_files
             .clone()
             .into_iter()

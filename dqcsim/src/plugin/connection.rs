@@ -180,11 +180,11 @@ impl Connection {
             self.next_request()
         {
             // Setup logging.
-            setup_logging(&req.configuration, req.log)?;
+            setup_logging(&req.log_configuration, req.log_channel)?;
 
             // Make sure type reported by Plugin corresponds to
             // PluginSpecification.
-            if typ != req.configuration.specification.typ {
+            if typ != req.plugin_type {
                 Err(ErrorKind::InvalidOperation(
                     "PluginType reported by Plugin does not correspond with PluginSpecification"
                         .to_string(),
@@ -210,7 +210,7 @@ impl Connection {
             // Run user init code.
             // TODO: replace this with an actual context
             let mut ctx = PluginState {};
-            initialize(&mut ctx, req.configuration.functional.init);
+            initialize(&mut ctx, req.init_cmds);
 
             // Init IPC endpoint for upstream plugin.
             if typ != PluginType::Frontend {

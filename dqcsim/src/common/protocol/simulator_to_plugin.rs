@@ -3,7 +3,7 @@ use crate::{
         log::LogRecord,
         types::{ArbCmd, ArbData},
     },
-    host::configuration::PluginConfiguration,
+    host::configuration::{PluginLogConfiguration, PluginType},
 };
 use ipc_channel::ipc::IpcSender;
 use serde::{Deserialize, Serialize};
@@ -87,29 +87,18 @@ pub struct PluginInitializeRequest {
     /// for backends.
     pub downstream: Option<String>,
 
-    /// Copy of the plugin configuration structure that DQCsim used to spawn
-    /// the plugin process.
-    ///
-    /// Not all parts of this structure are necessarily relevant for the
-    /// plugin, as DQCsim handles much of the configuration process. The plugin
-    /// is expected to at least use the following parts:
-    ///
-    ///  - the plugin type is to be verified with the user code, to make sure
-    ///    that the user code actually implements a plugin of the expected
-    ///    type;
-    ///  - the plugin name is to be used as a prefix for the logging system;
-    ///  - tee files are to be handled by the plugin process for log system
-    ///    performance reasons.
-    ///
-    /// Furthermore, while DQCsim performs loglevel filtering on the messages
-    /// sent by the plugin, it is recommended that the plugin also does this
-    /// filtering. This prevents log messages from being sent through the IPC
-    /// connection (which costs performance) unnecessarily.
-    pub configuration: PluginConfiguration,
+    /// The expected plugin type.
+    pub plugin_type: PluginType,
+
+    /// Vector of `ArbCmd` to supply to the plugin's `init()` function.
+    pub init_cmds: Vec<ArbCmd>,
+
+    /// Configuration for the logging subsystem of the plugin.
+    pub log_configuration: PluginLogConfiguration,
 
     /// Sender side of the log channel. Can be used by a Plugin to send log
     /// records to the simulator.
-    pub log: IpcSender<LogRecord>,
+    pub log_channel: IpcSender<LogRecord>,
 }
 
 impl Into<SimulatorToPlugin> for PluginInitializeRequest {
@@ -120,7 +109,10 @@ impl Into<SimulatorToPlugin> for PluginInitializeRequest {
 
 impl PartialEq for PluginInitializeRequest {
     fn eq(&self, other: &PluginInitializeRequest) -> bool {
-        self.downstream == other.downstream && self.configuration == other.configuration
+        self.downstream == other.downstream
+            && self.plugin_type == other.plugin_type
+            && self.init_cmds == other.init_cmds
+            && self.log_configuration == other.log_configuration
     }
 }
 

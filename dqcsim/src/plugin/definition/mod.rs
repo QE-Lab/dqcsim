@@ -28,14 +28,14 @@ pub struct PluginDefinition {
     /// legal to send it commands.
     ///
     /// The default behavior is no-op.
-    pub initialize: Box<dyn Fn(&mut PluginState, Vec<ArbCmd>) -> Result<()>>,
+    pub initialize: Box<dyn Fn(&mut PluginState, Vec<ArbCmd>) -> Result<()> + Send + 'static>,
 
     /// Finalization callback.
     ///
     /// This is called when a plugin is gracefully terminated.
     ///
     /// The default behavior is no-op.
-    pub drop: Box<dyn Fn(&mut PluginState) -> Result<()>>,
+    pub drop: Box<dyn Fn(&mut PluginState) -> Result<()> + Send + 'static>,
 
     /// Run callback for frontends.
     ///
@@ -45,21 +45,22 @@ pub struct PluginDefinition {
     /// The default behavior is to fail with a "not implemented" error;
     /// frontends backends should always override this. This callback is never
     /// called for operator or backend plugins.
-    pub run: Box<dyn Fn(&mut PluginState, ArbData) -> Result<ArbData>>,
+    pub run: Box<dyn Fn(&mut PluginState, ArbData) -> Result<ArbData> + Send + 'static>,
 
     /// Qubit allocation callback for operators and backends.
     ///
     /// The default for operators is to pass through to `state.allocate()`. The
     /// default for backends is no-op. This callback is never called for
     /// frontend plugins.
-    pub allocate: Box<dyn Fn(&mut PluginState, Vec<QubitRef>, Vec<ArbCmd>) -> Result<()>>,
+    pub allocate:
+        Box<dyn Fn(&mut PluginState, Vec<QubitRef>, Vec<ArbCmd>) -> Result<()> + Send + 'static>,
 
     /// Qubit deallocation callback for operators and backends.
     ///
     /// The default for operators is to pass through to `state.free()`. The
     /// default for backends is no-op. This callback is never called for
     /// frontend plugins.
-    pub free: Box<dyn Fn(&mut PluginState, Vec<QubitRef>) -> Result<()>>,
+    pub free: Box<dyn Fn(&mut PluginState, Vec<QubitRef>) -> Result<()> + Send + 'static>,
 
     /// Gate execution callback for operators and backends.
     ///
@@ -118,7 +119,8 @@ pub struct PluginDefinition {
     /// The default for backends is to fail with a "not implemented" error;
     /// backends should always override this. This callback is never called for
     /// frontend plugins.
-    pub gate: Box<dyn Fn(&mut PluginState, Gate) -> Result<Vec<QubitMeasurementResult>>>,
+    pub gate:
+        Box<dyn Fn(&mut PluginState, Gate) -> Result<Vec<QubitMeasurementResult>> + Send + 'static>,
 
     /// Measurement modification callback for operators.
     ///
@@ -141,7 +143,9 @@ pub struct PluginDefinition {
     /// The default behavior for this callback is to return the measurement
     /// without modification.
     pub modify_measurement: Box<
-        dyn Fn(&mut PluginState, QubitMeasurementResult) -> Result<Vec<QubitMeasurementResult>>,
+        dyn Fn(&mut PluginState, QubitMeasurementResult) -> Result<Vec<QubitMeasurementResult>>
+            + Send
+            + 'static,
     >,
 
     /// Callback for advancing time for operators and backends.
@@ -149,7 +153,7 @@ pub struct PluginDefinition {
     /// The default behavior for operators is to pass through to
     /// `state.advance()`. The default for backends is no-op. This callback is
     /// never called for frontend plugins.
-    pub advance: Box<dyn Fn(&mut PluginState, usize) -> Result<()>>,
+    pub advance: Box<dyn Fn(&mut PluginState, usize) -> Result<()> + Send + 'static>,
 
     /// Callback function for handling an arb from upstream for operators and
     /// backends.
@@ -158,12 +162,12 @@ pub struct PluginDefinition {
     /// `state.arb()`; operators that do not support the requested interface
     /// should always do this. The default for backends is no-op. This callback
     /// is never called for frontend plugins.
-    pub upstream_arb: Box<dyn Fn(&mut PluginState, ArbCmd) -> Result<ArbData>>,
+    pub upstream_arb: Box<dyn Fn(&mut PluginState, ArbCmd) -> Result<ArbData> + Send + 'static>,
 
     /// Callback function for handling an arb from the host.
     ///
     /// The default behavior for this is no-op.
-    pub host_arb: Box<dyn Fn(&mut PluginState, ArbCmd) -> Result<ArbData>>,
+    pub host_arb: Box<dyn Fn(&mut PluginState, ArbCmd) -> Result<ArbData> + Send + 'static>,
 }
 
 impl fmt::Debug for PluginDefinition {
