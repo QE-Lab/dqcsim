@@ -8,7 +8,7 @@ use dqcsim::{
     info,
     plugin::{
         connection::{Connection, IncomingMessage, OutgoingMessage},
-        context::PluginContext,
+        context::PluginState,
     },
     trace,
 };
@@ -34,7 +34,7 @@ fn main() -> Result<(), Error> {
 
     let metadata = PluginMetadata::new("example", "mb", "0.1.0");
     // Init fn
-    let initialize: Box<dyn Fn(&mut PluginContext, Vec<ArbCmd>)> = Box::new(|_ctx, arb_cmds| {
+    let initialize: Box<dyn Fn(&mut PluginState, Vec<ArbCmd>)> = Box::new(|_ctx, arb_cmds| {
         trace!("Running plugin init function.");
         for arb_cmd in arb_cmds {
             debug!("{}", arb_cmd);
