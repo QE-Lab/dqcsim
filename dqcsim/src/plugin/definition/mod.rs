@@ -49,14 +49,14 @@ pub struct PluginDefinition {
 
     /// Qubit allocation callback for operators and backends.
     ///
-    /// The default for operators is to pass through to `ctxt.allocate()`. The
+    /// The default for operators is to pass through to `state.allocate()`. The
     /// default for backends is no-op. This callback is never called for
     /// frontend plugins.
     pub allocate: Box<dyn Fn(&mut PluginState, Vec<QubitRef>, Vec<ArbCmd>) -> Result<()>>,
 
     /// Qubit deallocation callback for operators and backends.
     ///
-    /// The default for operators is to pass through to `ctxt.free()`. The
+    /// The default for operators is to pass through to `state.free()`. The
     /// default for backends is no-op. This callback is never called for
     /// frontend plugins.
     pub free: Box<dyn Fn(&mut PluginState, Vec<QubitRef>) -> Result<()>>,
@@ -73,13 +73,13 @@ pub struct PluginDefinition {
     ///
     /// ```ignore
     /// fn gate(...) -> ... {
-    ///     ctxt.gate(...)?;
+    ///     state.gate(...)?;
     ///     let mut measurements;
     ///     for qubit in measures {
     ///         measurements.push(QubitMeasurementResult {
     ///             qubit,
-    ///             value: !ctxt.get_measurement(qubit)?, // note the !
-    ///             data: ctxt.get_measurement_arb(qubit)?,
+    ///             value: !state.get_measurement(qubit)?, // note the !
+    ///             data: state.get_measurement_arb(qubit)?,
     ///         });
     ///     }
     ///     Ok(measurements)
@@ -94,7 +94,7 @@ pub struct PluginDefinition {
     ///
     /// ```ignore
     /// fn gate(...) -> ... {
-    ///     ctxt.gate(...)?;
+    ///     state.gate(...)?;
     /// }
     ///
     /// fn modify_measurement(...) -> ... {
@@ -112,7 +112,7 @@ pub struct PluginDefinition {
     /// do this, override `modify_measurement()` to always return an empty
     /// vector, otherwise the two methods may interfere with each other!
     ///
-    /// The default behavior for operators is to pass through to `ctxt.gate()`.
+    /// The default behavior for operators is to pass through to `state.gate()`.
     /// An empty measurements vector.is returned in this case; the measurements
     /// are instead propagated through the `modify_measurements()` callback.
     /// The default for backends is to fail with a "not implemented" error;
@@ -147,7 +147,7 @@ pub struct PluginDefinition {
     /// Callback for advancing time for operators and backends.
     ///
     /// The default behavior for operators is to pass through to
-    /// `ctxt.advance()`. The default for backends is no-op. This callback is
+    /// `state.advance()`. The default for backends is no-op. This callback is
     /// never called for frontend plugins.
     pub advance: Box<dyn Fn(&mut PluginState, usize) -> Result<()>>,
 
@@ -155,7 +155,7 @@ pub struct PluginDefinition {
     /// backends.
     ///
     /// The default behavior for operators is to pass through to
-    /// `ctxt.arb()`; operators that do not support the requested interface
+    /// `state.arb()`; operators that do not support the requested interface
     /// should always do this. The default for backends is no-op. This callback
     /// is never called for frontend plugins.
     pub upstream_arb: Box<dyn Fn(&mut PluginState, ArbCmd) -> Result<ArbData>>,
@@ -202,13 +202,13 @@ impl PluginDefinition {
                 initialize: Box::new(|_, _| Ok(())),
                 drop: Box::new(|_| Ok(())),
                 run: Box::new(|_, _| err("operator.run() called")),
-                allocate: Box::new(|ctxt, qubits, cmds| {
-                    ctxt.allocate(qubits.len(), cmds).map(|_| ())
+                allocate: Box::new(|state, qubits, cmds| {
+                    state.allocate(qubits.len(), cmds).map(|_| ())
                 }),
-                free: Box::new(|ctxt, qubits| ctxt.free(qubits)),
-                gate: Box::new(|ctxt, gate| ctxt.gate(gate).map(|_| vec![])),
+                free: Box::new(|state, qubits| state.free(qubits)),
+                gate: Box::new(|state, gate| state.gate(gate).map(|_| vec![])),
                 modify_measurement: Box::new(|_, measurement| Ok(vec![measurement])),
-                advance: Box::new(|ctxt, cycles| ctxt.advance(cycles).map(|_| ())),
+                advance: Box::new(|state, cycles| state.advance(cycles).map(|_| ())),
                 upstream_arb: Box::new(|_, _| Ok(ArbData::default())),
                 host_arb: Box::new(|_, _| Ok(ArbData::default())),
             },
