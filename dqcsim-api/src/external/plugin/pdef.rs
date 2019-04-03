@@ -108,9 +108,9 @@ macro_rules! define_callback {
         pub extern "C" fn $setter(
             pdef: dqcs_handle_t,
             callback: Option<
-                extern "C" fn(data: *mut c_void, state: dqcs_plugin_state_t, $($ai: $atf),*) -> $rtf,
+                extern "C" fn(user_data: *mut c_void, state: dqcs_plugin_state_t, $($ai: $atf),*) -> $rtf,
             >,
-            user_free: Option<extern "C" fn(data: *mut c_void)>,
+            user_free: Option<extern "C" fn(user_data: *mut c_void)>,
             user_data: *mut c_void,
         ) -> dqcs_return_t {
             api_return_none(|| {
@@ -135,14 +135,10 @@ define_callback!(
     ///
     /// The default behavior is no-op.
     ///
-    /// The callback takes the following arguments:
-    ///  - `void*`: user defined data.
-    ///  - `dqcs_plugin_state_t`: plugin context, needed to call the
-    ///    `dqcs_plugin_*` functions.
-    ///  - `dqcs_handle_t`: handle to an `ArbCmd` queue (`dqcs_cq_*`,
-    ///     `dqcs_cmd_*`, and `dqcs_arb_*` interfaces) containing user-defined
-    ///     initialization commands. It is up to the callback to delete this
-    ///     handle.
+    /// Besides the common arguments, the callback receives a handle to an
+    /// `ArbCmd` queue (`dqcs_cq_*`, `dqcs_cmd_*`, and `dqcs_arb_*` interfaces)
+    /// containing user-defined initialization commands. This is a borrowed
+    /// handle; the caller will delete it.
     ///
     /// The callback can return an error by setting an error message using
     /// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should
@@ -151,7 +147,10 @@ define_callback!(
         init_cmds: Vec<ArbCmd> as dqcs_handle_t
     ) -> () as dqcs_return_t = callback, state, data {
         let init_cmds: ArbCmdQueue = init_cmds.into_iter().collect();
-        cb_return_none(callback(data.data(), state.into(), insert(init_cmds)))
+        let init_cmds = insert(init_cmds);
+        let result = cb_return_none(callback(data.data(), state.into(), init_cmds));
+        delete!(init_cmds);
+        result
     }
 );
 
@@ -164,15 +163,101 @@ define_callback!(
     ///
     /// The default behavior is no-op.
     ///
-    /// The callback takes the following arguments:
-    ///  - `void*`: user defined data.
-    ///  - `dqcs_plugin_state_t`: plugin context, needed to call the
-    ///    `dqcs_plugin_*` functions.
-    ///
     /// The callback can return an error by setting an error message using
     /// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should
     /// return `DQCS_SUCCESS`.
     dqcs_pdef_set_drop_cb::drop() -> () as dqcs_return_t = callback, state, data {
         cb_return_none(callback(data.data(), state.into()))
+    }
+);
+
+define_callback!(
+    /// Sets the run callback for frontends.
+    ///
+    /// This is called in response to a `start()` host API call. The return
+    /// value is returned through the `wait()` host API call.
+    ///
+    /// The default behavior is to fail with a "not implemented" error;
+    /// frontends backends should always override this. This callback is never
+    /// called for operator or backend plugins.
+    ///
+    /// Besides the common arguments, the callback receives a handle to an
+    /// `ArbData` object containing the data that the host passed to `start()`.
+    /// This is a borrowed handle; the caller will delete it.
+    ///
+    /// When the run callback is successful, it should return a valid `ArbData`
+    /// handle. This can be the same as the argument, but it can also be a new
+    /// object. This `ArbData` is returned to the host through `wait()`. This
+    /// `ArbData` object is deleted after the callback completes.
+    ///
+    /// The callback can return an error by setting an error message using
+    /// `dqcs_error_set()` and returning 0. Otherwise, it should return a
+    /// valid `ArbData` handle.
+    dqcs_pdef_set_run_cb::run(
+        args: ArbData as dqcs_handle_t
+    ) -> ArbData as dqcs_handle_t = callback, state, data {
+        let args = insert(args);
+        let result = cb_return(0, callback(data.data(), state.into(), args)).and_then(|arb| {
+            take!(arb as ArbData);
+            Ok(arb)
+        });
+        delete!(args);
+        result
+    }
+);
+
+define_callback!(
+    /// Sets the qubit allocation callback for operators and backends.
+    ///
+    /// The default for operators is to pass through to `state.allocate()`. The
+    /// default for backends is no-op. This callback is never called for
+    /// frontend plugins.
+    ///
+    /// Besides the common arguments, the callback receives a handle to a qubit
+    /// set containing the references that are to be used for the
+    /// to-be-allocated qubits and an `ArbCmd` queue containing user-defined
+    /// commands to optionally augment the behavior of the qubits. These are
+    /// borrowed handles; the caller will delete them.
+    ///
+    /// The callback can return an error by setting an error message using
+    /// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should
+    /// return `DQCS_SUCCESS`.
+    dqcs_pdef_set_allocate_cb::allocate(
+        qubits: Vec<QubitRef> as dqcs_handle_t,
+        alloc_cmds: Vec<ArbCmd> as dqcs_handle_t
+    ) -> () as dqcs_return_t = callback, state, data {
+        let qubits: QubitReferenceSet = qubits.into_iter().collect();
+        let qubits = insert(qubits);
+        let alloc_cmds: ArbCmdQueue = alloc_cmds.into_iter().collect();
+        let alloc_cmds = insert(alloc_cmds);
+        let result = cb_return_none(callback(data.data(), state.into(), qubits, alloc_cmds));
+        delete!(qubits);
+        delete!(alloc_cmds);
+        result
+    }
+);
+
+define_callback!(
+    /// Sets the qubit deallocation callback for operators and backends.
+    ///
+    /// The default for operators is to pass through to `state.free()`. The
+    /// default for backends is no-op. This callback is never called for
+    /// frontend plugins.
+    ///
+    /// Besides the common arguments, the callback receives a handle to a qubit
+    /// set containing the qubits that are to be freed. This is a borrowed
+    /// handle; the caller will delete it.
+    ///
+    /// The callback can return an error by setting an error message using
+    /// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should
+    /// return `DQCS_SUCCESS`.
+    dqcs_pdef_set_free_cb::free(
+        qubits: Vec<QubitRef> as dqcs_handle_t
+    ) -> () as dqcs_return_t = callback, state, data {
+        let qubits: QubitReferenceSet = qubits.into_iter().collect();
+        let qubits = insert(qubits);
+        let result = cb_return_none(callback(data.data(), state.into(), qubits));
+        delete!(qubits);
+        result
     }
 );
