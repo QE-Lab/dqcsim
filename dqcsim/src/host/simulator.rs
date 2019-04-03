@@ -47,8 +47,6 @@ impl Simulator {
         configuration.check_plugin_list()?;
         configuration.optimize_loglevels();
 
-        dbg!(&configuration);
-
         // Spawn log thread.
         let log_thread = LogThread::spawn(
             "dqcsim",
