@@ -1,7 +1,6 @@
 use crate::{
     common::{
         error::{err, inv_op, oe_err, Result},
-        log::Loglevel,
         protocol::{
             FrontendRunRequest, FrontendRunResponse, GatestreamUp, PluginInitializeRequest,
             PluginInitializeResponse, PluginToSimulator, SimulatorToPlugin,
@@ -334,21 +333,6 @@ impl<'a> PluginState<'a> {
             }
         }
         Ok(())
-    }
-
-    /// Sends a log message to DQCsim by means of a LogRecord structure.
-    pub fn log<T, S>(
-        &mut self,
-        _message: impl Into<String>,
-        _level: impl Into<Loglevel>,
-        _module: Option<T>,
-        _file: Option<S>,
-        _line_nr: impl Into<Option<u32>>,
-    ) where
-        T: Into<String>,
-        S: Into<String>,
-    {
-        unimplemented!();
     }
 
     /// Sends a message to the host.

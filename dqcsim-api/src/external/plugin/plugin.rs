@@ -1,8 +1,8 @@
-use super::*;
+//use super::*;
 
 // TODO: add function to run plugin in the current thread
 
-/// Sends a log message using the specified plugin's logger.
+/*/// Sends a log message using the specified plugin's logger.
 ///
 /// `message` and `level` are mandatory, the rest of the entries can be `NULL`
 /// or 0 if they are unknown.
@@ -27,6 +27,6 @@ pub extern "C" fn dqcs_plugin_log(
         );
         Ok(())
     })
-}
+}*/
 
 // TODO: add functions for the other APIs

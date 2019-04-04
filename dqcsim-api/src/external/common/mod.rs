@@ -37,3 +37,7 @@ pub use meas::*;
 // dqcs_mset_* functions, for operating on sets of qubit measurement objects.
 mod mset;
 pub use mset::*;
+
+// dqcs_log_* functions, for logging messages using DQCsim's logging framework.
+mod log;
+pub use log::*;

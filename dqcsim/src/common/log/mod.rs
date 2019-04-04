@@ -427,7 +427,7 @@ pub fn deinit() -> error::Result<()> {
 
 #[macro_export]
 macro_rules! log {
-    (target: $target:expr, $lvl:expr, $($arg:tt)+) => ({
+    (? target: $target:expr, location: ($file:expr, $line:expr), $lvl:expr, $($arg:tt)+) => ({
         use $crate::common::log::_ref_thread_local::RefThreadLocal;
         $crate::common::log::LOGGERS.with(|loggers| {
             if let Some(ref loggers) = *loggers.borrow() {
@@ -438,17 +438,41 @@ macro_rules! log {
                             format!($($arg)+),
                             $lvl,
                             $target,
-                            file!(),
-                            line!(),
+                            $file,
+                            $line,
                             *$crate::common::log::PID,
                             *$crate::common::log::TID.borrow()
                         ));
                     }
-                })
+                });
+                true
+            } else {
+                false
             }
-        });
+        })
     });
-    ($lvl:expr, $($arg:tt)+) => ($crate::log!(target: module_path!(), $lvl, $($arg)+))
+    (target: $target:expr, location: ($file:expr, $line:expr), $lvl:expr, $($arg:tt)+) => (
+        {
+            $crate::log!(?
+                target: module_path!(),
+                location: ($file, $line),
+                $lvl, $($arg)+
+            );
+        }
+    );
+    (target: $target:expr, $lvl:expr, $($arg:tt)+) => (
+        $crate::log!(
+            target: module_path!(),
+            location: (file!(), line!()),
+            $lvl, $($arg)+
+        )
+    );
+    ($lvl:expr, $($arg:tt)+) => (
+        $crate::log!(
+            target: module_path!(),
+            $lvl, $($arg)+
+        )
+    )
 }
 
 #[macro_export]

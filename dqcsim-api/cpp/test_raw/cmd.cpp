@@ -1,6 +1,8 @@
 #include <dqcsim_raw.hpp>
 #include "gtest/gtest.h"
 
+using namespace dqcsim;
+
 // Sanity check the handle API.
 TEST(handle, sanity) {
   // Create handle.
