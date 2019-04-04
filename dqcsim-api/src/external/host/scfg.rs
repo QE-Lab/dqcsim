@@ -42,7 +42,7 @@ pub extern "C" fn dqcs_scfg_push_plugin_process(
     api_return_none(|| {
         resolve!(scfg as &mut SimulatorConfiguration);
         take!(pcfg as PluginProcessConfiguration);
-        scfg.plugins.push(pcfg);
+        scfg.plugins.push(Box::new(pcfg));
         Ok(())
     })
 }

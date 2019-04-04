@@ -6,10 +6,11 @@ use crate::{
     },
     host::{
         configuration::{
-            env_mod::EnvMod, stream_capture_mode::StreamCaptureMode, timeout::Timeout,
-            PluginConfiguration,
+            env_mod::EnvMod, plugin::log::PluginLogConfiguration,
+            stream_capture_mode::StreamCaptureMode, timeout::Timeout, PluginConfiguration,
         },
         plugin::{process::PluginProcess, Plugin},
+        reproduction::{PluginReproduction, ReproductionPathStyle},
     },
 };
 use serde::{Deserialize, Serialize};
@@ -279,7 +280,40 @@ impl PluginProcessConfiguration {
 }
 
 impl PluginConfiguration for PluginProcessConfiguration {
-    fn instantiate(self) -> Result<Box<dyn Plugin>> {
-        Ok(Box::new(PluginProcess::new(self)))
+    fn instantiate(self: Box<Self>) -> Box<dyn Plugin> {
+        Box::new(PluginProcess::new(*self))
+    }
+
+    fn get_log_configuration(&self) -> PluginLogConfiguration {
+        self.into()
+    }
+
+    fn get_type(&self) -> PluginType {
+        self.specification.typ
+    }
+
+    fn get_reproduction(&self, path_style: &ReproductionPathStyle) -> Result<PluginReproduction> {
+        Ok(PluginReproduction {
+            name: self.name.clone(),
+            executable: path_style.convert_path(&self.specification.executable)?,
+            script: path_style.convert_path_option(&self.specification.script)?,
+            functional: PluginProcessFunctionalConfiguration {
+                init: self.functional.init.clone(),
+                env: self.functional.env.clone(),
+                work: path_style.convert_path(&self.functional.work)?,
+            },
+        })
+    }
+
+    fn limit_verbosity(&mut self, max_verbosity: LoglevelFilter) {
+        if self.nonfunctional.verbosity > max_verbosity {
+            self.nonfunctional.verbosity = max_verbosity;
+        }
+    }
+
+    fn set_default_name(&mut self, default_name: String) {
+        if self.name.is_empty() {
+            self.name = default_name;
+        }
     }
 }

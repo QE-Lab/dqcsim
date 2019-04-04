@@ -4,12 +4,11 @@ use crate::{
         log::{callback::LogCallback, tee_file::TeeFile, LoglevelFilter},
         types::PluginType,
     },
-    host::configuration::{PluginProcessConfiguration, Seed},
+    host::configuration::{PluginConfiguration, Seed},
 };
-use serde::{Deserialize, Serialize};
 
 /// The complete configuration for a DQCsim run.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug)]
 pub struct SimulatorConfiguration {
     /// The random seed for the simulation.
     pub seed: Seed,
@@ -22,14 +21,13 @@ pub struct SimulatorConfiguration {
     pub tee_files: Vec<TeeFile>,
 
     /// Optional log callback function.
-    #[serde(skip)]
     pub log_callback: Option<LogCallback>,
 
     /// The verbosity for DQCsim itself.
     pub dqcsim_level: LoglevelFilter,
 
     /// The plugin configurations, from front to back.
-    pub plugins: Vec<PluginProcessConfiguration>,
+    pub plugins: Vec<Box<dyn PluginConfiguration>>,
 }
 
 impl SimulatorConfiguration {
@@ -54,9 +52,7 @@ impl SimulatorConfiguration {
             self.dqcsim_level = max_dqcsim_verbosity;
         }
         for plugin in &mut self.plugins {
-            if plugin.nonfunctional.verbosity > max_dqcsim_verbosity {
-                plugin.nonfunctional.verbosity = max_dqcsim_verbosity;
-            }
+            plugin.limit_verbosity(max_dqcsim_verbosity);
         }
     }
 
@@ -70,7 +66,7 @@ impl SimulatorConfiguration {
         // Check and fix frontend.
         let mut frontend_idx = None;
         for (i, plugin) in self.plugins.iter().enumerate() {
-            if let PluginType::Frontend = plugin.specification.typ {
+            if let PluginType::Frontend = plugin.get_type() {
                 if frontend_idx.is_some() {
                     inv_arg("duplicate frontend")?
                 } else {
@@ -90,7 +86,7 @@ impl SimulatorConfiguration {
         // Check and fix backend.
         let mut backend_idx = None;
         for (i, plugin) in self.plugins.iter().enumerate() {
-            if let PluginType::Backend = plugin.specification.typ {
+            if let PluginType::Backend = plugin.get_type() {
                 if backend_idx.is_some() {
                     inv_arg("duplicate backend")?
                 } else {
@@ -111,15 +107,14 @@ impl SimulatorConfiguration {
         // Auto-name plugins and check for conflicts.
         let mut names = std::collections::HashSet::new();
         for (i, plugin) in self.plugins.iter_mut().enumerate() {
-            if plugin.name == "" {
-                plugin.name = match plugin.specification.typ {
-                    PluginType::Frontend => "front".to_string(),
-                    PluginType::Operator => format!("op{}", i),
-                    PluginType::Backend => "back".to_string(),
-                }
-            }
-            if !names.insert(&plugin.name) {
-                inv_arg(format!("duplicate plugin name '{}'", plugin.name))?;
+            plugin.set_default_name(match plugin.get_type() {
+                PluginType::Frontend => "front".to_string(),
+                PluginType::Operator => format!("op{}", i),
+                PluginType::Backend => "back".to_string(),
+            });
+            let name = plugin.get_name();
+            if !names.insert(name) {
+                inv_arg(format!("duplicate plugin name '{}'", plugin.get_name()))?;
             }
         }
 
