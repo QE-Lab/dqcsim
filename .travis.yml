@@ -36,8 +36,8 @@ install:
   - rustup component add rustfmt
   - (test -x $HOME/.cargo/bin/cargo-install-update || cargo install cargo-update)
   - (test -x $HOME/.cargo/bin/mdbook || cargo install mdbook)
-  - (test -x $HOME/.cargo/bin/cargo-make || cargo install cargo-make --vers ^0.16)
-  - cargo install-update -a
+  - (test -x $HOME/.cargo/bin/cargo-make || cargo install cargo-make --vers "^0.16")
+  - cargo install-update cargo-update mdbook
 
 script:
   - cargo fmt -- --check
