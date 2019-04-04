@@ -2,7 +2,6 @@ use dqcsim::{
     common::{log::tee_file::TeeFile, log::*},
     host::configuration::*,
 };
-use failure::{Error, Fail};
 
 /// Structure containing the NONfunctional options for a plugin, i.e. the
 /// options that only affect how the plugin represents its output.
@@ -37,30 +36,6 @@ pub struct PluginNonfunctionalOpts {
 }
 
 impl PluginNonfunctionalOpts {
-    /// Applies these plugin nonfunctional configuration modifications to a
-    /// nonfunctional plugin configuration.
-    ///
-    /// An error is returned if the referenced plugin cannot be found in the
-    /// vector, otherwise `Ok(())` is returned.
-    pub fn apply(&self, to: &mut PluginProcessNonfunctionalConfiguration) {
-        if let Some(verbosity) = self.verbosity {
-            to.verbosity = verbosity;
-        }
-        to.tee_files.extend(self.tee_files.iter().cloned());
-        if let Some(stdout_mode) = &self.stdout_mode {
-            to.stdout_mode = stdout_mode.clone();
-        }
-        if let Some(stderr_mode) = &self.stderr_mode {
-            to.stderr_mode = stderr_mode.clone();
-        }
-        if let Some(accept_timeout) = &self.accept_timeout {
-            to.accept_timeout = *accept_timeout;
-        }
-        if let Some(shutdown_timeout) = &self.shutdown_timeout {
-            to.shutdown_timeout = *shutdown_timeout;
-        }
-    }
-
     /// Converts this structure to a `PluginProcessNonfunctionalConfiguration`
     /// structure by replacing unset values with their defaults.
     pub fn into_config(
@@ -133,49 +108,5 @@ impl PluginDefinition {
             functional: self.functional,
             nonfunctional: self.nonfunctional.into_config(default_verbosity),
         }
-    }
-}
-
-/// Error structure used for reporting PluginModification errors.
-#[derive(Debug, Fail, PartialEq)]
-pub enum PluginModificationError {
-    #[fail(display = "{}", 0)]
-    NotFound(String),
-}
-
-/// Represents the modification of a previously defined plugin.
-///
-/// This allows the nonfunctional configuration of the plugin to be modified.
-/// This is particularly important when DQCsim is running in
-/// --reproduce-exactly mode; it is of marginal use to reproduce a run exactly
-/// if you're not looking to get additional information from it by changing
-/// loglevels and such.
-#[derive(Debug)]
-pub struct PluginModification {
-    /// Name of the referenced plugin.
-    pub name: String,
-
-    /// Overrides for the nonfunctional plugin configuration.
-    pub nonfunctional: PluginNonfunctionalOpts,
-}
-
-impl PluginModification {
-    /// Applies this plugin modification to a plugin definition vector.
-    ///
-    /// An error is returned if the referenced plugin cannot be found in the
-    /// vector, otherwise `Ok(())` is returned.
-    pub fn apply(self, to: &mut Vec<PluginProcessConfiguration>) -> Result<(), Error> {
-        for plugin_config in &mut to.iter_mut() {
-            if plugin_config.name == self.name {
-                self.nonfunctional.apply(&mut plugin_config.nonfunctional);
-                return Ok(());
-            }
-        }
-        Err(PluginModificationError::NotFound(format!(
-            "There is no plugin named {}. The available plugins are {}.",
-            self.name,
-            enum_variants::friendly_enumerate(to.iter().map(|x| &x.name[..]), Some("or"))
-        ))
-        .into())
     }
 }

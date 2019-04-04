@@ -6,7 +6,7 @@ use dqcsim::{
     host::{configuration::*, reproduction::*},
 };
 use failure::{Error, Fail};
-use std::{ffi::OsString, path::PathBuf, str::FromStr};
+use std::ffi::OsString;
 use structopt::{clap::AppSettings, StructOpt};
 
 /// Error structure used for reporting command line errors.
@@ -107,9 +107,15 @@ impl<'a, 'b> PluginConfigParser<'a, 'b> {
             }
 
             // Push the plugin modification.
+            let opts = PluginNonfunctionalOpts::from(&opts);
             self.mods.push(PluginModification {
                 name: specification[1..].to_string(),
-                nonfunctional: (&opts).into(),
+                verbosity: opts.verbosity,
+                tee_files: opts.tee_files,
+                stdout_mode: opts.stdout_mode,
+                stderr_mode: opts.stderr_mode,
+                accept_timeout: opts.accept_timeout,
+                shutdown_timeout: opts.shutdown_timeout,
             });
         } else {
             // Figure out a default name for the plugin based on the type.
@@ -335,21 +341,17 @@ impl CommandLineConfiguration {
             // it.
             config.host_calls = Reproduction::from_file(file)
                 .or_else(|e| format_error_ctxt("While reading reproduction file", e))?
-                .to_run(&mut config.dqcsim, exact)
+                .to_run(&mut config.dqcsim, plugin_mods, exact)
                 .or_else(|e| format_error_ctxt("While loading reproduction file", e))?;
-
-            // Update the plugin nonfunctional configurations from the command
-            // line.
-            for m in plugin_mods {
-                m.apply(&mut config.dqcsim.plugins).or_else(format_error)?;
-            }
         } else {
             // Construct the plugin vector from the plugin definitions.
             config.dqcsim.plugins = pcp
                 .get_defs()?
                 .into_iter()
-                .map(|x| x.into_config(dqcsim_opts.plugin_level))
-                .map(|plugin| PluginConfiguration::instantiate(Box::new(plugin)))
+                .map(|x| {
+                    Box::new(x.into_config(dqcsim_opts.plugin_level))
+                        as Box<dyn PluginConfiguration>
+                })
                 .collect();
 
             // If the user did not explicitly request a start() host call, add
@@ -386,6 +388,9 @@ impl CommandLineConfiguration {
             }
         }
 
+        // TODO: fix reproduction output. This should be done in
+        // Simulator/Simulation anyway!
+        /*
         // Output a reproduction file if requested.
         if !dqcsim_opts.no_repro_out {
             let file = &dqcsim_opts.repro_out.or_else(|| {
@@ -412,7 +417,7 @@ impl CommandLineConfiguration {
                 .to_file(file)
                 .or_else(|e| format_error_ctxt("While writing reproduction file", e))?
             }
-        }
+        }*/
 
         Ok(config)
     }

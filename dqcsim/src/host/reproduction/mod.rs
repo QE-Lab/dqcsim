@@ -2,7 +2,8 @@
 
 use crate::{
     common::{
-        error::{err, Result},
+        error::{err, inv_arg, Result},
+        log::{tee_file::TeeFile, LoglevelFilter},
         types::PluginType,
     },
     host::configuration::*,
@@ -34,6 +35,81 @@ pub struct PluginReproduction {
     /// configuring how the plugin behaves (besides the specification).
     #[serde(flatten)]
     pub functional: PluginProcessFunctionalConfiguration,
+}
+
+/// Represents a nonfunctional configuration modification for a previously
+/// defined plugin.
+///
+/// This allows the nonfunctional configuration of the plugin to be modified.
+/// This is particularly important when DQCsim is running in
+/// --reproduce-exactly mode; it is of marginal use to reproduce a run exactly
+/// if you're not looking to get additional information from it by changing
+/// loglevels and such.
+#[derive(Debug)]
+pub struct PluginModification {
+    /// Name of the referenced plugin.
+    pub name: String,
+
+    /// Specifies the verbosity of the messages sent to DQCsim. If this is
+    /// `None`, the value of DQCsim's `--plugin_level` option should be used.
+    pub verbosity: Option<LoglevelFilter>,
+
+    /// Specifies the tee files for this plugin.
+    pub tee_files: Vec<TeeFile>,
+
+    /// Specifies how the stdout stream of the plugin should be connected.
+    /// `None` implies default.
+    pub stdout_mode: Option<StreamCaptureMode>,
+
+    /// Specifies how the stderr stream of the plugin should be connected.
+    /// `None` implies default.
+    pub stderr_mode: Option<StreamCaptureMode>,
+
+    /// Specifies the timeout for connecting to the plugin after it has been
+    /// spawned.
+    pub accept_timeout: Option<Timeout>,
+
+    /// Specifies the timeout for connecting to the plugin after it has been
+    /// spawned.
+    pub shutdown_timeout: Option<Timeout>,
+}
+
+impl PluginModification {
+    /// Applies this plugin modification to a plugin definition vector.
+    ///
+    /// An error is returned if the referenced plugin cannot be found in the
+    /// vector, otherwise `Ok(())` is returned.
+    pub fn apply(self, to: &mut Vec<PluginProcessConfiguration>) -> Result<()> {
+        for plugin_config in &mut to.iter_mut() {
+            if plugin_config.name == self.name {
+                if let Some(verbosity) = self.verbosity {
+                    plugin_config.nonfunctional.verbosity = verbosity;
+                }
+                plugin_config
+                    .nonfunctional
+                    .tee_files
+                    .extend(self.tee_files.iter().cloned());
+                if let Some(stdout_mode) = &self.stdout_mode {
+                    plugin_config.nonfunctional.stdout_mode = stdout_mode.clone();
+                }
+                if let Some(stderr_mode) = &self.stderr_mode {
+                    plugin_config.nonfunctional.stderr_mode = stderr_mode.clone();
+                }
+                if let Some(accept_timeout) = &self.accept_timeout {
+                    plugin_config.nonfunctional.accept_timeout = *accept_timeout;
+                }
+                if let Some(shutdown_timeout) = &self.shutdown_timeout {
+                    plugin_config.nonfunctional.shutdown_timeout = *shutdown_timeout;
+                }
+                return Ok(());
+            }
+        }
+        inv_arg(format!(
+            "There is no plugin named {}. The available plugins are {}.",
+            self.name,
+            enum_variants::friendly_enumerate(to.iter().map(|x| &x.name[..]), Some("or"))
+        ))
+    }
 }
 
 /// The contents of a reproduction file.
@@ -110,6 +186,7 @@ impl Reproduction {
     pub fn to_run(
         &self,
         config: &mut SimulatorConfiguration,
+        modifications: impl IntoIterator<Item = PluginModification>,
         exact: bool,
     ) -> Result<Vec<HostCall>> {
         // If this is an exact reproduction, set the seed.
@@ -120,7 +197,7 @@ impl Reproduction {
         // Construct the plugin configurations. The nonfunctional config is set
         // to the default value. Note that we pretend that every plugin is an
         // operator here; we change this later.
-        config.plugins = self
+        let mut plugins = self
             .plugins
             .iter()
             .map(|x| PluginProcessConfiguration {
@@ -133,17 +210,29 @@ impl Reproduction {
                 functional: x.functional.clone(),
                 nonfunctional: PluginProcessNonfunctionalConfiguration::default(),
             })
-            .map(|plugin| Box::new(plugin) as Box<dyn PluginConfiguration>)
-            .collect::<Vec<Box<dyn PluginConfiguration>>>();
+            .collect::<Vec<PluginProcessConfiguration>>();
 
         // Set the plugin types and make sure we have at least a frontend
         // and a backend.
-        let plugin_count = config.plugins.len();
+        let plugin_count = plugins.len();
         if plugin_count < 2 {
             err("reproduction file corrupted: less than two plugins specified")?;
         }
-        config.plugins[0].set_type(PluginType::Frontend);
-        config.plugins[plugin_count - 1].set_type(PluginType::Backend);
+        plugins[0].specification.typ = PluginType::Frontend;
+        plugins[plugin_count - 1].specification.typ = PluginType::Backend;
+
+        // Update the plugin nonfunctional configurations using the
+        // modification list.
+        for m in modifications {
+            m.apply(&mut plugins)?;
+        }
+
+        // Wrap the PluginProcessConfigurations in a box for the simulator
+        // configuration structure.
+        config.plugins = plugins
+            .into_iter()
+            .map(|plugin| Box::new(plugin) as Box<dyn PluginConfiguration>)
+            .collect();
 
         Ok(self.host_calls.clone())
     }

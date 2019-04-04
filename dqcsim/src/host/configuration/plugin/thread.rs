@@ -1,6 +1,7 @@
 use crate::{
     common::{
         error::{inv_op, Result},
+        log::LoglevelFilter,
         types::{ArbCmd, PluginType},
     },
     host::{
@@ -51,7 +52,7 @@ impl PluginConfiguration for PluginThreadConfiguration {
         Box::new(PluginThread::new(*self))
     }
 
-    fn log_configuration(&self) -> PluginLogConfiguration {
+    fn get_log_configuration(&self) -> PluginLogConfiguration {
         self.log_configuration.clone()
     }
 
@@ -59,15 +60,19 @@ impl PluginConfiguration for PluginThreadConfiguration {
         self.definition.get_type()
     }
 
-    fn set_type(&mut self, typ: PluginType) {
-        self.definition.set_type(typ);
-    }
-
-    fn set_name(&mut self, name: String) {
-        self.definition.get_metadata_mut().set_name(name);
-    }
-
     fn get_reproduction(&self, _: &ReproductionPathStyle) -> Result<PluginReproduction> {
         inv_op("It's not possible to build a plugin reproduction for PluginThreads")
+    }
+
+    fn limit_verbosity(&mut self, max_verbosity: LoglevelFilter) {
+        if self.log_configuration.verbosity > max_verbosity {
+            self.log_configuration.verbosity = max_verbosity;
+        }
+    }
+
+    fn set_default_name(&mut self, default_name: String) {
+        if self.log_configuration.name.is_empty() {
+            self.log_configuration.name = default_name;
+        }
     }
 }

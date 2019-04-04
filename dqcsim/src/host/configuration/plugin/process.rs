@@ -284,20 +284,12 @@ impl PluginConfiguration for PluginProcessConfiguration {
         Box::new(PluginProcess::new(*self))
     }
 
-    fn log_configuration(&self) -> PluginLogConfiguration {
+    fn get_log_configuration(&self) -> PluginLogConfiguration {
         self.into()
     }
 
     fn get_type(&self) -> PluginType {
         self.specification.typ
-    }
-
-    fn set_type(&mut self, typ: PluginType) {
-        self.specification.typ = typ;
-    }
-
-    fn set_name(&mut self, name: String) {
-        self.name = name;
     }
 
     fn get_reproduction(&self, path_style: &ReproductionPathStyle) -> Result<PluginReproduction> {
@@ -311,5 +303,17 @@ impl PluginConfiguration for PluginProcessConfiguration {
                 work: path_style.convert_path(&self.functional.work)?,
             },
         })
+    }
+
+    fn limit_verbosity(&mut self, max_verbosity: LoglevelFilter) {
+        if self.nonfunctional.verbosity > max_verbosity {
+            self.nonfunctional.verbosity = max_verbosity;
+        }
+    }
+
+    fn set_default_name(&mut self, default_name: String) {
+        if self.name.is_empty() {
+            self.name = default_name;
+        }
     }
 }

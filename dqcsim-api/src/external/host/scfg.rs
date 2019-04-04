@@ -1,10 +1,7 @@
 use super::*;
-use dqcsim::{
-    common::{
-        log,
-        log::{callback::LogCallback, tee_file::TeeFile},
-    },
-    host::configuration::PluginConfiguration,
+use dqcsim::common::{
+    log,
+    log::{callback::LogCallback, tee_file::TeeFile},
 };
 use std::time::*;
 
@@ -45,8 +42,7 @@ pub extern "C" fn dqcs_scfg_push_plugin_process(
     api_return_none(|| {
         resolve!(scfg as &mut SimulatorConfiguration);
         take!(pcfg as PluginProcessConfiguration);
-        scfg.plugins
-            .push(PluginConfiguration::instantiate(Box::new(pcfg)));
+        scfg.plugins.push(Box::new(pcfg));
         Ok(())
     })
 }

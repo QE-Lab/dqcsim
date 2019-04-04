@@ -1,5 +1,5 @@
 use crate::{
-    common::{error::Result, types::PluginType},
+    common::{error::Result, log::LoglevelFilter, types::PluginType},
     host::{
         configuration::plugin::log::PluginLogConfiguration,
         plugin::Plugin,
@@ -19,25 +19,34 @@ pub trait PluginConfiguration: Debug {
     /// Instantiates the plugin.
     fn instantiate(self: Box<Self>) -> Box<dyn Plugin>;
 
-    /// Returns the log configuratin of the plugin.
-    fn log_configuration(&self) -> PluginLogConfiguration;
+    /// Returns the log configuratin of the plugin. Note that this returns a
+    /// copy!
+    fn get_log_configuration(&self) -> PluginLogConfiguration;
 
-    /// Returns the plugin type of the plugin.
+    /// Returns the plugin type.
     fn get_type(&self) -> PluginType;
-
-    /// Sets the typ of the plugin.
-    fn set_type(&mut self, typ: PluginType);
-
-    /// Sets the name of the plugin.
-    fn set_name(&mut self, name: String);
 
     /// Returns the PluginReproduction when possible. Otherwise return an
     /// error.
     fn get_reproduction(&self, path_style: &ReproductionPathStyle) -> Result<PluginReproduction>;
+
+    /// Limits the verbosity of the messages reported to the simulator.
+    ///
+    /// Called when the simulation is initialized to limit the plugin's
+    /// verbosity to what DQCsim is actually reporting to the user. This
+    /// prevents unnecessarily verbose messages from passing over the
+    /// communication channels.
+    fn limit_verbosity(&mut self, max_verbosity: LoglevelFilter);
+
+    /// Sets the default name for this plugin.
+    ///
+    /// Called when the simulation is initialized. If the plugin did not
+    /// already have an explicit name assigned to it, this value can be used.
+    fn set_default_name(&mut self, default_name: String);
 }
 
 impl PluginConfiguration {
-    pub fn name(&self) -> String {
-        self.log_configuration().name
+    pub fn get_name(&self) -> String {
+        self.get_log_configuration().name
     }
 }

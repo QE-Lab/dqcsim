@@ -52,9 +52,7 @@ impl SimulatorConfiguration {
             self.dqcsim_level = max_dqcsim_verbosity;
         }
         for plugin in &mut self.plugins {
-            if plugin.log_configuration().verbosity > max_dqcsim_verbosity {
-                plugin.log_configuration().verbosity = max_dqcsim_verbosity;
-            }
+            plugin.limit_verbosity(max_dqcsim_verbosity);
         }
     }
 
@@ -109,16 +107,14 @@ impl SimulatorConfiguration {
         // Auto-name plugins and check for conflicts.
         let mut names = std::collections::HashSet::new();
         for (i, plugin) in self.plugins.iter_mut().enumerate() {
-            if plugin.name() == "" {
-                plugin.set_name(match plugin.get_type() {
-                    PluginType::Frontend => "front".to_string(),
-                    PluginType::Operator => format!("op{}", i),
-                    PluginType::Backend => "back".to_string(),
-                });
-            }
-            let name = plugin.name();
+            plugin.set_default_name(match plugin.get_type() {
+                PluginType::Frontend => "front".to_string(),
+                PluginType::Operator => format!("op{}", i),
+                PluginType::Backend => "back".to_string(),
+            });
+            let name = plugin.get_name();
             if !names.insert(name) {
-                inv_arg(format!("duplicate plugin name '{}'", plugin.name()))?;
+                inv_arg(format!("duplicate plugin name '{}'", plugin.get_name()))?;
             }
         }
 
