@@ -1,7 +1,7 @@
 use dqcsim::{
     common::types::{PluginMetadata, PluginType},
     debug,
-    plugin::{definition::PluginDefinition, state::PluginController},
+    plugin::{definition::PluginDefinition, state::PluginState},
     trace,
 };
 use failure::Error;
@@ -38,7 +38,7 @@ fn main() -> Result<(), Error> {
         Ok(())
     });
 
-    PluginController::new(definition, server)?.run()?;
+    PluginState::run(&definition, server)?;
 
     Ok(())
 }

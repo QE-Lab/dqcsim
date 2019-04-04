@@ -55,23 +55,23 @@ pub type dqcs_cycle_t = c_longlong;
 #[derive(Clone, Copy)]
 pub struct dqcs_plugin_state_t(*mut c_void);
 
-impl From<&mut PluginState> for dqcs_plugin_state_t {
+impl<'a> From<&mut PluginState<'a>> for dqcs_plugin_state_t {
     /// Convert a plugin state reference to its FFI representation.
     fn from(pc: &mut PluginState) -> dqcs_plugin_state_t {
         dqcs_plugin_state_t(pc as *mut PluginState as *mut c_void)
     }
 }
 
-impl Into<&mut PluginState> for dqcs_plugin_state_t {
+impl Into<&mut PluginState<'static>> for dqcs_plugin_state_t {
     /// Convert the FFI representation of a plugin state back to a Rust
     /// reference.
-    fn into(self) -> &'static mut PluginState {
+    fn into(self) -> &'static mut PluginState<'static> {
         unsafe { &mut *(self.0 as *mut PluginState) }
     }
 }
 
 impl dqcs_plugin_state_t {
-    pub fn resolve(self) -> Result<&'static mut PluginState> {
+    pub fn resolve(self) -> Result<&'static mut PluginState<'static>> {
         if self.0.is_null() {
             inv_arg("plugin state pointer is null")
         } else {
