@@ -1,8 +1,8 @@
 use crate::{
     common::{
-        channel::CrossbeamChannel,
+        channel::IpcChannel,
         error::Result,
-        log::{thread::LogThread, LogRecord},
+        log::thread::LogThread,
         protocol::{PluginToSimulator, SimulatorToPlugin},
         types::{ArbCmd, PluginType},
     },
@@ -10,21 +10,18 @@ use crate::{
         configuration::{PluginLogConfiguration, PluginThreadConfiguration},
         plugin::Plugin,
     },
+    plugin::state::PluginState,
+    trace,
 };
+use ipc_channel::ipc;
 use std::{fmt, thread};
 
-pub type PluginThreadClosure = Box<
-    dyn Fn(
-            CrossbeamChannel<PluginToSimulator, SimulatorToPlugin>,
-            crossbeam_channel::Sender<LogRecord>,
-        ) -> ()
-        + Send,
->;
+pub type PluginThreadClosure = Box<dyn Fn(String) -> () + Send>;
 
 pub struct PluginThread {
     thread: Option<PluginThreadClosure>,
     handle: Option<thread::JoinHandle<()>>,
-    channel: Option<CrossbeamChannel<SimulatorToPlugin, PluginToSimulator>>,
+    channel: Option<IpcChannel<SimulatorToPlugin, PluginToSimulator>>,
     plugin_type: PluginType,
     init_cmds: Vec<ArbCmd>,
     log_configuration: PluginLogConfiguration,
@@ -46,9 +43,9 @@ impl PluginThread {
         let definition = configuration.definition;
         let plugin_type = definition.get_type();
         PluginThread::new_raw(
-            move |_, _| {
-                let _ = definition;
-                // TODO start controller, stuff, etc
+            move |server| {
+                PluginState::run(&definition, server).unwrap();
+                trace!("$");
             },
             plugin_type,
             configuration.init_cmds,
@@ -60,12 +57,7 @@ impl PluginThread {
     /// spawned thread and the configuration. This is to be used for testing
     /// only.
     fn new_raw(
-        thread: impl Fn(
-                CrossbeamChannel<PluginToSimulator, SimulatorToPlugin>,
-                crossbeam_channel::Sender<LogRecord>,
-            ) -> ()
-            + Send
-            + 'static,
+        thread: impl Fn(String) -> () + Send + 'static,
         plugin_type: PluginType,
         init_cmds: Vec<ArbCmd>,
         log_configuration: PluginLogConfiguration,
@@ -82,17 +74,21 @@ impl PluginThread {
 }
 
 impl Plugin for PluginThread {
-    fn spawn(&mut self, logger: &LogThread) -> Result<()> {
+    fn spawn(&mut self, _: &LogThread) -> Result<()> {
         let thread = self.thread.take().unwrap();
-        let (request_tx, request) = crossbeam_channel::unbounded();
-        let (response, response_rx) = crossbeam_channel::unbounded();
-        let logger = logger.get_sender();
-        self.handle = Some(thread::spawn(move || thread((response, request), logger)));
-        self.channel = Some((request_tx, response_rx));
+        // Setup connection channel
+        let (server, server_name) = ipc::IpcOneShotServer::new()?;
+
+        // Spawn the thread.
+        self.handle = Some(thread::spawn(move || thread(server_name)));
+
+        // Wait for the thread to connect.
+        let (_, channel) = server.accept()?;
+
+        self.channel = Some(channel);
         Ok(())
     }
 
-    /// Send the SimulatorToPlugin message to the plugin.
     fn rpc(&mut self, msg: SimulatorToPlugin) -> Result<PluginToSimulator> {
         self.channel.as_ref().unwrap().0.send(msg)?;
         Ok(self.channel.as_ref().unwrap().1.recv()?)

@@ -47,6 +47,12 @@ impl PluginThreadConfiguration {
     }
 }
 
+impl Into<Box<dyn PluginConfiguration>> for PluginThreadConfiguration {
+    fn into(self) -> Box<dyn PluginConfiguration> {
+        Box::new(self) as Box<dyn PluginConfiguration>
+    }
+}
+
 impl PluginConfiguration for PluginThreadConfiguration {
     fn instantiate(self: Box<Self>) -> Box<dyn Plugin> {
         Box::new(PluginThread::new(*self))
