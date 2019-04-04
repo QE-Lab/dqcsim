@@ -1,16 +1,80 @@
-use crate::common::{
-    error::{err, Result},
-    log::Loglevel,
-    types::{ArbCmd, ArbData, Gate, QubitRef},
+use crate::{
+    common::{
+        error::{inv_op, Result},
+        log::Loglevel,
+        protocol::{
+            FrontendRunResponse, GatestreamUp, PluginInitializeRequest, PluginInitializeResponse,
+            PluginToSimulator, SimulatorToPlugin,
+        },
+        types::{ArbCmd, ArbData, Gate, PluginType, QubitRef, SequenceNumber},
+    },
+    plugin::{
+        connection::{Connection, IncomingMessage, OutgoingMessage},
+        definition::PluginDefinition,
+        log::setup_logging,
+    },
+    trace,
 };
 
-/// Temporary (?) structure that contains the functions that the user may call
-/// from the closures in the plugin definition.
+/// Structure representing the state of a plugin.
 ///
-/// TODO: move me?
-pub struct PluginState {}
+/// This contains all state and connection information. The public members are
+/// exposed as user API calls.
+#[allow(dead_code)] // TODO <-- remove me
+pub struct PluginState {
+    /// Connection object, representing the connections to the host/simulator,
+    /// the upstream plugin (if any), and the downstream plugin (if any).
+    connection: Connection,
+    // TODO: internal state such as cached measurement, sequence number
+    // counters, etc.
+}
 
+#[allow(dead_code)] // TODO <-- remove me
 impl PluginState {
+    /// Constructs a new plugin state from host connection information and a
+    /// plugin definition.
+    fn new(simulator: impl Into<String>) -> Result<PluginState> {
+        Ok(PluginState {
+            connection: Connection::new(simulator)?,
+        })
+    }
+
+    /// Blockingly receive messages from downstream until all requests have
+    /// been acknowledged.
+    fn synchronize_downstream(&mut self) -> Result<()> {
+        /*while ... {
+            self.connextion.next_response(...)
+            ...
+            self.handle_downstream(...)
+        }*/
+        // TODO
+        Ok(())
+    }
+
+    /// Blockingly receive messages from downstream until the request with the
+    /// specified sequence number has been acknowledged.
+    fn synchronize_downstream_up_to(&mut self, _num: SequenceNumber) -> Result<()> {
+        /*while ... {
+            self.connextion.next_response(...)
+            ...
+            self.handle_downstream(...)
+        }*/
+        // TODO
+        Ok(())
+    }
+
+    /// Handle an incoming downstream message.
+    fn handle_downstream(&mut self, _msg: GatestreamUp) -> Result<()> {
+        // TODO: update our cached measurement, simulation timing etc states
+        Ok(())
+    }
+
+    // Note that the functions above are intentionally NOT public. Only
+    // PluginController and we ourselves need to access it, and they're in the
+    // same module so this is allowed. Also tests of course, which are in a
+    // child module, which also makes it legal. The functions below this point
+    // are API calls for the user logic.
+
     /// Sends a log message to DQCsim by means of a LogRecord structure.
     pub fn log<T, S>(
         &mut self,
@@ -23,6 +87,7 @@ impl PluginState {
         T: Into<String>,
         S: Into<String>,
     {
+        unimplemented!();
     }
 
     /// Sends a message to the host.
@@ -30,7 +95,7 @@ impl PluginState {
     /// It is only legal to call this function from within the `run()`
     /// callback. Any other source will result in an `Err` return value.
     pub fn send(&mut self, _msg: ArbData) -> Result<()> {
-        err("not yet implemented")
+        unimplemented!();
     }
 
     /// Waits for a message from the host.
@@ -38,7 +103,7 @@ impl PluginState {
     /// It is only legal to call this function from within the `run()`
     /// callback. Any other source will result in an `Err` return value.
     pub fn recv(&mut self) -> Result<ArbData> {
-        err("not yet implemented")
+        unimplemented!();
     }
 
     /// Allocate the given number of downstream qubits.
@@ -46,7 +111,7 @@ impl PluginState {
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
     pub fn allocate(&mut self, _num_qubits: usize, _arbs: Vec<ArbCmd>) -> Result<Vec<QubitRef>> {
-        err("not yet implemented")
+        unimplemented!();
     }
 
     /// Free the given downstream qubits.
@@ -54,7 +119,7 @@ impl PluginState {
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
     pub fn free(&mut self, _qubits: Vec<QubitRef>) -> Result<()> {
-        err("not yet implemented")
+        unimplemented!();
     }
 
     /// Tells the downstream plugin to execute a gate.
@@ -62,7 +127,7 @@ impl PluginState {
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
     pub fn gate(&mut self, _gate: Gate) -> Result<()> {
-        err("not yet implemented")
+        unimplemented!();
     }
 
     /// Returns the latest measurement of the given downstream qubit.
@@ -70,7 +135,7 @@ impl PluginState {
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
     pub fn get_measurement(&self, _qubit: QubitRef) -> Result<bool> {
-        err("not yet implemented")
+        unimplemented!();
     }
 
     /// Returns the additional data associated with the latest measurement of
@@ -79,7 +144,7 @@ impl PluginState {
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
     pub fn get_measurement_arb(&self, _qubit: QubitRef) -> Result<ArbData> {
-        err("not yet implemented")
+        unimplemented!();
     }
 
     /// Returns the number of downstream cycles since the latest measurement
@@ -88,7 +153,7 @@ impl PluginState {
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
     pub fn get_cycles_since_measure(&self, _qubit: QubitRef) -> Result<u64> {
-        err("not yet implemented")
+        unimplemented!();
     }
 
     /// Returns the number of downstream cycles between the last two
@@ -97,7 +162,7 @@ impl PluginState {
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
     pub fn get_cycles_between_measures(&self, _qubit: QubitRef) -> Result<u64> {
-        err("not yet implemented")
+        unimplemented!();
     }
 
     /// Advances the downstream cycle counter.
@@ -105,7 +170,7 @@ impl PluginState {
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
     pub fn advance(&mut self, _cycles: u64) -> Result<u64> {
-        err("not yet implemented")
+        unimplemented!();
     }
 
     /// Returns the current value of the downstream cycle counter.
@@ -113,7 +178,7 @@ impl PluginState {
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
     pub fn get_cycle(&self) -> Result<u64> {
-        err("not yet implemented")
+        unimplemented!();
     }
 
     /// Sends an arbitrary command downstream.
@@ -121,7 +186,7 @@ impl PluginState {
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
     pub fn arb(&mut self, _cmd: ArbCmd) -> Result<ArbData> {
-        err("not yet implemented")
+        unimplemented!();
     }
 
     /// Generates a random unsigned 64-bit number using the simulator random
@@ -134,7 +199,7 @@ impl PluginState {
     /// which the RNG functions are called per state does not depend on OS
     /// scheduling.
     pub fn random_u64(&mut self) -> u64 {
-        0
+        unimplemented!();
     }
 
     /// Generates a random floating point number using the simulator random
@@ -149,6 +214,145 @@ impl PluginState {
     /// which the RNG functions are called per state does not depend on OS
     /// scheduling.
     pub fn random_f64(&mut self) -> f64 {
-        0.0
+        unimplemented!();
+    }
+}
+
+#[allow(dead_code)] // TODO <-- remove me
+pub struct PluginController {
+    definition: PluginDefinition,
+    state: PluginState,
+}
+
+#[allow(dead_code)] // TODO <-- remove me
+impl PluginController {
+    pub fn new(
+        definition: PluginDefinition,
+        simulator: impl Into<String>,
+    ) -> Result<PluginController> {
+        Ok(PluginController {
+            definition,
+            state: PluginState::new(simulator)?,
+        })
+    }
+
+    /// Handles a SimulatorToPlugin::Initialize RPC.
+    fn handle_init(&mut self, req: PluginInitializeRequest) -> Result<(PluginInitializeResponse)> {
+        let typ = self.definition.get_type();
+
+        // Setup logging.
+        setup_logging(&req.log_configuration, req.log_channel)?;
+
+        trace!("started handle_init()!");
+
+        // Make sure that we're the type of plugin that the simulator is
+        // expecting.
+        if typ != req.plugin_type {
+            inv_op(format!(
+                "host is expecting a plugin of type {:?}, but we're a plugin of type {:?}",
+                req.plugin_type, typ
+            ))?;
+        }
+
+        // Connect to downstream plugin, unless we're a backend.
+        if typ != PluginType::Backend {
+            self.state
+                .connection
+                .connect_downstream(req.downstream.unwrap())?;
+        }
+
+        // Run the initialize callback.
+        (self.definition.initialize)(&mut self.state, req.init_cmds)?;
+
+        // If we're not a frontend, initialize an upstream server.
+        let upstream = if typ == PluginType::Frontend {
+            None
+        } else {
+            Some(self.state.connection.serve_upstream()?)
+        };
+
+        trace!("finished handle_init()!");
+
+        Ok(PluginInitializeResponse {
+            upstream,
+            metadata: self.definition.get_metadata().clone(),
+        })
+    }
+
+    /// Handles a SimulatorToPlugin::AcceptUpstream RPC.
+    fn handle_accept_upstream(&mut self) -> Result<()> {
+        trace!("started accept_upstream()!");
+        let result = self.state.connection.accept_upstream();
+        trace!("finished accept_upstream()!");
+        result
+    }
+
+    /// Handles a SimulatorToPlugin::Abort RPC.
+    fn handle_abort(&mut self) -> Result<()> {
+        trace!("started handle_abort()!");
+
+        // Make sure we receive gatestream acknowledgements for every request
+        // we sent, ensuring that errors are propagated.
+        self.state.synchronize_downstream()?;
+
+        // Call the user's finalize function.
+        (self.definition.drop)(&mut self.state)?;
+
+        // Finalization should not send any more requests downstream, but just
+        // in case:
+        self.state.synchronize_downstream()?;
+
+        trace!("finished handle_abort()!");
+        Ok(())
+    }
+
+    pub fn run(mut self) -> Result<()> {
+        // Handle RPCs from the host and from upstream until disconnection.
+        let mut aborted = false;
+        while let Some(request) = self.state.connection.next_request()? {
+            match request {
+                IncomingMessage::Simulator(message) => {
+                    let response = OutgoingMessage::Simulator(match message {
+                        SimulatorToPlugin::Initialize(req) => match self.handle_init(*req) {
+                            Ok(x) => PluginToSimulator::Initialized(x),
+                            Err(e) => PluginToSimulator::Failure(e.to_string()),
+                        },
+                        SimulatorToPlugin::AcceptUpstream => match self.handle_accept_upstream() {
+                            Ok(_) => PluginToSimulator::Success,
+                            Err(e) => PluginToSimulator::Failure(e.to_string()),
+                        },
+                        SimulatorToPlugin::Abort => {
+                            aborted = true;
+                            match self.handle_abort() {
+                                Ok(_) => PluginToSimulator::Success,
+                                Err(e) => PluginToSimulator::Failure(e.to_string()),
+                            }
+                        }
+                        SimulatorToPlugin::RunRequest(req) => {
+                            // TODO
+                            PluginToSimulator::RunResponse(FrontendRunResponse {
+                                return_value: req.start,
+                                messages: vec![],
+                            })
+                        }
+                        SimulatorToPlugin::ArbRequest(_) => {
+                            // TODO
+                            PluginToSimulator::ArbResponse(ArbData::default())
+                        }
+                    });
+                    self.state.connection.send(response)?;
+                }
+                IncomingMessage::Upstream(_) => {
+                    unimplemented!();
+                }
+                IncomingMessage::Downstream(_) => {
+                    unimplemented!();
+                }
+            }
+            if aborted {
+                return Ok(());
+            }
+        }
+        Ok(())
     }
 }

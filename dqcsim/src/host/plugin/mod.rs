@@ -6,7 +6,8 @@ use crate::{
         error::{err, Result},
         log::thread::LogThread,
         protocol::{
-            PluginInitializeRequest, PluginInitializeResponse, PluginToSimulator, SimulatorToPlugin,
+            PluginAcceptUpstreamRequest, PluginInitializeRequest, PluginInitializeResponse,
+            PluginToSimulator, SimulatorToPlugin,
         },
         types::{ArbCmd, ArbData, PluginType},
     },
@@ -83,6 +84,12 @@ impl Plugin {
             },
             expect Initialized
         )
+    }
+
+    /// Requests that the plugin waits for the upstream plugin to connect and
+    /// establishes the connection.
+    pub fn accept_upstream(&mut self) -> Result<()> {
+        checked_rpc!(self, PluginAcceptUpstreamRequest)
     }
 
     /// Sends an `ArbCmd` message to this plugin.

@@ -34,6 +34,19 @@ pub enum SimulatorToPlugin {
     ///  - failure: `PluginToSimulator::Failure`
     Initialize(Box<PluginInitializeRequest>),
 
+    /// Request to complete the connection with the upstream plugin.
+    ///
+    /// This is always the second message sent by DQCsim for operators and
+    /// backends. It is called after the upstream plugin has been successfully
+    /// initialized. In response, the plugin must wait for the upstream plugin
+    /// to connect and finish setting up the connection.
+    ///
+    /// The valid responses to this message are:
+    ///
+    ///  - success: `PluginToSimulator::Success`
+    ///  - failure: `PluginToSimulator::Failure`
+    AcceptUpstream,
+
     /// Request to abort the simulation and stop the plugin.
     ///
     /// The valid responses to this message are:
@@ -113,6 +126,14 @@ impl PartialEq for PluginInitializeRequest {
             && self.plugin_type == other.plugin_type
             && self.init_cmds == other.init_cmds
             && self.log_configuration == other.log_configuration
+    }
+}
+
+pub struct PluginAcceptUpstreamRequest;
+
+impl Into<SimulatorToPlugin> for PluginAcceptUpstreamRequest {
+    fn into(self) -> SimulatorToPlugin {
+        SimulatorToPlugin::AcceptUpstream
     }
 }
 

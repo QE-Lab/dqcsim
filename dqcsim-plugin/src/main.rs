@@ -1,13 +1,7 @@
 use dqcsim::{
-    common::{
-        protocol::{FrontendRunResponse, PluginToSimulator, SimulatorToPlugin},
-        types::{ArbCmd, ArbData, PluginMetadata, PluginType},
-    },
-    debug, info,
-    plugin::{
-        connection::{Connection, IncomingMessage, OutgoingMessage},
-        state::PluginState,
-    },
+    common::types::{PluginMetadata, PluginType},
+    debug,
+    plugin::{definition::PluginDefinition, state::PluginController},
     trace,
 };
 use failure::Error;
@@ -30,41 +24,21 @@ fn main() -> Result<(), Error> {
         PluginType::Operator
     };
 
-    let metadata = PluginMetadata::new(format!("example: {}", name), "mb", "0.1.0");
+    let mut definition = PluginDefinition::new(
+        plugin_type,
+        PluginMetadata::new(format!("example: {}", name), "mb", "0.1.0"),
+    );
+
     // Init fn
-    let initialize: Box<dyn Fn(&mut PluginState, Vec<ArbCmd>)> = Box::new(|_ctx, arb_cmds| {
-        trace!("Running plugin init function.");
+    definition.initialize = Box::new(|_state, arb_cmds| {
+        trace!("running plugin init callback!");
         for arb_cmd in arb_cmds {
             debug!("{}", arb_cmd);
         }
+        Ok(())
     });
 
-    let mut connection = Connection::new(server)?.init(plugin_type, metadata, initialize)?;
+    PluginController::new(definition, server)?.run()?;
 
-    eprintln!("stderr");
-    println!("stdout");
-
-    while let Ok(next) = connection.next_request() {
-        match next {
-            Some(IncomingMessage::Simulator(SimulatorToPlugin::Abort)) => {
-                connection.send(OutgoingMessage::Simulator(PluginToSimulator::Success))?;
-                break;
-            }
-            Some(IncomingMessage::Simulator(SimulatorToPlugin::RunRequest(_))) => {
-                connection.send(OutgoingMessage::Simulator(PluginToSimulator::RunResponse(
-                    FrontendRunResponse {
-                        return_value: Some(ArbData::default()),
-                        messages: vec![],
-                    },
-                )))?;
-            }
-            _ => {
-                eprintln!("{:?}", next);
-                connection.send(OutgoingMessage::Simulator(PluginToSimulator::Success))?;
-            }
-        }
-    }
-
-    info!("Plugin down.");
     Ok(())
 }

@@ -20,18 +20,10 @@
 
 use crate::{
     common::{
-        error::{ErrorKind, Result},
-        protocol::{
-            GatestreamDown, GatestreamUp, PluginInitializeResponse, PluginToSimulator,
-            SimulatorToPlugin,
-        },
-        types::{ArbCmd, PluginMetadata, PluginType},
+        error::{inv_op, ErrorKind, Result},
+        protocol::{GatestreamDown, GatestreamUp, PluginToSimulator, SimulatorToPlugin},
     },
-    plugin::{
-        ipc::{DownstreamChannel, PluginChannel, UpstreamChannel},
-        log::setup_logging,
-        state::PluginState,
-    },
+    plugin::ipc::{DownstreamChannel, PluginChannel, UpstreamChannel},
     trace,
 };
 use ipc_channel::ipc::{IpcOneShotServer, IpcReceiverSet, IpcSelectionResult, IpcSender};
@@ -40,11 +32,14 @@ use std::collections::{HashMap, VecDeque};
 /// Incoming enum used to map incoming requests in the IpcReceiverSet used in
 /// the Connection wrapper.
 #[derive(Debug, Copy, Clone)]
+#[allow(dead_code)] // TODO <-- remove me!
 enum Incoming {
     /// Variant used to label incoming request ([`SimulatorToPlugin`]).
     Simulator,
     /// Variant used to label incoming upstream requests ([`GatestreamDown`]).
     Upstream,
+    /// Variant used to label incoming downstream responses ([`GatestreamUp`]).
+    Downstream,
 }
 
 /// Incoming messages variants.
@@ -100,6 +95,8 @@ pub struct Connection {
 
     /// Simulator response sender.
     response: IpcSender<PluginToSimulator>,
+    /// Pending upstream connection.
+    pending_upstream: Option<IpcOneShotServer<UpstreamChannel>>,
     /// Optional Upstream sender. Is None for Frontend plugins.
     upstream: Option<IpcSender<GatestreamUp>>,
 }
@@ -157,109 +154,69 @@ impl Connection {
             incoming_buffer: VecDeque::new(),
             response: channel.response,
             downstream: None,
+            pending_upstream: None,
             upstream: None,
         })
     }
 
-    /// Handle the initialization request from the Simulator.
-    ///
-    /// Respond accordingly to the initialization request
-    /// ([`SimulatorToPlugin::Initialize`]) from the [`Simulator`].
-    ///
-    /// [`SimulatorToPlugin::Initialize`]: ../../common/protocol/enum.SimulatorToPlugin.html#variant.Initialize
-    /// [`Simulator`]: ../../host/simulator/struct.Simulator.html
-    pub fn init(
-        mut self,
-        typ: PluginType,
-        metadata: impl Into<PluginMetadata>,
-        initialize: Box<dyn Fn(&mut PluginState, Vec<ArbCmd>)>,
-    ) -> Result<Connection> {
-        // Wait for the initialization request from the Simulator.
-        match if let Ok(Some(IncomingMessage::Simulator(SimulatorToPlugin::Initialize(req)))) =
-            self.next_request()
-        {
-            // Setup logging.
-            setup_logging(&req.log_configuration, req.log_channel)?;
-
-            // Make sure type reported by Plugin corresponds to
-            // PluginSpecification.
-            if typ != req.plugin_type {
-                Err(ErrorKind::InvalidOperation(
-                    "PluginType reported by Plugin does not correspond with PluginSpecification"
-                        .to_string(),
-                ))?
-            }
-
-            // Connect to downstream plugin (not for backend).
-            if req.downstream.is_some() {
-                // Attempt to connect to the downstream plugin.
-                let downstream = IpcSender::connect(req.downstream.unwrap())?;
-
-                // Create channel pair.
-                let (down_tx, down_rx) = ipc_channel::ipc::channel()?;
-                let (up_tx, up_rx) = ipc_channel::ipc::channel()?;
-
-                // Send upstream channel to downstream plugin.
-                downstream.send(UpstreamChannel::new(up_tx, down_rx))?;
-
-                // Store the DownstreamChannel.
-                self.downstream = Some(DownstreamChannel::new(down_tx, up_rx));
-            }
-
-            // Run user init code.
-            // TODO: replace this with an actual context
-            let mut ctx = PluginState {};
-            initialize(&mut ctx, req.init_cmds);
-
-            // Init IPC endpoint for upstream plugin.
-            if typ != PluginType::Frontend {
-                let (upstream_server, upstream) = IpcOneShotServer::new()?;
-
-                // Send reply to simulator.
-                self.send(OutgoingMessage::Simulator(PluginToSimulator::Initialized(
-                    PluginInitializeResponse {
-                        upstream: Some(upstream),
-                        metadata: metadata.into(),
-                    },
-                )))?;
-
-                // Wait for upstream plugin to connect.
-                let (_, mut upstream): (_, UpstreamChannel) = upstream_server.accept()?;
-
-                // Store upstream channel incoming and outgoing in connection
-                // wrapper.
-                self.incoming_map.insert(
-                    self.incoming.add(upstream.rx().unwrap())?,
-                    Incoming::Upstream,
-                );
-                self.upstream = upstream.tx();
-            } else {
-                // Send reply to simulator.
-                self.send(OutgoingMessage::Simulator(PluginToSimulator::Initialized(
-                    PluginInitializeResponse {
-                        upstream: None,
-                        metadata: metadata.into(),
-                    },
-                )))?;
-            }
-            Ok(())
-        } else {
-            Err(ErrorKind::InvalidOperation(
-                "Unexpected request, expected an Initialize request".to_string(),
-            ))?
-        } {
-            Ok(()) => Ok(self),
-            Err(err) => {
-                let err: String = err;
-                self.send(OutgoingMessage::Simulator(PluginToSimulator::Failure(
-                    err.clone(),
-                )))?;
-                Err(ErrorKind::InvalidOperation(format!(
-                    "Initialization failed: {}",
-                    err
-                )))?
-            }
+    /// Connects to a downstream plugin.
+    pub fn connect_downstream(&mut self, downstream: impl Into<String>) -> Result<()> {
+        if self.downstream.is_some() {
+            inv_op("already connected to a downstream plugin")?;
         }
+
+        // Attempt to connect to the downstream plugin.
+        let downstream = IpcSender::connect(downstream.into())?;
+
+        // Create channel pair.
+        let (down_tx, down_rx) = ipc_channel::ipc::channel()?;
+        let (up_tx, up_rx) = ipc_channel::ipc::channel()?;
+
+        // Send upstream channel to downstream plugin.
+        downstream.send(UpstreamChannel::new(up_tx, down_rx))?;
+
+        // Store the DownstreamChannel.
+        self.downstream
+            .replace(DownstreamChannel::new(down_tx, up_rx));
+
+        Ok(())
+    }
+
+    /// Creates a one-shot server for an upstream plugin to connect to,
+    /// returning the address. Call `accept_upstream()` to finish connecting.
+    pub fn serve_upstream(&mut self) -> Result<String> {
+        if self.pending_upstream.is_some() {
+            inv_op("already connecting to an upstream plugin")?;
+        } else if self.upstream.is_some() {
+            inv_op("already connected to an upstream plugin")?;
+        }
+        let (pending, address) = IpcOneShotServer::new()?;
+        self.pending_upstream.replace(pending);
+        Ok(address)
+    }
+
+    /// Waits for an upstream plugin to connect to our one-shot server and
+    /// establishes the connection. Call `serve_upstream()` first.
+    pub fn accept_upstream(&mut self) -> Result<()> {
+        if self.pending_upstream.is_none() {
+            inv_op("not yet connecting to an upstream plugin, call serve_upstream() first")?;
+        } else if self.upstream.is_some() {
+            inv_op("already connected to an upstream plugin")?;
+        }
+
+        // Wait for upstream plugin to connect.
+        let (_, mut upstream): (_, UpstreamChannel) =
+            self.pending_upstream.take().unwrap().accept()?;
+
+        // Store upstream channel incoming and outgoing in connection
+        // wrapper.
+        self.incoming_map.insert(
+            self.incoming.add(upstream.rx().unwrap())?,
+            Incoming::Upstream,
+        );
+        self.upstream.replace(upstream.tx().unwrap());
+
+        Ok(())
     }
 
     /// Get downstream channel.
@@ -305,6 +262,10 @@ impl Connection {
     /// already closed. Returns Ok(None) if both request channels are closed.
     /// This method blocks until a new request is available.
     pub fn next_request(&mut self) -> Result<Option<IncomingMessage>> {
+        // FIXME: this should actually also poll the downstream receive
+        // channel. I did not think this through properly before. But we DO
+        // also need a method that ONLY pulls from the downstream receiver.
+
         // Fetch new stuff if buffer is empty.
         if self.incoming_buffer.is_empty() {
             // Store incoming message in the buffer.
@@ -315,6 +276,7 @@ impl Connection {
                             self.incoming_buffer.push_back(match incoming {
                                 Incoming::Simulator => IncomingMessage::Simulator(msg.to()?),
                                 Incoming::Upstream => IncomingMessage::Upstream(msg.to()?),
+                                Incoming::Downstream => IncomingMessage::Downstream(msg.to()?),
                             });
                         }
                     }

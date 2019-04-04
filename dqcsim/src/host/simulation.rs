@@ -175,6 +175,29 @@ impl Simulation {
             err(format!("Failed to initialize plugin(s): {}", messages))?
         }
 
+        // Tell downstream plugins to wait for a connection from upstream
+        // plugins.
+        let (_, errors): (Vec<_>, Vec<_>) = pipeline
+            .iter_mut()
+            .skip(1)
+            .rev()
+            .map(|plugin| plugin.accept_upstream())
+            .partition(Result::is_ok);
+
+        // Check for initialization errors.
+        if !errors.is_empty() {
+            let mut messages = String::new();
+            for e in errors {
+                let e = e.unwrap_err();
+                if messages.is_empty() {
+                    messages = e.to_string();
+                } else {
+                    messages = format!("{}; {}", messages, e.to_string());
+                }
+            }
+            err(format!("Failed to initialize plugin(s): {}", messages))?
+        }
+
         // Fix up the metadata vector.
         let metadata: Vec<_> = metadata.into_iter().map(Result::unwrap).rev().collect();
 
