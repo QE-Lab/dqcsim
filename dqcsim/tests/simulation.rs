@@ -1,7 +1,7 @@
 use dqcsim::{
     common::{
         log::LoglevelFilter,
-        types::{PluginMetadata, ArbCmd, ArbData, PluginType},
+        types::{ArbCmd, ArbData, PluginMetadata, PluginType},
     },
     host::{
         accelerator::Accelerator,
@@ -85,7 +85,10 @@ fn simulation_deadlock() {
     let simulation = &mut minimal_simulator().simulation;
     let wait = simulation.wait();
     assert!(wait.is_err());
-    assert_eq!(wait.unwrap_err().to_string(), "Error: Deadlock: accelerator is blocked on recv() while we are expecting it to return");
+    assert_eq!(
+        wait.unwrap_err().to_string(),
+        "Error: Deadlock: accelerator is blocked on recv() while we are expecting it to return"
+    );
 }
 
 #[test]
@@ -123,7 +126,8 @@ fn simulation_initial_state() {
 // Tests if initilize commands from a Plugin arrive in the intialize callback
 // of a PluginDefinition.
 fn simulation_init_cmds() {
-    let mut definition = PluginDefinition::new(PluginType::Frontend, PluginMetadata::new("", "", ""));
+    let mut definition =
+        PluginDefinition::new(PluginType::Frontend, PluginMetadata::new("", "", ""));
 
     definition.initialize = Box::new(|_state, init_cmds| {
         assert_eq!(init_cmds.len(), 1);
@@ -136,8 +140,7 @@ fn simulation_init_cmds() {
         .push_plugin(PluginThreadConfiguration {
             definition,
             init_cmds: vec![ArbCmd::new("a", "b", ArbData::default())],
-            log_configuration:
-            PluginLogConfiguration::new("", LoglevelFilter::Off),
+            log_configuration: PluginLogConfiguration::new("", LoglevelFilter::Off),
         });
 
     let simulator = Simulator::new(configuration);
