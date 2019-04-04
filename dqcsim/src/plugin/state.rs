@@ -1,24 +1,29 @@
 use crate::{
     common::{
-        error::{err, inv_op, oe_err, Result},
+        error::{err, inv_arg, inv_op, oe_err, Result},
         protocol::{
-            FrontendRunRequest, FrontendRunResponse, GatestreamUp, PluginInitializeRequest,
-            PluginInitializeResponse, PluginToSimulator, SimulatorToPlugin,
+            FrontendRunRequest, FrontendRunResponse, GatestreamDown, GatestreamUp,
+            PipelinedGatestreamDown, PluginInitializeRequest, PluginInitializeResponse,
+            PluginToSimulator, SimulatorToPlugin,
         },
-        types::{ArbCmd, ArbData, Gate, PluginType, QubitRef, SequenceNumber},
+        types::{
+            ArbCmd, ArbData, Cycle, Cycles, Gate, PluginType, QubitMeasurementResult,
+            QubitMeasurementValue, QubitRef, QubitRefGenerator, SequenceNumber,
+            SequenceNumberGenerator,
+        },
     },
-    error,
+    debug, error, fatal,
     plugin::{
         connection::{Connection, IncomingMessage, OutgoingMessage},
         definition::PluginDefinition,
         log::setup_logging,
     },
-    trace,
+    trace, warn,
 };
 use rand::distributions::Standard;
 use rand::prelude::*;
 use rand_chacha::ChaChaRng;
-use std::collections::VecDeque;
+use std::collections::{HashMap, HashSet, VecDeque};
 
 /// Deterministic random number generator used for plugins.
 ///
@@ -62,11 +67,40 @@ impl RandomNumberGenerator {
     }
 }
 
+/// Structure containing all the classical data associated with a qubit
+/// measurement.
+#[derive(Debug, Clone)]
+struct QubitMeasurementData {
+    /// The value of the latest measurement for this qubit.
+    value: QubitMeasurementValue,
+
+    /// The data attached to the latest measurement of this qubit.
+    data: ArbData,
+
+    /// The timestamp of the latest measurement.
+    timestamp: Cycle,
+
+    /// The time that the qubit had gone without measurement at the time of the
+    /// latest measurement, if this is not the first measurement.
+    timer: Option<Cycles>,
+}
+
+/// Structure containing the data we need to keep track of for each qubit.
+#[derive(Debug, Clone)]
+struct QubitData {
+    /// The latest measurement data for this qubit.
+    measurement: Option<QubitMeasurementData>,
+
+    /// The downstream sequence number of the gate that last affected this
+    /// qubit. Before using the enclosed measurement data, the simulation must
+    /// always be synchronized up to this point.
+    last_mutation: SequenceNumber,
+}
+
 /// Structure representing the state of a plugin.
 ///
 /// This contains all state and connection information. The public members are
 /// exposed as user API calls.
-#[allow(dead_code)] // TODO <-- remove me
 pub struct PluginState<'a> {
     /// PluginDefinition structure containing the callback closures and some
     /// metadata. This must never change during the execution of the plugin.
@@ -79,6 +113,10 @@ pub struct PluginState<'a> {
     /// Set when we're a frontend and we're inside a run() callback.
     inside_run: bool,
 
+    /// True when the callbacks we're executing are synchronous to an RPC.
+    /// False when they're synchronous to the gatestream responses.
+    synchronized_to_rpcs: bool,
+
     /// Objects queued with `send()`, to be sent to the host in the next
     /// RunResponse.
     frontend_to_host_data: VecDeque<ArbData>,
@@ -88,42 +126,48 @@ pub struct PluginState<'a> {
 
     /// Random number generator.
     rng: Option<RandomNumberGenerator>,
-    // TODO: internal state such as cached measurement, sequence number
-    // counters, etc.
+
+    /// Upstream qubit reference generator.
+    ///
+    /// This is used to allocate/free qubit references when we receive a
+    /// message from upstream. This generator should always be in sync with
+    /// downstream_qubit_ref_generator of the upstream plugin.
+    upstream_qubit_ref_generator: QubitRefGenerator,
+
+    /// Downstream sequence number generator.
+    downstream_sequence_tx: SequenceNumberGenerator,
+
+    /// Latest acknowledged downstream sequence number (= number of requests
+    /// acknowledged).
+    downstream_sequence_rx: SequenceNumber,
+
+    /// Downstream simulation time, TX-synchronized.
+    downstream_cycle_tx: Cycle,
+
+    /// Downstream simulation time, RX-synchronized.
+    downstream_cycle_rx: Cycle,
+
+    /// Downstream qubit reference generator.
+    ///
+    /// This is used to allocate/free qubit references when the user tells us
+    /// to do this in the downstream domain.  This generator should always be
+    /// in sync with upstream_qubit_ref_generator of the downstream plugin.
+    downstream_qubit_ref_generator: QubitRefGenerator,
+
+    /// Current state of the qubit measurement bits. The keys in this map also
+    /// function as the set of all live downstream qubit references.
+    downstream_qubit_data: HashMap<QubitRef, QubitData>,
+
+    /// Measurement results from downstream, queued until we get the sequence
+    /// number they belong to.
+    downstream_measurement_queue: VecDeque<QubitMeasurementResult>,
+
+    /// Expected measurements according to the `measures` sets of the gates
+    /// we sent downstream.
+    downstream_expected_measurements: VecDeque<(SequenceNumber, HashSet<QubitRef>)>,
 }
 
-#[allow(dead_code)] // TODO <-- remove me
 impl<'a> PluginState<'a> {
-    /// Blockingly receive messages from downstream until all requests have
-    /// been acknowledged.
-    fn synchronize_downstream(&mut self) -> Result<()> {
-        /*while ... {
-            self.connextion.next_response(...)
-            ...
-            self.handle_downstream(...)
-        }*/
-        // TODO
-        Ok(())
-    }
-
-    /// Blockingly receive messages from downstream until the request with the
-    /// specified sequence number has been acknowledged.
-    fn synchronize_downstream_up_to(&mut self, _num: SequenceNumber) -> Result<()> {
-        /*while ... {
-            self.connextion.next_response(...)
-            ...
-            self.handle_downstream(...)
-        }*/
-        // TODO
-        Ok(())
-    }
-
-    /// Handle an incoming downstream message.
-    fn handle_downstream(&mut self, _msg: GatestreamUp) -> Result<()> {
-        // TODO: update our cached measurement, simulation timing etc states
-        Ok(())
-    }
-
     /// Handles a SimulatorToPlugin::Initialize RPC.
     fn handle_init(&mut self, req: PluginInitializeRequest) -> Result<(PluginInitializeResponse)> {
         let typ = self.definition.get_type();
@@ -233,6 +277,182 @@ impl<'a> PluginState<'a> {
         })
     }
 
+    /// Processes a checked measurement.
+    ///
+    /// That is, saves it to our cache, and forwards it upstream if we're an
+    /// operator.
+    fn handle_measurement(&mut self, measurement: QubitMeasurementResult) -> Result<()> {
+        // Note that it's not an error if there is no data entry for the
+        // received qubit (anymore). This just means that the qubit has been
+        // freed soon after it was measured, the measurement result was never
+        // read/waited upon, and the downstream plugin is sufficiently lagging
+        // behind us.
+        if let Some(data) = self.downstream_qubit_data.get_mut(&measurement.qubit) {
+            // Current simulation time.
+            let timestamp = self.downstream_cycle_rx;
+
+            // Cycles between the previous measurement and the current
+            // simulation time.
+            let timer = if let Some(x) = &data.measurement {
+                let delta = timestamp - x.timestamp;
+                if delta < 0 {
+                    panic!("simulation time is apparently not monotonous?");
+                }
+                Some(delta as Cycles)
+            } else {
+                None
+            };
+
+            // Update the measurement data.
+            data.measurement.replace(QubitMeasurementData {
+                value: measurement.value,
+                data: measurement.data,
+                timestamp,
+                timer,
+            });
+        }
+        Ok(())
+    }
+
+    /// Verifies that the queued measurement results correspond with the
+    /// `measures` vectors in the respective gates that we sent, and saves the
+    /// downstream sequence number.
+    fn received_downstream_sequence(&mut self, sequence: SequenceNumber) -> Result<()> {
+        // Update the sequence number.
+        self.downstream_sequence_rx = sequence;
+
+        // Check queued measurements against the ones expected from the gates
+        // that we sent.
+        let measurements: Vec<_> = self.downstream_measurement_queue.drain(..).collect();
+        for measurement in measurements {
+            // pop is set when we've received all the measurements for the
+            // current gate (at the front of the downstream_expected_measurements
+            // queue), i.e. the HashSet containing the qubits is empty. If this
+            // is the case we should pop the gate off of the expected measurement
+            // queue.
+            let mut pop = false;
+
+            // ok is set if the measurement was part of the current gate's
+            // measures set. If ok is set, the qubit has already been removed
+            // from the gate's (remaining) expected measurement set, but the
+            // measurement has not been handled yet.
+            let mut ok = false;
+
+            // Note that we're using the above two flags to keep Ferris happy;
+            // we can't use self within the if let due to the mutable borrow.
+            if let Some(expected) = self.downstream_expected_measurements.front_mut() {
+                if sequence.acknowledges(expected.0) && expected.1.remove(&measurement.qubit) {
+                    ok = true;
+                    pop = expected.1.is_empty();
+                }
+            }
+
+            // Do what we just determined we need to do.
+            if ok {
+                // Handle the received measurement.
+                self.handle_measurement(measurement)?;
+
+                // Clean up/move on to the next gate if we received everything
+                // we were expecting for the current gate.
+                if pop {
+                    self.downstream_expected_measurements.pop_front().unwrap();
+                }
+            } else {
+                // Unexpected measurement. We always IGNORE these. This gives
+                // consistent, deterministic behavior of the measurement cache
+                // as long as the measurements are received in the same order
+                // every time.
+                warn!(
+                    "ignored unexpected measurement data for qubit {}; bug in downstream plugin!",
+                    measurement.qubit
+                );
+            }
+        }
+
+        // Check that we received all the measurements we were expecting to
+        // receive thus far. Equivalently, stuff is wrong if the sequence
+        // number we just received acknowledges more of the gates still
+        // remaining in the queue.
+        loop {
+            // pop is set when the current gate (at the front of the
+            // downstream_expected_measurements queue) is acknowledged by the
+            // received sequence number.
+            let mut pop = false;
+
+            // Note that we're using that flag to keep Ferris happy; we can't
+            // use self within the if let due to the mutable borrow.
+            if let Some(expected) = self.downstream_expected_measurements.front_mut() {
+                if sequence.acknowledges(expected.0) {
+                    pop = true;
+                }
+            }
+
+            // If the current gate was not acknowledged by this sequence
+            // number, everything's synchronized.
+            if !pop {
+                break;
+            }
+
+            // Uh oh, the current gate was (still) expecting measurements.
+            // So we just fabricate some measurements (with the value set to
+            // "undefined" of course) to work around the downstream plugin's
+            // bugs. We also move on to the next gate (note the pop_front in
+            // the iterator).
+            for qubit in self
+                .downstream_expected_measurements
+                .pop_front()
+                .unwrap()
+                .1
+                .drain()
+            {
+                warn!(
+                    "missing measurement data for qubit {}, setting to undefined; bug in downstream plugin!",
+                    qubit
+                );
+                self.handle_measurement(QubitMeasurementResult::new(
+                    qubit,
+                    QubitMeasurementValue::Undefined,
+                    ArbData::default(),
+                ))?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Handle an incoming upstream message from the downstream plugin.
+    fn handle_downstream_message(&mut self, message: GatestreamUp) -> Result<()> {
+        if let Some(ref mut rng) = self.rng {
+            rng.select(2);
+        }
+        self.synchronized_to_rpcs = false;
+
+        match message {
+            GatestreamUp::CompletedUpTo(sequence) => {
+                self.received_downstream_sequence(sequence)?;
+            }
+            GatestreamUp::Failure(sequence, message) => {
+                self.received_downstream_sequence(sequence)?;
+                error!("Error from downstream plugin: {}", message);
+                debug!("The sequence number was {}", sequence);
+                fatal!("Desynchronized with downstream plugin due to downstream error, cannot continue!");
+                err("simulation failed due to downstream error")?;
+            }
+            GatestreamUp::Measured(measurement) => {
+                self.downstream_measurement_queue.push_back(measurement);
+            }
+            GatestreamUp::Advanced(cycles) => {
+                self.downstream_cycle_rx = self.downstream_cycle_rx.advance(cycles);
+            }
+            x => {
+                error!("Unexpected message received from downstream");
+                trace!("{:?}", x);
+                err("unexpected message received from downstream")?;
+            }
+        }
+        Ok(())
+    }
+
     /// Handles any incoming message.
     ///
     /// The returned boolean indicates whether the message was an abort,
@@ -244,6 +464,8 @@ impl<'a> PluginState<'a> {
                 if let Some(ref mut rng) = self.rng {
                     rng.select(0)
                 }
+                self.synchronized_to_rpcs = true;
+
                 let response = OutgoingMessage::Simulator(match message {
                     SimulatorToPlugin::Initialize(req) => match self.handle_init(*req) {
                         Ok(x) => PluginToSimulator::Initialized(x),
@@ -293,20 +515,102 @@ impl<'a> PluginState<'a> {
                 });
                 self.connection.send(response)?;
             }
-            IncomingMessage::Upstream(_) => {
+            IncomingMessage::Upstream(GatestreamDown::Pipelined(sequence, message)) => {
                 if let Some(ref mut rng) = self.rng {
                     rng.select(1)
                 }
-                unimplemented!();
+                self.synchronized_to_rpcs = true;
+
+                let response = match message {
+                    PipelinedGatestreamDown::Allocate(num_qubits, commands) => {
+                        let qubits = self.upstream_qubit_ref_generator.allocate(num_qubits);
+                        (self.definition.allocate)(self, qubits, commands)
+                    }
+                    PipelinedGatestreamDown::Free(qubits) => {
+                        self.upstream_qubit_ref_generator.free(qubits.clone());
+                        (self.definition.free)(self, qubits)
+                    }
+                    PipelinedGatestreamDown::Gate(gate) => {
+                        let mut measures: HashSet<_> =
+                            gate.get_measures().iter().cloned().collect();
+                        (self.definition.gate)(self, gate).and_then(|measurements| {
+                            for measurement in measurements {
+                                if measures.remove(&measurement.qubit) {
+                                    self.connection
+                                        .send(OutgoingMessage::Upstream(GatestreamUp::Measured(measurement)))?;
+                                } else {
+                                    err(format!(
+                                        "user-defined gate() function did not return measurement or \
+                                        returned multiple measurements for qubit {}",
+                                        measurement.qubit
+                                    ))?;
+                                }
+                            }
+                            if !measures.is_empty() {
+                                err(format!(
+                                    "user-defined gate() function failed to return measurement for qubits {}",
+                                    enum_variants::friendly_enumerate(measures.into_iter(), Some("or"))
+                                ))?;
+                            }
+                            Ok(())
+                        })
+                    }
+                    PipelinedGatestreamDown::Advance(cycles) => self
+                        .connection
+                        .send(OutgoingMessage::Upstream(GatestreamUp::Advanced(cycles)))
+                        .and_then(|_| (self.definition.advance)(self, cycles)),
+                };
+                let response = OutgoingMessage::Upstream(match response {
+                    Ok(_) => GatestreamUp::CompletedUpTo(sequence),
+                    Err(e) => {
+                        let e = e.to_string();
+                        error!("{}", e);
+                        GatestreamUp::Failure(sequence, e)
+                    }
+                });
+                self.connection.send(response)?;
             }
-            IncomingMessage::Downstream(_) => {
-                if let Some(ref mut rng) = self.rng {
-                    rng.select(2)
-                }
-                unimplemented!();
+            IncomingMessage::Upstream(_) => {
+                return err("Protocol error: unexpected synchronous gatestream response");
             }
+            IncomingMessage::Downstream(message) => self.handle_downstream_message(message)?,
         }
         Ok(aborted)
+    }
+
+    /// Blockingly receive messages from downstream until the request with the
+    /// specified sequence number has been acknowledged.
+    fn synchronize_downstream_up_to(&mut self, num: SequenceNumber) -> Result<()> {
+        while num.after(self.downstream_sequence_rx) {
+            match self.connection.next_downstream_request()? {
+                Some(IncomingMessage::Downstream(message)) => {
+                    self.handle_downstream_message(message)?
+                }
+                Some(_) => panic!("next_downstream_request() returned a non-downstream message"),
+                None => err("Simulation aborted")?,
+            }
+        }
+        Ok(())
+    }
+
+    /// Blockingly receive messages from downstream until all requests have
+    /// been acknowledged.
+    fn synchronize_downstream(&mut self) -> Result<()> {
+        self.synchronize_downstream_up_to(self.downstream_sequence_tx.get_previous())
+    }
+
+    /// Checks that the qubit references in the specified iterator are all
+    /// currently valid.
+    fn check_qubits_live<'b, 'c>(
+        &'b self,
+        qubits: impl IntoIterator<Item = &'c QubitRef>,
+    ) -> Result<()> {
+        for qubit in qubits {
+            if !self.downstream_qubit_data.contains_key(qubit) {
+                inv_arg(format!("qubit {} is not allocated", qubit))?;
+            }
+        }
+        Ok(())
     }
 
     // Note that the functions above are intentionally NOT public. Only
@@ -322,9 +626,19 @@ impl<'a> PluginState<'a> {
             definition,
             connection: Connection::new(simulator)?,
             inside_run: false,
+            synchronized_to_rpcs: true,
             frontend_to_host_data: VecDeque::new(),
             host_to_frontend_data: VecDeque::new(),
             rng: None,
+            downstream_qubit_ref_generator: QubitRefGenerator::new(),
+            downstream_sequence_tx: SequenceNumberGenerator::new(),
+            downstream_sequence_rx: SequenceNumber::none(),
+            downstream_cycle_tx: Cycle::t_zero(),
+            downstream_cycle_rx: Cycle::t_zero(),
+            upstream_qubit_ref_generator: QubitRefGenerator::new(),
+            downstream_qubit_data: HashMap::new(),
+            downstream_measurement_queue: VecDeque::new(),
+            downstream_expected_measurements: VecDeque::new(),
         };
 
         while let Some(request) = state.connection.next_request()? {
@@ -381,6 +695,7 @@ impl<'a> PluginState<'a> {
                 if let Some(ref mut rng) = self.rng {
                     rng.select(0)
                 }
+                self.synchronized_to_rpcs = true;
 
                 // Store the incoming messages for recv().
                 self.host_to_frontend_data.extend(request.messages);
@@ -401,41 +716,138 @@ impl<'a> PluginState<'a> {
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn allocate(&mut self, _num_qubits: usize, _arbs: Vec<ArbCmd>) -> Result<Vec<QubitRef>> {
-        unimplemented!();
+    pub fn allocate(&mut self, num_qubits: usize, commands: Vec<ArbCmd>) -> Result<Vec<QubitRef>> {
+        if self.definition.get_type() == PluginType::Backend {
+            return inv_op("allocate() is not available for backends")?;
+        } else if !self.synchronized_to_rpcs {
+            return inv_op("allocate() cannot be called while handling a gatestream response")?;
+        }
+
+        // Allocate qubit references for the new qubits.
+        let qubits = self.downstream_qubit_ref_generator.allocate(num_qubits);
+
+        // Allocate classical storage for the new qubits.
+        for qubit in qubits.iter().cloned() {
+            self.downstream_qubit_data.insert(
+                qubit,
+                QubitData {
+                    measurement: None,
+                    last_mutation: SequenceNumber::none(),
+                },
+            );
+        }
+
+        // Send the allocate message.
+        self.connection
+            .send(OutgoingMessage::Downstream(GatestreamDown::Pipelined(
+                self.downstream_sequence_tx.get_next(),
+                PipelinedGatestreamDown::Allocate(num_qubits, commands),
+            )))?;
+
+        // Return the references to the qubits.
+        Ok(qubits)
     }
 
     /// Free the given downstream qubits.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn free(&mut self, _qubits: Vec<QubitRef>) -> Result<()> {
-        unimplemented!();
+    pub fn free(&mut self, qubits: Vec<QubitRef>) -> Result<()> {
+        if self.definition.get_type() == PluginType::Backend {
+            return inv_op("free() is not available for backends")?;
+        } else if !self.synchronized_to_rpcs {
+            return inv_op("free() cannot be called while handling a gatestream response")?;
+        }
+        self.check_qubits_live(qubits.iter())?;
+
+        // Send the free message.
+        self.connection
+            .send(OutgoingMessage::Downstream(GatestreamDown::Pipelined(
+                self.downstream_sequence_tx.get_next(),
+                PipelinedGatestreamDown::Free(qubits.clone()),
+            )))?;
+
+        // Kill our classical storage for the qubits.
+        for qubit in qubits.iter() {
+            self.downstream_qubit_data.remove(qubit);
+        }
+
+        // Keep the qubit ref generator in sync.
+        self.downstream_qubit_ref_generator.free(qubits);
+
+        Ok(())
     }
 
     /// Tells the downstream plugin to execute a gate.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn gate(&mut self, _gate: Gate) -> Result<()> {
-        unimplemented!();
+    pub fn gate(&mut self, gate: Gate) -> Result<()> {
+        if self.definition.get_type() == PluginType::Backend {
+            return inv_op("gate() is not available for backends")?;
+        } else if !self.synchronized_to_rpcs {
+            return inv_op("gate() cannot be called while handling a gatestream response")?;
+        }
+        self.check_qubits_live(gate.get_targets())?;
+        self.check_qubits_live(gate.get_controls())?;
+        self.check_qubits_live(gate.get_measures())?;
+
+        // Store which qubits we're expecting to be measured.
+        let measures: HashSet<_> = gate.get_measures().iter().cloned().collect();
+
+        // Send the gate message.
+        self.connection
+            .send(OutgoingMessage::Downstream(GatestreamDown::Pipelined(
+                self.downstream_sequence_tx.get_next(),
+                PipelinedGatestreamDown::Gate(gate),
+            )))?;
+
+        // Store which measurements we're expecting.
+        if !measures.is_empty() {
+            self.downstream_expected_measurements
+                .push_back((self.downstream_sequence_tx.get_previous(), measures));
+        }
+
+        Ok(())
     }
 
     /// Returns the latest measurement of the given downstream qubit.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn get_measurement(&self, _qubit: QubitRef) -> Result<bool> {
-        unimplemented!();
-    }
+    pub fn get_measurement(&mut self, qubit: QubitRef) -> Result<QubitMeasurementResult> {
+        if self.definition.get_type() == PluginType::Backend {
+            return inv_op("get_measurement() is not available for backends")?;
+        } else if !self.synchronized_to_rpcs {
+            return inv_op(
+                "get_measurement() cannot be called while handling a gatestream response",
+            )?;
+        }
 
-    /// Returns the additional data associated with the latest measurement of
-    /// the given downstream qubit.
-    ///
-    /// Backend plugins are not allowed to call this. Doing so will result in
-    /// an `Err` return value.
-    pub fn get_measurement_arb(&self, _qubit: QubitRef) -> Result<ArbData> {
-        unimplemented!();
+        // Check that we have data for the qubit, and synchronize up to its
+        // last modification.
+        if let Some(last_mutation) = self
+            .downstream_qubit_data
+            .get(&qubit)
+            .map(|data| data.last_mutation)
+        {
+            self.synchronize_downstream_up_to(last_mutation)?;
+        } else {
+            inv_arg(format!("qubit {} is not allocated", qubit))?;
+        }
+
+        // Get the data (possibly updated by `synchronize_downstream_up_to()`
+        // and return it.
+        let data = &self.downstream_qubit_data[&qubit];
+        if let Some(measurement) = &data.measurement {
+            Ok(QubitMeasurementResult::new(
+                qubit,
+                measurement.value,
+                measurement.data.clone(),
+            ))
+        } else {
+            inv_arg(format!("qubit {} has not been measured yet", qubit))
+        }
     }
 
     /// Returns the number of downstream cycles since the latest measurement
@@ -443,8 +855,37 @@ impl<'a> PluginState<'a> {
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn get_cycles_since_measure(&self, _qubit: QubitRef) -> Result<u64> {
-        unimplemented!();
+    pub fn get_cycles_since_measure(&mut self, qubit: QubitRef) -> Result<u64> {
+        if self.definition.get_type() == PluginType::Backend {
+            return inv_op("get_cycles_since_measure() is not available for backends")?;
+        } else if !self.synchronized_to_rpcs {
+            return inv_op(
+                "get_cycles_since_measure() cannot be called while handling a gatestream response",
+            )?;
+        }
+
+        // Check that we have data for the qubit, and synchronize up to its
+        // last modification.
+        if let Some(last_mutation) = self
+            .downstream_qubit_data
+            .get(&qubit)
+            .map(|data| data.last_mutation)
+        {
+            self.synchronize_downstream_up_to(last_mutation)?;
+        } else {
+            inv_arg(format!("qubit {} is not allocated", qubit))?;
+        }
+
+        // Get the data (possibly updated by `synchronize_downstream_up_to()`
+        // and return it.
+        let data = &self.downstream_qubit_data[&qubit];
+        if let Some(measurement) = &data.measurement {
+            let delta = self.downstream_cycle_tx - measurement.timestamp;
+            assert!(delta >= 0);
+            Ok(delta as u64)
+        } else {
+            inv_arg(format!("qubit {} has not been measured yet", qubit))
+        }
     }
 
     /// Returns the number of downstream cycles between the last two
@@ -452,32 +893,108 @@ impl<'a> PluginState<'a> {
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn get_cycles_between_measures(&self, _qubit: QubitRef) -> Result<u64> {
-        unimplemented!();
+    pub fn get_cycles_between_measures(&mut self, qubit: QubitRef) -> Result<u64> {
+        if self.definition.get_type() == PluginType::Backend {
+            return inv_op("get_cycles_between_measures() is not available for backends")?;
+        } else if !self.synchronized_to_rpcs {
+            return inv_op("get_cycles_between_measures() cannot be called while handling a gatestream response")?;
+        }
+
+        // Check that we have data for the qubit, and synchronize up to its
+        // last modification.
+        if let Some(last_mutation) = self
+            .downstream_qubit_data
+            .get(&qubit)
+            .map(|data| data.last_mutation)
+        {
+            self.synchronize_downstream_up_to(last_mutation)?;
+        } else {
+            inv_arg(format!("qubit {} is not allocated", qubit))?;
+        }
+
+        // Get the data (possibly updated by `synchronize_downstream_up_to()`
+        // and return it.
+        let data = &self.downstream_qubit_data[&qubit];
+        if let Some(measurement) = &data.measurement {
+            if let Some(timer) = measurement.timer {
+                Ok(timer)
+            } else {
+                inv_arg(format!("qubit {} has only been measured once", qubit))
+            }
+        } else {
+            inv_arg(format!("qubit {} has not been measured yet", qubit))
+        }
     }
 
     /// Advances the downstream cycle counter.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn advance(&mut self, _cycles: u64) -> Result<u64> {
-        unimplemented!();
+    pub fn advance(&mut self, cycles: Cycles) -> Result<Cycle> {
+        if self.definition.get_type() == PluginType::Backend {
+            return inv_op("advance() is not available for backends")?;
+        } else if !self.synchronized_to_rpcs {
+            return inv_op("advance() cannot be called while handling a gatestream response")?;
+        }
+
+        // Advance our local counter.
+        self.downstream_cycle_tx = self.downstream_cycle_tx.advance(cycles);
+
+        // Send the advance message.
+        self.connection
+            .send(OutgoingMessage::Downstream(GatestreamDown::Pipelined(
+                self.downstream_sequence_tx.get_next(),
+                PipelinedGatestreamDown::Advance(cycles),
+            )))?;
+
+        // Return the current simulation time.
+        Ok(self.downstream_cycle_tx)
     }
 
     /// Returns the current value of the downstream cycle counter.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn get_cycle(&self) -> Result<u64> {
-        unimplemented!();
+    pub fn get_cycle(&self) -> Result<Cycle> {
+        if self.definition.get_type() == PluginType::Backend {
+            return inv_op("get_cycle() is not available for backends")?;
+        } else if !self.synchronized_to_rpcs {
+            return inv_op("get_cycle() cannot be called while handling a gatestream response")?;
+        }
+        Ok(self.downstream_cycle_tx)
     }
 
     /// Sends an arbitrary command downstream.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.
-    pub fn arb(&mut self, _cmd: ArbCmd) -> Result<ArbData> {
-        unimplemented!();
+    pub fn arb(&mut self, cmd: ArbCmd) -> Result<ArbData> {
+        if self.definition.get_type() == PluginType::Backend {
+            return inv_op("arb() is not available for backends")?;
+        } else if !self.synchronized_to_rpcs {
+            return inv_op("arb() cannot be called while handling a gatestream response")?;
+        }
+
+        // ArbCmds are synchronous in nature, because they return data
+        // immediately. Therefore we must first wait for all pipelined
+        // requests to complete.
+        self.synchronize_downstream()?;
+
+        // Send the command.
+        self.connection
+            .send(OutgoingMessage::Downstream(GatestreamDown::ArbRequest(cmd)))?;
+
+        // The next downstream response must either be ArbFailure for an error
+        // or ArbSuccess for success. Any other message is a protocol error.
+        match self.connection.next_downstream_request()? {
+            Some(IncomingMessage::Downstream(GatestreamUp::ArbSuccess(x))) => Ok(x),
+            Some(IncomingMessage::Downstream(GatestreamUp::ArbFailure(e))) => err(e),
+            Some(IncomingMessage::Downstream(_)) => {
+                err("Protocol error: unexpected message from downstream")
+            }
+            Some(_) => panic!("next_downstream_request() returned a non-downstream message"),
+            None => err("Simulation aborted"),
+        }
     }
 
     /// Generates a random unsigned 64-bit number using the simulator random

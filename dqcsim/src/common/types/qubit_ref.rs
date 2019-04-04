@@ -12,6 +12,12 @@ impl fmt::Display for QubitRef {
     }
 }
 
+impl Into<String> for QubitRef {
+    fn into(self) -> String {
+        format!("{}", self.0)
+    }
+}
+
 impl QubitRef {
     /// Converts the foreign representation of a qubit reference to the
     /// type-safe Rust representation.
@@ -59,7 +65,7 @@ impl Default for QubitRefGenerator {
 
 impl QubitRefGenerator {
     /// Constructs a new reference generator.
-    fn new() -> QubitRefGenerator {
+    pub fn new() -> QubitRefGenerator {
         QubitRefGenerator { counter: (1..) }
     }
 

@@ -66,3 +66,15 @@ impl Cycle {
         )
     }
 }
+
+impl Into<u64> for Cycle {
+    fn into(self) -> u64 {
+        self.0 as u64
+    }
+}
+
+impl Into<i64> for Cycle {
+    fn into(self) -> i64 {
+        self.0
+    }
+}

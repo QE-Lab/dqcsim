@@ -4,7 +4,7 @@ use std::fmt;
 /// Represents a sequence number used within a gate stream.
 #[repr(transparent)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct SequenceNumber(usize);
+pub struct SequenceNumber(u64);
 
 impl fmt::Display for SequenceNumber {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -18,13 +18,26 @@ impl SequenceNumber {
     pub fn acknowledges(self, other: SequenceNumber) -> bool {
         self.0 >= other.0
     }
+
+    /// Returns true if this sequence number comes after the given sequence
+    /// number. Every sequence number comes after `SequenceNumber::none()`.
+    pub fn after(self, other: SequenceNumber) -> bool {
+        self.0 > other.0
+    }
+
+    /// "None" value for sequence numbers, used to indicate that nothing has
+    /// been transferred yet.
+    pub fn none() -> SequenceNumber {
+        SequenceNumber(0)
+    }
 }
 
 /// Struct used to generate sequence numbers.
 ///
 /// Sequence numbers start at 0 and count up monotonously.
 pub struct SequenceNumberGenerator {
-    counter: std::ops::RangeFrom<usize>,
+    counter: std::ops::RangeFrom<u64>,
+    previous: SequenceNumber,
 }
 
 impl Default for SequenceNumberGenerator {
@@ -36,11 +49,21 @@ impl Default for SequenceNumberGenerator {
 impl SequenceNumberGenerator {
     /// Constructs a new sequence number generator.
     pub fn new() -> SequenceNumberGenerator {
-        SequenceNumberGenerator { counter: (0..) }
+        SequenceNumberGenerator {
+            counter: (1..),
+            previous: SequenceNumber::none(),
+        }
     }
 
     /// Acquires the next sequence number.
     pub fn get_next(&mut self) -> SequenceNumber {
-        SequenceNumber((&mut self.counter).next().unwrap())
+        let next = SequenceNumber((&mut self.counter).next().unwrap());
+        self.previous = next;
+        next
+    }
+
+    /// Returns the previously acquired sequence number.
+    pub fn get_previous(&self) -> SequenceNumber {
+        self.previous
     }
 }

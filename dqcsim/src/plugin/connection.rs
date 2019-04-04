@@ -307,8 +307,14 @@ impl Connection {
         } else {
             // Buffer incoming messages.
             self.buffer_incoming()?;
-            // Check if the new messages contain a downstream message.
-            self.next_downstream_request()
+            // If there are no events after a buffer call, all channels have
+            // closed!
+            if self.incoming_buffer.is_empty() {
+                Ok(None)
+            } else {
+                // Check if the new messages contain a downstream message.
+                self.next_downstream_request()
+            }
         }
     }
 }
