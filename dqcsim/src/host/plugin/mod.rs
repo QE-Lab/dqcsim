@@ -72,6 +72,7 @@ impl Plugin {
         &mut self,
         logger: &LogThread,
         downstream: &Option<String>,
+        seed: u64,
     ) -> Result<PluginInitializeResponse> {
         checked_rpc!(
             self,
@@ -79,6 +80,7 @@ impl Plugin {
                 downstream: downstream.clone(),
                 plugin_type: self.plugin_type(),
                 init_cmds: self.init_cmds(),
+                seed,
                 log_configuration: self.log_configuration(),
                 log_channel: logger.get_ipc_sender(),
             },

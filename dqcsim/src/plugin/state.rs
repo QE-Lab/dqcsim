@@ -16,7 +16,52 @@ use crate::{
     },
     trace,
 };
+use rand::distributions::Standard;
+use rand::prelude::*;
+use rand_chacha::ChaChaRng;
 use std::collections::VecDeque;
+
+/// Deterministic random number generator used for plugins.
+///
+/// This actually contains multiple RNGs: one for each incoming message stream.
+/// This is necessary because messages arrive in a deterministic order only
+/// within the context of a single stream; the rest is up to the OS, thread
+/// scheduling, etc.
+struct RandomNumberGenerator {
+    rngs: Vec<ChaChaRng>,
+    selected: usize,
+}
+
+impl RandomNumberGenerator {
+    /// Constructs a random number generator with the specified number of
+    /// deterministic streams seeded by the specified seed.
+    pub fn new(num_streams: usize, seed: u64) -> RandomNumberGenerator {
+        let mut rng = ChaChaRng::seed_from_u64(seed);
+        let mut rngs = vec![];
+        for _ in 1..num_streams {
+            rngs.push(ChaChaRng::seed_from_u64(rng.next_u64()));
+        }
+        rngs.push(rng);
+        RandomNumberGenerator { rngs, selected: 0 }
+    }
+
+    /// Selects the current RNG.
+    pub fn select(&mut self, index: usize) {
+        assert!(index < self.rngs.len());
+        self.selected = index;
+    }
+
+    /// Generates a random 64-bit number using the active RNG.
+    pub fn random_u64(&mut self) -> u64 {
+        self.rngs[self.selected].next_u64()
+    }
+
+    /// Generates a random floating point number in the range `[0,1>` using the
+    /// active RNG.
+    pub fn random_f64(&mut self) -> f64 {
+        self.rngs[self.selected].sample(Standard)
+    }
+}
 
 /// Structure representing the state of a plugin.
 ///
@@ -41,6 +86,10 @@ pub struct PluginState<'a> {
 
     /// Objects received from the host, to be consumed using `recv()`.
     host_to_frontend_data: VecDeque<ArbData>,
+
+    /// Random number generator.
+    rng: Option<RandomNumberGenerator>,
+
     // TODO: internal state such as cached measurement, sequence number
     // counters, etc.
 }
@@ -80,11 +129,16 @@ impl<'a> PluginState<'a> {
     /// Handles a SimulatorToPlugin::Initialize RPC.
     fn handle_init(&mut self, req: PluginInitializeRequest) -> Result<(PluginInitializeResponse)> {
         let typ = self.definition.get_type();
+        let seed = req.seed;
 
         // Setup logging.
         setup_logging(&req.log_configuration, req.log_channel)?;
 
         trace!("started handle_init()!");
+
+        // Seed RNGs.
+        trace!("seeding with value {}", seed);
+        self.rng.replace(RandomNumberGenerator::new(3, seed));
 
         // Make sure that we're the type of plugin that the simulator is
         // expecting.
@@ -189,6 +243,9 @@ impl<'a> PluginState<'a> {
         let mut aborted = false;
         match request {
             IncomingMessage::Simulator(message) => {
+                if let Some(ref mut rng) = self.rng {
+                    rng.select(0)
+                }
                 let response = OutgoingMessage::Simulator(match message {
                     SimulatorToPlugin::Initialize(req) => match self.handle_init(*req) {
                         Ok(x) => PluginToSimulator::Initialized(x),
@@ -239,9 +296,15 @@ impl<'a> PluginState<'a> {
                 self.connection.send(response)?;
             }
             IncomingMessage::Upstream(_) => {
+                if let Some(ref mut rng) = self.rng {
+                    rng.select(1)
+                }
                 unimplemented!();
             }
             IncomingMessage::Downstream(_) => {
+                if let Some(ref mut rng) = self.rng {
+                    rng.select(2)
+                }
                 unimplemented!();
             }
         }
@@ -263,6 +326,7 @@ impl<'a> PluginState<'a> {
             inside_run: false,
             frontend_to_host_data: VecDeque::new(),
             host_to_frontend_data: VecDeque::new(),
+            rng: None,
         };
 
         while let Some(request) = state.connection.next_request()? {
@@ -330,6 +394,11 @@ impl<'a> PluginState<'a> {
             // All other messages are handled the usual way using
             // `handle_incoming_message()`.
             if let IncomingMessage::Simulator(SimulatorToPlugin::RunRequest(request)) = request {
+                // Make sure to select the right RNG.
+                if let Some(ref mut rng) = self.rng {
+                    rng.select(0)
+                }
+
                 // Store the incoming messages for recv().
                 self.host_to_frontend_data.extend(request.messages);
 
@@ -438,7 +507,7 @@ impl<'a> PluginState<'a> {
     /// which the RNG functions are called per state does not depend on OS
     /// scheduling.
     pub fn random_u64(&mut self) -> u64 {
-        unimplemented!();
+        self.rng.as_mut().expect("RNG not initialized").random_u64()
     }
 
     /// Generates a random floating point number using the simulator random
@@ -453,6 +522,6 @@ impl<'a> PluginState<'a> {
     /// which the RNG functions are called per state does not depend on OS
     /// scheduling.
     pub fn random_f64(&mut self) -> f64 {
-        unimplemented!();
+        self.rng.as_mut().expect("RNG not initialized").random_f64()
     }
 }

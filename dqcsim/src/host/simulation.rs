@@ -12,6 +12,8 @@ use crate::{
     host::{accelerator::Accelerator, configuration::Seed, plugin::Plugin},
     trace,
 };
+use rand::{RngCore, SeedableRng};
+use rand_chacha::ChaChaRng;
 use std::collections::VecDeque;
 
 /// Type alias for a pipeline of Plugin trait objects.
@@ -118,9 +120,6 @@ pub struct Simulation {
     /// The Plugin pipeline of this Simulation.
     pipeline: Vec<InitializedPlugin>,
 
-    /// Random seed for this Simulation.
-    seed: Seed,
-
     /// Tracks the state of the accelerator/frontend.
     state: AcceleratorState,
 
@@ -151,11 +150,12 @@ impl Simulation {
 
         // Initialize the plugins.
         let mut downstream = None;
+        let mut rng = ChaChaRng::seed_from_u64(seed.value);
         let (metadata, errors): (Vec<_>, Vec<_>) = pipeline
             .iter_mut()
             .rev()
             .map(|plugin| {
-                let res = plugin.init(logger, &downstream)?;
+                let res = plugin.init(logger, &downstream, rng.next_u64())?;
                 downstream = res.upstream;
                 Ok(res.metadata)
             })
@@ -219,7 +219,6 @@ impl Simulation {
         }
 
         Ok(Simulation {
-            seed,
             pipeline,
             state: AcceleratorState::Idle,
             host_to_accelerator_data: VecDeque::new(),

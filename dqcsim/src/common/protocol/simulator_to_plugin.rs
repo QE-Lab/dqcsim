@@ -106,6 +106,9 @@ pub struct PluginInitializeRequest {
     /// Vector of `ArbCmd` to supply to the plugin's `init()` function.
     pub init_cmds: Vec<ArbCmd>,
 
+    /// Random seed.
+    pub seed: u64,
+
     /// Configuration for the logging subsystem of the plugin.
     pub log_configuration: PluginLogConfiguration,
 
