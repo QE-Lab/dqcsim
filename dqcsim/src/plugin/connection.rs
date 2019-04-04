@@ -23,7 +23,7 @@ use crate::{
         error::{inv_op, ErrorKind, Result},
         protocol::{GatestreamDown, GatestreamUp, PluginToSimulator, SimulatorToPlugin},
     },
-    plugin::ipc::{DownstreamChannel, PluginChannel, UpstreamChannel},
+    plugin::ipc::{PluginChannel, UpstreamChannel},
     trace,
 };
 use ipc_channel::ipc::{IpcOneShotServer, IpcReceiverSet, IpcSelectionResult, IpcSender};
@@ -90,15 +90,17 @@ pub struct Connection {
     /// Buffer for incoming requests.
     incoming_buffer: VecDeque<IncomingMessage>,
 
-    /// Optional Downstream channel. Is None for Backend plugins.
-    downstream: Option<DownstreamChannel>,
+    /// Pending upstream connection.
+    pending_upstream: Option<IpcOneShotServer<UpstreamChannel>>,
 
     /// Simulator response sender.
     response: IpcSender<PluginToSimulator>,
-    /// Pending upstream connection.
-    pending_upstream: Option<IpcOneShotServer<UpstreamChannel>>,
+
     /// Optional Upstream sender. Is None for Frontend plugins.
     upstream: Option<IpcSender<GatestreamUp>>,
+
+    /// Optional Downstream sender. Is None for Backend plugins.
+    downstream: Option<IpcSender<GatestreamDown>>,
 }
 
 impl Connection {
@@ -175,9 +177,11 @@ impl Connection {
         // Send upstream channel to downstream plugin.
         downstream.send(UpstreamChannel::new(up_tx, down_rx))?;
 
-        // Store the DownstreamChannel.
-        self.downstream
-            .replace(DownstreamChannel::new(down_tx, up_rx));
+        // Store downstream channel incoming and outgoing in connection
+        // wrapper.
+        self.incoming_map
+            .insert(self.incoming.add(up_rx)?, Incoming::Downstream);
+        self.downstream.replace(down_tx);
 
         Ok(())
     }
@@ -221,12 +225,12 @@ impl Connection {
 
     /// Get downstream channel.
     ///
-    /// Returns an error if the downstream channel does not exist.
-    fn downstream_ref(&self) -> Result<&DownstreamChannel> {
+    /// Returns an error if the downstream sender side does not exist.
+    fn downstream_ref(&self) -> Result<&IpcSender<GatestreamDown>> {
         Ok(self
             .downstream
             .as_ref()
-            .ok_or_else(|| ErrorKind::IPCError("Downstream channel does not exist".to_string()))?)
+            .ok_or_else(|| ErrorKind::IPCError("Downstream sender does not exist".to_string()))?)
     }
 
     /// Get sender of upstream channel.
@@ -236,7 +240,7 @@ impl Connection {
         Ok(self
             .upstream
             .as_ref()
-            .ok_or_else(|| ErrorKind::IPCError("Upstream channel does not exist".to_string()))?)
+            .ok_or_else(|| ErrorKind::IPCError("Upstream sender does not exist".to_string()))?)
     }
 
     /// Send an OutgoingMessage.
@@ -247,10 +251,30 @@ impl Connection {
     pub fn send(&self, message: OutgoingMessage) -> Result<()> {
         match message {
             OutgoingMessage::Simulator(response) => self.response.send(response)?,
-            OutgoingMessage::Downstream(request) => {
-                self.downstream_ref()?.tx_ref()?.send(request)?
-            }
+            OutgoingMessage::Downstream(request) => self.downstream_ref()?.send(request)?,
             OutgoingMessage::Upstream(response) => self.upstream_ref()?.send(response)?,
+        }
+        Ok(())
+    }
+
+    /// Buffer incoming messages.
+    fn buffer_incoming(&mut self) -> Result<()> {
+        // Store incoming message in the buffer.
+        for event in self.incoming.select()? {
+            match event {
+                IpcSelectionResult::MessageReceived(id, msg) => {
+                    if let Some(incoming) = self.incoming_map.get(&id) {
+                        self.incoming_buffer.push_back(match incoming {
+                            Incoming::Simulator => IncomingMessage::Simulator(msg.to()?),
+                            Incoming::Upstream => IncomingMessage::Upstream(msg.to()?),
+                            Incoming::Downstream => IncomingMessage::Downstream(msg.to()?),
+                        });
+                    }
+                }
+                IpcSelectionResult::ChannelClosed(id) => {
+                    trace!("Channel closed: {:?}", self.incoming_map.get(&id));
+                }
+            }
         }
         Ok(())
     }
@@ -262,51 +286,30 @@ impl Connection {
     /// already closed. Returns Ok(None) if both request channels are closed.
     /// This method blocks until a new request is available.
     pub fn next_request(&mut self) -> Result<Option<IncomingMessage>> {
-        // FIXME: this should actually also poll the downstream receive
-        // channel. I did not think this through properly before. But we DO
-        // also need a method that ONLY pulls from the downstream receiver.
-
         // Fetch new stuff if buffer is empty.
         if self.incoming_buffer.is_empty() {
-            // Store incoming message in the buffer.
-            for event in self.incoming.select()? {
-                match event {
-                    IpcSelectionResult::MessageReceived(id, msg) => {
-                        if let Some(incoming) = self.incoming_map.get(&id) {
-                            self.incoming_buffer.push_back(match incoming {
-                                Incoming::Simulator => IncomingMessage::Simulator(msg.to()?),
-                                Incoming::Upstream => IncomingMessage::Upstream(msg.to()?),
-                                Incoming::Downstream => IncomingMessage::Downstream(msg.to()?),
-                            });
-                        }
-                    }
-                    IpcSelectionResult::ChannelClosed(id) => {
-                        trace!("Channel closed: {:?}", self.incoming_map.get(&id));
-                    }
-                }
-            }
+            self.buffer_incoming()?;
         }
         Ok(self.incoming_buffer.pop_front())
     }
 
-    /// Fetch next response from downstream plugin.
+    /// Fetch next downstream request.
     ///
-    /// This method blocks until a new response is available, and returns the
-    /// message.
-    pub fn next_response(&self) -> Result<IncomingMessage> {
-        Ok(IncomingMessage::Downstream(
-            self.downstream_ref()?.rx_ref()?.recv()?,
-        ))
-    }
-
-    /// Attempt to fetch next response from downstream plugin.
-    ///
-    /// This method checks and returns a response, if it is available. This
-    /// method does not block, and returns if no responses are available.
-    pub fn try_next_response(&self) -> Result<IncomingMessage> {
-        Ok(IncomingMessage::Downstream(
-            self.downstream_ref()?.rx_ref()?.try_recv()?,
-        ))
+    /// Fails if the downstream connection is closed. This method blocks until
+    /// a new request is available.
+    pub fn next_downstream_request(&mut self) -> Result<Option<IncomingMessage>> {
+        // Check if there are new downstream messages.
+        if let Some(idx) = self.incoming_buffer.iter().position(|msg| match msg {
+            IncomingMessage::Downstream(_) => true,
+            _ => false,
+        }) {
+            Ok(Some(self.incoming_buffer.remove(idx).unwrap()))
+        } else {
+            // Buffer incoming messages.
+            self.buffer_incoming()?;
+            // Check if the new messages contain a downstream message.
+            self.next_downstream_request()
+        }
     }
 }
 
