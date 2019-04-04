@@ -1,5 +1,4 @@
 use super::*;
-use dqcsim::common::log::*;
 
 /// Type for a handle.
 ///
@@ -112,48 +111,106 @@ pub enum dqcs_handle_type_t {
     DQCS_HTYPE_ARB_CMD_QUEUE = 102,
 
     /// Indicates that the given handle belongs to a set of qubit references.
+    ///
+    /// This means that the handle supports the `handle` and `qbset`
+    /// interfaces.
     DQCS_HTYPE_QUBIT_SET = 103,
 
     /// Indicates that the given handle belongs to a quantum gate description.
+    ///
+    /// This means that the handle supports the `handle`, `gate`, and `arb`
+    /// interfaces.
     DQCS_HTYPE_GATE = 104,
 
     /// Indicates that the given handle belongs to a qubit measurement result.
+    ///
+    /// This means that the handle supports the `handle`, `meas`, and `arb`
+    /// interfaces. It can also be used in place of a qubit measurement result
+    /// set by functions that consume the object.
     DQCS_HTYPE_MEAS = 105,
 
     /// Indicates that the given handle belongs to a set of qubit measurement
     /// results.
+    ///
+    /// This means that the handle supports the `handle` and `mset` interfaces.
     DQCS_HTYPE_MEAS_SET = 106,
 
-    /// Indicates that the given handle belongs to a frontend plugin
+    /// Indicates that the given handle belongs to a frontend plugin process
     /// configuration object.
-    DQCS_HTYPE_FRONT_CONFIG = 200,
+    ///
+    /// This means that the handle supports the `handle`, `pcfg`, and `xcfg`
+    /// interfaces.
+    DQCS_HTYPE_FRONT_PROCESS_CONFIG = 200,
 
-    /// Indicates that the given handle belongs to an operator plugin
+    /// Indicates that the given handle belongs to an operator plugin process
     /// configuration object.
-    DQCS_HTYPE_OPER_CONFIG = 201,
+    ///
+    /// This means that the handle supports the `handle`, `pcfg`, and `xcfg`
+    /// interfaces.
+    DQCS_HTYPE_OPER_PROCESS_CONFIG = 201,
 
-    /// Indicates that the given handle belongs to a backend plugin
+    /// Indicates that the given handle belongs to a backend plugin process
     /// configuration object.
-    DQCS_HTYPE_BACK_CONFIG = 203,
+    ///
+    /// This means that the handle supports the `handle`, `pcfg`, and `xcfg`
+    /// interfaces.
+    DQCS_HTYPE_BACK_PROCESS_CONFIG = 203,
+
+    /// Indicates that the given handle belongs to a frontend plugin thread
+    /// configuration object.
+    ///
+    /// This means that the handle supports the `handle`, `tcfg`, and `xcfg`
+    /// interfaces.
+    DQCS_HTYPE_FRONT_THREAD_CONFIG = 204,
+
+    /// Indicates that the given handle belongs to an operator plugin thread
+    /// configuration object.
+    ///
+    /// This means that the handle supports the `handle`, `tcfg`, and `xcfg`
+    /// interfaces.
+    DQCS_HTYPE_OPER_THREAD_CONFIG = 205,
+
+    /// Indicates that the given handle belongs to a backend plugin thread
+    /// configuration object.
+    ///
+    /// This means that the handle supports the `handle`, `tcfg`, and `xcfg`
+    /// interfaces.
+    DQCS_HTYPE_BACK_THREAD_CONFIG = 206,
 
     /// Indicates that the given handle belongs to a simulator configuration
     /// object.
-    DQCS_HTYPE_SIM_CONFIG = 204,
+    ///
+    /// This means that the handle supports the `handle` and `scfg` interfaces.
+    DQCS_HTYPE_SIM_CONFIG = 207,
 
     /// Indicates that the given handle belongs to a simulator instance.
-    DQCS_HTYPE_SIM = 205,
+    ///
+    /// This means that the handle supports the `handle` and `sim` interfaces.
+    DQCS_HTYPE_SIM = 208,
 
     /// Indicates that the given handle belongs to a frontend plugin
     /// definition object.
+    ///
+    /// This means that the handle supports the `handle` and `pdef` interfaces.
     DQCS_HTYPE_FRONT_DEF = 300,
 
     /// Indicates that the given handle belongs to an operator plugin
     /// definition object.
+    ///
+    /// This means that the handle supports the `handle` and `pdef` interfaces.
     DQCS_HTYPE_OPER_DEF = 301,
 
     /// Indicates that the given handle belongs to a backend plugin
     /// definition object.
+    ///
+    /// This means that the handle supports the `handle` and `pdef` interfaces.
     DQCS_HTYPE_BACK_DEF = 302,
+
+    /// Indicates that the given handle belongs to a plugin thread join handle.
+    ///
+    /// This means that the handle supports the `handle` and `pjoin`
+    /// interfaces.
+    DQCS_HTYPE_PLUGIN_JOIN = 303,
 }
 
 /// Enumeration of the three types of plugins.

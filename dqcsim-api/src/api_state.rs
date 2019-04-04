@@ -1,12 +1,17 @@
 use super::*;
 use std::collections::VecDeque;
 use std::ptr::null_mut;
+use std::thread::JoinHandle;
 
 pub type ArbCmdQueue = VecDeque<ArbCmd>;
 
 pub type QubitReferenceSet = VecDeque<QubitRef>;
 
 pub type QubitMeasurementResultSet = HashMap<QubitRef, QubitMeasurementResult>;
+
+pub type PluginJoinHandle = JoinHandle<Result<()>>;
+
+pub type BoxedPluginConfiguration = Box<dyn PluginConfiguration>;
 
 macro_rules! api_object_types {
     ($($(#[$m:meta])* $i:ident,)+) => (
@@ -48,12 +53,16 @@ api_object_types!(
     QubitMeasurementResultSet,
     /// `PluginProcessConfiguration` object.
     PluginProcessConfiguration,
+    /// `PluginThreadConfiguration` object.
+    PluginThreadConfiguration,
     /// `SimulatorConfiguration` object.
     SimulatorConfiguration,
     /// DQCsim simulation instance, behaving as an accelerator.
     Simulator,
     /// `PluginDefinition` object.
     PluginDefinition,
+    /// Join handle for a plugin thread.
+    PluginJoinHandle,
 );
 
 /// Thread-local state storage structure.
@@ -373,9 +382,9 @@ mutate_api_object_as! {QubitMeasurementResult, meas:
 
 mutate_api_object_as! {QubitMeasurementResultSet, mset:
     APIObject::QubitMeasurementResult(x) => {
-        return inv_arg("empty command queue does not support cmd interface");
+        return inv_arg("handle does not support the mset interface");
     }, {
-        return inv_arg("empty command queue does not support cmd interface");
+        return inv_arg("handle does not support the mset interface");
     }, {
         let mut s = QubitMeasurementResultSet::new();
         s.insert(x.qubit, x);
@@ -388,6 +397,15 @@ mutate_api_object_as! {PluginProcessConfiguration, pcfg:
     APIObject::PluginProcessConfiguration(x) => x, x, x,
 }
 
+mutate_api_object_as! {PluginThreadConfiguration, tcfg:
+    APIObject::PluginThreadConfiguration(x) => x, x, x,
+}
+
+mutate_api_object_as! {BoxedPluginConfiguration, xcfg:
+    APIObject::PluginProcessConfiguration(x) => panic!(), panic!(), Box::new(x),
+    APIObject::PluginThreadConfiguration(x) => panic!(), panic!(), Box::new(x),
+}
+
 mutate_api_object_as! {SimulatorConfiguration, scfg:
     APIObject::SimulatorConfiguration(x) => x, x, x,
 }
@@ -398,6 +416,10 @@ mutate_api_object_as! {Simulator, sim:
 
 mutate_api_object_as! {PluginDefinition, scfg:
     APIObject::PluginDefinition(x) => x, x, x,
+}
+
+mutate_api_object_as! {PluginJoinHandle, pjoin:
+    APIObject::PluginJoinHandle(x) => x, x, x,
 }
 
 /// Resolves an object from a handle.
@@ -504,6 +526,19 @@ macro_rules! take {
     };
     (resolved $i:ident as mut $t:ty) => {
         let mut $i: $t = $i.take().unwrap();
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! clone {
+    ($clone:ident: $t:ty = resolved $i:ident) => {
+        let $clone: &$t = $i.as_ref().unwrap();
+        let $clone = $clone.clone();
+    };
+    (mut $clone:ident: $t:ty = resolved $i:ident) => {
+        let $clone: &$t = $i.as_ref().unwrap();
+        let mut $clone = $clone.clone();
     };
 }
 

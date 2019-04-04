@@ -20,7 +20,9 @@
 //! Handles can represent a number of different object types. Based on the type
 //! of object the handle represents, different interfaces are supported. For
 //! instance, `ArbCmd` objects support `handle`, `arb`, and `cmd`, while
-//! `ArbData` objects only support `handle` and `arb`. Note that all handles
+//! `ArbData` objects only support `handle` and `arb`. You can find an
+//! exhaustive list of all handle types and the interfaces they support in the
+//! documentation for `dqcs_handle_type_t`. Note that all normal handles
 //! support the `handle` interface.
 //!
 //! The name of the API functions directly corresponds with the name of the
@@ -28,6 +30,13 @@
 //! functions have the form `dqcs_<interface>_*`.
 //!
 //! Refer to the documentation of `dqcs_handle_type_t` for more information.
+//!
+//! There is one special handle: `dqcs_plugin_state_t`. This handle is used
+//! for communicating the address of the plugin state object from the first
+//! argument of every user-defined plugin callback to the functions that
+//! operate on the plugin (`dqcs_plugin_*`). The reason for it having a
+//! different type is a bit technical and beyond the scope of these docs;
+//! you shouldn't need to understand why this is the case to use it.
 //!
 //! # Memory management
 //!
@@ -59,18 +68,31 @@
 //! handshake is done, but the other way around: you set the error string
 //! using `dqcs_error_set()` and then you return the failure code.
 //!
-//! # Thread-safety
+//! # Multithreading
 //!
 //! The global state that the API calls operate on is purely *thread-local*.
-//! That means that you can't exchange objects between threads.
+//! This means that you can't exchange API objects/handles between threads,
+//! but this also makes the API perfectly thread-safe.
 //!
-//! The API will however call some callback functions provided by you from a
-//! different, DQCsim-maintained thread. This means that you cannot call API
-//! functions from that thread! Such instances are clearly marked in the
-//! documentation.
+//! # Callbacks
+//!
+//! In some places you can pass callbacks to the API. Depending on the
+//! callback, it may be called from a different thread. This is clearly
+//! documented along with the callback setter function; just keep it in mind.
+//!
+//! In order to support closures in higher-level languages, all callback
+//! setters take an optional cleanup callback and a `void*` to a piece of user
+//! data. The cleanup callback is intended for cleaning up this user data if
+//! necessary; it is called when DQCsim drops all references to the primary
+//! callback, so it is guaranteed that the primary callback is never called
+//! again when the cleanup. It is also guaranteed that the cleanup callback
+//! is executed exactly once (unless the process dies spectacularly, in which
+//! case it may not be called). However, very few guarantees are made about
+//! which thread the cleanup callback is called from! If you use it, make sure
+//! that it is thread-safe.
 
 use dqcsim::{
-    common::{error::*, types::*},
+    common::{error::*, log::*, types::*},
     host::{configuration::*, simulator::Simulator},
     plugin::{definition::*, state::*},
 };

@@ -17,9 +17,14 @@ pub extern "C" fn dqcs_handle_type(handle: dqcs_handle_t) -> dqcs_handle_type_t 
                 dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET
             }
             Some(APIObject::PluginProcessConfiguration(x)) => match x.specification.typ {
-                PluginType::Frontend => dqcs_handle_type_t::DQCS_HTYPE_FRONT_CONFIG,
-                PluginType::Operator => dqcs_handle_type_t::DQCS_HTYPE_OPER_CONFIG,
-                PluginType::Backend => dqcs_handle_type_t::DQCS_HTYPE_BACK_CONFIG,
+                PluginType::Frontend => dqcs_handle_type_t::DQCS_HTYPE_FRONT_PROCESS_CONFIG,
+                PluginType::Operator => dqcs_handle_type_t::DQCS_HTYPE_OPER_PROCESS_CONFIG,
+                PluginType::Backend => dqcs_handle_type_t::DQCS_HTYPE_BACK_PROCESS_CONFIG,
+            },
+            Some(APIObject::PluginThreadConfiguration(x)) => match x.definition.get_type() {
+                PluginType::Frontend => dqcs_handle_type_t::DQCS_HTYPE_FRONT_THREAD_CONFIG,
+                PluginType::Operator => dqcs_handle_type_t::DQCS_HTYPE_OPER_THREAD_CONFIG,
+                PluginType::Backend => dqcs_handle_type_t::DQCS_HTYPE_BACK_THREAD_CONFIG,
             },
             Some(APIObject::SimulatorConfiguration(_)) => dqcs_handle_type_t::DQCS_HTYPE_SIM_CONFIG,
             Some(APIObject::Simulator(_)) => dqcs_handle_type_t::DQCS_HTYPE_SIM,
@@ -28,6 +33,7 @@ pub extern "C" fn dqcs_handle_type(handle: dqcs_handle_t) -> dqcs_handle_type_t 
                 PluginType::Operator => dqcs_handle_type_t::DQCS_HTYPE_OPER_DEF,
                 PluginType::Backend => dqcs_handle_type_t::DQCS_HTYPE_BACK_DEF,
             },
+            Some(APIObject::PluginJoinHandle(_)) => dqcs_handle_type_t::DQCS_HTYPE_PLUGIN_JOIN,
         }
     })
 }

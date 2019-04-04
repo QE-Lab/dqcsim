@@ -926,7 +926,7 @@ impl<'a> PluginState<'a> {
         }
     }
 
-    /// Advances the downstream cycle counter.
+    /// Tells the downstream plugin to run for the specified number of cycles.
     ///
     /// Backend plugins are not allowed to call this. Doing so will result in
     /// an `Err` return value.

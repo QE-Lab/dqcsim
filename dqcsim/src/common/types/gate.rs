@@ -9,14 +9,14 @@ use std::collections::HashSet;
 /// Represents a complex number internally.
 ///
 /// Unfortunately we can't use Complex64 because it is not (de)serializable.
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
 struct InternalComplex64 {
     re: f64,
     im: f64,
 }
 
 /// Represents a quantum gate.
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Gate {
     /// Optional name for this gate.
     ///

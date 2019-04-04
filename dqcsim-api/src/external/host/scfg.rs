@@ -21,28 +21,26 @@ pub extern "C" fn dqcs_scfg_new() -> dqcs_handle_t {
 
 /// Appends a plugin to a simulation configuration.
 ///
+/// Both plugin process and plugin thread configuration objects may be used.
+/// The handle is consumed by this function, and is thus invalidated, if and
+/// only if it is successful.
+///
 /// Frontend and backend plugins will automatically be inserted at the front
 /// and back of the pipeline when the simulation is created. Operators are
 /// inserted in front to back order. This function does not provide safeguards
 /// against multiple frontends/backends; such errors will only be reported when
 /// the simulation is started.
 ///
-/// The `PluginProcessConfiguration` handle is consumed by this function, and
-/// is thus invalidated, if and only if it is successful.
-///
 /// Note that it is not possible to observe or mutate a plugin configuration
 /// once it has been added to a simulator configuration handle. If you want to
 /// do this for some reason, you should maintain your own data structures, and
 /// only build the DQCsim structures from them when you're done.
 #[no_mangle]
-pub extern "C" fn dqcs_scfg_push_plugin_process(
-    scfg: dqcs_handle_t,
-    pcfg: dqcs_handle_t,
-) -> dqcs_return_t {
+pub extern "C" fn dqcs_scfg_push_plugin(scfg: dqcs_handle_t, xcfg: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(scfg as &mut SimulatorConfiguration);
-        take!(pcfg as PluginProcessConfiguration);
-        scfg.plugins.push(Box::new(pcfg));
+        take!(xcfg as BoxedPluginConfiguration);
+        scfg.plugins.push(xcfg);
         Ok(())
     })
 }

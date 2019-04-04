@@ -2,7 +2,7 @@ use super::*;
 use dqcsim::common::log::tee_file::TeeFile;
 use std::ptr::null;
 
-/// Creates a new `PluginProcessConfiguration` object using sugared syntax.
+/// Creates a new plugin process configuration object using sugared syntax.
 ///
 /// `typ` specifies the type of plugin. `name` specifies the name used to refer
 /// to the plugin later, which much be unique within a simulation; if it is
@@ -28,7 +28,7 @@ pub extern "C" fn dqcs_pcfg_new(
     })
 }
 
-/// Creates a new `PluginProcessConfiguration` object using raw paths.
+/// Creates a new plugin process configuration object using raw paths.
 ///
 /// This works the same as `dqcs_pcfg_new()`, but instead of the sugared,
 /// command-line style specification you have to specify the path to the plugin
@@ -68,7 +68,7 @@ pub extern "C" fn dqcs_pcfg_new_raw(
     })
 }
 
-/// Returns the type of the given plugin configuration.
+/// Returns the type of the given plugin process configuration.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_type(pcfg: dqcs_handle_t) -> dqcs_plugin_type_t {
     api_return(dqcs_plugin_type_t::DQCS_PTYPE_INVALID, || {
@@ -77,7 +77,7 @@ pub extern "C" fn dqcs_pcfg_type(pcfg: dqcs_handle_t) -> dqcs_plugin_type_t {
     })
 }
 
-/// Returns the configured name for the given plugin.
+/// Returns the configured name for the given plugin process.
 ///
 /// On success, this **returns a newly allocated string containing the
 /// name. Free it with `free()` when you're done with it to avoid memory
@@ -90,7 +90,7 @@ pub extern "C" fn dqcs_pcfg_name(pcfg: dqcs_handle_t) -> *mut c_char {
     })
 }
 
-/// Returns the configured executable path for the given plugin.
+/// Returns the configured executable path for the given plugin process.
 ///
 /// On success, this **returns a newly allocated string containing the
 /// executable path. Free it with `free()` when you're done with it to avoid
@@ -104,7 +104,7 @@ pub extern "C" fn dqcs_pcfg_executable(pcfg: dqcs_handle_t) -> *mut c_char {
     })
 }
 
-/// Returns the configured script path for the given plugin.
+/// Returns the configured script path for the given plugin process.
 ///
 /// On success, this **returns a newly allocated string containing the
 /// script path. Free it with `free()` when you're done with it to avoid memory
@@ -123,7 +123,8 @@ pub extern "C" fn dqcs_pcfg_script(pcfg: dqcs_handle_t) -> *mut c_char {
     })
 }
 
-/// Appends an `ArbCmd` to the list of initialization commands of a plugin.
+/// Appends an `ArbCmd` to the list of initialization commands of a plugin
+/// process.
 ///
 /// The `ArbCmd` handle is consumed by this function, and is thus invalidated,
 /// if and only if it is successful.
@@ -181,7 +182,7 @@ pub extern "C" fn dqcs_pcfg_work_set(pcfg: dqcs_handle_t, work: *const c_char) -
     })
 }
 
-/// Returns the configured working directory for the given plugin.
+/// Returns the configured working directory for the given plugin process.
 ///
 /// On success, this **returns a newly allocated string containing the
 /// working directory. Free it with `free()` when you're done with it to avoid
@@ -195,7 +196,7 @@ pub extern "C" fn dqcs_pcfg_work_get(pcfg: dqcs_handle_t) -> *mut c_char {
     })
 }
 
-/// Configures the logging verbosity for the given plugin.
+/// Configures the logging verbosity for the given plugin process.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_verbosity_set(
     pcfg: dqcs_handle_t,
@@ -208,7 +209,7 @@ pub extern "C" fn dqcs_pcfg_verbosity_set(
     })
 }
 
-/// Returns the configured verbosity for the given plugin.
+/// Returns the configured verbosity for the given plugin process.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_verbosity_get(pcfg: dqcs_handle_t) -> dqcs_loglevel_t {
     api_return(dqcs_loglevel_t::DQCS_LOG_INVALID, || {
@@ -217,7 +218,7 @@ pub extern "C" fn dqcs_pcfg_verbosity_get(pcfg: dqcs_handle_t) -> dqcs_loglevel_
     })
 }
 
-/// Configures a plugin to also output its log messages to a file.
+/// Configures a plugin process to also output its log messages to a file.
 ///
 /// `verbosity` configures the verbosity level for the file only.
 #[no_mangle]
@@ -236,7 +237,8 @@ pub extern "C" fn dqcs_pcfg_tee(
     })
 }
 
-/// Configures the capture mode for the stdout stream of the specified plugin.
+/// Configures the capture mode for the stdout stream of the specified plugin
+/// process.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_stdout_mode_set(
     pcfg: dqcs_handle_t,
@@ -249,7 +251,8 @@ pub extern "C" fn dqcs_pcfg_stdout_mode_set(
     })
 }
 
-/// Returns the configured stdout capture mode for the specified plugin.
+/// Returns the configured stdout capture mode for the specified plugin
+/// process.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_stdout_mode_get(pcfg: dqcs_handle_t) -> dqcs_loglevel_t {
     api_return(dqcs_loglevel_t::DQCS_LOG_INVALID, || {
@@ -258,7 +261,8 @@ pub extern "C" fn dqcs_pcfg_stdout_mode_get(pcfg: dqcs_handle_t) -> dqcs_logleve
     })
 }
 
-/// Configures the capture mode for the stderr stream of the specified plugin.
+/// Configures the capture mode for the stderr stream of the specified plugin
+/// process.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_stderr_mode_set(
     pcfg: dqcs_handle_t,
@@ -271,7 +275,8 @@ pub extern "C" fn dqcs_pcfg_stderr_mode_set(
     })
 }
 
-/// Returns the configured stderr capture mode for the specified plugin.
+/// Returns the configured stderr capture mode for the specified plugin
+/// process.
 #[no_mangle]
 pub extern "C" fn dqcs_pcfg_stderr_mode_get(pcfg: dqcs_handle_t) -> dqcs_loglevel_t {
     api_return(dqcs_loglevel_t::DQCS_LOG_INVALID, || {
@@ -280,7 +285,7 @@ pub extern "C" fn dqcs_pcfg_stderr_mode_get(pcfg: dqcs_handle_t) -> dqcs_logleve
     })
 }
 
-/// Configures the timeout for the plugin to connect to DQCsim.
+/// Configures the timeout for the plugin process to connect to DQCsim.
 ///
 /// The default is 5 seconds, so you should normally be able to leave this
 /// alone.
@@ -296,7 +301,7 @@ pub extern "C" fn dqcs_pcfg_accept_timeout_set(pcfg: dqcs_handle_t, timeout: f64
     })
 }
 
-/// Returns the configured timeout for the plugin to connect to DQCsim.
+/// Returns the configured timeout for the plugin process to connect to DQCsim.
 ///
 /// The time unit is in seconds. Returns positive inifinity for an infinite
 /// timeout. Returns -1 when the function fails.
@@ -308,7 +313,7 @@ pub extern "C" fn dqcs_pcfg_accept_timeout_get(pcfg: dqcs_handle_t) -> f64 {
     })
 }
 
-/// Configures the timeout for the plugin to shut down gracefully.
+/// Configures the timeout for the plugin process to shut down gracefully.
 ///
 /// The default is 5 seconds, so you should normally be able to leave this
 /// alone.
@@ -327,7 +332,8 @@ pub extern "C" fn dqcs_pcfg_shutdown_timeout_set(
     })
 }
 
-/// Returns the configured timeout for the plugin to shut down gracefully.
+/// Returns the configured timeout for the plugin process to shut down
+/// gracefully.
 ///
 /// The time unit is in seconds. Returns positive inifinity for an infinite
 /// timeout. Returns -1 when the function fails.

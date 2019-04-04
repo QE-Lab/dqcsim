@@ -53,10 +53,7 @@ pub extern "C" fn dqcs_sim_arb(
     api_return(0, || {
         resolve!(sim as &mut Simulator);
         resolve!(cmd as pending ArbCmd);
-        let cmd_ob = {
-            let x: &ArbCmd = cmd.as_ref().unwrap();
-            x.clone()
-        };
+        clone!(cmd_ob: ArbCmd = resolved cmd);
         let data = sim.simulation.arb(receive_str(name)?, cmd_ob)?;
         delete!(resolved cmd);
         Ok(insert(data))
@@ -89,10 +86,7 @@ pub extern "C" fn dqcs_sim_arb_idx(
     api_return(0, || {
         resolve!(sim as &mut Simulator);
         resolve!(cmd as pending ArbCmd);
-        let cmd_ob = {
-            let x: &ArbCmd = cmd.as_ref().unwrap();
-            x.clone()
-        };
+        clone!(cmd_ob: ArbCmd = resolved cmd);
         let data = sim.simulation.arb_idx(index, cmd_ob)?;
         delete!(resolved cmd);
         Ok(insert(data))
