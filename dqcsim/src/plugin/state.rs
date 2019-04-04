@@ -1,6 +1,6 @@
 use crate::{
     common::{
-        error::{inv_op, Result},
+        error::{err, inv_op, oe_err, Result},
         log::Loglevel,
         protocol::{
             FrontendRunRequest, FrontendRunResponse, GatestreamUp, PluginInitializeRequest,
@@ -8,6 +8,7 @@ use crate::{
         },
         types::{ArbCmd, ArbData, Gate, PluginType, QubitRef, SequenceNumber},
     },
+    error,
     plugin::{
         connection::{Connection, IncomingMessage, OutgoingMessage},
         definition::PluginDefinition,
@@ -15,6 +16,7 @@ use crate::{
     },
     trace,
 };
+use std::collections::VecDeque;
 
 /// Structure representing the state of a plugin.
 ///
@@ -32,6 +34,13 @@ pub struct PluginState<'a> {
 
     /// Set when we're a frontend and we're inside a run() callback.
     inside_run: bool,
+
+    /// Objects queued with `send()`, to be sent to the host in the next
+    /// RunResponse.
+    frontend_to_host_data: VecDeque<ArbData>,
+
+    /// Objects received from the host, to be consumed using `recv()`.
+    host_to_frontend_data: VecDeque<ArbData>,
     // TODO: internal state such as cached measurement, sequence number
     // counters, etc.
 }
@@ -146,9 +155,12 @@ impl<'a> PluginState<'a> {
             !self.inside_run,
             "handle_run() can only be used outside of the run() callback"
         );
+        if self.definition.get_type() != PluginType::Frontend {
+            inv_op("received run request from simulator, but we're not a frontend!")?;
+        }
 
         // Store the incoming messages for recv().
-        // TODO
+        self.host_to_frontend_data.extend(req.messages);
 
         // If start is set, call the run() callback.
         let return_value = if let Some(args) = req.start {
@@ -161,8 +173,7 @@ impl<'a> PluginState<'a> {
         };
 
         // Drain the messages queued up by send().
-        // TODO
-        let messages = vec![];
+        let messages = self.frontend_to_host_data.drain(..).collect();
 
         Ok(FrontendRunResponse {
             return_value,
@@ -181,26 +192,48 @@ impl<'a> PluginState<'a> {
                 let response = OutgoingMessage::Simulator(match message {
                     SimulatorToPlugin::Initialize(req) => match self.handle_init(*req) {
                         Ok(x) => PluginToSimulator::Initialized(x),
-                        Err(e) => PluginToSimulator::Failure(e.to_string()),
+                        Err(e) => {
+                            let e = e.to_string();
+                            error!("{}", e);
+                            PluginToSimulator::Failure(e.to_string())
+                        }
                     },
                     SimulatorToPlugin::AcceptUpstream => match self.handle_accept_upstream() {
                         Ok(_) => PluginToSimulator::Success,
-                        Err(e) => PluginToSimulator::Failure(e.to_string()),
+                        Err(e) => {
+                            let e = e.to_string();
+                            error!("{}", e);
+                            PluginToSimulator::Failure(e.to_string())
+                        }
                     },
                     SimulatorToPlugin::Abort => {
                         aborted = true;
                         match self.handle_abort() {
                             Ok(_) => PluginToSimulator::Success,
-                            Err(e) => PluginToSimulator::Failure(e.to_string()),
+                            Err(e) => {
+                                let e = e.to_string();
+                                error!("{}", e);
+                                PluginToSimulator::Failure(e.to_string())
+                            }
                         }
                     }
                     SimulatorToPlugin::RunRequest(req) => match self.handle_run(req) {
                         Ok(x) => PluginToSimulator::RunResponse(x),
-                        Err(e) => PluginToSimulator::Failure(e.to_string()),
+                        Err(e) => {
+                            let e = e.to_string();
+                            error!("{}", e);
+                            PluginToSimulator::Failure(e.to_string())
+                        }
                     },
-                    SimulatorToPlugin::ArbRequest(_) => {
-                        // TODO
-                        PluginToSimulator::ArbResponse(ArbData::default())
+                    SimulatorToPlugin::ArbRequest(req) => {
+                        match (self.definition.host_arb)(self, req) {
+                            Ok(x) => PluginToSimulator::ArbResponse(x),
+                            Err(e) => {
+                                let e = e.to_string();
+                                error!("{}", e);
+                                PluginToSimulator::Failure(e.to_string())
+                            }
+                        }
                     }
                 });
                 self.connection.send(response)?;
@@ -228,6 +261,8 @@ impl<'a> PluginState<'a> {
             definition,
             connection: Connection::new(simulator)?,
             inside_run: false,
+            frontend_to_host_data: VecDeque::new(),
+            host_to_frontend_data: VecDeque::new(),
         };
 
         while let Some(request) = state.connection.next_request()? {
@@ -257,8 +292,12 @@ impl<'a> PluginState<'a> {
     ///
     /// It is only legal to call this function from within the `run()`
     /// callback. Any other source will result in an `Err` return value.
-    pub fn send(&mut self, _msg: ArbData) -> Result<()> {
-        unimplemented!();
+    pub fn send(&mut self, msg: ArbData) -> Result<()> {
+        if !self.inside_run {
+            inv_op("send() can only be called from inside the run() callback")?;
+        }
+        self.frontend_to_host_data.push_back(msg);
+        Ok(())
     }
 
     /// Waits for a message from the host.
@@ -266,7 +305,44 @@ impl<'a> PluginState<'a> {
     /// It is only legal to call this function from within the `run()`
     /// callback. Any other source will result in an `Err` return value.
     pub fn recv(&mut self) -> Result<ArbData> {
-        unimplemented!();
+        if !self.inside_run {
+            inv_op("recv() can only be called from inside the run() callback")?;
+        }
+        while self.host_to_frontend_data.is_empty() {
+            // We need to yield to the host! Send the RunResponse message now.
+            // Don't forget to drain the messages queued up by send().
+            self.connection
+                .send(OutgoingMessage::Simulator(PluginToSimulator::RunResponse(
+                    FrontendRunResponse {
+                        return_value: None,
+                        messages: self.frontend_to_host_data.drain(..).collect(),
+                    },
+                )))
+                .unwrap();
+
+            // Fetch the next message.
+            let request = self
+                .connection
+                .next_request()?
+                .ok_or_else(oe_err("Simulation aborted"))?;
+
+            // If the message is a RunRequest, we need to handle it locally.
+            // All other messages are handled the usual way using
+            // `handle_incoming_message()`.
+            if let IncomingMessage::Simulator(SimulatorToPlugin::RunRequest(request)) = request {
+                // Store the incoming messages for recv().
+                self.host_to_frontend_data.extend(request.messages);
+
+                // If start is set, call the run() callback.
+                if request.start.is_some() {
+                    return err("Protocol error: cannot start accelerator while accelerator is already running");
+                }
+                continue;
+            } else if self.handle_incoming_message(request)? {
+                return err("Simulation aborted");
+            }
+        }
+        Ok(self.host_to_frontend_data.pop_front().unwrap())
     }
 
     /// Allocate the given number of downstream qubits.

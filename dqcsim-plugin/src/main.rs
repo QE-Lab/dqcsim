@@ -1,6 +1,6 @@
 use dqcsim::{
-    common::types::{PluginMetadata, PluginType},
-    debug,
+    common::types::{ArbData, PluginMetadata, PluginType},
+    debug, info,
     plugin::{definition::PluginDefinition, state::PluginState},
     trace,
 };
@@ -29,13 +29,17 @@ fn main() -> Result<(), Error> {
         PluginMetadata::new(format!("example: {}", name), "mb", "0.1.0"),
     );
 
-    // Init fn
     definition.initialize = Box::new(|_state, arb_cmds| {
         trace!("running plugin init callback!");
         for arb_cmd in arb_cmds {
             debug!("{}", arb_cmd);
         }
         Ok(())
+    });
+
+    definition.run = Box::new(|_state, _| {
+        info!("running run callback!");
+        Ok(ArbData::default())
     });
 
     PluginState::run(&definition, server)?;
