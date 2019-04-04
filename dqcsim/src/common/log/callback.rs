@@ -15,6 +15,13 @@ pub struct LogCallback {
     pub filter: LoglevelFilter,
 }
 
+impl LogCallback {
+    /// Constructs a new LogCallback.
+    pub fn new(callback: Box<dyn Fn(&LogRecord) + Send>, filter: LoglevelFilter) -> LogCallback {
+        LogCallback { callback, filter }
+    }
+}
+
 impl Log for LogCallback {
     fn name(&self) -> &str {
         "?"

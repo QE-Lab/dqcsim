@@ -89,7 +89,6 @@ pub struct PluginState<'a> {
 
     /// Random number generator.
     rng: Option<RandomNumberGenerator>,
-
     // TODO: internal state such as cached measurement, sequence number
     // counters, etc.
 }

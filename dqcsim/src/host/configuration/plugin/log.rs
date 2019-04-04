@@ -17,6 +17,18 @@ pub struct PluginLogConfiguration {
     pub tee_files: Vec<TeeFile>,
 }
 
+impl PluginLogConfiguration {
+    /// Returns a new PluginLogConfiguration. PluginLogConfigurations
+    /// constructed using this method have no tee files setup by default.
+    pub fn new(name: impl Into<String>, verbosity: LoglevelFilter) -> PluginLogConfiguration {
+        PluginLogConfiguration {
+            name: name.into(),
+            verbosity,
+            tee_files: vec![],
+        }
+    }
+}
+
 impl From<&PluginProcessConfiguration> for PluginLogConfiguration {
     fn from(cfg: &PluginProcessConfiguration) -> PluginLogConfiguration {
         PluginLogConfiguration {

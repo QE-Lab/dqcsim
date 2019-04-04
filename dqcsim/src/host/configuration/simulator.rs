@@ -31,6 +31,15 @@ pub struct SimulatorConfiguration {
 }
 
 impl SimulatorConfiguration {
+    /// Add a new plugin to the pipeline.
+    pub fn push_plugin(
+        mut self,
+        plugin_configuration: impl Into<Box<dyn PluginConfiguration>>,
+    ) -> SimulatorConfiguration {
+        self.plugins.push(plugin_configuration.into());
+        self
+    }
+
     /// Optimizes the source verbosity levels, such that they are no more
     /// verbose than the most verbose sink.
     pub fn optimize_loglevels(&mut self) {
