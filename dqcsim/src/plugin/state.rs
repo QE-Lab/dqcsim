@@ -3,7 +3,7 @@ use crate::{
         error::{inv_op, Result},
         log::Loglevel,
         protocol::{
-            FrontendRunResponse, GatestreamUp, PluginInitializeRequest, PluginInitializeResponse,
+            FrontendRunResponse, FrontendRunRequest, GatestreamUp, PluginInitializeRequest, PluginInitializeResponse,
             PluginToSimulator, SimulatorToPlugin,
         },
         types::{ArbCmd, ArbData, Gate, PluginType, QubitRef, SequenceNumber},
@@ -25,6 +25,10 @@ pub struct PluginState {
     /// Connection object, representing the connections to the host/simulator,
     /// the upstream plugin (if any), and the downstream plugin (if any).
     connection: Connection,
+
+    /// Set when we're a frontend and we're inside a run() callback.
+    inside_run: bool,
+
     // TODO: internal state such as cached measurement, sequence number
     // counters, etc.
 }
@@ -36,6 +40,7 @@ impl PluginState {
     fn new(simulator: impl Into<String>) -> Result<PluginState> {
         Ok(PluginState {
             connection: Connection::new(simulator)?,
+            inside_run: false,
         })
     }
 
@@ -306,51 +311,83 @@ impl PluginController {
         Ok(())
     }
 
-    pub fn run(mut self) -> Result<()> {
-        // Handle RPCs from the host and from upstream until disconnection.
+    /// Handles a run request while we're NOT blocked inside the run()
+    /// callback.
+    fn handle_run(&mut self, req: FrontendRunRequest) -> Result<FrontendRunResponse> {
+        // If we're inside a run, some internal logic did something wrong;
+        // FrontendRunRequests must be handled differently in this case.
+        assert!(!self.state.inside_run, "handle_run() can only be used outside of the run() callback");
+
+        // Store the incoming messages for recv().
+        // TODO
+
+        // If start is set, call the run() callback.
+        let return_value = if let Some(args) = req.start {
+            self.state.inside_run = true;
+            let return_value = (self.definition.run)(&mut self.state, args)?;
+            self.state.inside_run = false;
+            Some(return_value)
+        } else {
+            None
+        };
+
+        // Drain the messages queued up by send().
+        // TODO
+        let messages = vec![];
+
+        Ok(FrontendRunResponse { return_value, messages })
+    }
+
+    /// Handles any incoming message.
+    ///
+    /// The returned boolean indicates whether the message was an abort,
+    /// implying that we should break out of our run loop.
+    fn handle_incoming_message(&mut self, request: IncomingMessage) -> Result<bool> {
         let mut aborted = false;
-        while let Some(request) = self.state.connection.next_request()? {
-            match request {
-                IncomingMessage::Simulator(message) => {
-                    let response = OutgoingMessage::Simulator(match message {
-                        SimulatorToPlugin::Initialize(req) => match self.handle_init(*req) {
-                            Ok(x) => PluginToSimulator::Initialized(x),
-                            Err(e) => PluginToSimulator::Failure(e.to_string()),
-                        },
-                        SimulatorToPlugin::AcceptUpstream => match self.handle_accept_upstream() {
+        match request {
+            IncomingMessage::Simulator(message) => {
+                let response = OutgoingMessage::Simulator(match message {
+                    SimulatorToPlugin::Initialize(req) => match self.handle_init(*req) {
+                        Ok(x) => PluginToSimulator::Initialized(x),
+                        Err(e) => PluginToSimulator::Failure(e.to_string()),
+                    },
+                    SimulatorToPlugin::AcceptUpstream => match self.handle_accept_upstream() {
+                        Ok(_) => PluginToSimulator::Success,
+                        Err(e) => PluginToSimulator::Failure(e.to_string()),
+                    },
+                    SimulatorToPlugin::Abort => {
+                        aborted = true;
+                        match self.handle_abort() {
                             Ok(_) => PluginToSimulator::Success,
                             Err(e) => PluginToSimulator::Failure(e.to_string()),
-                        },
-                        SimulatorToPlugin::Abort => {
-                            aborted = true;
-                            match self.handle_abort() {
-                                Ok(_) => PluginToSimulator::Success,
-                                Err(e) => PluginToSimulator::Failure(e.to_string()),
-                            }
                         }
-                        SimulatorToPlugin::RunRequest(req) => {
-                            // TODO
-                            PluginToSimulator::RunResponse(FrontendRunResponse {
-                                return_value: req.start,
-                                messages: vec![],
-                            })
-                        }
-                        SimulatorToPlugin::ArbRequest(_) => {
-                            // TODO
-                            PluginToSimulator::ArbResponse(ArbData::default())
-                        }
-                    });
-                    self.state.connection.send(response)?;
-                }
-                IncomingMessage::Upstream(_) => {
-                    unimplemented!();
-                }
-                IncomingMessage::Downstream(_) => {
-                    unimplemented!();
-                }
+                    }
+                    SimulatorToPlugin::RunRequest(req) => match self.handle_run(req) {
+                        Ok(x) => PluginToSimulator::RunResponse(x),
+                        Err(e) => PluginToSimulator::Failure(e.to_string()),
+                    }
+                    SimulatorToPlugin::ArbRequest(_) => {
+                        // TODO
+                        PluginToSimulator::ArbResponse(ArbData::default())
+                    }
+                });
+                self.state.connection.send(response)?;
             }
-            if aborted {
-                return Ok(());
+            IncomingMessage::Upstream(_) => {
+                unimplemented!();
+            }
+            IncomingMessage::Downstream(_) => {
+                unimplemented!();
+            }
+        }
+        Ok(aborted)
+    }
+
+    pub fn run(mut self) -> Result<()> {
+        // Handle RPCs from the host and from upstream until disconnection.
+        while let Some(request) = self.state.connection.next_request()? {
+            if self.handle_incoming_message(request)? {
+                break;
             }
         }
         Ok(())
