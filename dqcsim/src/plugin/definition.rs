@@ -78,7 +78,7 @@ impl PluginDefinition {
     pub fn new(typ: PluginType, metadata: impl Into<PluginMetadata>) -> PluginDefinition {
         match typ {
             PluginType::Frontend => PluginDefinition {
-                typ: PluginType::Frontend,
+                typ,
                 metadata: metadata.into(),
                 initialize: Box::new(|_, _| Ok(())),
                 drop: Box::new(|_| Ok(())),
@@ -92,7 +92,7 @@ impl PluginDefinition {
                 host_arb: Box::new(|_, _| Ok(ArbData::default())),
             },
             PluginType::Operator => PluginDefinition {
-                typ: PluginType::Operator,
+                typ,
                 metadata: metadata.into(),
                 initialize: Box::new(|_, _| Ok(())),
                 drop: Box::new(|_| Ok(())),
@@ -108,7 +108,7 @@ impl PluginDefinition {
                 host_arb: Box::new(|_, _| Ok(ArbData::default())),
             },
             PluginType::Backend => PluginDefinition {
-                typ: PluginType::Backend,
+                typ,
                 metadata: metadata.into(),
                 initialize: Box::new(|_, _| Ok(())),
                 drop: Box::new(|_| Ok(())),
