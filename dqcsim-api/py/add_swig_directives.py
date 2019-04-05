@@ -10,7 +10,7 @@ def split_type(s):
     m = re.match(r'(\w+)\s*\(\*(\w+)\)\(([\w*, ]+)\)', s)
     if m:
         args = [m.group(1).strip()]
-        args.extend(m.group(3).strip().split(', '))
+        args.extend(map(lambda x: split_type(x)[0], m.group(3).strip().split(', ')))
         if len(args) == 2 and args[1] == ['void']:
             del args[-1]
         return args, m.group(2).strip()
@@ -187,6 +187,8 @@ void dqcs_swig_callback_cleanup(void *user) {
   }
 }
 
+%typemap(in) dqcs_plugin_state_t = long long;
+
 ''']
 
 for line in data.split('\n\n'):
@@ -254,13 +256,14 @@ for line in data.split('\n\n'):
             #  - (const) char*: interpreted as string (input only)
             #  - anything else: assumed to be castable to long long and
             #    interpreted as such
+            print(args)
             if (
                 ret_typ == 'dqcs_return_t'
                 and len(args) >= 3
                 and type(args[-3][0]) == list
                 and len(args[-3][0]) >= 2
-                and args[-3][0][1] == 'void*'
-                and args[-2][0] == ['void', 'void*']
+                and args[-3][0][1] == 'void *'
+                and args[-2][0] == ['void', 'void *']
                 and args[-1][0] == 'void *'
             ):
                 line += '\n' + gen_callback_installer(name, args)
