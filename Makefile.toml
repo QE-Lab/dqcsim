@@ -24,6 +24,10 @@ args = ["build"]
 command = "cargo"
 args = ["build", "--release"]
 
+[tasks.kcov-test]
+env = { "RUSTFLAGS" = "-C link-dead-code" }
+run_task = "test"
+
 [tasks.test]
 command = "cargo"
 args = ["test"]
