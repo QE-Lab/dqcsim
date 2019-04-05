@@ -146,3 +146,29 @@ fn simulation_init_cmds() {
     let simulator = Simulator::new(configuration);
     assert!(simulator.is_ok());
 }
+
+#[test]
+fn simulation_recv_in_initialize() {
+    let mut definition =
+        PluginDefinition::new(PluginType::Frontend, PluginMetadata::new("", "", ""));
+
+    definition.initialize = Box::new(|state, _| {
+        let recv = state.recv();
+        assert!(recv.is_err());
+        assert_eq!(
+            recv.unwrap_err().to_string(),
+            "Invalid operation: recv() can only be called from inside the run() callback"
+        );
+        Ok(())
+    });
+
+    let configuration = SimulatorConfiguration::default()
+        .push_plugin(thread_config_type(PluginType::Backend))
+        .push_plugin(PluginThreadConfiguration::new(
+            definition,
+            PluginLogConfiguration::new("", LoglevelFilter::Off),
+        ));
+
+    let simulator = Simulator::new(configuration);
+    assert!(simulator.is_ok());
+}
