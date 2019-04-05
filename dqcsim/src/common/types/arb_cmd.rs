@@ -266,4 +266,11 @@ mod test {
             "a.b:{\"answer\":42},x,y,z",
         );
     }
+
+    #[test]
+    fn into_arbdata() {
+        let cmd = ArbCmd::from_str("a.b").unwrap();
+        let data: ArbData = cmd.into();
+        assert_eq!(ArbCmd::from_str("a.b").unwrap().data(), &data);
+    }
 }

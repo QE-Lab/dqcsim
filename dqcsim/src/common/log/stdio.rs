@@ -19,7 +19,7 @@ use std::{
 /// Returns a thread::JoinHandle to the spawned thread.
 pub fn proxy_stdio(
     name: impl Into<String>,
-    mut stream: Box<Read + Send>,
+    mut stream: Box<dyn Read + Send>,
     sender: Sender<LogRecord>,
     level: Loglevel,
 ) -> JoinHandle<()> {

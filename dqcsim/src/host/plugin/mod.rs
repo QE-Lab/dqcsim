@@ -7,7 +7,7 @@ use crate::{
         log::thread::LogThread,
         protocol::{
             PluginAcceptUpstreamRequest, PluginInitializeRequest, PluginInitializeResponse,
-            PluginToSimulator, SimulatorToPlugin,
+            PluginToSimulator, PluginUserInitializeRequest, SimulatorToPlugin,
         },
         types::{ArbCmd, ArbData, PluginType},
     },
@@ -68,7 +68,7 @@ impl Plugin {
     }
 
     /// Sends an `PluginInitializeRequest` to this plugin.
-    pub fn init(
+    pub fn initialize(
         &mut self,
         logger: &LogThread,
         downstream: &Option<String>,
@@ -79,7 +79,6 @@ impl Plugin {
             PluginInitializeRequest {
                 downstream: downstream.clone(),
                 plugin_type: self.plugin_type(),
-                init_cmds: self.init_cmds(),
                 seed,
                 log_configuration: self.log_configuration(),
                 log_channel: logger.get_ipc_sender(),
@@ -92,6 +91,17 @@ impl Plugin {
     /// establishes the connection.
     pub fn accept_upstream(&mut self) -> Result<()> {
         checked_rpc!(self, PluginAcceptUpstreamRequest)
+    }
+
+    /// Send user initialize request to the plugin. This invokes the initialize
+    /// callback with the user initialize commands.
+    pub fn user_initialize(&mut self) -> Result<()> {
+        checked_rpc!(
+            self,
+            PluginUserInitializeRequest {
+                init_cmds: self.init_cmds()
+            }
+        )
     }
 
     /// Sends an `ArbCmd` message to this plugin.

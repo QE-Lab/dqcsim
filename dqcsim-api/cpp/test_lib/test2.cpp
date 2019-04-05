@@ -20,7 +20,7 @@ TEST(Test, Test) {
   front = dqcs_tcfg_new(front, "");
   dqcs_scfg_push_plugin(scfg, front);
 
-  dqcs_handle_t back = dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "", "target/debug/dqcsim-plugin");
+  dqcs_handle_t back = dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "", "target/debug/examples/plugin");
   dqcs_scfg_push_plugin(scfg, back);
 
   dqcs_handle_t sim = dqcs_sim_new(scfg);

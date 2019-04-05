@@ -8,7 +8,7 @@ use structopt::StructOpt;
 
 /// The main StructOpt structure for DQCsim. This encompasses DQCsim's own
 /// options.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, StructOpt, PartialEq)]
 #[structopt(
     name = "DQCsim",
     author = "TU Delft, QuTech",
@@ -143,7 +143,7 @@ pub struct DQCsimStructOpt {
 
 /// The plugin StructOpt structure. This encompasses the options that are
 /// associated with a plugin.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, StructOpt, PartialEq)]
 #[structopt()]
 pub struct PluginStructOpt {
     /// Provides a custom name for the plugin, used for log messages and
@@ -248,4 +248,139 @@ impl From<&PluginStructOpt> for PluginProcessFunctionalConfiguration {
             work: opts.work.clone().unwrap_or_else(|| PathBuf::from(".")),
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_sim_struct() {
+        let opt = DQCsimStructOpt {
+            host_calls: vec![],
+            host_stdout: false,
+            repro_out: None,
+            no_repro_out: false,
+            repro_path_style: ReproductionPathStyle::Keep,
+            reproduce: None,
+            reproduce_exactly: None,
+            seed: None,
+            stderr_level: LoglevelFilter::Info,
+            tee_files: vec![],
+            dqcsim_level: LoglevelFilter::Trace,
+            plugin_level: LoglevelFilter::Trace,
+            long_help: false,
+        };
+        assert_eq!(
+            opt,
+            DQCsimStructOpt::from_clap(&DQCsimStructOpt::clap().get_matches_from(&["test"]))
+        );
+    }
+
+    #[test]
+    fn allow_empty_plugin_opt() {
+        assert_eq!(
+            PluginStructOpt {
+                name: None,
+                init: vec![],
+                env: vec![],
+                work: None,
+                verbosity: None,
+                tee_files: vec![],
+                stdout_mode: None,
+                stderr_mode: None,
+                accept_timeout: None,
+                shutdown_timeout: None,
+            },
+            PluginStructOpt::from_clap(&PluginStructOpt::clap().get_matches_from(&[""]))
+        );
+    }
+
+    #[test]
+    fn allow_setting_name() {
+        let opt = PluginStructOpt {
+            name: Some("asdf".to_string()),
+            init: vec![],
+            env: vec![],
+            work: None,
+            verbosity: None,
+            tee_files: vec![],
+            stdout_mode: None,
+            stderr_mode: None,
+            accept_timeout: None,
+            shutdown_timeout: None,
+        };
+        assert_eq!(
+            opt,
+            PluginStructOpt::from_clap(
+                &PluginStructOpt::clap().get_matches_from(&["test", "--name", "asdf"])
+            )
+        );
+        assert_eq!(
+            opt,
+            PluginStructOpt::from_clap(
+                &PluginStructOpt::clap().get_matches_from(&["test", "-n", "asdf"])
+            )
+        );
+        assert_eq!(
+            opt,
+            PluginStructOpt::from_clap(
+                &PluginStructOpt::clap().get_matches_from(&["test", "-nasdf"])
+            )
+        );
+    }
+
+    #[test]
+    fn convert_to_plugin_process_functional_configuration() {
+        let opt = PluginStructOpt {
+            name: None,
+            init: vec![],
+            env: vec![],
+            work: Some(PathBuf::from(r"/root")),
+            verbosity: None,
+            tee_files: vec![],
+            stdout_mode: None,
+            stderr_mode: None,
+            accept_timeout: None,
+            shutdown_timeout: None,
+        };
+        let config = PluginProcessFunctionalConfiguration::from(&opt);
+        assert_eq!(
+            config,
+            PluginProcessFunctionalConfiguration {
+                init: vec![],
+                env: vec![],
+                work: PathBuf::from(r"/root")
+            }
+        );
+    }
+
+    #[test]
+    fn convert_to_plugin_non_functional_opts() {
+        let opt = PluginStructOpt {
+            name: None,
+            init: vec![],
+            env: vec![],
+            work: None,
+            verbosity: Some(LoglevelFilter::Warn),
+            tee_files: vec![],
+            stdout_mode: None,
+            stderr_mode: None,
+            accept_timeout: None,
+            shutdown_timeout: None,
+        };
+        let config = PluginNonfunctionalOpts::from(&opt);
+        assert_eq!(
+            config,
+            PluginNonfunctionalOpts {
+                verbosity: Some(LoglevelFilter::Warn),
+                tee_files: vec![],
+                stdout_mode: None,
+                stderr_mode: None,
+                accept_timeout: None,
+                shutdown_timeout: None
+            }
+        );
+    }
+
 }
