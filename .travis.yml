@@ -52,7 +52,7 @@ install:
 script:
   - cargo fmt -- --check
   - make build
-  - make test
+  - make kcov-test
   - cargo clippy -- -Dwarnings
 
 after_success: |
