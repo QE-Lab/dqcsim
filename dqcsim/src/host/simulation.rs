@@ -9,12 +9,18 @@ use crate::{
         types::{ArbCmd, ArbData, PluginMetadata},
     },
     debug,
-    host::{accelerator::Accelerator, configuration::Seed, plugin::Plugin},
+    host::{
+        accelerator::Accelerator,
+        configuration::Seed,
+        plugin::Plugin,
+        reproduction::{HostCall, Reproduction},
+    },
     trace,
 };
 use rand::{RngCore, SeedableRng};
 use rand_chacha::ChaChaRng;
 use std::collections::VecDeque;
+use std::path::Path;
 
 /// Type alias for a pipeline of Plugin trait objects.
 pub type Pipeline = Vec<Box<dyn Plugin>>;
@@ -129,11 +135,19 @@ pub struct Simulation {
 
     /// Objects received from the accelerator, to be consumed using `recv()`.
     accelerator_to_host_data: VecDeque<ArbData>,
+
+    /// Reproduction storage.
+    reproduction_log: Option<Reproduction>,
 }
 
 impl Simulation {
     /// Constructs a Simulation from a collection of PluginInstance and a random seed.
-    pub fn new(mut pipeline: Pipeline, seed: Seed, logger: &LogThread) -> Result<Simulation> {
+    pub fn new(
+        mut pipeline: Pipeline,
+        seed: Seed,
+        reproduction_log: Option<Reproduction>,
+        logger: &LogThread,
+    ) -> Result<Simulation> {
         trace!("Constructing Simulation");
         if pipeline.len() < 2 {
             inv_arg("Simulation must consist of at least a frontend and backend")?
@@ -223,6 +237,7 @@ impl Simulation {
             state: AcceleratorState::Idle,
             host_to_accelerator_data: VecDeque::new(),
             accelerator_to_host_data: VecDeque::new(),
+            reproduction_log,
         })
     }
 
@@ -241,17 +256,9 @@ impl Simulation {
         unsafe { &mut self.pipeline.get_unchecked_mut(0).plugin }
     }
 
-    /// Yields to the accelerator.
-    ///
-    /// The accelerator simulation runs until it blocks again. This is useful
-    /// if you want an immediate response to an otherwise asynchronous call
-    /// through the logging system or some communication channel outside of
-    /// DQCsim's control.
-    ///
-    /// This function silently returns immediately if no asynchronous data was
-    /// pending or if the simulator is waiting for something that has not been
-    /// sent yet.
-    pub fn yield_to_accelerator(&mut self) -> Result<()> {
+    /// Internal function used to yield to the accelerator. This is called
+    /// whenever we need to block to get data from the simulation.
+    fn internal_yield(&mut self) -> Result<()> {
         // If a `start()` is pending, move the state to `Blocked` and send the
         // start command to the accelerator.
         let start = if self.state.is_start_pending() {
@@ -287,6 +294,29 @@ impl Simulation {
         }
 
         Ok(())
+    }
+
+    /// Records a host call to the reproduction log, if we have one.
+    fn record_host_call(&mut self, host_call: HostCall) {
+        if let Some(log) = self.reproduction_log.as_mut() {
+            debug!("recording host call to reproduction log: {:?}", &host_call);
+            log.record(host_call);
+        }
+    }
+
+    /// Yields to the accelerator.
+    ///
+    /// The accelerator simulation runs until it blocks again. This is useful
+    /// if you want an immediate response to an otherwise asynchronous call
+    /// through the logging system or some communication channel outside of
+    /// DQCsim's control.
+    ///
+    /// This function silently returns immediately if no asynchronous data was
+    /// pending or if the simulator is waiting for something that has not been
+    /// sent yet.
+    pub fn yield_to_accelerator(&mut self) -> Result<()> {
+        self.record_host_call(HostCall::Yield);
+        self.internal_yield()
     }
 
     /// Sends an `ArbCmd` message to one of the plugins, referenced by name.
@@ -329,7 +359,14 @@ impl Simulation {
         if index >= n_plugins {
             inv_arg(format!("index {} out of range", index))?
         }
-        self.yield_to_accelerator()?;
+
+        // Perform the actual call.
+        let cmd = cmd.into();
+        self.record_host_call(HostCall::Arb(
+            self.pipeline[index].plugin.name(),
+            cmd.clone(),
+        ));
+        self.internal_yield()?;
         self.pipeline[index].plugin.arb(cmd)
     }
 
@@ -362,6 +399,18 @@ impl Simulation {
         }
         Ok(&self.pipeline[index].metadata)
     }
+
+    /// Writes a the reproduction log to a file.
+    pub fn write_reproduction_file(&self, filename: impl AsRef<Path>) -> Result<()> {
+        if let Some(log) = &self.reproduction_log {
+            log.to_file(filename)
+        } else {
+            inv_op(
+                "cannot output reproduction file; \
+                 we failed earlier on when attempting to construct the logger.",
+            )
+        }
+    }
 }
 
 impl Accelerator for Simulation {
@@ -371,7 +420,9 @@ impl Accelerator for Simulation {
     /// `recv()`, or `wait()` is called.
     fn start(&mut self, args: impl Into<ArbData>) -> Result<()> {
         if self.state.is_idle() {
-            self.state.put_data(args.into()).unwrap();
+            let args = args.into();
+            self.record_host_call(HostCall::Start(args.clone()));
+            self.state.put_data(args).unwrap();
             Ok(())
         } else {
             inv_op("accelerator is already running; call wait() first")
@@ -385,10 +436,11 @@ impl Accelerator for Simulation {
     ///
     /// Deadlocks are detected and prevented by throwing an error message.
     fn wait(&mut self) -> Result<ArbData> {
+        self.record_host_call(HostCall::Wait);
         if self.state.is_wait_pending() {
             self.state.take_data()
         } else {
-            self.yield_to_accelerator()?;
+            self.internal_yield()?;
             if self.state.is_wait_pending() {
                 self.state.take_data()
             } else {
@@ -402,7 +454,9 @@ impl Accelerator for Simulation {
     /// This is an asynchronous call: nothing happens until `yield()`,
     /// `recv()`, or `wait()` is called.
     fn send(&mut self, args: impl Into<ArbData>) -> Result<()> {
-        self.host_to_accelerator_data.push_back(args.into());
+        let args = args.into();
+        self.record_host_call(HostCall::Send(args.clone()));
+        self.host_to_accelerator_data.push_back(args);
         Ok(())
     }
 
@@ -410,10 +464,11 @@ impl Accelerator for Simulation {
     ///
     /// Deadlocks are detected and prevented by throwing an error message.
     fn recv(&mut self) -> Result<ArbData> {
+        self.record_host_call(HostCall::Recv);
         if let Some(data) = self.accelerator_to_host_data.pop_front() {
             Ok(data)
         } else {
-            self.yield_to_accelerator()?;
+            self.internal_yield()?;
             if let Some(data) = self.accelerator_to_host_data.pop_front() {
                 Ok(data)
             } else {

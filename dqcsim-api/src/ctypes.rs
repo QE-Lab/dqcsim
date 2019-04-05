@@ -465,3 +465,45 @@ impl From<QubitMeasurementValue> for dqcs_measurement_t {
         }
     }
 }
+
+/// Reproduction file path style.
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+#[allow(non_camel_case_types)]
+pub enum dqcs_path_style_t {
+    /// Error value used to indicate that something went wrong.
+    DQCS_PATH_STYLE_INVALID = -1,
+
+    /// Specifies that paths should be saved the same way they were specified
+    /// on the command line.
+    DQCS_PATH_STYLE_KEEP = 0,
+
+    /// Specifies that all paths should be saved relative to DQCsim's working
+    /// directory.
+    DQCS_PATH_STYLE_RELATIVE = 1,
+
+    /// Specifies that all paths should be saved canonically, i.e. relative to
+    /// the root directory.
+    DQCS_PATH_STYLE_ABSOLUTE = 2,
+}
+
+impl Into<Option<ReproductionPathStyle>> for dqcs_path_style_t {
+    fn into(self) -> Option<ReproductionPathStyle> {
+        match self {
+            dqcs_path_style_t::DQCS_PATH_STYLE_INVALID => None,
+            dqcs_path_style_t::DQCS_PATH_STYLE_KEEP => Some(ReproductionPathStyle::Keep),
+            dqcs_path_style_t::DQCS_PATH_STYLE_RELATIVE => Some(ReproductionPathStyle::Relative),
+            dqcs_path_style_t::DQCS_PATH_STYLE_ABSOLUTE => Some(ReproductionPathStyle::Absolute),
+        }
+    }
+}
+
+impl From<ReproductionPathStyle> for dqcs_path_style_t {
+    fn from(x: ReproductionPathStyle) -> dqcs_path_style_t {
+        match x {
+            ReproductionPathStyle::Keep => dqcs_path_style_t::DQCS_PATH_STYLE_KEEP,
+            ReproductionPathStyle::Relative => dqcs_path_style_t::DQCS_PATH_STYLE_RELATIVE,
+            ReproductionPathStyle::Absolute => dqcs_path_style_t::DQCS_PATH_STYLE_ABSOLUTE,
+        }
+    }
+}

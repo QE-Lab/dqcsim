@@ -4,7 +4,7 @@ use crate::{
         log::{callback::LogCallback, tee_file::TeeFile, LoglevelFilter},
         types::PluginType,
     },
-    host::configuration::{PluginConfiguration, Seed},
+    host::configuration::{PluginConfiguration, ReproductionPathStyle, Seed},
 };
 
 /// The complete configuration for a DQCsim run.
@@ -28,6 +28,9 @@ pub struct SimulatorConfiguration {
 
     /// The plugin configurations, from front to back.
     pub plugins: Vec<Box<dyn PluginConfiguration>>,
+
+    /// The path style used when writing the reproduction file.
+    pub reproduction_path_style: ReproductionPathStyle,
 }
 
 impl SimulatorConfiguration {
@@ -144,6 +147,7 @@ impl Default for SimulatorConfiguration {
             log_callback: None,
             dqcsim_level: LoglevelFilter::Info,
             plugins: vec![],
+            reproduction_path_style: ReproductionPathStyle::Keep,
         }
     }
 }

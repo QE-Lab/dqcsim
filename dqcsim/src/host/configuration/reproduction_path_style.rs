@@ -7,7 +7,7 @@ use std::{
 };
 
 /// Represents the style for storing paths in a reproduction file.
-#[derive(EnumVariants, Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[derive(EnumVariants, Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
 pub enum ReproductionPathStyle {
     /// Specifies that paths should be saved the same way they were specified
     /// on the command line.
@@ -27,7 +27,7 @@ impl ReproductionPathStyle {
     ///
     /// Calls `std::env::current_dir()` if the style is `Relative` to get the
     /// base for the relative path.
-    pub fn convert_path(&self, path: &Path) -> io::Result<PathBuf> {
+    pub fn convert_path(self, path: &Path) -> io::Result<PathBuf> {
         match self {
             ReproductionPathStyle::Keep => Ok(path.into()),
             ReproductionPathStyle::Relative => {
@@ -48,7 +48,7 @@ impl ReproductionPathStyle {
 
     /// Convenience function that applies `convert_path()` on the contents of
     /// an `Option`.
-    pub fn convert_path_option(&self, path: &Option<PathBuf>) -> io::Result<Option<PathBuf>> {
+    pub fn convert_path_option(self, path: &Option<PathBuf>) -> io::Result<Option<PathBuf>> {
         if let Some(path) = path.as_ref() {
             Ok(Some(self.convert_path(path)?))
         } else {

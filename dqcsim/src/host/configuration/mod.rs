@@ -23,5 +23,8 @@ pub use plugin::{
     PluginConfiguration,
 };
 
+mod reproduction_path_style;
+pub use reproduction_path_style::ReproductionPathStyle;
+
 mod simulator;
 pub use simulator::SimulatorConfiguration;

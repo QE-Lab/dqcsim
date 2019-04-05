@@ -1,9 +1,9 @@
 use crate::{
     common::{error::Result, log::LoglevelFilter, types::PluginType},
     host::{
-        configuration::plugin::log::PluginLogConfiguration,
+        configuration::{plugin::log::PluginLogConfiguration, ReproductionPathStyle},
         plugin::Plugin,
-        reproduction::{PluginReproduction, ReproductionPathStyle},
+        reproduction::PluginReproduction,
     },
 };
 use std::fmt::Debug;
@@ -28,7 +28,7 @@ pub trait PluginConfiguration: Debug {
 
     /// Returns the PluginReproduction when possible. Otherwise return an
     /// error.
-    fn get_reproduction(&self, path_style: &ReproductionPathStyle) -> Result<PluginReproduction>;
+    fn get_reproduction(&self, path_style: ReproductionPathStyle) -> Result<PluginReproduction>;
 
     /// Limits the verbosity of the messages reported to the simulator.
     ///

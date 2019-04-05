@@ -2,8 +2,11 @@
 
 use crate::{
     common::{error::Result, log::thread::LogThread},
-    host::{configuration::SimulatorConfiguration, plugin::Plugin, simulation::Simulation},
-    trace,
+    host::{
+        configuration::SimulatorConfiguration, plugin::Plugin, reproduction::Reproduction,
+        simulation::Simulation,
+    },
+    trace, warn,
 };
 
 /// Simulator driver instance.
@@ -44,6 +47,9 @@ impl Simulator {
         configuration.check_plugin_list()?;
         configuration.optimize_loglevels();
 
+        // Try to build the reproduction logger.
+        let reproduction = Reproduction::new_logger(&configuration);
+
         // Spawn log thread.
         let log_thread = LogThread::spawn(
             "dqcsim",
@@ -53,6 +59,17 @@ impl Simulator {
             configuration.tee_files,
         )?;
 
+        // Now that we can log, report any failures to create the reproduction
+        // logger as a warning.
+        let reproduction = match reproduction {
+            Ok(r) => Some(r),
+            Err(e) => {
+                warn!("Failed to construct reproduction logger: {}", e.to_string());
+                warn!("Therefore, you will not be able to reproduce this run on the command line later.");
+                None
+            }
+        };
+
         // Construct plugin pipeline.
         let pipeline: Vec<Box<dyn Plugin>> = configuration
             .plugins
@@ -61,7 +78,7 @@ impl Simulator {
             .collect();
 
         // Construct simulation.
-        let simulation = Simulation::new(pipeline, configuration.seed, &log_thread)?;
+        let simulation = Simulation::new(pipeline, configuration.seed, reproduction, &log_thread)?;
 
         Ok(Simulator {
             log_thread,

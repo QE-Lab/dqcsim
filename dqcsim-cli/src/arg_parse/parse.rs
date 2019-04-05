@@ -6,7 +6,7 @@ use dqcsim::{
     host::{configuration::*, reproduction::*},
 };
 use failure::{Error, Fail};
-use std::ffi::OsString;
+use std::{ffi::OsString, path::PathBuf, str::FromStr};
 use structopt::{clap::AppSettings, StructOpt};
 
 /// Error structure used for reporting command line errors.
@@ -37,6 +37,7 @@ struct PluginConfigParser<'a, 'b> {
     app: clap::App<'a, 'b>,
     defs: Vec<PluginDefinition>,
     mods: Vec<PluginModification>,
+    first_specification: Option<String>,
 }
 
 impl<'a, 'b> PluginConfigParser<'a, 'b> {
@@ -46,6 +47,7 @@ impl<'a, 'b> PluginConfigParser<'a, 'b> {
             app,
             defs: vec![],
             mods: vec![],
+            first_specification: None,
         }
     }
 
@@ -125,6 +127,13 @@ impl<'a, 'b> PluginConfigParser<'a, 'b> {
                 PluginType::Backend => "back".to_string(),
             };
 
+            // If this is the first plugin definition, save the sugared
+            // specification. This is used to construct the default name for
+            // the reproduction output file.
+            if self.first_specification.is_none() {
+                self.first_specification.replace(specification.to_string());
+            }
+
             // Push the plugin definition.
             self.defs.push(PluginDefinition {
                 name: opts.name.clone().unwrap_or(default_name),
@@ -146,7 +155,7 @@ impl<'a, 'b> PluginConfigParser<'a, 'b> {
     /// If zero plugins were defined or any plugin modifications were
     /// specified, an error is reported. If only one plugin is defined, QX is
     /// appended with the default configuration.
-    pub fn get_defs(mut self) -> Result<Vec<PluginDefinition>, Error> {
+    pub fn get_defs(mut self) -> Result<(PathBuf, Vec<PluginDefinition>), Error> {
         if self.defs.is_empty() {
             return format_error(CommandLineError::Unknown(
                 "At least one plugin specification is required".to_string(),
@@ -175,7 +184,7 @@ impl<'a, 'b> PluginConfigParser<'a, 'b> {
             )));
         }
 
-        Ok(self.defs)
+        Ok((self.first_specification.unwrap().into(), self.defs))
     }
 
     /// Returns the vector of plugin modifications.
@@ -215,6 +224,9 @@ pub struct CommandLineConfiguration {
 
     /// The simulator configuration.
     pub dqcsim: SimulatorConfiguration,
+
+    /// Reproduction output filename.
+    pub reproduction_file: Option<PathBuf>,
 }
 
 impl CommandLineConfiguration {
@@ -322,7 +334,9 @@ impl CommandLineConfiguration {
                 log_callback: None,
                 dqcsim_level: dqcsim_opts.dqcsim_level,
                 plugins: vec![],
+                reproduction_path_style: dqcsim_opts.repro_path_style,
             },
+            reproduction_file: dqcsim_opts.repro_out.clone(),
         };
 
         // Configure the plugins and handle the reconfiguration options.
@@ -345,8 +359,8 @@ impl CommandLineConfiguration {
                 .or_else(|e| format_error_ctxt("While loading reproduction file", e))?;
         } else {
             // Construct the plugin vector from the plugin definitions.
-            config.dqcsim.plugins = pcp
-                .get_defs()?
+            let (first_specification, defs) = pcp.get_defs()?;
+            config.dqcsim.plugins = defs
                 .into_iter()
                 .map(|x| {
                     Box::new(x.into_config(dqcsim_opts.plugin_level))
@@ -386,38 +400,25 @@ impl CommandLineConfiguration {
             if running {
                 config.host_calls.push(HostCall::Wait);
             }
+
+            // Even if the user did not specify a reproduction output file, the
+            // default behavior is to output one for new simulations.
+            if config.reproduction_file.is_none() {
+                config.reproduction_file.replace(
+                    PathBuf::from_str(&format!(
+                        "{}.repro",
+                        first_specification.file_name().unwrap().to_str().unwrap()
+                    ))
+                    .unwrap(),
+                );
+            }
         }
 
-        // TODO: fix reproduction output. This should be done in
-        // Simulator/Simulation anyway!
-        /*
-        // Output a reproduction file if requested.
-        if !dqcsim_opts.no_repro_out {
-            let file = &dqcsim_opts.repro_out.or_else(|| {
-                if let Some(front) = config.dqcsim.plugins.get(0) {
-                    if let Some(spec) = &front.specification.sugared {
-                        return Some(
-                            PathBuf::from_str(&format!(
-                                "{}.repro",
-                                spec.file_name().unwrap().to_str().unwrap()
-                            ))
-                            .unwrap(),
-                        );
-                    }
-                }
-                None
-            });
-            if let Some(file) = file {
-                Reproduction::from_run(
-                    &config.dqcsim,
-                    &config.host_calls,
-                    dqcsim_opts.repro_path_style,
-                )
-                .or_else(|e| format_error_ctxt("While building reproduction structure", e))?
-                .to_file(file)
-                .or_else(|e| format_error_ctxt("While writing reproduction file", e))?
-            }
-        }*/
+        // If the user explicitly specified that they don't want a reproduction
+        // file, disable this feature.
+        if dqcsim_opts.no_repro_out {
+            config.reproduction_file.take();
+        }
 
         Ok(config)
     }

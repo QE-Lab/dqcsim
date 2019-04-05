@@ -14,9 +14,6 @@ use std::path::{Path, PathBuf};
 mod host_call;
 pub use host_call::HostCall;
 
-mod path_style;
-pub use path_style::ReproductionPathStyle;
-
 /// The contents of a plugin configuration in a reproduction file.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct PluginReproduction {
@@ -155,27 +152,25 @@ pub struct Reproduction {
 }
 
 impl Reproduction {
-    /// Constructs a reproduction structure from a completed run.
-    pub fn from_run<'a, T>(
-        config: &SimulatorConfiguration,
-        host_calls: T,
-        path_style: ReproductionPathStyle,
-    ) -> Result<Reproduction>
-    where
-        T: IntoIterator<Item = &'a HostCall>,
-    {
+    /// Constructs a reproduction structure for tracking a simulation.
+    pub fn new_logger(config: &SimulatorConfiguration) -> Result<Reproduction> {
         Ok(Reproduction {
             seed: config.seed.value,
-            host_calls: host_calls.into_iter().cloned().collect(),
+            host_calls: vec![],
             plugins: config
                 .plugins
                 .iter()
-                .map(|x| x.get_reproduction(&path_style))
+                .map(|x| x.get_reproduction(config.reproduction_path_style))
                 .collect::<Result<Vec<PluginReproduction>>>()?,
             hostname: whoami::hostname(),
             username: whoami::username(),
             workdir: std::env::current_dir()?,
         })
+    }
+
+    /// Records a host call to the reproduction log.
+    pub fn record(&mut self, host_call: HostCall) {
+        self.host_calls.push(host_call);
     }
 
     /// Turns this reproduction structure into a configuration and a list of
@@ -238,13 +233,15 @@ impl Reproduction {
     }
 
     /// Constructs a reproduction structure from a file.
-    pub fn from_file(file: &Path) -> Result<Reproduction> {
-        Ok(serde_yaml::from_reader(&mut std::fs::File::open(file)?)?)
+    pub fn from_file(file: impl AsRef<Path>) -> Result<Reproduction> {
+        Ok(serde_yaml::from_reader(&mut std::fs::File::open(
+            file.as_ref(),
+        )?)?)
     }
 
     /// Writes a reproduction structure to a file.
-    pub fn to_file(&self, file: &Path) -> Result<()> {
-        serde_yaml::to_writer(&mut std::fs::File::create(file)?, self)?;
+    pub fn to_file(&self, file: impl AsRef<Path>) -> Result<()> {
+        serde_yaml::to_writer(&mut std::fs::File::create(file.as_ref())?, self)?;
         Ok(())
     }
 }

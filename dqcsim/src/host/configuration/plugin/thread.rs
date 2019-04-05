@@ -5,9 +5,9 @@ use crate::{
         types::{ArbCmd, PluginType},
     },
     host::{
-        configuration::{PluginConfiguration, PluginLogConfiguration},
+        configuration::{PluginConfiguration, PluginLogConfiguration, ReproductionPathStyle},
         plugin::{thread::PluginThread, Plugin},
-        reproduction::{PluginReproduction, ReproductionPathStyle},
+        reproduction::PluginReproduction,
     },
     plugin::definition::PluginDefinition,
 };
@@ -66,7 +66,7 @@ impl PluginConfiguration for PluginThreadConfiguration {
         self.definition.get_type()
     }
 
-    fn get_reproduction(&self, _: &ReproductionPathStyle) -> Result<PluginReproduction> {
+    fn get_reproduction(&self, _: ReproductionPathStyle) -> Result<PluginReproduction> {
         inv_op("It's not possible to build a plugin reproduction for PluginThreads")
     }
 

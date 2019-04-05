@@ -10,7 +10,7 @@ pub extern "C" fn dqcs_tcfg_new(pdef: dqcs_handle_t, name: *const c_char) -> dqc
         take!(pdef as PluginDefinition);
         Ok(insert(PluginThreadConfiguration::new(
             pdef,
-            PluginLogConfiguration::new(receive_str(name)?, LoglevelFilter::Info),
+            PluginLogConfiguration::new(receive_str(name)?, LoglevelFilter::Trace),
         )))
     })
 }

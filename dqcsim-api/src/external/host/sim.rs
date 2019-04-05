@@ -195,3 +195,16 @@ pub extern "C" fn dqcs_sim_get_version_idx(sim: dqcs_handle_t, index: ssize_t) -
             .to_string())
     })
 }
+
+/// Writes a reproduction file for the simulation so far.
+#[no_mangle]
+pub extern "C" fn dqcs_sim_write_reproduction_file(
+    sim: dqcs_handle_t,
+    filename: *const c_char,
+) -> dqcs_return_t {
+    api_return_none(|| {
+        resolve!(sim as &Simulator);
+        sim.simulation
+            .write_reproduction_file(receive_str(filename)?)
+    })
+}

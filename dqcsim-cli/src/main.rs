@@ -1,4 +1,5 @@
 use dqcsim::{
+    error, fatal,
     host::{accelerator::Accelerator, reproduction::HostCall, simulator::Simulator},
     info, note,
 };
@@ -8,18 +9,12 @@ use failure::Error;
 mod arg_parse;
 use crate::arg_parse::*;
 
-fn main() -> Result<(), Error> {
-    let cfg = CommandLineConfiguration::parse().unwrap_or_else(|e| {
-        println!("{}", e);
-        std::process::exit(1);
-    });
-
-    let mut sim = Simulator::new(cfg.dqcsim).unwrap_or_else(|e| {
-        eprintln!("Failed to construct simulator: {}", e);
-        std::process::exit(1);
-    });
-
-    for host_call in cfg.host_calls.into_iter() {
+fn run(
+    sim: &mut Simulator,
+    host_stdout: bool,
+    host_calls: impl IntoIterator<Item = HostCall>,
+) -> Result<(), Error> {
+    for host_call in host_calls {
         match host_call {
             HostCall::Start(d) => {
                 info!("Executing 'start(...)' host call...");
@@ -29,7 +24,7 @@ fn main() -> Result<(), Error> {
                 info!("Executing 'wait()' host call...");
                 let ret = sim.simulation.wait()?;
                 note!("'wait()' returned {}", &ret);
-                if cfg.host_stdout {
+                if host_stdout {
                     println!("wait(): {}", ret);
                 }
             }
@@ -41,7 +36,7 @@ fn main() -> Result<(), Error> {
                 info!("Executing 'recv()' host call...");
                 let ret = sim.simulation.recv()?;
                 note!("'recv()' returned {}", &ret);
-                if cfg.host_stdout {
+                if host_stdout {
                     println!("recv: {}", ret);
                 }
             }
@@ -53,7 +48,7 @@ fn main() -> Result<(), Error> {
                 info!("Executing 'arb(...)' host call...");
                 let ret = sim.simulation.arb(n, d)?;
                 note!("'arb()' returned {}", &ret);
-                if cfg.host_stdout {
+                if host_stdout {
                     println!("arb: {}", ret);
                 }
             }
@@ -61,4 +56,40 @@ fn main() -> Result<(), Error> {
     }
 
     Ok(())
+}
+
+fn internal_main() -> Result<(), Error> {
+    let mut cfg = CommandLineConfiguration::parse().or_else(|e| {
+        println!("{}", e);
+        Err(e)
+    })?;
+
+    let mut sim = Simulator::new(cfg.dqcsim).or_else(|e| {
+        eprintln!("Failed to construct simulator: {}", e);
+        Err(e)
+    })?;
+
+    let sim_result = run(&mut sim, cfg.host_stdout, cfg.host_calls.drain(..));
+
+    if let Some(filename) = cfg.reproduction_file {
+        match sim.simulation.write_reproduction_file(&filename) {
+            Ok(_) => info!("Reproduction file written to {:?}.", filename),
+            Err(e) => error!("When trying to write reproduction file: {}", e.to_string()),
+        }
+    }
+
+    match &sim_result {
+        Ok(_) => info!("Simulation completed successfully."),
+        Err(e) => fatal!("Simulation failed: {}", e.to_string()),
+    }
+
+    sim_result
+}
+
+fn main() {
+    let result = internal_main();
+    std::process::exit(match result {
+        Ok(_) => 0,
+        Err(_) => 1,
+    });
 }

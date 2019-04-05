@@ -8,9 +8,10 @@ use crate::{
         configuration::{
             env_mod::EnvMod, plugin::log::PluginLogConfiguration,
             stream_capture_mode::StreamCaptureMode, timeout::Timeout, PluginConfiguration,
+            ReproductionPathStyle,
         },
         plugin::{process::PluginProcess, Plugin},
-        reproduction::{PluginReproduction, ReproductionPathStyle},
+        reproduction::PluginReproduction,
     },
 };
 use serde::{Deserialize, Serialize};
@@ -25,10 +26,6 @@ use std::{
 /// is an interpreter.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct PluginProcessSpecification {
-    /// The original, sugared specification, if any.
-    #[serde(skip)]
-    pub sugared: Option<PathBuf>,
-
     /// The executable filename of the plugin.
     pub executable: PathBuf,
 
@@ -52,7 +49,6 @@ impl PluginProcessSpecification {
         T: Into<PathBuf>,
     {
         PluginProcessSpecification {
-            sugared: None,
             executable: executable.into(),
             script: script.map(std::convert::Into::into),
             typ: typ.into(),
@@ -82,8 +78,8 @@ impl PluginProcessSpecification {
         // specification is a valid path to an executable. We'll fix the
         // structure later if this assumption turns out to be incorrect.
         let specification = specification.into();
+        let sugared = specification.clone();
         let mut specification = PluginProcessSpecification {
-            sugared: Some(specification.clone()),
             executable: specification,
             script: None,
             typ,
@@ -174,7 +170,7 @@ impl PluginProcessSpecification {
             "could not find plugin executable '{}', needed for plugin \
              specification '{}'",
             specification.executable.to_string_lossy(),
-            specification.sugared.unwrap().to_string_lossy(),
+            sugared.to_string_lossy(),
         ))
     }
 }
@@ -231,7 +227,7 @@ pub struct PluginProcessNonfunctionalConfiguration {
 impl Default for PluginProcessNonfunctionalConfiguration {
     fn default() -> PluginProcessNonfunctionalConfiguration {
         PluginProcessNonfunctionalConfiguration {
-            verbosity: LoglevelFilter::Info,
+            verbosity: LoglevelFilter::Trace,
             tee_files: vec![],
             stdout_mode: StreamCaptureMode::Capture(Loglevel::Info),
             stderr_mode: StreamCaptureMode::Capture(Loglevel::Info),
@@ -292,7 +288,7 @@ impl PluginConfiguration for PluginProcessConfiguration {
         self.specification.typ
     }
 
-    fn get_reproduction(&self, path_style: &ReproductionPathStyle) -> Result<PluginReproduction> {
+    fn get_reproduction(&self, path_style: ReproductionPathStyle) -> Result<PluginReproduction> {
         Ok(PluginReproduction {
             name: self.name.clone(),
             executable: path_style.convert_path(&self.specification.executable)?,
