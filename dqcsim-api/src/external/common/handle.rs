@@ -64,3 +64,14 @@ pub extern "C" fn dqcs_handle_delete(handle: dqcs_handle_t) -> dqcs_return_t {
         Ok(())
     })
 }
+
+/// Deletes ALL handles for the current thread.
+///
+/// This can be used to clean stuff up at the end of `main()` or before an
+/// `abort()` of some kind. If you don't clean up properly, you might get
+/// undefined behavior or errors when DQCsim tries to do it for you.
+#[no_mangle]
+pub extern "C" fn dqcs_handle_clear() -> dqcs_return_t {
+    API_STATE.with(|state| state.borrow_mut().objects.clear());
+    dqcs_return_t::DQCS_SUCCESS
+}
