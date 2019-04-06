@@ -393,17 +393,17 @@ pub extern "C" fn dqcs_gate_matrix(gate: dqcs_handle_t) -> *mut c_double {
 ///
 /// The size is returned in the form of the number of complex entries. That is,
 /// the number of doubles is two times the return value, and the size in bytes
-/// is 8 times the return value. 0 is returned when there is no matrix or when
-/// an error occurs.
+/// is 8 times the return value. 0 is returned when there is no matrix. -1 is
+/// used to report errors.
 #[no_mangle]
-pub extern "C" fn dqcs_gate_matrix_len(gate: dqcs_handle_t) -> size_t {
-    api_return(0, || {
+pub extern "C" fn dqcs_gate_matrix_len(gate: dqcs_handle_t) -> ssize_t {
+    api_return(-1, || {
         resolve!(gate as &Gate);
         let matrix = gate.get_matrix();
         if let Some(matrix) = matrix {
-            Ok(matrix.len())
+            Ok(matrix.len() as ssize_t)
         } else {
-            inv_arg("no matrix associated with gate")
+            Ok(0)
         }
     })
 }

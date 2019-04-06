@@ -220,16 +220,16 @@ pub enum dqcs_handle_type_t {
 pub enum dqcs_plugin_type_t {
     /// Invalid plugin type. Used to indicate failure of an API that returns
     /// a plugin type.
-    DQCS_PTYPE_INVALID = 0,
+    DQCS_PTYPE_INVALID = -1,
 
     /// Frontend plugin.
-    DQCS_PTYPE_FRONT = 1,
+    DQCS_PTYPE_FRONT = 0,
 
     /// Operator plugin.
-    DQCS_PTYPE_OPER = 2,
+    DQCS_PTYPE_OPER = 1,
 
     /// Backend plugin.
-    DQCS_PTYPE_BACK = 3,
+    DQCS_PTYPE_BACK = 2,
 }
 
 impl From<PluginType> for dqcs_plugin_type_t {
