@@ -58,7 +58,7 @@ pub enum ErrorKind {
 
     /// Generic error: use when an error doesn't fit in the above categories
     /// and you're too lazy to define one properly.
-    #[fail(display = "Error: {}", _0)]
+    #[fail(display = "{}", _0)]
     Other(String),
 
     /// Wraps multiple errors that occurred asynchronously.

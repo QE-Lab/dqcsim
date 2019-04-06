@@ -87,7 +87,7 @@ fn simulation_deadlock() {
     assert!(wait.is_err());
     assert_eq!(
         wait.unwrap_err().to_string(),
-        "Error: Deadlock: accelerator is blocked on recv() while we are expecting it to return"
+        "Deadlock: accelerator is blocked on recv() while we are expecting it to return"
     );
 }
 
