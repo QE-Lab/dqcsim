@@ -110,9 +110,9 @@ pub extern "C" fn dqcs_pdef_set_initialize_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
+        let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
-        let data = CallbackUserData::new(user_free, user_data);
         pdef.initialize = Box::new(
             move |state: &mut PluginState, init_cmds: Vec<ArbCmd>| -> Result<()> {
                 let init_cmds: ArbCmdQueue = init_cmds.into_iter().collect();
@@ -147,9 +147,9 @@ pub extern "C" fn dqcs_pdef_set_drop_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
+        let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
-        let data = CallbackUserData::new(user_free, user_data);
         pdef.drop = Box::new(move |state: &mut PluginState| -> Result<()> {
             cb_return_none(callback(data.data(), state.into()))
         });
@@ -192,9 +192,9 @@ pub extern "C" fn dqcs_pdef_set_run_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
+        let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
-        let data = CallbackUserData::new(user_free, user_data);
         pdef.run = Box::new(
             move |state: &mut PluginState, args: ArbData| -> Result<ArbData> {
                 let args = insert(args);
@@ -241,9 +241,9 @@ pub extern "C" fn dqcs_pdef_set_allocate_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
+        let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
-        let data = CallbackUserData::new(user_free, user_data);
         pdef.allocate = Box::new(
             move |state: &mut PluginState,
                   qubits: Vec<QubitRef>,
@@ -291,9 +291,9 @@ pub extern "C" fn dqcs_pdef_set_free_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
+        let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
-        let data = CallbackUserData::new(user_free, user_data);
         pdef.free = Box::new(
             move |state: &mut PluginState, qubits: Vec<QubitRef>| -> Result<()> {
                 let qubits: QubitReferenceSet = qubits.into_iter().collect();
@@ -364,9 +364,9 @@ pub extern "C" fn dqcs_pdef_set_gate_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
+        let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
-        let data = CallbackUserData::new(user_free, user_data);
         pdef.gate = Box::new(
             move |state: &mut PluginState, gate: Gate| -> Result<Vec<QubitMeasurementResult>> {
                 let gate_handle = insert(gate);
@@ -441,9 +441,9 @@ pub extern "C" fn dqcs_pdef_set_modify_measurement_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
+        let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
-        let data = CallbackUserData::new(user_free, user_data);
         pdef.modify_measurement = Box::new(
             move |state: &mut PluginState,
                   meas: QubitMeasurementResult|
@@ -488,9 +488,9 @@ pub extern "C" fn dqcs_pdef_set_advance_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
+        let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
-        let data = CallbackUserData::new(user_free, user_data);
         pdef.advance = Box::new(move |state: &mut PluginState, cycles: u64| -> Result<()> {
             cb_return_none(callback(data.data(), state.into(), cycles as dqcs_cycle_t))
         });
@@ -528,9 +528,9 @@ pub extern "C" fn dqcs_pdef_set_upstream_arb_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
+        let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
-        let data = CallbackUserData::new(user_free, user_data);
         pdef.upstream_arb = Box::new(
             move |state: &mut PluginState, cmd: ArbCmd| -> Result<ArbData> {
                 let cmd_handle = insert(cmd);
@@ -573,9 +573,9 @@ pub extern "C" fn dqcs_pdef_set_host_arb_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
+        let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
-        let data = CallbackUserData::new(user_free, user_data);
         pdef.host_arb = Box::new(
             move |state: &mut PluginState, cmd: ArbCmd| -> Result<ArbData> {
                 let cmd_handle = insert(cmd);

@@ -46,58 +46,117 @@ def gen_callback_installer(name, args):
     return '''\
 %{{
 {cb_ret} {name}_handler(void *user{cb_args}) {{
+    // Claim GIL.
     if (!Py_IsInitialized()) return ({cb_ret}){cb_ret_fail};
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
 
+    // Call user function.
+    if (!PyCallable_Check((PyObject*)user)) {{
+        dqcs_error_set("Callback object is not callable!");
+        return ({cb_ret}){cb_ret_fail};
+    }}
     PyObject *ret_obj = PyObject_CallFunction((PyObject*)user, "{cb_arg_fmts}"{cb_arg_refs});
-    if (!ret_obj) goto pyerr;
-    long long ret_long = PyLong_AsLongLong(ret_obj);
+
+    // Catch exception from user code.
+    if (ret_obj == NULL) goto pyerr;
+
+    // Convert result. Interpret None as 0, otherwise value must be an integer.
+    long long ret_long = 0;
+    if (ret_obj != Py_None) {{
+        ret_long = PyLong_AsLongLong(ret_obj);
+    }}
+
+    // Regardless of whether the object was None or whatever, we need to
+    // release our reference to the return value.
     Py_XDECREF(ret_obj);
+
+    // Catch return value conversion errors.
     if (ret_long == -1 && PyErr_Occurred()) goto pyerr;
 
+    // Release GIL.
     PyGILState_Release(gstate);
     return ({cb_ret})ret_long;
+
 pyerr:
-    Py_XDECREF(ret_obj);
+    {{
+        int ok = 0;
 
-    PyObject *exc_type = NULL, *exc_value = NULL, *exc_tb = NULL;
-    PyErr_Fetch(&exc_type, &exc_value, &exc_tb);
-    PyObject* str_exc_value = PyObject_Str(exc_value);
-    PyObject* py_str = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "Error ~");
-    const char *c_str = PyBytes_AS_STRING(py_str);
-    Py_XDECREF(str_exc_value);
-    Py_XDECREF(py_str);
-    Py_XDECREF(exc_type);
-    Py_XDECREF(exc_value);
-    Py_XDECREF(exc_tb);
-    dqcs_error_set(c_str);
+        // Claim ownership of the Python exception data. We only care about the
+        // value, so we can immediately release the rest.
+        PyObject *exc_type = NULL, *exc_value = NULL, *exc_tb = NULL;
+        PyErr_Fetch(&exc_type, &exc_value, &exc_tb);
+        Py_XDECREF(exc_type);
+        Py_XDECREF(exc_tb);
 
-    PyGILState_Release(gstate);
-    return ({cb_ret}){cb_ret_fail};
+        // Parse the exception value.
+        if (exc_value != NULL) {{
+
+            // Convert to Python string.
+            PyObject* str_exc_value = PyObject_Str(exc_value);
+            Py_XDECREF(exc_value);
+            if (str_exc_value != NULL) {{
+
+                // Encode Python string into a binary string with UTF-8 encoding.
+                PyObject* py_str = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "ignore");
+                Py_XDECREF(str_exc_value);
+                if (py_str != NULL) {{
+
+                    // Save the string. Note that the string will get dealloc'd
+                    // when the reference is released, so we need to call
+                    // dqcs_error_set() before then (it makes a copy).
+                    const char *c_str = PyBytes_AS_STRING(py_str);
+                    if (c_str != NULL) {{
+                        dqcs_error_set(c_str);
+                        ok = 1;
+                    }}
+                    Py_XDECREF(py_str);
+                }}
+            }}
+        }}
+
+        if (!ok) {{
+            // We failed to parse the exception value. Set a generic error instead.
+            dqcs_error_set("Unknown error");
+
+            // Make sure to leave Python's exception marker empty.
+            PyErr_Fetch(&exc_type, &exc_value, &exc_tb);
+            Py_XDECREF(exc_type);
+            Py_XDECREF(exc_value);
+            Py_XDECREF(exc_tb);
+        }}
+
+        // Release GIL.
+        PyGILState_Release(gstate);
+        return ({cb_ret}){cb_ret_fail};
+    }}
 }}
 
 {signature} {{
+    // Callbacks are usually called from different threads, so make sure that
+    // Python's thread system is active. This function can safely be called
+    // multiple times according to the docs, so it's better to be safe than
+    // sorry here.
+    PyEval_InitThreads();
+
+    // Make sure the object is callable.
     if (!PyCallable_Check(callable)) {{
-        PyErr_SetString(PyExc_RuntimeError, "The specified callback is not callable");
+        dqcs_error_set("The specified callback is not callable");
+        return DQCS_FAILURE;
     }}
+
+    // Right now we only have a borrowed reference to the callable. We save the
+    // callable, so we need to take ownership of our own reference. This will
+    // be cleaned up using dqcs_swig_callback_cleanup(), which is ALWAYS called
+    // exactly once, regardless of whether installing the callback succeeds or
+    // fails.
     Py_INCREF(callable);
+
+    // Since we don't need to do anything else after installing the callback,
+    // we can return its result immediately.
     return {name}({user_args}{name}_handler, dqcs_swig_callback_cleanup, (void*)callable);
 }}
 %}}
-
-%exception {name}_pyfun {{
-    $action
-    if (PyErr_Occurred()) {{
-        SWIG_fail;
-    }}
-    if (result) {{
-        const char *s = dqcs_error_get();
-        if (!s) s = "Unknown error";
-        PyErr_SetString(PyExc_RuntimeError, s);
-        SWIG_fail;
-    }}
-}}
 
 {signature};
 '''.format(
@@ -119,8 +178,23 @@ if len(sys.argv) != 3:
 with open(sys.argv[1], 'r') as f:
     data = f.read()
 
+# TODO:
+#%exception {name}_pyfun {{
+    #$action
+    #if (PyErr_Occurred()) {{
+        #SWIG_fail;
+    #}}
+    #if (result) {{
+        #const char *s = dqcs_error_get();
+        #if (!s) s = "Unknown error";
+        #PyErr_SetString(PyExc_RuntimeError, s);
+        #SWIG_fail;
+    #}}
+#}}
+
 output = ['''\
-%module dqcsim
+%module(threads="1") dqcsim
+%nothread;
 
 %include <pybuffer.i>
 %include exception.i
@@ -256,7 +330,6 @@ for line in data.split('\n\n'):
             #  - (const) char*: interpreted as string (input only)
             #  - anything else: assumed to be castable to long long and
             #    interpreted as such
-            print(args)
             if (
                 ret_typ == 'dqcs_return_t'
                 and len(args) >= 3
@@ -267,6 +340,21 @@ for line in data.split('\n\n'):
                 and args[-1][0] == 'void *'
             ):
                 line += '\n' + gen_callback_installer(name, args)
+
+            # RULE: the following functions:
+            #  - dqcs_accel_*
+            #  - dqcs_log_*
+            #  - dqcs_plugin_*
+            #  - dqcs_sim_*
+            #  - dqcs_handle_delete
+            # can block waiting for other threads that can call back into
+            # Python, therefore needing a %thread directive to make SWIG
+            # release the GIL before calling them. We need to be particularly
+            # broad about this because even a Rust logging macro may do this
+            # when the crossbeam channel to the log thread fills up and a
+            # Python log callback is installed!
+            if name.split('_')[1] in ['sim', 'accel', 'plugin', 'log'] or name == 'dqcs_handle_delete':
+                line = '%%thread %s;\n%s' % (name, line)
 
         except:
             print('While parsing the following line as a function...')

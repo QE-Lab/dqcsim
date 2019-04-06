@@ -429,7 +429,7 @@ pub fn deinit() -> error::Result<()> {
 macro_rules! log {
     (? target: $target:expr, location: ($file:expr, $line:expr), $lvl:expr, $($arg:tt)+) => ({
         use $crate::common::log::_ref_thread_local::RefThreadLocal;
-        $crate::common::log::LOGGERS.with(|loggers| {
+        $crate::common::log::LOGGERS.try_with(|loggers| {
             if let Some(ref loggers) = *loggers.borrow() {
                 loggers.iter().for_each(|logger| {
                     if logger.enabled($lvl) {
@@ -449,7 +449,7 @@ macro_rules! log {
             } else {
                 false
             }
-        })
+        }).unwrap_or(false)
     });
     (target: $target:expr, location: ($file:expr, $line:expr), $lvl:expr, $($arg:tt)+) => (
         {

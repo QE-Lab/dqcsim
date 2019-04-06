@@ -127,6 +127,26 @@ impl APIState {
     }
 }
 
+impl Drop for APIState {
+    fn drop(&mut self) {
+        let mut warn = false;
+        for (_, v) in self.objects.drain() {
+            if let APIObject::Simulator(_) = v {
+                warn = true;
+                std::mem::forget(v);
+            }
+        }
+        if warn {
+            eprintln!(
+                "DQCsim API error: you've leaked one or more Simulator objects! \
+                You should always call dqcs_handle_delete() on simulator objects or call \
+                dqcs_handle_clear() to delete all handles before exiting, otherwise \
+                things are not destroyed in the right order."
+            );
+        }
+    }
+}
+
 thread_local! {
     /// Thread-local state storage. Be careful not to call user callback functions
     /// while holding a reference to the state: those callbacks can and probably
