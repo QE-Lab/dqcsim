@@ -178,19 +178,46 @@ if len(sys.argv) != 3:
 with open(sys.argv[1], 'r') as f:
     data = f.read()
 
-# TODO:
-#%exception {name}_pyfun {{
-    #$action
-    #if (PyErr_Occurred()) {{
-        #SWIG_fail;
-    #}}
-    #if (result) {{
-        #const char *s = dqcs_error_get();
-        #if (!s) s = "Unknown error";
-        #PyErr_SetString(PyExc_RuntimeError, s);
-        #SWIG_fail;
-    #}}
-#}}
+error_return_value_map = {
+    # Return values that have no error indication:
+    'void': None,
+    'const char *': None,
+    'dqcs_handle_type_t': None,
+    'uint64_t': None,
+
+    # Return values that indicate errors with NULL:
+    'char *': '== NULL',
+    'double *': '== NULL',
+
+    # Return values that indicate errors with zero:
+    'dqcs_handle_t': '== 0',
+    'dqcs_qubit_t': '== 0',
+
+    # Return values that indicate errors with negative numbers (-1):
+    'double': '< 0',
+    'dqcs_cycle_t': '< 0',
+    'ssize_t': '< 0',
+
+    # Return values that have special enum values for errors:
+    'dqcs_return_t': '== DQCS_FAILURE',
+    'dqcs_bool_return_t': '== DQCS_BOOL_FAILURE',
+    'dqcs_loglevel_t': '== DQCS_LOG_INVALID',
+    'dqcs_measurement_t': '== DQCS_MEAS_INVALID',
+    'dqcs_path_style_t': '== DQCS_PATH_STYLE_INVALID',
+    'dqcs_plugin_type_t': '== DQCS_PTYPE_INVALID',
+}
+
+error_fmt = '''\
+%exception {name} {{
+    $action
+    if (result {check}) {{
+        const char *s = dqcs_error_get();
+        if (!s) s = "Unknown error";
+        PyErr_SetString(PyExc_RuntimeError, s);
+        SWIG_fail;
+    }}
+}}
+'''
 
 output = ['''\
 %module(threads="1") dqcsim
@@ -264,6 +291,8 @@ void dqcs_swig_callback_cleanup(void *user) {
 %typemap(in) dqcs_plugin_state_t = long long;
 
 ''']
+
+ret_typs = {}
 
 for line in data.split('\n\n'):
     line = line.strip()
@@ -356,6 +385,17 @@ for line in data.split('\n\n'):
             if name.split('_')[1] in ['sim', 'accel', 'plugin', 'log'] or name == 'dqcs_handle_delete':
                 line = '%%thread %s;\n%s' % (name, line)
 
+            # Convert DQCsim errors to Python exceptions.
+            if ret_typ not in error_return_value_map:
+                raise ValueError('No error value mapping for API return type %s, used by function %s!' % (ret_typ, name))
+            error_value = error_return_value_map[ret_typ]
+            if error_value is not None:
+                line = '%s\n%s' % (error_fmt.format(name=name, check=error_value), line)
+
+            if ret_typ not in ret_typs:
+                ret_typs[ret_typ] = []
+            ret_typs[ret_typ].append(name)
+
         except:
             print('While parsing the following line as a function...')
             print()
@@ -364,6 +404,9 @@ for line in data.split('\n\n'):
             raise
 
     output.append(line)
+
+import pprint
+pprint.pprint(ret_typs)
 
 with open(sys.argv[2], 'w') as f:
     f.write('\n\n'.join(output) + '\n')
