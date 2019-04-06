@@ -7,6 +7,7 @@ import time
 scfg = dqcsim.dqcs_scfg_new()
 dqcsim.dqcs_scfg_dqcsim_verbosity_set(scfg, dqcsim.DQCS_LOG_TRACE)
 dqcsim.dqcs_scfg_stderr_verbosity_set(scfg, dqcsim.DQCS_LOG_TRACE)
+dqcsim.dqcs_scfg_repro_disable(scfg)
 
 front = dqcsim.dqcs_pdef_new(dqcsim.DQCS_PTYPE_FRONT, "test!", "jvs", "3.14")
 

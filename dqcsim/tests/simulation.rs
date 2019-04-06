@@ -22,8 +22,9 @@ fn thread_config_type(plugin_type: PluginType) -> PluginThreadConfiguration {
 
 fn minimal_simulator() -> Simulator {
     let configuration = SimulatorConfiguration::default()
-        .push_plugin(thread_config_type(PluginType::Backend))
-        .push_plugin(thread_config_type(PluginType::Frontend));
+        .without_reproduction()
+        .with_plugin(thread_config_type(PluginType::Backend))
+        .with_plugin(thread_config_type(PluginType::Frontend));
 
     let simulator = Simulator::new(configuration);
     assert!(simulator.is_ok());
@@ -32,7 +33,7 @@ fn minimal_simulator() -> Simulator {
 
 #[allow(unused)]
 fn verbose_simulator_configuration() -> SimulatorConfiguration {
-    let mut configuration = SimulatorConfiguration::default();
+    let mut configuration = SimulatorConfiguration::default().without_reproduction();
     configuration.stderr_level = LoglevelFilter::Trace;
     configuration.dqcsim_level = LoglevelFilter::Trace;
     configuration
@@ -40,7 +41,7 @@ fn verbose_simulator_configuration() -> SimulatorConfiguration {
 
 #[test]
 fn simulation_default_config() {
-    let configuration = SimulatorConfiguration::default();
+    let configuration = SimulatorConfiguration::default().without_reproduction();
     let simulator = Simulator::new(configuration);
     assert!(simulator.is_err());
     assert_eq!(
@@ -51,8 +52,9 @@ fn simulation_default_config() {
 
 #[test]
 fn simulation_missing_backend() {
-    let configuration =
-        SimulatorConfiguration::default().push_plugin(thread_config_type(PluginType::Frontend));
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .with_plugin(thread_config_type(PluginType::Frontend));
 
     let simulator = Simulator::new(configuration);
     assert!(simulator.is_err());
@@ -64,8 +66,9 @@ fn simulation_missing_backend() {
 
 #[test]
 fn simulation_missing_frontend() {
-    let configuration =
-        SimulatorConfiguration::default().push_plugin(thread_config_type(PluginType::Backend));
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .with_plugin(thread_config_type(PluginType::Backend));
 
     let simulator = Simulator::new(configuration);
     assert!(simulator.is_err());
@@ -95,8 +98,9 @@ fn simulation_deadlock() {
 fn simulation_metadata() {
     let plugin_metadata = PluginMetadata::new("name", "author", "version");
     let configuration = SimulatorConfiguration::default()
-        .push_plugin(thread_config_type(PluginType::Backend))
-        .push_plugin(PluginThreadConfiguration::new(
+        .without_reproduction()
+        .with_plugin(thread_config_type(PluginType::Backend))
+        .with_plugin(PluginThreadConfiguration::new(
             PluginDefinition::new(PluginType::Frontend, plugin_metadata.clone()),
             PluginLogConfiguration::new("test", LoglevelFilter::Off),
         ));
@@ -136,8 +140,9 @@ fn simulation_init_cmds() {
     });
 
     let configuration = SimulatorConfiguration::default()
-        .push_plugin(thread_config_type(PluginType::Backend))
-        .push_plugin(PluginThreadConfiguration {
+        .without_reproduction()
+        .with_plugin(thread_config_type(PluginType::Backend))
+        .with_plugin(PluginThreadConfiguration {
             definition,
             init_cmds: vec![ArbCmd::new("a", "b", ArbData::default())],
             log_configuration: PluginLogConfiguration::new("", LoglevelFilter::Off),
@@ -163,8 +168,9 @@ fn simulation_recv_in_initialize() {
     });
 
     let configuration = SimulatorConfiguration::default()
-        .push_plugin(thread_config_type(PluginType::Backend))
-        .push_plugin(PluginThreadConfiguration::new(
+        .without_reproduction()
+        .with_plugin(thread_config_type(PluginType::Backend))
+        .with_plugin(PluginThreadConfiguration::new(
             definition,
             PluginLogConfiguration::new("", LoglevelFilter::Off),
         ));

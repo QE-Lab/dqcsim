@@ -48,7 +48,9 @@ impl Simulator {
         configuration.optimize_loglevels();
 
         // Try to build the reproduction logger.
-        let reproduction = Reproduction::new_logger(&configuration);
+        let reproduction = configuration
+            .reproduction_path_style
+            .map(|_| Reproduction::new_logger(&configuration));
 
         // Spawn log thread.
         let log_thread = LogThread::spawn(
@@ -62,12 +64,13 @@ impl Simulator {
         // Now that we can log, report any failures to create the reproduction
         // logger as a warning.
         let reproduction = match reproduction {
-            Ok(r) => Some(r),
-            Err(e) => {
+            Some(Ok(r)) => Some(r),
+            Some(Err(e)) => {
                 warn!("Failed to construct reproduction logger: {}", e.to_string());
                 warn!("Therefore, you will not be able to reproduce this run on the command line later.");
                 None
             }
+            None => None,
         };
 
         // Construct plugin pipeline.

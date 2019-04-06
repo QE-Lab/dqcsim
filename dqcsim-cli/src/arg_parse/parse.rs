@@ -334,7 +334,11 @@ impl CommandLineConfiguration {
                 log_callback: None,
                 dqcsim_level: dqcsim_opts.dqcsim_level,
                 plugins: vec![],
-                reproduction_path_style: dqcsim_opts.repro_path_style,
+                reproduction_path_style: if dqcsim_opts.no_repro_out {
+                    None
+                } else {
+                    Some(dqcsim_opts.repro_path_style)
+                },
             },
             reproduction_file: dqcsim_opts.repro_out.clone(),
         };

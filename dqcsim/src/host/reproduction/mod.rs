@@ -2,7 +2,7 @@
 
 use crate::{
     common::{
-        error::{err, inv_arg, Result},
+        error::{err, inv_arg, oe_inv_arg, Result},
         log::{tee_file::TeeFile, LoglevelFilter},
         types::PluginType,
     },
@@ -160,7 +160,7 @@ impl Reproduction {
             plugins: config
                 .plugins
                 .iter()
-                .map(|x| x.get_reproduction(config.reproduction_path_style))
+                .map(|x| x.get_reproduction(config.reproduction_path_style.ok_or_else(oe_inv_arg("cannot create reproduction logger for simulator configuration with reproduction explicitly disabled"))?))
                 .collect::<Result<Vec<PluginReproduction>>>()?,
             hostname: whoami::hostname(),
             username: whoami::username(),

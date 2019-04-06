@@ -30,16 +30,61 @@ pub struct SimulatorConfiguration {
     pub plugins: Vec<Box<dyn PluginConfiguration>>,
 
     /// The path style used when writing the reproduction file.
-    pub reproduction_path_style: ReproductionPathStyle,
+    pub reproduction_path_style: Option<ReproductionPathStyle>,
 }
 
 impl SimulatorConfiguration {
-    /// Add a new plugin to the pipeline.
-    pub fn push_plugin(
+    /// Sets the random seed.
+    pub fn with_seed(mut self, seed: impl Into<Seed>) -> SimulatorConfiguration {
+        self.seed = seed.into();
+        self
+    }
+
+    /// Sets the stderr loglevel.
+    pub fn with_stderr_level(mut self, level: impl Into<LoglevelFilter>) -> SimulatorConfiguration {
+        self.stderr_level = level.into();
+        self
+    }
+
+    /// Adds a tee file.
+    pub fn with_tee_file(mut self, tee: impl Into<TeeFile>) -> SimulatorConfiguration {
+        self.tee_files.push(tee.into());
+        self
+    }
+
+    /// Sets the log callback.
+    pub fn with_log_callback(mut self, callback: impl Into<LogCallback>) -> SimulatorConfiguration {
+        self.log_callback = Some(callback.into());
+        self
+    }
+
+    /// Sets the verbosity for DQCsim itself.
+    pub fn with_dqcsim_level(mut self, level: impl Into<LoglevelFilter>) -> SimulatorConfiguration {
+        self.dqcsim_level = level.into();
+        self
+    }
+
+    /// Adds a new plugin to the pipeline.
+    pub fn with_plugin(
         mut self,
         plugin_configuration: impl Into<Box<dyn PluginConfiguration>>,
     ) -> SimulatorConfiguration {
         self.plugins.push(plugin_configuration.into());
+        self
+    }
+
+    /// Sets the reproduction path style.
+    pub fn with_reproduction_path_style(
+        mut self,
+        reproduction_path_style: impl Into<ReproductionPathStyle>,
+    ) -> SimulatorConfiguration {
+        self.reproduction_path_style = Some(reproduction_path_style.into());
+        self
+    }
+
+    /// Disables the reproduction logging system.
+    pub fn without_reproduction(mut self) -> SimulatorConfiguration {
+        self.reproduction_path_style = None;
         self
     }
 
@@ -147,7 +192,7 @@ impl Default for SimulatorConfiguration {
             log_callback: None,
             dqcsim_level: LoglevelFilter::Info,
             plugins: vec![],
-            reproduction_path_style: ReproductionPathStyle::Keep,
+            reproduction_path_style: Some(ReproductionPathStyle::Keep),
         }
     }
 }

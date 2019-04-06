@@ -264,7 +264,8 @@ pub extern "C" fn dqcs_scfg_repro_path_style_set(
     api_return_none(|| {
         resolve!(scfg as &mut SimulatorConfiguration);
         let path_style: Option<ReproductionPathStyle> = path_style.into();
-        scfg.reproduction_path_style = path_style.ok_or_else(oe_inv_arg("invalid path style"))?;
+        scfg.reproduction_path_style =
+            Some(path_style.ok_or_else(oe_inv_arg("invalid path style"))?);
         Ok(())
     })
 }
@@ -274,6 +275,24 @@ pub extern "C" fn dqcs_scfg_repro_path_style_set(
 pub extern "C" fn dqcs_scfg_repro_path_style_get(scfg: dqcs_handle_t) -> dqcs_path_style_t {
     api_return(dqcs_path_style_t::DQCS_PATH_STYLE_INVALID, || {
         resolve!(scfg as &SimulatorConfiguration);
-        Ok(scfg.reproduction_path_style.into())
+        Ok(scfg
+            .reproduction_path_style
+            .ok_or_else(oe_inv_arg(
+                "the reproduction system is disabled for this configuration",
+            ))?
+            .into())
+    })
+}
+
+/// Disables the reproduction logging system.
+///
+/// Calling this will disable the warnings printed when a simulation that
+/// cannot be reproduced is constructed.
+#[no_mangle]
+pub extern "C" fn dqcs_scfg_repro_disable(scfg: dqcs_handle_t) -> dqcs_return_t {
+    api_return_none(|| {
+        resolve!(scfg as &mut SimulatorConfiguration);
+        scfg.reproduction_path_style = None;
+        Ok(())
     })
 }
