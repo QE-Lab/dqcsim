@@ -328,7 +328,7 @@ impl From<StreamCaptureMode> for dqcs_loglevel_t {
 impl Into<Result<StreamCaptureMode>> for dqcs_loglevel_t {
     fn into(self) -> Result<StreamCaptureMode> {
         match self {
-            dqcs_loglevel_t::DQCS_LOG_INVALID => inv_arg(format!("invalid level")),
+            dqcs_loglevel_t::DQCS_LOG_INVALID => inv_arg("invalid level"),
             dqcs_loglevel_t::DQCS_LOG_OFF => Ok(StreamCaptureMode::Null),
             dqcs_loglevel_t::DQCS_LOG_FATAL => Ok(StreamCaptureMode::Capture(Loglevel::Fatal)),
             dqcs_loglevel_t::DQCS_LOG_ERROR => Ok(StreamCaptureMode::Capture(Loglevel::Error)),
