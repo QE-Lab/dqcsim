@@ -75,3 +75,30 @@ pub extern "C" fn dqcs_handle_clear() -> dqcs_return_t {
     API_STATE.with(|state| state.borrow_mut().objects.clear());
     dqcs_return_t::DQCS_SUCCESS
 }
+
+/// Succeeds only if there are no live handles in the current thread.
+///
+/// This is intended for testing and for finding handle leaks. The error
+/// message returned when handles remain contains dumps of the first 10
+/// remaining handles.
+#[no_mangle]
+pub extern "C" fn dqcs_handle_leak_check() -> dqcs_return_t {
+    api_return_none(|| {
+        API_STATE.with(|state| {
+            let remain = state.borrow().objects.len();
+            if remain == 0 {
+                Ok(())
+            } else {
+                let mut msg = format!("Leak check: {} handles remain", remain);
+                for (idx, (handle, object)) in state.borrow().objects.iter().enumerate() {
+                    if idx == 10 {
+                        msg = format!("{}, and {} more", msg, remain - 10);
+                        break;
+                    }
+                    msg = format!("{}, {} = {:?}", msg, handle, object);
+                }
+                err(msg)
+            }
+        })
+    })
+}

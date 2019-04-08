@@ -24,4 +24,7 @@ TEST(error, test) {
   // Check that clearing the error string works.
   dqcs_error_set(NULL);
   EXPECT_STREQ(dqcs_error_get(), NULL);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }

@@ -20,6 +20,9 @@ TEST(handle, sanity) {
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_INVALID);
   EXPECT_STREQ(dqcs_handle_dump(a), nullptr);
   EXPECT_EQ(dqcs_error_get(), "Invalid argument: handle " + std::to_string(a) + " is invalid");
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Test that only commands with valid characters can be constructed.
@@ -46,6 +49,9 @@ TEST(cmd, construction) {
   EXPECT_EQ(a = dqcs_cmd_new("NO", nullptr), 0);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: unexpected NULL string");
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_FAILURE);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Test identifier getters and checkers.
@@ -72,6 +78,9 @@ TEST(cmd, getters) {
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: unexpected NULL string");
 
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Test some arb API calls. All of them should work on cmds as well.
@@ -105,4 +114,7 @@ TEST(cmd, arb) {
   if (s) free(s);
 
   EXPECT_EQ(dqcs_handle_delete(c), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }

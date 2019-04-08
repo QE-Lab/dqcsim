@@ -20,6 +20,9 @@ TEST(qbset, sanity) {
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_INVALID);
   EXPECT_STREQ(dqcs_handle_dump(a), nullptr);
   EXPECT_EQ(dqcs_error_get(), "Invalid argument: handle " + std::to_string(a) + " is invalid");
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Test the qubit set API.
@@ -70,5 +73,8 @@ TEST(qbset, test) {
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 

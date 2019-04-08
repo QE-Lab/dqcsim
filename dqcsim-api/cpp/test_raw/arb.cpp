@@ -20,6 +20,9 @@ TEST(handle, sanity) {
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_INVALID);
   EXPECT_STREQ(dqcs_handle_dump(a), nullptr);
   EXPECT_EQ(dqcs_error_get(), "Invalid argument: handle " + std::to_string(a) + " is invalid");
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Test JSON access by means of JSON strings.
@@ -48,13 +51,13 @@ TEST(json, string) {
   EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Object(\n            {\n                String(\n                    \"hello\"\n                ): String(\n                    \"world\"\n                )\n            }\n        ),\n        args: []\n    }\n)");
   EXPECT_STREQ(dqcs_arb_json_get(a), "{\"hello\":\"world\"}");
   EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 14);
-//   for (int i = 0; i < 14; i++) {
-//     fprintf(stderr, "\\x%02X", (unsigned int)cbor_buffer[i]);
-//   }
   EXPECT_EQ(memcmp(cbor_buffer, "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF", 14), 0);
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Test JSON access by means of CBOR objects.
@@ -88,6 +91,9 @@ TEST(json, cbor) {
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Tests the following functions: push_str, push_raw, pop_str, pop_raw, pop,
@@ -202,6 +208,9 @@ TEST(args, test1) {
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(b), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Tests the following functions: insert_str, remove, set_str, get_str.
@@ -317,6 +326,9 @@ TEST(args, test2) {
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // We assume that insert_raw, set_raw, get_raw, and get_size are just
@@ -343,4 +355,7 @@ TEST(args, test3) {
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }

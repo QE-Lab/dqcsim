@@ -25,6 +25,9 @@ TEST(gate, sanity) {
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_INVALID);
   EXPECT_STREQ(dqcs_handle_dump(a), nullptr);
   EXPECT_EQ(dqcs_error_get(), "Invalid argument: handle " + std::to_string(a) + " is invalid");
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 #define EXPECT_QBSET(qbset, ...) \
@@ -98,6 +101,9 @@ TEST(gate, x) {
   EXPECT_EQ(dqcs_arb_len(a), 0);
 
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Check CNOT gate.
@@ -136,6 +142,9 @@ TEST(gate, cnot) {
   EXPECT_EQ(dqcs_arb_len(a), 0);
 
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Check measure gate.
@@ -171,6 +180,9 @@ TEST(gate, measure) {
   EXPECT_EQ(dqcs_arb_len(a), 0);
 
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Check NOP custom gate.
@@ -201,6 +213,9 @@ TEST(gate, nop) {
   EXPECT_EQ(dqcs_arb_len(a), 0);
 
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Check complex custom gate.
@@ -246,6 +261,9 @@ TEST(gate, discombobulate) {
   EXPECT_EQ(dqcs_arb_len(a), 1);
 
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
 // Check disallowed gates.
@@ -297,4 +315,11 @@ TEST(gate, erroneous) {
 
   EXPECT_EQ(dqcs_gate_new_custom("BAR", qbset_b, qbset_c, qbset_a, X_MATRIX, 4), 0);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: matrix has the wrong number of entries");
+
+  EXPECT_EQ(dqcs_handle_delete(qbset_a), dqcs_return_t::DQCS_SUCCESS);
+  EXPECT_EQ(dqcs_handle_delete(qbset_b), dqcs_return_t::DQCS_SUCCESS);
+  EXPECT_EQ(dqcs_handle_delete(qbset_c), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
