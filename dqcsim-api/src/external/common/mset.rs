@@ -8,6 +8,17 @@ pub extern "C" fn dqcs_mset_new() -> dqcs_handle_t {
     insert(QubitMeasurementResultSet::new())
 }
 
+/// Returns the number of qubits measurements in the given measurement set.
+///
+/// This function returns -1 to indicate failure.
+#[no_mangle]
+pub extern "C" fn dqcs_mset_len(mset: dqcs_handle_t) -> ssize_t {
+    api_return(-1, || {
+        resolve!(mset as &mut QubitMeasurementResultSet);
+        Ok(mset.len() as ssize_t)
+    })
+}
+
 /// Returns whether the given qubit measurement set contains data for the given
 /// qubit.
 #[no_mangle]

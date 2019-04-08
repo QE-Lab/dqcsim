@@ -100,7 +100,9 @@ pub extern "C" fn dqcs_handle_leak_check() -> dqcs_return_t {
                 Ok(())
             } else {
                 let mut msg = format!("Leak check: {} handles remain", remain);
-                for (idx, (handle, object)) in state.borrow().objects.iter().enumerate() {
+                let state = state.borrow();
+                let sorted: std::collections::BTreeMap<_, _> = state.objects.iter().collect();
+                for (idx, (handle, object)) in sorted.iter().enumerate() {
                     if idx == 10 {
                         msg = format!("{}, and {} more", msg, remain - 10);
                         break;

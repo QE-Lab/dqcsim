@@ -4,7 +4,7 @@
 using namespace dqcsim;
 
 // Sanity check the handle API.
-TEST(handle, sanity) {
+TEST(arb, sanity) {
   // Create handle.
   dqcs_handle_t a = dqcs_arb_new();
   ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
@@ -26,7 +26,7 @@ TEST(handle, sanity) {
 }
 
 // Test JSON access by means of JSON strings.
-TEST(json, string) {
+TEST(arb, json) {
   unsigned char cbor_buffer[256];
 
   // Create handle.
@@ -61,7 +61,7 @@ TEST(json, string) {
 }
 
 // Test JSON access by means of CBOR objects.
-TEST(json, cbor) {
+TEST(arb, cbor) {
   unsigned char cbor_buffer[256];
 
   // Create handle.
@@ -98,7 +98,7 @@ TEST(json, cbor) {
 
 // Tests the following functions: push_str, push_raw, pop_str, pop_raw, pop,
 // len, clear, assign.
-TEST(args, test1) {
+TEST(arb, test1) {
   // Create handle.
   dqcs_handle_t a = dqcs_arb_new();
   ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
@@ -214,7 +214,7 @@ TEST(args, test1) {
 }
 
 // Tests the following functions: insert_str, remove, set_str, get_str.
-TEST(args, test2) {
+TEST(arb, test2) {
   // Create handle.
   dqcs_handle_t a = dqcs_arb_new();
   ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
@@ -334,7 +334,7 @@ TEST(args, test2) {
 // We assume that insert_raw, set_raw, get_raw, and get_size are just
 // combinations of the behavior of their string and push/pop counterparts, so
 // we only test these API calls very briefly.
-TEST(args, test3) {
+TEST(arb, test3) {
   // Create handle.
   dqcs_handle_t a = dqcs_arb_new();
   ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();

@@ -259,6 +259,8 @@ TEST(gate, discombobulate) {
   EXPECT_STREQ(s = dqcs_arb_json_get(a), "{\"sequence\":[4,8,15,16,23,42]}");
   if (s) free(s);
   EXPECT_EQ(dqcs_arb_len(a), 1);
+  EXPECT_STREQ(s = dqcs_arb_get_str(a, 0), "(%@#(*^");
+  if (s) free(s);
 
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 

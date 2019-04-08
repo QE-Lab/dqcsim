@@ -4,7 +4,7 @@
 using namespace dqcsim;
 
 // Sanity check the handle API.
-TEST(handle, sanity) {
+TEST(cmd, sanity) {
   // Create handle.
   dqcs_handle_t a = dqcs_cmd_new("a", "b");
   ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
