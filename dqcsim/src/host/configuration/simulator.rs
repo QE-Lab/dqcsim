@@ -190,7 +190,7 @@ impl Default for SimulatorConfiguration {
             stderr_level: LoglevelFilter::Info,
             tee_files: vec![],
             log_callback: None,
-            dqcsim_level: LoglevelFilter::Info,
+            dqcsim_level: LoglevelFilter::Trace,
             plugins: vec![],
             reproduction_path_style: Some(ReproductionPathStyle::Keep),
         }
