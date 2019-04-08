@@ -64,7 +64,7 @@ install:
 
 script:
   - cargo fmt -- --check
-  - make build
+  # make build
   - make kcov-test
   - cargo clippy -- -Dwarnings
 
