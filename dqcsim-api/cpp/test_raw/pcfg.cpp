@@ -2,6 +2,7 @@
 #include "gtest/gtest.h"
 #include <fcntl.h>
 #include <math.h>
+#include "util.h"
 
 using namespace dqcsim;
 
@@ -201,49 +202,6 @@ TEST(pcfg, workdir) {
 
   // Leak check.
   EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
-}
-
-char *extract_array_from_dump(const char *marker, char *dump) {
-  int marker_len = strlen(marker);
-  while (*dump) {
-    if (!memcmp(dump, marker, marker_len)) {
-      break;
-    }
-    dump++;
-  }
-  if (!*dump) return NULL;
-  char *start = dump;
-  char *out = dump;
-  int level = 0;
-  int after_newline = 0;
-  while (*dump) {
-    if (*dump == '[') {
-      level++;
-    } else if (*dump == ']') {
-      level--;
-      if (!level) {
-        out[0] = ']';
-        out[1] = 0;
-        return start;
-      }
-    }
-    if (after_newline) {
-      if (*dump == ' ') {
-        dump++;
-        continue;
-      } else {
-        *out++ = ' ';
-        after_newline = 0;
-      }
-    }
-    if (*dump == '\n') {
-      after_newline = 1;
-      dump++;
-      continue;
-    }
-    *out++ = *dump++;
-  }
-  return NULL;
 }
 
 // Test environment variable operators.
