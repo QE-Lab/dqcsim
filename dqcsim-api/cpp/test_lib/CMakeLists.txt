@@ -1,3 +1,5 @@
+set(CMAKE_CXX_FLAGS "-ggdb")
+
 macro(package_add_test TESTNAME)
     add_executable(${TESTNAME} ${ARGN})
     target_link_libraries(${TESTNAME} gtest gmock gtest_main dqcsim)
