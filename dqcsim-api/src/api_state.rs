@@ -140,7 +140,7 @@ impl Drop for APIState {
             eprintln!(
                 "DQCsim API error: you've leaked one or more Simulator objects! \
                  You should always call dqcs_handle_delete() on simulator objects or call \
-                 dqcs_handle_clear() to delete all handles before exiting, otherwise \
+                 dqcs_handle_delete_all() to delete all handles before exiting, otherwise \
                  things are not destroyed in the right order."
             );
         }
