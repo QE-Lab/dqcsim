@@ -20,6 +20,7 @@ pub extern "C" fn dqcs_cq_new() -> dqcs_handle_t {
 /// This function returns -1 to indicate failure. The `ArbCmd` object specified
 /// by `cmd` is moved into the queue. That is, the handle is consumed if and
 /// only if the function succeeds.
+#[no_mangle]
 pub extern "C" fn dqcs_cq_push(cq: dqcs_handle_t, cmd: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(cq as &mut ArbCmdQueue);
@@ -42,6 +43,7 @@ pub extern "C" fn dqcs_cq_push(cq: dqcs_handle_t, cmd: dqcs_handle_t) -> dqcs_re
 ///     dqcs_arb_...(queue, ...)
 /// }
 /// ```
+#[no_mangle]
 pub extern "C" fn dqcs_cq_next(cq: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(cq as &mut ArbCmdQueue);
@@ -56,6 +58,7 @@ pub extern "C" fn dqcs_cq_next(cq: dqcs_handle_t) -> dqcs_return_t {
 /// Returns the number of `ArbCmd` objects in the given `ArbCmd` queue.
 ///
 /// This function returns -1 to indicate failure.
+#[no_mangle]
 pub extern "C" fn dqcs_cq_len(cq: dqcs_handle_t) -> ssize_t {
     api_return(-1, || {
         resolve!(cq as &ArbCmdQueue);

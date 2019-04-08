@@ -7,3 +7,7 @@ endmacro()
 
 package_add_test(arb arb.cpp)
 package_add_test(cmd cmd.cpp)
+package_add_test(cq cq.cpp)
+package_add_test(error error.cpp)
+package_add_test(gate gate.cpp)
+package_add_test(qbset qbset.cpp)

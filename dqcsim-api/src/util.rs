@@ -84,23 +84,25 @@ pub fn receive_matrix(
     matrix_len: size_t,
     num_qubits: usize,
 ) -> Result<Option<Vec<Complex64>>> {
-    let num_entries = 4 << (num_qubits - 1);
     if matrix_len == 0 {
         Ok(None)
-    } else if matrix_len != num_entries {
-        inv_arg("matrix has the wrong number of entries")
-    } else if ptr.is_null() {
-        inv_arg("matrix pointer is null")
     } else if num_qubits == 0 {
         inv_arg("cannot read matrix for 0 qubits")
     } else {
-        let mut vec = Vec::with_capacity(num_entries);
-        for i in 0..num_entries {
-            let re: f64 = unsafe { *ptr.add(i * 2) };
-            let im: f64 = unsafe { *ptr.add(i * 2 + 1) };
-            vec.push(Complex64::new(re, im));
+        let num_entries = 4 << (num_qubits - 1);
+        if matrix_len != num_entries {
+            inv_arg("matrix has the wrong number of entries")
+        } else if ptr.is_null() {
+            inv_arg("matrix pointer is null")
+        } else {
+            let mut vec = Vec::with_capacity(num_entries);
+            for i in 0..num_entries {
+                let re: f64 = unsafe { *ptr.add(i * 2) };
+                let im: f64 = unsafe { *ptr.add(i * 2 + 1) };
+                vec.push(Complex64::new(re, im));
+            }
+            Ok(Some(vec))
         }
-        Ok(Some(vec))
     }
 }
 

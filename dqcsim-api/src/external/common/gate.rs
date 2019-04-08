@@ -271,19 +271,13 @@ pub extern "C" fn dqcs_gate_has_targets(gate: dqcs_handle_t) -> dqcs_bool_return
 
 /// Returns a handle to a new qubit reference set containing the qubits
 /// targetted by this gate.
-///
-/// If this gate has no targets or something else goes wrong, 0 is returned.
 #[no_mangle]
 pub extern "C" fn dqcs_gate_targets(gate: dqcs_handle_t) -> dqcs_handle_t {
     api_return(0, || {
         resolve!(gate as &Gate);
         let targets = gate.get_targets();
-        if targets.is_empty() {
-            inv_arg("gate does not have target qubits")
-        } else {
-            let targets: QubitReferenceSet = targets.iter().cloned().collect();
-            Ok(insert(targets))
-        }
+        let targets: QubitReferenceSet = targets.iter().cloned().collect();
+        Ok(insert(targets))
     })
 }
 
@@ -298,20 +292,13 @@ pub extern "C" fn dqcs_gate_has_controls(gate: dqcs_handle_t) -> dqcs_bool_retur
 
 /// Returns a handle to a new qubit reference set containing the qubits
 /// that control this gate.
-///
-/// If this gate has no control qubits or something else goes wrong, 0 is
-/// returned.
 #[no_mangle]
 pub extern "C" fn dqcs_gate_controls(gate: dqcs_handle_t) -> dqcs_handle_t {
     api_return(0, || {
         resolve!(gate as &Gate);
         let controls = gate.get_controls();
-        if controls.is_empty() {
-            inv_arg("gate does not have control qubits")
-        } else {
-            let controls: QubitReferenceSet = controls.iter().cloned().collect();
-            Ok(insert(controls))
-        }
+        let controls: QubitReferenceSet = controls.iter().cloned().collect();
+        Ok(insert(controls))
     })
 }
 
@@ -326,20 +313,13 @@ pub extern "C" fn dqcs_gate_has_measures(gate: dqcs_handle_t) -> dqcs_bool_retur
 
 /// Returns a handle to a new qubit reference set containing the qubits
 /// measured by this gate.
-///
-/// If this gate does not measure any qubits or something else goes wrong, 0 is
-/// returned.
 #[no_mangle]
 pub extern "C" fn dqcs_gate_measures(gate: dqcs_handle_t) -> dqcs_handle_t {
     api_return(0, || {
         resolve!(gate as &Gate);
         let measures = gate.get_measures();
-        if measures.is_empty() {
-            inv_arg("gate does not measure any qubits")
-        } else {
-            let measures: QubitReferenceSet = measures.iter().cloned().collect();
-            Ok(insert(measures))
-        }
+        let measures: QubitReferenceSet = measures.iter().cloned().collect();
+        Ok(insert(measures))
     })
 }
 
