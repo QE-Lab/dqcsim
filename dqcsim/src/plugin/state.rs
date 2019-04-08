@@ -570,8 +570,12 @@ impl<'a> PluginState<'a> {
                 });
                 self.connection.send(response)?;
             }
-            IncomingMessage::Upstream(_) => {
-                return err("Protocol error: unexpected synchronous gatestream response");
+            IncomingMessage::Upstream(GatestreamDown::ArbRequest(cmd)) => {
+                let response = match (self.definition.upstream_arb)(self, cmd) {
+                    Ok(r) => GatestreamUp::ArbSuccess(r),
+                    Err(e) => GatestreamUp::ArbFailure(e.to_string()),
+                };
+                self.connection.send(OutgoingMessage::Upstream(response))?;
             }
             IncomingMessage::Downstream(message) => self.handle_downstream_message(message)?,
         }
