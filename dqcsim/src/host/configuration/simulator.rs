@@ -1,7 +1,7 @@
 use crate::{
     common::{
         error::{inv_arg, Result},
-        log::{callback::LogCallback, tee_file::TeeFile, LoglevelFilter},
+        log::{callback::LogCallback, tee_file::TeeFileConfiguration, LoglevelFilter},
         types::PluginType,
     },
     host::configuration::{PluginConfiguration, ReproductionPathStyle, Seed},
@@ -18,7 +18,7 @@ pub struct SimulatorConfiguration {
 
     /// Logs messages to the specified file in addition to stderr. level sets
     /// the minimum importance for a message to be logged to this file.
-    pub tee_files: Vec<TeeFile>,
+    pub tee_files: Vec<TeeFileConfiguration>,
 
     /// Optional log callback function.
     pub log_callback: Option<LogCallback>,
@@ -47,7 +47,7 @@ impl SimulatorConfiguration {
     }
 
     /// Adds a tee file.
-    pub fn with_tee_file(mut self, tee: impl Into<TeeFile>) -> SimulatorConfiguration {
+    pub fn with_tee_file(mut self, tee: impl Into<TeeFileConfiguration>) -> SimulatorConfiguration {
         self.tee_files.push(tee.into());
         self
     }

@@ -1,7 +1,7 @@
 use super::*;
 use dqcsim::common::{
     log,
-    log::{callback::LogCallback, tee_file::TeeFile},
+    log::{callback::LogCallback, tee_file::TeeFileConfiguration},
 };
 use std::time::*;
 
@@ -108,7 +108,7 @@ pub extern "C" fn dqcs_scfg_tee(
 ) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(scfg as &mut SimulatorConfiguration);
-        scfg.tee_files.push(TeeFile::new(
+        scfg.tee_files.push(TeeFileConfiguration::new(
             verbosity.into_loglevel_filter()?,
             receive_str(filename)?,
         ));
