@@ -1,15 +1,14 @@
 language: rust
 sudo: false
 
-# Need to cache the whole `.cargo` directory to keep .crates.toml for
-# cargo-update to work
+# Cache only cargo-install's build data. It'd be awesome if we could sanely
+# store intermediate results for DQCsim itself, but for some reason dependency
+# resolution is broken for that, making it build again with a different hash
+# every time, thus constantly increasing the size of the cache (and also
+# messing up coverage data with old builds = old line numbers).
 cache:
   directories:
     - /home/travis/.cargo
-
-# But don't cache the cargo registry
-before_cache:
-  - rm -rf /home/travis/.cargo/registry
 
 os:
   - linux
