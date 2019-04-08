@@ -17,14 +17,15 @@ pub extern "C" fn dqcs_pcfg_new(
     spec: *const c_char,
 ) -> dqcs_handle_t {
     api_return(0, || {
-        let spec = receive_str(spec)?;
-        if spec.is_empty() {
-            return inv_arg("plugin specification must not be empty");
+        let spec = receive_optional_str(spec)?.filter(|x| !x.is_empty());
+        if let Some(spec) = spec {
+            Ok(insert(PluginProcessConfiguration::new(
+                receive_optional_str(name)?.unwrap_or(""),
+                PluginProcessSpecification::from_sugar(spec, typ.into())?,
+            )))
+        } else {
+            inv_arg("plugin specification must not be empty")
         }
-        Ok(insert(PluginProcessConfiguration::new(
-            receive_str(name)?,
-            PluginProcessSpecification::from_sugar(spec, typ.into())?,
-        )))
     })
 }
 
@@ -46,25 +47,16 @@ pub extern "C" fn dqcs_pcfg_new_raw(
     script: *const c_char,
 ) -> dqcs_handle_t {
     api_return(0, || {
-        let executable = receive_str(executable)?;
-        if executable.is_empty() {
-            return inv_arg("plugin executable must not be empty");
-        }
-        let script_path;
-        if script.is_null() {
-            script_path = None;
+        let executable = receive_optional_str(executable)?.filter(|x| !x.is_empty());
+        let script = receive_optional_str(script)?.filter(|x| !x.is_empty());
+        if let Some(executable) = executable {
+            Ok(insert(PluginProcessConfiguration::new(
+                receive_optional_str(name)?.unwrap_or(""),
+                PluginProcessSpecification::new(executable, script, typ),
+            )))
         } else {
-            let script = receive_str(script)?;
-            if script.is_empty() {
-                script_path = None;
-            } else {
-                script_path = Some(script);
-            }
+            inv_arg("plugin executable must not be empty")
         }
-        Ok(insert(PluginProcessConfiguration::new(
-            receive_str(name)?,
-            PluginProcessSpecification::new(executable, script_path, typ),
-        )))
     })
 }
 
@@ -129,7 +121,7 @@ pub extern "C" fn dqcs_pcfg_script(pcfg: dqcs_handle_t) -> *mut c_char {
 /// The `ArbCmd` handle is consumed by this function, and is thus invalidated,
 /// if and only if it is successful.
 #[no_mangle]
-pub extern "C" fn dqcs_pcfg_init_arb(pcfg: dqcs_handle_t, cmd: dqcs_handle_t) -> dqcs_return_t {
+pub extern "C" fn dqcs_pcfg_init_cmd(pcfg: dqcs_handle_t, cmd: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(pcfg as &mut PluginProcessConfiguration);
         take!(cmd as ArbCmd);
@@ -177,8 +169,13 @@ pub extern "C" fn dqcs_pcfg_env_unset(pcfg: dqcs_handle_t, key: *const c_char) -
 pub extern "C" fn dqcs_pcfg_work_set(pcfg: dqcs_handle_t, work: *const c_char) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(pcfg as &mut PluginProcessConfiguration);
-        pcfg.functional.work = receive_str(work)?.into();
-        Ok(())
+        let work: std::path::PathBuf = receive_str(work)?.into();
+        if !work.is_dir() {
+            inv_arg("not a directory")
+        } else {
+            pcfg.functional.work = work;
+            Ok(())
+        }
     })
 }
 
@@ -246,7 +243,7 @@ pub extern "C" fn dqcs_pcfg_stdout_mode_set(
 ) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(pcfg as &mut PluginProcessConfiguration);
-        pcfg.nonfunctional.stdout_mode = level.into();
+        pcfg.nonfunctional.stdout_mode = level.into_capture_mode()?;
         Ok(())
     })
 }
@@ -270,7 +267,7 @@ pub extern "C" fn dqcs_pcfg_stderr_mode_set(
 ) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(pcfg as &mut PluginProcessConfiguration);
-        pcfg.nonfunctional.stderr_mode = level.into();
+        pcfg.nonfunctional.stderr_mode = level.into_capture_mode()?;
         Ok(())
     })
 }

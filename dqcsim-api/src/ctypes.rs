@@ -325,19 +325,19 @@ impl From<StreamCaptureMode> for dqcs_loglevel_t {
     }
 }
 
-impl Into<StreamCaptureMode> for dqcs_loglevel_t {
-    fn into(self) -> StreamCaptureMode {
+impl Into<Result<StreamCaptureMode>> for dqcs_loglevel_t {
+    fn into(self) -> Result<StreamCaptureMode> {
         match self {
-            dqcs_loglevel_t::DQCS_LOG_INVALID => StreamCaptureMode::Null,
-            dqcs_loglevel_t::DQCS_LOG_OFF => StreamCaptureMode::Null,
-            dqcs_loglevel_t::DQCS_LOG_FATAL => StreamCaptureMode::Capture(Loglevel::Fatal),
-            dqcs_loglevel_t::DQCS_LOG_ERROR => StreamCaptureMode::Capture(Loglevel::Error),
-            dqcs_loglevel_t::DQCS_LOG_WARN => StreamCaptureMode::Capture(Loglevel::Warn),
-            dqcs_loglevel_t::DQCS_LOG_NOTE => StreamCaptureMode::Capture(Loglevel::Note),
-            dqcs_loglevel_t::DQCS_LOG_INFO => StreamCaptureMode::Capture(Loglevel::Info),
-            dqcs_loglevel_t::DQCS_LOG_DEBUG => StreamCaptureMode::Capture(Loglevel::Debug),
-            dqcs_loglevel_t::DQCS_LOG_TRACE => StreamCaptureMode::Capture(Loglevel::Trace),
-            dqcs_loglevel_t::DQCS_LOG_PASS => StreamCaptureMode::Pass,
+            dqcs_loglevel_t::DQCS_LOG_INVALID => inv_arg(format!("invalid level")),
+            dqcs_loglevel_t::DQCS_LOG_OFF => Ok(StreamCaptureMode::Null),
+            dqcs_loglevel_t::DQCS_LOG_FATAL => Ok(StreamCaptureMode::Capture(Loglevel::Fatal)),
+            dqcs_loglevel_t::DQCS_LOG_ERROR => Ok(StreamCaptureMode::Capture(Loglevel::Error)),
+            dqcs_loglevel_t::DQCS_LOG_WARN => Ok(StreamCaptureMode::Capture(Loglevel::Warn)),
+            dqcs_loglevel_t::DQCS_LOG_NOTE => Ok(StreamCaptureMode::Capture(Loglevel::Note)),
+            dqcs_loglevel_t::DQCS_LOG_INFO => Ok(StreamCaptureMode::Capture(Loglevel::Info)),
+            dqcs_loglevel_t::DQCS_LOG_DEBUG => Ok(StreamCaptureMode::Capture(Loglevel::Debug)),
+            dqcs_loglevel_t::DQCS_LOG_TRACE => Ok(StreamCaptureMode::Capture(Loglevel::Trace)),
+            dqcs_loglevel_t::DQCS_LOG_PASS => Ok(StreamCaptureMode::Pass),
         }
     }
 }
@@ -357,15 +357,19 @@ impl From<Loglevel> for dqcs_loglevel_t {
 }
 
 impl dqcs_loglevel_t {
+    pub fn into_capture_mode(self) -> Result<StreamCaptureMode> {
+        self.into()
+    }
+
     pub fn into_loglevel(self) -> Result<Loglevel> {
-        match self.into() {
+        match self.into_capture_mode()? {
             StreamCaptureMode::Capture(level) => Ok(level),
             _ => inv_arg(format!("invalid loglevel {:?}", self)),
         }
     }
 
     pub fn into_loglevel_filter(self) -> Result<LoglevelFilter> {
-        match self.into() {
+        match self.into_capture_mode()? {
             StreamCaptureMode::Capture(level) => Ok(level.into()),
             StreamCaptureMode::Null => Ok(LoglevelFilter::Off),
             _ => inv_arg(format!("invalid loglevel filter {:?}", self)),
