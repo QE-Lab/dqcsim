@@ -11,9 +11,13 @@ pub extern "C" fn dqcs_handle_type(handle: dqcs_handle_t) -> dqcs_handle_type_t 
                 Some(APIObject::ArbData(_)) => Ok(dqcs_handle_type_t::DQCS_HTYPE_ARB_DATA),
                 Some(APIObject::ArbCmd(_)) => Ok(dqcs_handle_type_t::DQCS_HTYPE_ARB_CMD),
                 Some(APIObject::ArbCmdQueue(_)) => Ok(dqcs_handle_type_t::DQCS_HTYPE_ARB_CMD_QUEUE),
-                Some(APIObject::QubitReferenceSet(_)) => Ok(dqcs_handle_type_t::DQCS_HTYPE_QUBIT_SET),
+                Some(APIObject::QubitReferenceSet(_)) => {
+                    Ok(dqcs_handle_type_t::DQCS_HTYPE_QUBIT_SET)
+                }
                 Some(APIObject::Gate(_)) => Ok(dqcs_handle_type_t::DQCS_HTYPE_GATE),
-                Some(APIObject::QubitMeasurementResult(_)) => Ok(dqcs_handle_type_t::DQCS_HTYPE_MEAS),
+                Some(APIObject::QubitMeasurementResult(_)) => {
+                    Ok(dqcs_handle_type_t::DQCS_HTYPE_MEAS)
+                }
                 Some(APIObject::QubitMeasurementResultSet(_)) => {
                     Ok(dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET)
                 }
@@ -27,14 +31,18 @@ pub extern "C" fn dqcs_handle_type(handle: dqcs_handle_t) -> dqcs_handle_type_t 
                     PluginType::Operator => Ok(dqcs_handle_type_t::DQCS_HTYPE_OPER_THREAD_CONFIG),
                     PluginType::Backend => Ok(dqcs_handle_type_t::DQCS_HTYPE_BACK_THREAD_CONFIG),
                 },
-                Some(APIObject::SimulatorConfiguration(_)) => Ok(dqcs_handle_type_t::DQCS_HTYPE_SIM_CONFIG),
+                Some(APIObject::SimulatorConfiguration(_)) => {
+                    Ok(dqcs_handle_type_t::DQCS_HTYPE_SIM_CONFIG)
+                }
                 Some(APIObject::Simulator(_)) => Ok(dqcs_handle_type_t::DQCS_HTYPE_SIM),
                 Some(APIObject::PluginDefinition(x)) => match x.get_type() {
                     PluginType::Frontend => Ok(dqcs_handle_type_t::DQCS_HTYPE_FRONT_DEF),
                     PluginType::Operator => Ok(dqcs_handle_type_t::DQCS_HTYPE_OPER_DEF),
                     PluginType::Backend => Ok(dqcs_handle_type_t::DQCS_HTYPE_BACK_DEF),
                 },
-                Some(APIObject::PluginJoinHandle(_)) => Ok(dqcs_handle_type_t::DQCS_HTYPE_PLUGIN_JOIN),
+                Some(APIObject::PluginJoinHandle(_)) => {
+                    Ok(dqcs_handle_type_t::DQCS_HTYPE_PLUGIN_JOIN)
+                }
             }
         })
     })
