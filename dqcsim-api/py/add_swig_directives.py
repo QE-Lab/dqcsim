@@ -292,8 +292,6 @@ void dqcs_swig_callback_cleanup(void *user) {
 
 ''']
 
-ret_typs = {}
-
 for line in data.split('\n\n'):
     line = line.strip()
     if not line.startswith('typedef ') and not line.startswith('#include '):
@@ -392,10 +390,6 @@ for line in data.split('\n\n'):
             if error_value is not None:
                 line = '%s\n%s' % (error_fmt.format(name=name, check=error_value), line)
 
-            if ret_typ not in ret_typs:
-                ret_typs[ret_typ] = []
-            ret_typs[ret_typ].append(name)
-
         except:
             print('While parsing the following line as a function...')
             print()
@@ -404,9 +398,6 @@ for line in data.split('\n\n'):
             raise
 
     output.append(line)
-
-import pprint
-pprint.pprint(ret_typs)
 
 with open(sys.argv[2], 'w') as f:
     f.write('\n\n'.join(output) + '\n')
