@@ -24,6 +24,8 @@ TEST(handle, sanity) {
 
 // Test JSON access by means of JSON strings.
 TEST(json, string) {
+  unsigned char cbor_buffer[256];
+
   // Create handle.
   dqcs_handle_t a = dqcs_arb_new();
   ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
@@ -45,6 +47,44 @@ TEST(json, string) {
   // Check that the ArbData object is what we expect.
   EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Object(\n            {\n                String(\n                    \"hello\"\n                ): String(\n                    \"world\"\n                )\n            }\n        ),\n        args: []\n    }\n)");
   EXPECT_STREQ(dqcs_arb_json_get(a), "{\"hello\":\"world\"}");
+  EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 14);
+//   for (int i = 0; i < 14; i++) {
+//     fprintf(stderr, "\\x%02X", (unsigned int)cbor_buffer[i]);
+//   }
+  EXPECT_EQ(memcmp(cbor_buffer, "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF", 14), 0);
+
+  // Delete handle.
+  EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+}
+
+// Test JSON access by means of CBOR objects.
+TEST(json, cbor) {
+  unsigned char cbor_buffer[256];
+
+  // Create handle.
+  dqcs_handle_t a = dqcs_arb_new();
+  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+
+  // Check default.
+  EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 2);
+  EXPECT_EQ(memcmp(cbor_buffer, "\xBF\xFF", 2), 0);
+
+  // Check proper object.
+  EXPECT_EQ(dqcs_arb_cbor_set(a, "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF", 14), dqcs_return_t::DQCS_SUCCESS);
+
+  // Check proper object but wrong handle.
+  EXPECT_EQ(dqcs_arb_cbor_set(0, "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF", 14), dqcs_return_t::DQCS_FAILURE);
+  EXPECT_STREQ(dqcs_error_get(), "Invalid argument: handle 0 is invalid");
+
+  // Check improper object.
+  EXPECT_EQ(dqcs_arb_cbor_set(a, "\xFF", 1), dqcs_return_t::DQCS_FAILURE);
+  EXPECT_STREQ(dqcs_error_get(), "Invalid argument: unexpected code at offset 1");
+
+  // Check that the ArbData object is what we expect.
+  EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Object(\n            {\n                String(\n                    \"hello\"\n                ): String(\n                    \"world\"\n                )\n            }\n        ),\n        args: []\n    }\n)");
+  EXPECT_STREQ(dqcs_arb_json_get(a), "{\"hello\":\"world\"}");
+  EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 14);
+  EXPECT_EQ(memcmp(cbor_buffer, "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF", 14), 0);
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
@@ -185,6 +225,13 @@ TEST(args, test2) {
   EXPECT_EQ(dqcs_arb_set_str(a, 1, "hi"), dqcs_return_t::DQCS_FAILURE);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: index out of range: 1");
 
+  EXPECT_EQ(dqcs_arb_set_raw(a, 0, "hi", 2), dqcs_return_t::DQCS_FAILURE);
+  EXPECT_STREQ(dqcs_error_get(), "Invalid argument: index out of range: 0");
+  EXPECT_EQ(dqcs_arb_set_raw(a, -1, "hi", 2), dqcs_return_t::DQCS_FAILURE);
+  EXPECT_STREQ(dqcs_error_get(), "Invalid argument: index out of range: -1");
+  EXPECT_EQ(dqcs_arb_set_raw(a, 1, "hi", 2), dqcs_return_t::DQCS_FAILURE);
+  EXPECT_STREQ(dqcs_error_get(), "Invalid argument: index out of range: 1");
+
   EXPECT_EQ(dqcs_arb_remove(a, 0), dqcs_return_t::DQCS_FAILURE);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: index out of range: 0");
   EXPECT_EQ(dqcs_arb_remove(a, -1), dqcs_return_t::DQCS_FAILURE);
@@ -253,8 +300,8 @@ TEST(args, test2) {
   // Make some changes using set_str.
   EXPECT_EQ(dqcs_arb_set_str(a, 0, "hello"), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_arb_set_str(a, -1, "world"), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_arb_set_str(a, 1, ", "), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_arb_set_str(a, -4, "world"), dqcs_return_t::DQCS_FAILURE);
+  EXPECT_EQ(dqcs_arb_set_raw(a, 1, ", ", 2), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_arb_set_raw(a, -4, "world", 5), dqcs_return_t::DQCS_FAILURE);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: index out of range: -4");
   EXPECT_EQ(dqcs_arb_set_str(a, 3, ", "), dqcs_return_t::DQCS_FAILURE);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: index out of range: 3");
@@ -289,7 +336,7 @@ TEST(args, test3) {
 
   // Override the value.
   unsigned short value2 = 0xBEEF;
-  EXPECT_EQ(dqcs_arb_insert_raw(a, 0, &value2, sizeof(value2)), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_arb_set_raw(a, 0, &value2, sizeof(value2)), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_arb_get_raw(a, 0, &value2, sizeof(value2)), 2);
   EXPECT_EQ(value2, 0xBEEF);
   EXPECT_EQ(dqcs_arb_get_size(a, 0), 2);
