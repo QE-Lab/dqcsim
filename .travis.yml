@@ -15,6 +15,10 @@ matrix:
   allow_failures:
     - rust: nightly
 
+branches:
+  only:
+    - master
+
 addons:
   apt:
     packages:
@@ -58,7 +62,6 @@ script:
 after_success: |
   [ "$TRAVIS_OS_NAME" = "linux" ] &&
   [ "$TRAVIS_RUST_VERSION" = "stable" ] &&
-  [ "$TRAVIS_PULL_REQUEST" = "false" ] &&
   wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
   tar xzf master.tar.gz &&
   cd kcov-master &&
