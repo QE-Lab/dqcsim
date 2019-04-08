@@ -20,10 +20,10 @@
 
 use crate::{
     common::{
+        channel::{PluginChannel, UpstreamChannel},
         error::{inv_op, ErrorKind, Result},
         protocol::{GatestreamDown, GatestreamUp, PluginToSimulator, SimulatorToPlugin},
     },
-    plugin::ipc::{PluginChannel, UpstreamChannel},
     trace,
 };
 use ipc_channel::ipc::{IpcOneShotServer, IpcReceiverSet, IpcSelectionResult, IpcSender};
@@ -32,7 +32,6 @@ use std::collections::{HashMap, VecDeque};
 /// Incoming enum used to map incoming requests in the IpcReceiverSet used in
 /// the Connection wrapper.
 #[derive(Debug, Copy, Clone)]
-#[allow(dead_code)] // TODO <-- remove me!
 enum Incoming {
     /// Variant used to label incoming request ([`SimulatorToPlugin`]).
     Simulator,
@@ -121,7 +120,7 @@ impl Connection {
         connect.send((request_tx, response_rx))?;
 
         // Return the PluginChannel.
-        Ok(PluginChannel::new(request, response))
+        Ok((response, request))
     }
 
     /// Construct a Connection wrapper instance.
@@ -148,13 +147,13 @@ impl Connection {
         let mut incoming_map = HashMap::with_capacity(2);
 
         // Put incoming (SimulatorToPlugin) channel in receiver set and map.
-        incoming_map.insert(incoming.add(channel.request)?, Incoming::Simulator);
+        incoming_map.insert(incoming.add(channel.1)?, Incoming::Simulator);
 
         Ok(Connection {
             incoming,
             incoming_map,
             incoming_buffer: VecDeque::new(),
-            response: channel.response,
+            response: channel.0,
             downstream: None,
             pending_upstream: None,
             upstream: None,
@@ -175,7 +174,7 @@ impl Connection {
         let (up_tx, up_rx) = ipc_channel::ipc::channel()?;
 
         // Send upstream channel to downstream plugin.
-        downstream.send(UpstreamChannel::new(up_tx, down_rx))?;
+        downstream.send((up_tx, down_rx) as UpstreamChannel)?;
 
         // Store downstream channel incoming and outgoing in connection
         // wrapper.
@@ -209,16 +208,13 @@ impl Connection {
         }
 
         // Wait for upstream plugin to connect.
-        let (_, mut upstream): (_, UpstreamChannel) =
-            self.pending_upstream.take().unwrap().accept()?;
+        let (_, upstream): (_, UpstreamChannel) = self.pending_upstream.take().unwrap().accept()?;
 
         // Store upstream channel incoming and outgoing in connection
         // wrapper.
-        self.incoming_map.insert(
-            self.incoming.add(upstream.rx().unwrap())?,
-            Incoming::Upstream,
-        );
-        self.upstream.replace(upstream.tx().unwrap());
+        self.incoming_map
+            .insert(self.incoming.add(upstream.1)?, Incoming::Upstream);
+        self.upstream.replace(upstream.0);
 
         Ok(())
     }
@@ -323,7 +319,7 @@ impl Connection {
 mod tests {
     use super::{Connection, IncomingMessage, OutgoingMessage};
     use crate::common::{
-        channel::IpcChannel,
+        channel::SimulatorChannel,
         protocol::{PluginToSimulator, SimulatorToPlugin},
     };
     use ipc_channel::ipc::IpcOneShotServer;
@@ -339,18 +335,17 @@ mod tests {
             let channel = Connection::connect(server_name).unwrap();
 
             // Wait for a request.
-            let req = channel.request.recv();
+            let req = channel.1.recv();
             assert!(req.is_ok());
             assert_eq!(req.unwrap(), SimulatorToPlugin::Abort);
 
             // Send a response.
-            let res = channel.response.send(PluginToSimulator::Success);
+            let res = channel.0.send(PluginToSimulator::Success);
             assert!(res.is_ok());
         });
 
         // Simulator gets the SimulatorChannel.
-        let (_, channel): (_, IpcChannel<SimulatorToPlugin, PluginToSimulator>) =
-            server.accept().unwrap();
+        let (_, channel): (_, SimulatorChannel) = server.accept().unwrap();
 
         // Send a request.
         let req = channel.0.send(SimulatorToPlugin::Abort);
@@ -388,8 +383,7 @@ mod tests {
         });
 
         // Simulator gets the SimulatorChannel.
-        let (_, channel): (_, IpcChannel<SimulatorToPlugin, PluginToSimulator>) =
-            server.accept().unwrap();
+        let (_, channel): (_, SimulatorChannel) = server.accept().unwrap();
 
         // Send a request.
         let req = channel.0.send(SimulatorToPlugin::Abort);

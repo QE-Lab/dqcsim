@@ -7,6 +7,7 @@
 //! [`Sender`]: ./trait.Sender.html
 //! [`Receiver`]: ./trait.Receiver.html
 
+use crate::common::protocol::{GatestreamDown, GatestreamUp, PluginToSimulator, SimulatorToPlugin};
 use ipc_channel::ipc;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
@@ -25,6 +26,11 @@ pub trait Channel {
 
 pub type CrossbeamChannel<T, U> = (crossbeam_channel::Sender<T>, crossbeam_channel::Receiver<U>);
 pub type IpcChannel<T, U> = (ipc::IpcSender<T>, ipc::IpcReceiver<U>);
+
+pub type SimulatorChannel = IpcChannel<SimulatorToPlugin, PluginToSimulator>;
+pub type PluginChannel = IpcChannel<PluginToSimulator, SimulatorToPlugin>;
+pub type UpstreamChannel = IpcChannel<GatestreamUp, GatestreamDown>;
+pub type DownstreamChannel = IpcChannel<GatestreamDown, GatestreamUp>;
 
 impl<T, U> Channel for CrossbeamChannel<T, U>
 where
