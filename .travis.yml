@@ -57,6 +57,7 @@ script:
 
 after_success: |
   [ "$TRAVIS_OS_NAME" = "linux" ] &&
+  [ "$TRAVIS_RUST_VERSION" = "stable" ] &&
   wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
   tar xzf master.tar.gz &&
   cd kcov-master &&
@@ -68,6 +69,7 @@ after_success: |
   cd ../.. &&
   rm -rf kcov-master &&
   for file in target/debug/{dqcsim,simulation,enum}*; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; ./kcov-build/usr/local/bin/kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
+  for file in `find dqcsim-api/cpp/build/test_* -executable -and -type f`; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; ./kcov-build/usr/local/bin/kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
   bash <(curl -s https://codecov.io/bash) &&
   echo "Uploaded code coverage"
 
