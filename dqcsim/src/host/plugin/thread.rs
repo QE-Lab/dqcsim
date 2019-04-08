@@ -1,6 +1,6 @@
 use crate::{
     common::{
-        channel::IpcChannel,
+        channel::SimulatorChannel,
         error::Result,
         log::thread::LogThread,
         protocol::{PluginToSimulator, SimulatorToPlugin},
@@ -21,7 +21,7 @@ pub type PluginThreadClosure = Box<dyn Fn(String) -> () + Send>;
 pub struct PluginThread {
     thread: Option<PluginThreadClosure>,
     handle: Option<thread::JoinHandle<()>>,
-    channel: Option<IpcChannel<SimulatorToPlugin, PluginToSimulator>>,
+    channel: Option<SimulatorChannel>,
     plugin_type: PluginType,
     init_cmds: Vec<ArbCmd>,
     log_configuration: PluginLogConfiguration,

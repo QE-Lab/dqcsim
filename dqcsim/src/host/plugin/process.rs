@@ -1,6 +1,6 @@
 use crate::{
     common::{
-        channel::IpcChannel,
+        channel::SimulatorChannel,
         error::{err, ErrorKind, Result},
         log::{stdio::proxy_stdio, thread::LogThread},
         protocol::{PluginToSimulator, SimulatorToPlugin},
@@ -32,7 +32,7 @@ pub struct PluginProcess {
     child: Option<process::Child>,
     /// The SimulatorChannel is populated by the spawn method of the Plugin
     /// trait.
-    channel: Option<IpcChannel<SimulatorToPlugin, PluginToSimulator>>,
+    channel: Option<SimulatorChannel>,
 }
 
 impl PluginProcess {
@@ -105,21 +105,20 @@ impl Plugin for PluginProcess {
                 #[cfg_attr(feature = "cargo-clippy", allow(clippy::mutex_atomic))]
                 let pair = sync::Arc::new((sync::Mutex::new(false), sync::Condvar::new()));
                 let pair2 = pair.clone();
-                let handle: thread::JoinHandle<
-                    Result<IpcChannel<SimulatorToPlugin, PluginToSimulator>>,
-                > = thread::spawn(move || {
-                    {
-                        let &(ref lock, _) = &*pair2;
-                        let mut started = lock.lock().expect("Unable to aquire lock");
-                        *started = true;
-                    }
-                    let (_, channel) = server.accept()?;
-                    {
-                        let &(_, ref cvar) = &*pair2;
-                        cvar.notify_one();
-                    }
-                    Ok(channel)
-                });
+                let handle: thread::JoinHandle<Result<SimulatorChannel>> =
+                    thread::spawn(move || {
+                        {
+                            let &(ref lock, _) = &*pair2;
+                            let mut started = lock.lock().expect("Unable to aquire lock");
+                            *started = true;
+                        }
+                        let (_, channel) = server.accept()?;
+                        {
+                            let &(_, ref cvar) = &*pair2;
+                            cvar.notify_one();
+                        }
+                        Ok(channel)
+                    });
                 let &(ref lock, ref cvar) = &*pair;
                 let (started, wait_result) = cvar
                     .wait_timeout(
