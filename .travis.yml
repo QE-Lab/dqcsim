@@ -1,6 +1,5 @@
 language: rust
 sudo: false
-cache: cargo
 
 os:
   - linux
@@ -48,10 +47,7 @@ env:
 install:
   - rustup component add clippy --toolchain="$TRAVIS_RUST_VERSION" || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
   - rustup component add rustfmt
-  - (test -x $HOME/.cargo/bin/cargo-install-update || cargo install cargo-update)
-  - (test -x $HOME/.cargo/bin/mdbook || cargo install mdbook)
-  - (test -x $HOME/.cargo/bin/cargo-make || cargo install cargo-make)
-  - cargo install-update -a
+  - cargo install --debug cargo-make
 
 script:
   - cargo fmt -- --check
@@ -78,6 +74,7 @@ after_success: |
   echo "Uploaded code coverage"
 
 before_deploy:
+  - cargo install --debug mdbook
   - cargo doc
   - cd book && mdbook build && mdbook test
   - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/book/book/doc_
