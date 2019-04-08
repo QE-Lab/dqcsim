@@ -33,11 +33,6 @@ impl PluginMetadata {
         &self.name
     }
 
-    /// Sets the name of the plugin implementation.
-    pub fn set_name(&mut self, name: String) {
-        self.name = name;
-    }
-
     /// Returns the author of the plugin.
     pub fn get_author(&self) -> &str {
         &self.author
