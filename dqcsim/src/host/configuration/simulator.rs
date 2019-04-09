@@ -88,6 +88,17 @@ impl SimulatorConfiguration {
         self
     }
 
+    /// Disables all logging methods by setting `stderr_level` and
+    /// `dqcsim_level` to LoglevelFilter::Off, `tee_files` to an empty vector
+    /// and `log_callback` to none.
+    pub fn without_logging(mut self) -> SimulatorConfiguration {
+        self.stderr_level = LoglevelFilter::Off;
+        self.dqcsim_level = LoglevelFilter::Off;
+        self.tee_files = vec![];
+        self.log_callback = None;
+        self
+    }
+
     /// Optimizes the source verbosity levels, such that they are no more
     /// verbose than the most verbose sink.
     pub fn optimize_loglevels(&mut self) {

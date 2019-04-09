@@ -43,3 +43,38 @@ impl std::fmt::Debug for LogCallback {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn log_callback() {
+        let record = LogRecord::new(
+            "logger",
+            "message",
+            Loglevel::Trace,
+            "path",
+            "file",
+            1234u32,
+            1u32,
+            1u64,
+        );
+        let callback = LogCallback::new(
+            Box::new(|record| {
+                assert_eq!(record.logger(), "logger");
+                assert_eq!(record.line(), Some(1234u32));
+            }),
+            LoglevelFilter::Debug,
+        );
+        &(callback.callback)(&record);
+        assert_eq!(callback.name(), "?");
+        assert!(callback.enabled(Loglevel::Debug));
+        assert!(!callback.enabled(Loglevel::Trace));
+        callback.log(&record);
+        assert_eq!(
+            format!("{:?}", callback),
+            "LogCallback { callback: <...>, filter: Debug }"
+        );
+    }
+}

@@ -169,7 +169,7 @@ impl Simulation {
             .iter_mut()
             .rev()
             .map(|plugin| {
-                let res = plugin.init(logger, &downstream, rng.next_u64())?;
+                let res = plugin.initialize(logger, &downstream, rng.next_u64())?;
                 downstream = res.upstream;
                 Ok(res.metadata)
             })
@@ -196,6 +196,27 @@ impl Simulation {
             .skip(1)
             .rev()
             .map(|plugin| plugin.accept_upstream())
+            .partition(Result::is_ok);
+
+        // Check for initialization errors.
+        if !errors.is_empty() {
+            let mut messages = String::new();
+            for e in errors {
+                let e = e.unwrap_err();
+                if messages.is_empty() {
+                    messages = e.to_string();
+                } else {
+                    messages = format!("{}; {}", messages, e.to_string());
+                }
+            }
+            err(format!("Failed to initialize plugin(s): {}", messages))?
+        }
+
+        // Run the user intialization code.
+        let (_, errors): (Vec<_>, Vec<_>) = pipeline
+            .iter_mut()
+            .rev()
+            .map(|plugin| plugin.user_initialize())
             .partition(Result::is_ok);
 
         // Check for initialization errors.

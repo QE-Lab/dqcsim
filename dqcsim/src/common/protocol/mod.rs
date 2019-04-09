@@ -3,7 +3,8 @@
 // Requests from simulator to plugin.
 mod simulator_to_plugin;
 pub use simulator_to_plugin::{
-    FrontendRunRequest, PluginAcceptUpstreamRequest, PluginInitializeRequest, SimulatorToPlugin,
+    FrontendRunRequest, PluginAcceptUpstreamRequest, PluginInitializeRequest,
+    PluginUserInitializeRequest, SimulatorToPlugin,
 };
 
 // Responses from the plugin to the simulator.

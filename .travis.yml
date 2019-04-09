@@ -7,12 +7,12 @@ os:
 
 rust:
   - stable
-  - nightly
+#   - nightly
 
-matrix:
-  fast_finish: true
-  allow_failures:
-    - rust: nightly
+# matrix:
+#   fast_finish: true
+#   allow_failures:
+#     - rust: nightly
 
 branches:
   only:
@@ -79,6 +79,7 @@ install:
 script:
   - cargo fmt -- --check
   - cargo check --all-targets
+  - cargo build --example plugin
   - make kcov-test
   - cargo clippy -- -Dwarnings
 
@@ -86,7 +87,7 @@ after_success: |
   [ "$TRAVIS_OS_NAME" = "linux" ] &&
   [ "$TRAVIS_RUST_VERSION" = "stable" ] &&
   export PATH=$PATH:$HOME/kcov/bin/ &&
-  for file in target/debug/{dqcsim,simulation,enum}*; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/cpp/build/,/dqcsim/tests/ --exclude-region='#[cfg(test)]:#[cfg(testkcovstopmarker)]' --verify "target/cov/$(basename $file)" "$file"; done &&
+  for file in target/debug/{dqcsim,simulation,plugin,enum}*; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/cpp/build/,/dqcsim/tests/ --exclude-region='#[cfg(test)]:#[cfg(testkcovstopmarker)]' --verify "target/cov/$(basename $file)" "$file"; done &&
   for file in `find dqcsim-api/cpp/build/test_* -executable -and -type f`; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/cpp/build/,/dqcsim/tests/ --exclude-region='#[cfg(test)]:#[cfg(testkcovstopmarker)]' --verify "target/cov/$(basename $file)" "$file"; done &&
   bash <(curl -s https://codecov.io/bash)
 

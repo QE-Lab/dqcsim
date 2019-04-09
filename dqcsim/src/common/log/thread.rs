@@ -212,3 +212,24 @@ impl Drop for LogThread {
             .expect("LogThread failed");
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn debug() {
+        let _lt = LogThread::spawn(
+            "name",
+            LoglevelFilter::Debug,
+            LoglevelFilter::Error,
+            None,
+            vec![],
+        )
+        .unwrap();
+        #[cfg(os = "macos")]
+        assert_eq!(&format!("{:?}", _lt).as_str()[..100], "LogThread { sender: Some(Sender { .. }), ipc_sender: Some(IpcSender { os_sender: OsIpcSender { port:");
+        #[cfg(os = "linux")]
+        assert_eq!(&format!("{:?}", _lt).as_str()[..98], "LogThread { sender: Some(Sender { .. }), ipc_sender: Some(IpcSender { os_sender: OsIpcSender { fd:");
+    }
+}

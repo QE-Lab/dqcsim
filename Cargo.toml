@@ -3,7 +3,6 @@
 members = [
   "dqcsim",
   "dqcsim-cli",
-  "dqcsim-plugin",
   "dqcsim-api",
   "lib/enum-variants",
   "lib/enum-variants-derive",

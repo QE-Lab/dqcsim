@@ -9,7 +9,7 @@ use dqcsim::{
 /// This differs from `PluginProcessNonfunctionalConfiguration` in that
 /// unspecified values have not yet been replaced with their defaults. This
 /// allows the structure to be built incrementally (see `apply()`).
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct PluginNonfunctionalOpts {
     /// Specifies the verbosity of the messages sent to DQCsim. If this is
     /// `None`, the value of DQCsim's `--plugin_level` option should be used.
