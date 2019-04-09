@@ -197,9 +197,6 @@ impl<'a> PluginState<'a> {
                 .connect_downstream(req.downstream.unwrap())?;
         }
 
-        // Run the initialize callback.
-        (self.definition.initialize)(self, req.init_cmds)?;
-
         // If we're not a frontend, initialize an upstream server.
         let upstream = if typ == PluginType::Frontend {
             None
@@ -483,6 +480,16 @@ impl<'a> PluginState<'a> {
                             PluginToSimulator::Failure(e.to_string())
                         }
                     },
+                    SimulatorToPlugin::UserInitialize(req) => {
+                        match (self.definition.initialize)(self, req.init_cmds) {
+                            Ok(_) => PluginToSimulator::Success,
+                            Err(e) => {
+                                let e = e.to_string();
+                                error!("{}", e);
+                                PluginToSimulator::Failure(e.to_string())
+                            }
+                        }
+                    }
                     SimulatorToPlugin::Abort => {
                         aborted = true;
                         match self.handle_abort() {

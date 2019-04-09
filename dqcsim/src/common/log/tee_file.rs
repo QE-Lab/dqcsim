@@ -101,7 +101,7 @@ impl ::std::fmt::Display for TeeFileConfiguration {
 #[cfg(test)]
 mod test {
 
-    use super::super::LoglevelFilter;
+    use super::super::{Log, LogRecord, Loglevel, LoglevelFilter};
     use super::*;
     use std::str::FromStr;
 
@@ -111,6 +111,7 @@ mod test {
             TeeFileConfiguration::from_str("info:/tmp/hello:/there").unwrap(),
             TeeFileConfiguration::new(LoglevelFilter::Info, "/tmp/hello:/there"),
         );
+        assert!(TeeFileConfiguration::from_str("hello").is_err());
     }
 
     #[test]
@@ -119,6 +120,54 @@ mod test {
             TeeFileConfiguration::new(LoglevelFilter::Info, "/tmp/hello:/there").to_string(),
             "Info:/tmp/hello:/there",
         );
+    }
+
+    #[test]
+    fn debug() {
+        let tf = TeeFileConfiguration::new(LoglevelFilter::Info, "hello:/there");
+        assert_eq!(
+            format!("{:?}", tf),
+            "TeeFileConfiguration { filter: Info, file: \"hello:/there\" }"
+        );
+    }
+
+    #[test]
+    fn with_clone() {
+        let tf = TeeFileConfiguration::new(LoglevelFilter::Info, "/tmp/log.info");
+        assert_eq!(
+            format!("{:?}", tf),
+            "TeeFileConfiguration { filter: Info, file: \"/tmp/log.info\" }"
+        );
+        let _ = tf.clone();
+    }
+
+    #[test]
+    fn pub_fields() {
+        let tf = TeeFileConfiguration::new(LoglevelFilter::Info, "/tmp/log.info");
+        assert_eq!(tf.filter, LoglevelFilter::Info);
+        assert_eq!(tf.file, PathBuf::from("/tmp/log.info"));
+    }
+
+    #[test]
+    fn log() {
+        let tfc = TeeFileConfiguration::new(LoglevelFilter::Info, "/tmp/log.info");
+        let tf = TeeFile::new(tfc);
+        assert!(tf.is_ok());
+        let tf = tf.unwrap();
+        assert_eq!(tf.name(), "/tmp/log.info");
+        assert!(tf.enabled(Loglevel::Info));
+        assert!(!tf.enabled(Loglevel::Trace));
+        let record = LogRecord::new(
+            "logger",
+            "message",
+            Loglevel::Trace,
+            "path",
+            "file",
+            1234u32,
+            1u32,
+            1u64,
+        );
+        tf.log(&record);
     }
 
 }

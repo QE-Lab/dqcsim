@@ -139,10 +139,6 @@ impl PluginDefinition {
         &self.metadata
     }
 
-    pub fn get_metadata_mut(&mut self) -> &mut PluginMetadata {
-        &mut self.metadata
-    }
-
     /// Executes the plugin using the previously specified callback functions.
     ///
     /// `argv` should be set to the command line argument vector, including the
@@ -153,5 +149,33 @@ impl PluginDefinition {
     /// the exit code.
     pub fn execute(self, _argv: Vec<std::ffi::OsString>) -> Result<i32> {
         err("not yet implemented")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn debug() {
+        let mut def = PluginDefinition::new(
+            PluginType::Operator,
+            PluginMetadata::new("name", "author", "0.1.0"),
+        );
+        assert_eq!(
+            format!(
+                "{:?}",
+                def
+            ),
+            "PluginDefinition { typ: Operator, metadata: PluginMetadata { name: \"name\", author: \"author\", version: \"0.1.0\" } }"
+        );
+        def.set_type(PluginType::Backend);
+        assert_eq!(
+            format!(
+                "{:?}",
+                def
+            ),
+            "PluginDefinition { typ: Backend, metadata: PluginMetadata { name: \"name\", author: \"author\", version: \"0.1.0\" } }"
+        );
     }
 }

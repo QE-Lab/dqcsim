@@ -547,7 +547,7 @@ macro_rules! trace {
 
 #[cfg(test)]
 mod tests {
-    use super::{Loglevel, LoglevelFilter};
+    use super::{LogRecord, Loglevel, LoglevelFilter};
 
     #[test]
     fn level_order() {
@@ -558,6 +558,53 @@ mod tests {
         assert!(Loglevel::Error < Loglevel::Warn);
         assert!(Loglevel::Fatal < Loglevel::Error);
         assert!(LoglevelFilter::Off < LoglevelFilter::from(Loglevel::Fatal));
+    }
+
+    #[test]
+    fn level_colors() {
+        let color: term::color::Color = Loglevel::Error.into();
+        assert_eq!(color, term::color::RED);
+
+        let color: term::color::Color = Loglevel::Note.into();
+        assert_eq!(color, term::color::WHITE);
+    }
+
+    #[test]
+    fn filter_to_level() {
+        assert!(Loglevel::try_from(LoglevelFilter::Fatal).is_ok());
+        assert!(Loglevel::try_from(LoglevelFilter::Error).is_ok());
+        assert!(Loglevel::try_from(LoglevelFilter::Warn).is_ok());
+        assert!(Loglevel::try_from(LoglevelFilter::Note).is_ok());
+        assert!(Loglevel::try_from(LoglevelFilter::Info).is_ok());
+        assert!(Loglevel::try_from(LoglevelFilter::Debug).is_ok());
+        assert!(Loglevel::try_from(LoglevelFilter::Trace).is_ok());
+        assert!(Loglevel::try_from(LoglevelFilter::Off).is_err());
+    }
+
+    #[test]
+    fn log_record_debug_getters() {
+        let record = LogRecord::new("", "", Loglevel::Debug, "path", "file", 1234u32, 1u32, 1u64);
+        assert_eq!(record.module_path(), Some("path"));
+        assert_eq!(record.file(), Some("file"));
+        assert_eq!(record.line(), Some(1234u32));
+    }
+
+    #[test]
+    fn display_record() {
+        let record = LogRecord::new(
+            "logger",
+            "message",
+            Loglevel::Trace,
+            "path",
+            "file",
+            1234u32,
+            1u32,
+            1u64,
+        );
+        assert_eq!(
+            &format!("{}", record).as_str()[24..],
+            "  Trace     1:1  logger                  message"
+        );
     }
 
 }

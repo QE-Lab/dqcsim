@@ -23,6 +23,7 @@ fn thread_config_type(plugin_type: PluginType) -> PluginThreadConfiguration {
 fn minimal_simulator() -> Simulator {
     let configuration = SimulatorConfiguration::default()
         .without_reproduction()
+        .without_logging()
         .with_plugin(thread_config_type(PluginType::Backend))
         .with_plugin(thread_config_type(PluginType::Frontend));
 
@@ -99,6 +100,7 @@ fn simulation_metadata() {
     let plugin_metadata = PluginMetadata::new("name", "author", "version");
     let configuration = SimulatorConfiguration::default()
         .without_reproduction()
+        .without_logging()
         .with_plugin(thread_config_type(PluginType::Backend))
         .with_plugin(PluginThreadConfiguration::new(
             PluginDefinition::new(PluginType::Frontend, plugin_metadata.clone()),
@@ -141,6 +143,7 @@ fn simulation_init_cmds() {
 
     let configuration = SimulatorConfiguration::default()
         .without_reproduction()
+        .without_logging()
         .with_plugin(thread_config_type(PluginType::Backend))
         .with_plugin(PluginThreadConfiguration {
             definition,
@@ -153,7 +156,8 @@ fn simulation_init_cmds() {
 }
 
 #[test]
-fn simulation_recv_in_initialize() {
+// Attempt recv outside of run callbacks.
+fn simulation_bad_recv() {
     let mut definition =
         PluginDefinition::new(PluginType::Frontend, PluginMetadata::new("", "", ""));
 
@@ -166,9 +170,19 @@ fn simulation_recv_in_initialize() {
         );
         Ok(())
     });
+    definition.drop = Box::new(|state| {
+        let recv = state.recv();
+        assert!(recv.is_err());
+        assert_eq!(
+            recv.unwrap_err().to_string(),
+            "Invalid operation: recv() can only be called from inside the run() callback"
+        );
+        Ok(())
+    });
 
     let configuration = SimulatorConfiguration::default()
         .without_reproduction()
+        .without_logging()
         .with_plugin(thread_config_type(PluginType::Backend))
         .with_plugin(PluginThreadConfiguration::new(
             definition,

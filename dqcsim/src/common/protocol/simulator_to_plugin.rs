@@ -22,7 +22,6 @@ pub enum SimulatorToPlugin {
     ///  - verify with the user code that the plugin implementation is of the
     ///    expected type (frontend, operator, or backend);
     ///  - connect to the downstream plugin if the plugin is not a backend;
-    ///  - run the user's initialization code;
     ///  - initialize an IPC endpoint for the upstream plugin to connect to if
     ///    the plugin is not a frontend;
     ///  - return the aforementioned URI to the simulator through a
@@ -46,6 +45,17 @@ pub enum SimulatorToPlugin {
     ///  - success: `PluginToSimulator::Success`
     ///  - failure: `PluginToSimulator::Failure`
     AcceptUpstream,
+
+    /// Request to run user initialization code.
+    ///
+    /// This is always the second (frontend) or third (operator, backend)
+    /// message sent by DQCsim.
+    ///
+    /// The valid responses to this message are:
+    ///
+    ///  - success: `PluginToSimulator::Success`
+    ///  - failure: `PluginToSimulator::Failure`
+    UserInitialize(PluginUserInitializeRequest),
 
     /// Request to abort the simulation and stop the plugin.
     ///
@@ -103,9 +113,6 @@ pub struct PluginInitializeRequest {
     /// The expected plugin type.
     pub plugin_type: PluginType,
 
-    /// Vector of `ArbCmd` to supply to the plugin's `init()` function.
-    pub init_cmds: Vec<ArbCmd>,
-
     /// Random seed.
     pub seed: u64,
 
@@ -127,7 +134,6 @@ impl PartialEq for PluginInitializeRequest {
     fn eq(&self, other: &PluginInitializeRequest) -> bool {
         self.downstream == other.downstream
             && self.plugin_type == other.plugin_type
-            && self.init_cmds == other.init_cmds
             && self.log_configuration == other.log_configuration
     }
 }
@@ -137,6 +143,20 @@ pub struct PluginAcceptUpstreamRequest;
 impl Into<SimulatorToPlugin> for PluginAcceptUpstreamRequest {
     fn into(self) -> SimulatorToPlugin {
         SimulatorToPlugin::AcceptUpstream
+    }
+}
+
+/// Plugin user initialization request. See
+/// `SimulatorToPlugin::UserInitialize`.
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub struct PluginUserInitializeRequest {
+    /// Vec with initialization commands.
+    pub init_cmds: Vec<ArbCmd>,
+}
+
+impl Into<SimulatorToPlugin> for PluginUserInitializeRequest {
+    fn into(self) -> SimulatorToPlugin {
+        SimulatorToPlugin::UserInitialize(self)
     }
 }
 
