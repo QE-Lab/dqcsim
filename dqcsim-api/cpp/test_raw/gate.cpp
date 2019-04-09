@@ -55,6 +55,7 @@ void expect_qbset(dqcs_handle_t qbset, const dqcs_qubit_t *qubits) {
 
 void expect_matrix(dqcs_handle_t gate, const double *expected, int expected_len) {
   double *matrix = NULL;
+  EXPECT_EQ(dqcs_gate_has_matrix(gate), (expected_len > 0) ? dqcs_bool_return_t::DQCS_TRUE : dqcs_bool_return_t::DQCS_FALSE);
   EXPECT_EQ(dqcs_gate_matrix_len(gate), expected_len);
   if (expected_len) {
     EXPECT_NE(matrix = dqcs_gate_matrix(gate), (double*)NULL) << "Unexpected error: " << dqcs_error_get();
