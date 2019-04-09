@@ -104,7 +104,7 @@ impl PluginDefinition {
                 gate: Box::new(|state, gate| state.gate(gate).map(|_| vec![])),
                 modify_measurement: Box::new(|_, measurement| Ok(vec![measurement])),
                 advance: Box::new(|state, cycles| state.advance(cycles).map(|_| ())),
-                upstream_arb: Box::new(|_, _| Ok(ArbData::default())),
+                upstream_arb: Box::new(|state, cmd| state.arb(cmd)),
                 host_arb: Box::new(|_, _| Ok(ArbData::default())),
             },
             PluginType::Backend => PluginDefinition {

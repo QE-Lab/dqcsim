@@ -27,3 +27,6 @@ package_add_test(sim_new sim_new.cpp)
 
 # Plugin
 package_add_test(pdef pdef.cpp)
+
+# Integration
+package_add_test(sim_arbs sim_arbs.cpp)
