@@ -8,7 +8,7 @@ using namespace dqcsim;
 TEST(scfg, sanity) {
   // Create handle.
   dqcs_handle_t a = dqcs_scfg_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_SIM_CONFIG);
@@ -29,7 +29,7 @@ TEST(scfg, sanity) {
 TEST(scfg, repro) {
   // Create handle.
   dqcs_handle_t a = dqcs_scfg_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check the default value.
   EXPECT_EQ(dqcs_scfg_repro_path_style_get(a), dqcs_path_style_t::DQCS_PATH_STYLE_KEEP);
@@ -64,7 +64,7 @@ TEST(scfg, repro) {
 TEST(scfg, verbosity) {
   // Create handle.
   dqcs_handle_t a = dqcs_scfg_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check the default value. Note that this is trace because source loglevel
   // is automatically limited to the most verbose log message sink, and usually
@@ -115,7 +115,7 @@ TEST(scfg, verbosity) {
 TEST(scfg, stderr) {
   // Create handle.
   dqcs_handle_t a = dqcs_scfg_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check the default value. Note that this is trace because source loglevel
   // is automatically limited to the most verbose log message sink, and usually
@@ -169,7 +169,7 @@ TEST(scfg, tee) {
 
   // Create a fresh config.
   a = dqcs_scfg_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that there are initially no tee files.
   s = dqcs_handle_dump(a);
@@ -202,17 +202,17 @@ TEST(scfg, tee) {
 // Test seed.
 TEST(scfg, seed) {
   dqcs_handle_t a;
-  long long seed;
+  unsigned long long seed;
 
   // Check that the initial seeds are random.
   // NOTE: this will on average fail every 2^64th try. Seems astronomical
   // enough to me.
   a = dqcs_scfg_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   seed = dqcs_scfg_seed_get(a);
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
   a = dqcs_scfg_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   ASSERT_NE(dqcs_scfg_seed_get(a), seed);
 
   // Check the setter.
@@ -254,7 +254,7 @@ TEST(scfg, log_callback) {
 
   // Create a fresh config.
   a = dqcs_scfg_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Proper setters.
   EXPECT_EQ(dqcs_scfg_log_callback(a, dqcs_loglevel_t::DQCS_LOG_WARN, log_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);

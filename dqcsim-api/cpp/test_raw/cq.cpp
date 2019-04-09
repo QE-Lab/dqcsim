@@ -7,7 +7,7 @@ using namespace dqcsim;
 TEST(cq, sanity) {
   // Create handle.
   dqcs_handle_t a = dqcs_cq_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_ARB_CMD_QUEUE);
@@ -29,14 +29,14 @@ TEST(cq, sanity) {
 TEST(cq, test) {
   // Create handle.
   dqcs_handle_t a = dqcs_cq_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Assert that length starts at 0.
   EXPECT_EQ(dqcs_cq_len(a), 0);
 
   // Push a command.
   dqcs_handle_t b = dqcs_cmd_new("a", "b");
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_cq_push(a, b), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_handle_type(b), dqcs_handle_type_t::DQCS_HTYPE_INVALID);
 
@@ -45,7 +45,7 @@ TEST(cq, test) {
 
   // Second command.
   b = dqcs_cmd_new("c", "d");
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_cq_push(a, b), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_handle_type(b), dqcs_handle_type_t::DQCS_HTYPE_INVALID);
 
@@ -54,7 +54,7 @@ TEST(cq, test) {
 
   // Try to push nonsense.
   b = dqcs_arb_new();
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_cq_push(a, b), dqcs_return_t::DQCS_FAILURE);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: object does not support the cmd interface");
   EXPECT_EQ(dqcs_handle_type(b), dqcs_handle_type_t::DQCS_HTYPE_ARB_DATA);

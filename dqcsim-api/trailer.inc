@@ -13,7 +13,7 @@ namespace dqcsim {
  * string it takes a printf-like format string and varargs to compose the
  * message.
  */
-static void dqcs_log_format(
+inline void dqcs_log_format(
   dqcs_loglevel_t level,
   const char *module,
   const char *file,
@@ -25,7 +25,7 @@ static void dqcs_log_format(
 __attribute__((format(printf,5,6)))
 #endif
 ;
-static void dqcs_log_format(
+inline void dqcs_log_format(
   dqcs_loglevel_t level,
   const char *module,
   const char *file,

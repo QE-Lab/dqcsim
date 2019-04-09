@@ -7,7 +7,7 @@ using namespace dqcsim;
 TEST(mset, sanity) {
   // Create handle.
   dqcs_handle_t a = dqcs_mset_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET);
@@ -29,54 +29,54 @@ TEST(mset, sanity) {
 TEST(mset, test) {
   // Create handle.
   dqcs_handle_t a = dqcs_mset_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that the set is initially empty.
   EXPECT_EQ(dqcs_mset_len(a), 0);
 
   // Push some measurements into the set.
   dqcs_handle_t b = dqcs_meas_new(1, dqcs_measurement_t::DQCS_MEAS_ZERO);
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_mset_set(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   b = dqcs_meas_new(2, dqcs_measurement_t::DQCS_MEAS_ONE);
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_mset_set(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   b = dqcs_meas_new(3, dqcs_measurement_t::DQCS_MEAS_UNDEFINED);
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_mset_set(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   // Verify the number of measurements.
   EXPECT_EQ(dqcs_mset_len(a), 3);
 
   // Check contains.
-  EXPECT_EQ(dqcs_mset_contains(a, 2), dqcs_bool_return_t::DQCS_TRUE);
-  EXPECT_EQ(dqcs_mset_contains(a, 4), dqcs_bool_return_t::DQCS_FALSE);
+  EXPECT_EQ(dqcs_mset_contains(a, 2u), dqcs_bool_return_t::DQCS_TRUE);
+  EXPECT_EQ(dqcs_mset_contains(a, 4u), dqcs_bool_return_t::DQCS_FALSE);
 
   // Check getter.
-  EXPECT_NE(b = dqcs_mset_get(a, 2), 0) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_meas_qubit_get(b), 2);
+  EXPECT_NE(b = dqcs_mset_get(a, 2u), 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_meas_qubit_get(b), 2u);
   EXPECT_EQ(dqcs_meas_value_get(b), dqcs_measurement_t::DQCS_MEAS_ONE);
   EXPECT_EQ(dqcs_handle_delete(b), dqcs_return_t::DQCS_SUCCESS);
 
-  EXPECT_EQ(dqcs_mset_get(a, 4), 0);
+  EXPECT_EQ(dqcs_mset_get(a, 4u), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: qubit not included in measurement set");
 
   // Check taker.
-  EXPECT_NE(b = dqcs_mset_take(a, 2), 0) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_meas_qubit_get(b), 2);
+  EXPECT_NE(b = dqcs_mset_take(a, 2u), 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_meas_qubit_get(b), 2u);
   EXPECT_EQ(dqcs_meas_value_get(b), dqcs_measurement_t::DQCS_MEAS_ONE);
   EXPECT_EQ(dqcs_handle_delete(b), dqcs_return_t::DQCS_SUCCESS);
 
-  EXPECT_EQ(dqcs_mset_take(a, 2), 0);
+  EXPECT_EQ(dqcs_mset_take(a, 2u), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: qubit not included in measurement set");
 
   EXPECT_EQ(dqcs_mset_len(a), 2);
 
   // Check remover.
-  EXPECT_EQ(dqcs_mset_remove(a, 3), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_mset_remove(a, 3), dqcs_return_t::DQCS_FAILURE);
+  EXPECT_EQ(dqcs_mset_remove(a, 3u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_mset_remove(a, 3u), dqcs_return_t::DQCS_FAILURE);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: qubit not included in measurement set");
 
   EXPECT_EQ(dqcs_mset_len(a), 1);

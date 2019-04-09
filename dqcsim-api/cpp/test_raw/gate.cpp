@@ -12,7 +12,7 @@ const double X_MATRIX[] = {
 TEST(gate, sanity) {
   // Create handle.
   dqcs_handle_t a = dqcs_gate_new_custom("NOP", 0, 0, 0, NULL, 0);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_GATE);
@@ -38,7 +38,7 @@ TEST(gate, sanity) {
 
 void expect_qbset(dqcs_handle_t qbset, const dqcs_qubit_t *qubits) {
   int len = 0;
-  EXPECT_NE(qbset, 0) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_NE(qbset, 0u) << "Unexpected error: " << dqcs_error_get();
   if (qbset) {
     while (*qubits) {
       EXPECT_EQ(dqcs_qbset_contains(qbset, *qubits), dqcs_bool_return_t::DQCS_TRUE) << "Set does not contain qubit " << *qubits;
@@ -73,27 +73,26 @@ void expect_matrix(dqcs_handle_t gate, const double *expected, int expected_len)
 // Check X gate.
 TEST(gate, x) {
   char *s;
-  double *m;
 
   dqcs_handle_t targets = dqcs_qbset_new();
-  ASSERT_NE(targets, 0) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(targets, 1), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(targets, 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(targets, 1u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   dqcs_handle_t a = dqcs_gate_new_unitary(targets, 0, X_MATRIX, 4);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   EXPECT_EQ(dqcs_gate_is_custom(a), dqcs_bool_return_t::DQCS_FALSE);
   EXPECT_STREQ(s = dqcs_gate_name(a), NULL);
   if (s) free(s);
 
   EXPECT_EQ(dqcs_gate_has_targets(a), dqcs_bool_return_t::DQCS_TRUE);
-  EXPECT_QBSET(dqcs_gate_targets(a), 1);
+  EXPECT_QBSET(dqcs_gate_targets(a), 1u);
 
   EXPECT_EQ(dqcs_gate_has_controls(a), dqcs_bool_return_t::DQCS_FALSE);
-  EXPECT_QBSET(dqcs_gate_controls(a), 0);
+  EXPECT_QBSET(dqcs_gate_controls(a), 0u);
 
   EXPECT_EQ(dqcs_gate_has_measures(a), dqcs_bool_return_t::DQCS_FALSE);
-  EXPECT_QBSET(dqcs_gate_measures(a), 0);
+  EXPECT_QBSET(dqcs_gate_measures(a), 0u);
 
   EXPECT_MATRIX(a, X_MATRIX);
 
@@ -110,31 +109,30 @@ TEST(gate, x) {
 // Check CNOT gate.
 TEST(gate, cnot) {
   char *s;
-  double *m;
 
   dqcs_handle_t targets = dqcs_qbset_new();
-  ASSERT_NE(targets, 0) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(targets, 1), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(targets, 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(targets, 1u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   dqcs_handle_t controls = dqcs_qbset_new();
-  ASSERT_NE(controls, 0) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(controls, 2), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(controls, 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(controls, 2u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   dqcs_handle_t a = dqcs_gate_new_unitary(targets, controls, X_MATRIX, 4);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   EXPECT_EQ(dqcs_gate_is_custom(a), dqcs_bool_return_t::DQCS_FALSE);
   EXPECT_STREQ(s = dqcs_gate_name(a), NULL);
   if (s) free(s);
 
   EXPECT_EQ(dqcs_gate_has_targets(a), dqcs_bool_return_t::DQCS_TRUE);
-  EXPECT_QBSET(dqcs_gate_targets(a), 1);
+  EXPECT_QBSET(dqcs_gate_targets(a), 1u);
 
   EXPECT_EQ(dqcs_gate_has_controls(a), dqcs_bool_return_t::DQCS_TRUE);
-  EXPECT_QBSET(dqcs_gate_controls(a), 2);
+  EXPECT_QBSET(dqcs_gate_controls(a), 2u);
 
   EXPECT_EQ(dqcs_gate_has_measures(a), dqcs_bool_return_t::DQCS_FALSE);
-  EXPECT_QBSET(dqcs_gate_measures(a), 0);
+  EXPECT_QBSET(dqcs_gate_measures(a), 0u);
 
   EXPECT_MATRIX(a, X_MATRIX);
 
@@ -151,28 +149,27 @@ TEST(gate, cnot) {
 // Check measure gate.
 TEST(gate, measure) {
   char *s;
-  double *m;
 
   dqcs_handle_t measures = dqcs_qbset_new();
-  ASSERT_NE(measures, 0) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(measures, 1), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(measures, 2), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(measures, 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(measures, 1u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(measures, 2u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   dqcs_handle_t a = dqcs_gate_new_measurement(measures);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   EXPECT_EQ(dqcs_gate_is_custom(a), dqcs_bool_return_t::DQCS_FALSE);
   EXPECT_STREQ(s = dqcs_gate_name(a), NULL);
   if (s) free(s);
 
   EXPECT_EQ(dqcs_gate_has_targets(a), dqcs_bool_return_t::DQCS_FALSE);
-  EXPECT_QBSET(dqcs_gate_targets(a), 0);
+  EXPECT_QBSET(dqcs_gate_targets(a), 0u);
 
   EXPECT_EQ(dqcs_gate_has_controls(a), dqcs_bool_return_t::DQCS_FALSE);
-  EXPECT_QBSET(dqcs_gate_controls(a), 0);
+  EXPECT_QBSET(dqcs_gate_controls(a), 0u);
 
   EXPECT_EQ(dqcs_gate_has_measures(a), dqcs_bool_return_t::DQCS_TRUE);
-  EXPECT_QBSET(dqcs_gate_measures(a), 1, 2);
+  EXPECT_QBSET(dqcs_gate_measures(a), 1u, 2u);
 
   EXPECT_NO_MATRIX(a);
 
@@ -189,23 +186,22 @@ TEST(gate, measure) {
 // Check NOP custom gate.
 TEST(gate, nop) {
   char *s;
-  double *m;
 
   dqcs_handle_t a = dqcs_gate_new_custom("NOP", 0, 0, 0, NULL, 0);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   EXPECT_EQ(dqcs_gate_is_custom(a), dqcs_bool_return_t::DQCS_TRUE);
   EXPECT_STREQ(s = dqcs_gate_name(a), "NOP");
   if (s) free(s);
 
   EXPECT_EQ(dqcs_gate_has_targets(a), dqcs_bool_return_t::DQCS_FALSE);
-  EXPECT_QBSET(dqcs_gate_targets(a), 0);
+  EXPECT_QBSET(dqcs_gate_targets(a), 0u);
 
   EXPECT_EQ(dqcs_gate_has_controls(a), dqcs_bool_return_t::DQCS_FALSE);
-  EXPECT_QBSET(dqcs_gate_controls(a), 0);
+  EXPECT_QBSET(dqcs_gate_controls(a), 0u);
 
   EXPECT_EQ(dqcs_gate_has_measures(a), dqcs_bool_return_t::DQCS_FALSE);
-  EXPECT_QBSET(dqcs_gate_measures(a), 0);
+  EXPECT_QBSET(dqcs_gate_measures(a), 0u);
 
   EXPECT_NO_MATRIX(a);
 
@@ -222,23 +218,22 @@ TEST(gate, nop) {
 // Check complex custom gate.
 TEST(gate, discombobulate) {
   char *s;
-  double *m;
 
   dqcs_handle_t targets = dqcs_qbset_new();
-  ASSERT_NE(targets, 0) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(targets, 1), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(targets, 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(targets, 1u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   dqcs_handle_t controls = dqcs_qbset_new();
-  ASSERT_NE(controls, 0) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(controls, 2), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(controls, 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(controls, 2u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   dqcs_handle_t measures = dqcs_qbset_new();
-  ASSERT_NE(measures, 0) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(measures, 1), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(measures, 2), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(measures, 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(measures, 1u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(measures, 2u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   dqcs_handle_t a = dqcs_gate_new_custom("DISCOMBOBULATE", targets, controls, measures, X_MATRIX, 4);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_arb_json_set(a, "{\"sequence\": [4, 8, 15, 16, 23, 42]}"), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_arb_push_str(a, "(%@#(*^"), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
@@ -247,13 +242,13 @@ TEST(gate, discombobulate) {
   if (s) free(s);
 
   EXPECT_EQ(dqcs_gate_has_targets(a), dqcs_bool_return_t::DQCS_TRUE);
-  EXPECT_QBSET(dqcs_gate_targets(a), 1);
+  EXPECT_QBSET(dqcs_gate_targets(a), 1u);
 
   EXPECT_EQ(dqcs_gate_has_controls(a), dqcs_bool_return_t::DQCS_TRUE);
-  EXPECT_QBSET(dqcs_gate_controls(a), 2);
+  EXPECT_QBSET(dqcs_gate_controls(a), 2u);
 
   EXPECT_EQ(dqcs_gate_has_measures(a), dqcs_bool_return_t::DQCS_TRUE);
-  EXPECT_QBSET(dqcs_gate_measures(a), 1, 2);
+  EXPECT_QBSET(dqcs_gate_measures(a), 1u, 2u);
 
   EXPECT_MATRIX(a, X_MATRIX);
 
@@ -271,52 +266,49 @@ TEST(gate, discombobulate) {
 
 // Check disallowed gates.
 TEST(gate, erroneous) {
-  char *s;
-  double *m;
-
   dqcs_handle_t qbset_a = dqcs_qbset_new();
-  ASSERT_NE(qbset_a, 0) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(qbset_a, 1), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(qbset_a, 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(qbset_a, 1u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   dqcs_handle_t qbset_b = dqcs_qbset_new();
-  ASSERT_NE(qbset_b, 0) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(qbset_b, 1), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(qbset_b, 2), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(qbset_b, 3), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(qbset_b, 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(qbset_b, 1u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(qbset_b, 2u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(qbset_b, 3u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   dqcs_handle_t qbset_c = dqcs_qbset_new();
-  ASSERT_NE(qbset_c, 0) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(qbset_c, 6), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_qbset_push(qbset_c, 7), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(qbset_c, 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(qbset_c, 6u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(qbset_c, 7u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   // Invalid unitaries.
-  EXPECT_EQ(dqcs_gate_new_unitary(0, 0, NULL, 0), 0);
+  EXPECT_EQ(dqcs_gate_new_unitary(0, 0, NULL, 0), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: handle 0 is invalid");
 
-  EXPECT_EQ(dqcs_gate_new_unitary(qbset_a, qbset_b, X_MATRIX, 4), 0);
+  EXPECT_EQ(dqcs_gate_new_unitary(qbset_a, qbset_b, X_MATRIX, 4), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: qubit 1 is used more than once");
 
-  EXPECT_EQ(dqcs_gate_new_unitary(qbset_b, 0, X_MATRIX, 4), 0);
+  EXPECT_EQ(dqcs_gate_new_unitary(qbset_b, 0, X_MATRIX, 4), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: matrix has the wrong number of entries");
 
-  EXPECT_EQ(dqcs_gate_new_unitary(qbset_a, 0, NULL, 4), 0);
+  EXPECT_EQ(dqcs_gate_new_unitary(qbset_a, 0, NULL, 4), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: matrix pointer is null");
 
-  EXPECT_EQ(dqcs_gate_new_unitary(qbset_a, 0, NULL, 0), 0);
+  EXPECT_EQ(dqcs_gate_new_unitary(qbset_a, 0, NULL, 0), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: the unitary matrix cannot be null");
 
   // Invalid measures.
-  EXPECT_EQ(dqcs_gate_new_measurement(0), 0);
+  EXPECT_EQ(dqcs_gate_new_measurement(0), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: handle 0 is invalid");
 
   // Invalid custom gates.
-  ASSERT_EQ(dqcs_gate_new_custom(NULL, 0, 0, 0, NULL, 0), 0);
+  ASSERT_EQ(dqcs_gate_new_custom(NULL, 0, 0, 0, NULL, 0), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: unexpected NULL string");
 
-  ASSERT_EQ(dqcs_gate_new_custom("FOO", qbset_a, qbset_b, qbset_c, NULL, 0), 0);
+  ASSERT_EQ(dqcs_gate_new_custom("FOO", qbset_a, qbset_b, qbset_c, NULL, 0), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: qubit 1 is used more than once");
 
-  EXPECT_EQ(dqcs_gate_new_custom("BAR", qbset_b, qbset_c, qbset_a, X_MATRIX, 4), 0);
+  EXPECT_EQ(dqcs_gate_new_custom("BAR", qbset_b, qbset_c, qbset_a, X_MATRIX, 4), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: matrix has the wrong number of entries");
 
   EXPECT_EQ(dqcs_handle_delete(qbset_a), dqcs_return_t::DQCS_SUCCESS);

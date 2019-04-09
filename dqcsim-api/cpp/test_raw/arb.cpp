@@ -7,7 +7,7 @@ using namespace dqcsim;
 TEST(arb, sanity) {
   // Create handle.
   dqcs_handle_t a = dqcs_arb_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_ARB_DATA);
@@ -31,7 +31,7 @@ TEST(arb, json) {
 
   // Create handle.
   dqcs_handle_t a = dqcs_arb_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check default.
   EXPECT_STREQ(dqcs_arb_json_get(a), "{}");
@@ -66,7 +66,7 @@ TEST(arb, cbor) {
 
   // Create handle.
   dqcs_handle_t a = dqcs_arb_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check default.
   EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 2);
@@ -101,7 +101,7 @@ TEST(arb, cbor) {
 TEST(arb, test1) {
   // Create handle.
   dqcs_handle_t a = dqcs_arb_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Length should be 0 initially.
   EXPECT_EQ(dqcs_arb_len(a), 0);
@@ -144,7 +144,7 @@ TEST(arb, test1) {
 
   // Make a copy of this ArbData object.
   dqcs_handle_t b = dqcs_arb_new();
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_arb_assign(b, a), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   // Check the (massive) debug string.
@@ -153,7 +153,7 @@ TEST(arb, test1) {
   // Do some correct pops.
   char buf[9] = {33, 33, 33, 33, 33, 33, 33, 33, 0};
   EXPECT_EQ(dqcs_arb_pop_raw(a, buf, 8), 0);
-  EXPECT_EQ(dqcs_arb_pop_raw(a, buf, 8), sizeof(i));
+  EXPECT_EQ(dqcs_arb_pop_raw(a, buf, 8), (int)sizeof(i));
   EXPECT_EQ(*(int*)buf, i);
   EXPECT_EQ(dqcs_arb_pop_raw(a, buf, 8), 12);
   EXPECT_STREQ(buf, "3rd argu");
@@ -217,7 +217,7 @@ TEST(arb, test1) {
 TEST(arb, test2) {
   // Create handle.
   dqcs_handle_t a = dqcs_arb_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // We can't get/set/remove anything in an empty list.
   EXPECT_EQ(dqcs_arb_get_str(a, 0), nullptr);
@@ -337,7 +337,7 @@ TEST(arb, test2) {
 TEST(arb, test3) {
   // Create handle.
   dqcs_handle_t a = dqcs_arb_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check insert_raw, get_raw, and get_size.
   unsigned int value = 0xDEADC0DE;

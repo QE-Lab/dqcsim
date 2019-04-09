@@ -8,9 +8,9 @@ using namespace dqcsim;
 TEST(tcfg, sanity) {
   // Create handle.
   dqcs_handle_t a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   a = dqcs_tcfg_new(a, "d");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_FRONT_THREAD_CONFIG);
@@ -31,33 +31,33 @@ TEST(tcfg, sanity) {
 TEST(tcfg, types) {
   // Frontend.
   dqcs_handle_t a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   a = dqcs_tcfg_new(a, "d");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_FRONT_THREAD_CONFIG);
   EXPECT_EQ(dqcs_tcfg_type(a), dqcs_plugin_type_t::DQCS_PTYPE_FRONT);
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 
   // Operator.
   a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_OPER, "a", "b", "c");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   a = dqcs_tcfg_new(a, "d");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_OPER_THREAD_CONFIG);
   EXPECT_EQ(dqcs_tcfg_type(a), dqcs_plugin_type_t::DQCS_PTYPE_OPER);
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 
   // Backend.
   a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "a", "b", "c");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   a = dqcs_tcfg_new(a, "d");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_BACK_THREAD_CONFIG);
   EXPECT_EQ(dqcs_tcfg_type(a), dqcs_plugin_type_t::DQCS_PTYPE_BACK);
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 
   // Invalid.
-  EXPECT_EQ(dqcs_tcfg_new(33, "d"), 0);
+  EXPECT_EQ(dqcs_tcfg_new(33, "d"), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: handle 33 is invalid");
 
   // Leak check.
@@ -70,27 +70,27 @@ TEST(tcfg, name) {
 
   // Valid name.
   dqcs_handle_t a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   a = dqcs_tcfg_new(a, "d");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_STREQ(s = dqcs_tcfg_name(a), "d");
   if (s) free(s);
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 
   // Default name using NULL.
   a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   a = dqcs_tcfg_new(a, NULL);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_STREQ(s = dqcs_tcfg_name(a), "");
   if (s) free(s);
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 
   // Default name using empty string.
   a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   a = dqcs_tcfg_new(a, "");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_STREQ(s = dqcs_tcfg_name(a), "");
   if (s) free(s);
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
@@ -106,9 +106,9 @@ TEST(tcfg, init) {
 
   // Create a fresh config.
   a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   a = dqcs_tcfg_new(a, "d");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that there are initially no init cmds.
   s = dqcs_handle_dump(a);
@@ -117,7 +117,7 @@ TEST(tcfg, init) {
 
   // Add a command.
   b = dqcs_cmd_new("a", "b");
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_tcfg_init_cmd(a, b), dqcs_return_t::DQCS_SUCCESS);
   s = dqcs_handle_dump(a);
   EXPECT_STREQ(extract_array_from_dump("init_cmds:", s), "init_cmds: [ ArbCmd { interface_identifier: \"a\", operation_identifier: \"b\", data: ArbData { json: Object( {} ), args: [] } }]");
@@ -125,7 +125,7 @@ TEST(tcfg, init) {
 
   // Some errors.
   b = dqcs_arb_new();
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_tcfg_init_cmd(a, b), dqcs_return_t::DQCS_FAILURE);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: object does not support the cmd interface");
   EXPECT_EQ(dqcs_handle_delete(b), dqcs_return_t::DQCS_SUCCESS);
@@ -142,14 +142,14 @@ TEST(tcfg, init) {
 
 // Test tee files.
 TEST(tcfg, tee) {
-  dqcs_handle_t a, b;
+  dqcs_handle_t a;
   char *s;
 
   // Create a fresh config.
   a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   a = dqcs_tcfg_new(a, "d");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that there are initially no tee files.
   s = dqcs_handle_dump(a);
@@ -185,9 +185,9 @@ TEST(tcfg, verbosity) {
 
   // Create a fresh config.
   a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   a = dqcs_tcfg_new(a, "d");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check the default value. Note that this is trace because plugin loglevel
   // is automatically limited to the most verbose log message sink, and usually

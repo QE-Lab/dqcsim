@@ -5,7 +5,7 @@
  * modifications to the structure around this array don't affect this
  * function's output.
  */
-static char *extract_array_from_dump(const char *marker, char *dump) {
+inline char *extract_array_from_dump(const char *marker, char *dump) {
   int marker_len = strlen(marker);
   while (*dump) {
     if (!memcmp(dump, marker, marker_len)) {

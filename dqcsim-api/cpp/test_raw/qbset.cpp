@@ -7,7 +7,7 @@ using namespace dqcsim;
 TEST(qbset, sanity) {
   // Create handle.
   dqcs_handle_t a = dqcs_qbset_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_QUBIT_SET);
@@ -29,7 +29,7 @@ TEST(qbset, sanity) {
 TEST(qbset, test) {
   // Create handle.
   dqcs_handle_t a = dqcs_qbset_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that the set is initially empty.
   EXPECT_EQ(dqcs_qbset_len(a), 0);
@@ -55,16 +55,16 @@ TEST(qbset, test) {
 
   // Make a copy for iteration.
   dqcs_handle_t it = dqcs_qbset_copy(a);
-  ASSERT_NE(it, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(it, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Deplete the "iterator"
-  EXPECT_EQ(dqcs_qbset_pop(it), 4);
-  EXPECT_EQ(dqcs_qbset_pop(it), 42);
-  EXPECT_EQ(dqcs_qbset_pop(it), 16);
-  EXPECT_EQ(dqcs_qbset_pop(it), 15);
-  EXPECT_EQ(dqcs_qbset_pop(it), 8);
-  EXPECT_EQ(dqcs_qbset_pop(it), 23);
-  EXPECT_EQ(dqcs_qbset_pop(it), 0);
+  EXPECT_EQ(dqcs_qbset_pop(it), 4u);
+  EXPECT_EQ(dqcs_qbset_pop(it), 42u);
+  EXPECT_EQ(dqcs_qbset_pop(it), 16u);
+  EXPECT_EQ(dqcs_qbset_pop(it), 15u);
+  EXPECT_EQ(dqcs_qbset_pop(it), 8u);
+  EXPECT_EQ(dqcs_qbset_pop(it), 23u);
+  EXPECT_EQ(dqcs_qbset_pop(it), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: the qubit set is already empty");
   EXPECT_EQ(dqcs_handle_delete(it), dqcs_return_t::DQCS_SUCCESS);
 

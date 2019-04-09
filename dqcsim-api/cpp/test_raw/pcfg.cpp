@@ -10,7 +10,7 @@ using namespace dqcsim;
 TEST(pcfg, sanity) {
   // Create handle.
   dqcs_handle_t a = dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "x", NULL);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_FRONT_PROCESS_CONFIG);
@@ -33,7 +33,7 @@ TEST(pcfg, raw_constructor) {
   char *s;
 
   a = dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "x", NULL);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_FRONT_PROCESS_CONFIG);
   EXPECT_EQ(dqcs_pcfg_type(a), dqcs_plugin_type_t::DQCS_PTYPE_FRONT);
   EXPECT_STREQ(s = dqcs_pcfg_name(a), "");
@@ -45,7 +45,7 @@ TEST(pcfg, raw_constructor) {
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 
   a = dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_OPER, "", "x", "y");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_OPER_PROCESS_CONFIG);
   EXPECT_EQ(dqcs_pcfg_type(a), dqcs_plugin_type_t::DQCS_PTYPE_OPER);
   EXPECT_STREQ(s = dqcs_pcfg_name(a), "");
@@ -57,7 +57,7 @@ TEST(pcfg, raw_constructor) {
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 
   a = dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "name", "x", "");
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_BACK_PROCESS_CONFIG);
   EXPECT_EQ(dqcs_pcfg_type(a), dqcs_plugin_type_t::DQCS_PTYPE_BACK);
   EXPECT_STREQ(s = dqcs_pcfg_name(a), "name");
@@ -68,10 +68,10 @@ TEST(pcfg, raw_constructor) {
   if (s) free(s);
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 
-  EXPECT_EQ(dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_OPER, NULL, "", NULL), 0);
+  EXPECT_EQ(dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_OPER, NULL, "", NULL), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: plugin executable must not be empty");
 
-  EXPECT_EQ(dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_OPER, NULL, NULL, NULL), 0);
+  EXPECT_EQ(dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_OPER, NULL, NULL, NULL), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: plugin executable must not be empty");
 
   // Leak check.
@@ -87,18 +87,18 @@ TEST(pcfg, sugared_constructor) {
   unlink("dqcsfehello");
   unlink("hello");
 
-  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "hello"), 0);
+  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "hello"), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: could not find plugin executable 'dqcsfehello', needed for plugin specification 'hello'");
 
-  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_OPER, NULL, "hello"), 0);
+  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_OPER, NULL, "hello"), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: could not find plugin executable 'dqcsophello', needed for plugin specification 'hello'");
 
-  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, NULL, "hello"), 0);
+  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, NULL, "hello"), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: could not find plugin executable 'dqcsbehello', needed for plugin specification 'hello'");
 
   close(open("dqcsfehello", O_RDWR | O_CREAT, S_IRUSR | S_IRGRP | S_IROTH));
 
-  EXPECT_NE(a = dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "hello"), 0);
+  EXPECT_NE(a = dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "hello"), 0u);
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_FRONT_PROCESS_CONFIG);
   EXPECT_EQ(dqcs_pcfg_type(a), dqcs_plugin_type_t::DQCS_PTYPE_FRONT);
   EXPECT_STREQ(s = dqcs_pcfg_name(a), "");
@@ -109,12 +109,12 @@ TEST(pcfg, sugared_constructor) {
   if (s) free(s);
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 
-  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, NULL, "hello"), 0);
+  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, NULL, "hello"), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: could not find plugin executable 'dqcsbehello', needed for plugin specification 'hello'");
 
   close(open("hello", O_RDWR | O_CREAT, S_IRUSR | S_IRGRP | S_IROTH));
 
-  EXPECT_NE(a = dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "", "hello"), 0);
+  EXPECT_NE(a = dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "", "hello"), 0u);
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_BACK_PROCESS_CONFIG);
   EXPECT_EQ(dqcs_pcfg_type(a), dqcs_plugin_type_t::DQCS_PTYPE_BACK);
   EXPECT_STREQ(s = dqcs_pcfg_name(a), "");
@@ -132,29 +132,29 @@ TEST(pcfg, sugared_constructor) {
   unlink("hello.xyz");
   unlink("dqcsopxyz");
 
-  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "hello.xyz"), 0);
+  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "hello.xyz"), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: could not find plugin executable 'dqcsfehello.xyz', needed for plugin specification 'hello.xyz'");
 
-  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_OPER, NULL, "hello.xyz"), 0);
+  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_OPER, NULL, "hello.xyz"), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: could not find plugin executable 'dqcsophello.xyz', needed for plugin specification 'hello.xyz'");
 
-  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, NULL, "hello.xyz"), 0);
+  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, NULL, "hello.xyz"), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: could not find plugin executable 'dqcsbehello.xyz', needed for plugin specification 'hello.xyz'");
 
   close(open("hello.xyz", O_RDWR | O_CREAT, S_IRUSR | S_IRGRP | S_IROTH));
 
-  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "hello.xyz"), 0);
+  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "hello.xyz"), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: could not find plugin executable 'dqcsfexyz', needed for plugin specification 'hello.xyz'");
 
-  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_OPER, NULL, "hello.xyz"), 0);
+  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_OPER, NULL, "hello.xyz"), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: could not find plugin executable 'dqcsopxyz', needed for plugin specification 'hello.xyz'");
 
-  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, NULL, "hello.xyz"), 0);
+  EXPECT_EQ(dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, NULL, "hello.xyz"), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: could not find plugin executable 'dqcsbexyz', needed for plugin specification 'hello.xyz'");
 
   close(open("dqcsopxyz", O_RDWR | O_CREAT, S_IRUSR | S_IRGRP | S_IROTH));
 
-  EXPECT_NE(a = dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_OPER, "operator?", "hello.xyz"), 0);
+  EXPECT_NE(a = dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_OPER, "operator?", "hello.xyz"), 0u);
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_OPER_PROCESS_CONFIG);
   EXPECT_EQ(dqcs_pcfg_type(a), dqcs_plugin_type_t::DQCS_PTYPE_OPER);
   EXPECT_STREQ(s = dqcs_pcfg_name(a), "operator?");
@@ -179,7 +179,7 @@ TEST(pcfg, workdir) {
 
   // Create a fresh config.
   a = dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "x", NULL);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check the default value.
   ASSERT_STREQ(s = dqcs_pcfg_work_get(a), ".");
@@ -211,7 +211,7 @@ TEST(pcfg, env) {
 
   // Create a fresh config.
   a = dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "x", NULL);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that there are initially no env mods.
   s = dqcs_handle_dump(a);
@@ -255,7 +255,7 @@ TEST(pcfg, init) {
 
   // Create a fresh config.
   a = dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "x", NULL);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that there are initially no init cmds.
   s = dqcs_handle_dump(a);
@@ -264,7 +264,7 @@ TEST(pcfg, init) {
 
   // Add a command.
   b = dqcs_cmd_new("a", "b");
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_pcfg_init_cmd(a, b), dqcs_return_t::DQCS_SUCCESS);
   s = dqcs_handle_dump(a);
   EXPECT_STREQ(extract_array_from_dump("init:", s), "init: [ ArbCmd { interface_identifier: \"a\", operation_identifier: \"b\", data: ArbData { json: Object( {} ), args: [] } }]");
@@ -272,7 +272,7 @@ TEST(pcfg, init) {
 
   // Some errors.
   b = dqcs_arb_new();
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_pcfg_init_cmd(a, b), dqcs_return_t::DQCS_FAILURE);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: object does not support the cmd interface");
   EXPECT_EQ(dqcs_handle_delete(b), dqcs_return_t::DQCS_SUCCESS);
@@ -289,12 +289,12 @@ TEST(pcfg, init) {
 
 // Test tee files.
 TEST(pcfg, tee) {
-  dqcs_handle_t a, b;
+  dqcs_handle_t a;
   char *s;
 
   // Create a fresh config.
   a = dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "x", NULL);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that there are initially no tee files.
   s = dqcs_handle_dump(a);
@@ -330,7 +330,7 @@ TEST(pcfg, timeout) {
 
   // Create a fresh config.
   a = dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "x", NULL);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check the default timeouts.
   EXPECT_EQ(dqcs_pcfg_accept_timeout_get(a), 5.0);
@@ -375,7 +375,7 @@ TEST(pcfg, stream_capture_mode) {
 
   // Create a fresh config.
   a = dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "x", NULL);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check the default values.
   EXPECT_EQ(dqcs_pcfg_stdout_mode_get(a), dqcs_loglevel_t::DQCS_LOG_INFO);
@@ -426,7 +426,7 @@ TEST(pcfg, verbosity) {
 
   // Create a fresh config.
   a = dqcs_pcfg_new_raw(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, NULL, "x", NULL);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check the default value. Note that this is trace because plugin loglevel
   // is automatically limited to the most verbose log message sink, and usually

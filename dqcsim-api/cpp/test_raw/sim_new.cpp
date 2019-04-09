@@ -10,22 +10,22 @@ TEST(sim_new, sanity) {
 
   // Create handle.
   a = dqcs_scfg_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   b = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   b = dqcs_tcfg_new(b, "d");
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   ASSERT_EQ(dqcs_scfg_push_plugin(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   b = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "e", "f", "g");
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   b = dqcs_tcfg_new(b, "h");
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   ASSERT_EQ(dqcs_scfg_push_plugin(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   a = dqcs_sim_new(a);
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_SIM);
@@ -44,26 +44,26 @@ TEST(sim_new, sanity) {
 
 #define QUAD_PLUGIN(a_typ, e_typ, i_typ, m_typ, auto_name) \
   a = dqcs_scfg_new(); \
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get(); \
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get(); \
   b = dqcs_pdef_new(dqcs_plugin_type_t::a_typ, "a", "b", "c"); \
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get(); \
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get(); \
   b = dqcs_tcfg_new(b, auto_name ? NULL : "d"); \
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get(); \
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get(); \
   ASSERT_EQ(dqcs_scfg_push_plugin(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get(); \
   b = dqcs_pdef_new(dqcs_plugin_type_t::e_typ, "e", "f", "g"); \
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get(); \
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get(); \
   b = dqcs_tcfg_new(b, auto_name ? NULL : "h"); \
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get(); \
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get(); \
   ASSERT_EQ(dqcs_scfg_push_plugin(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get(); \
   b = dqcs_pdef_new(dqcs_plugin_type_t::i_typ, "i", "j", "k"); \
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get(); \
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get(); \
   b = dqcs_tcfg_new(b, auto_name ? NULL : "l"); \
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get(); \
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get(); \
   ASSERT_EQ(dqcs_scfg_push_plugin(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get(); \
   b = dqcs_pdef_new(dqcs_plugin_type_t::m_typ, "m", "n", "o"); \
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get(); \
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get(); \
   b = dqcs_tcfg_new(b, auto_name ? NULL : "p"); \
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get(); \
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get(); \
   ASSERT_EQ(dqcs_scfg_push_plugin(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get(); \
   a = dqcs_sim_new(a)
 
@@ -79,7 +79,7 @@ TEST(sim_new, reordered) {
     DQCS_PTYPE_OPER,
     false
   );
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   ASSERT_STREQ(s = dqcs_sim_get_name(a, "d"), "a"); if (s) free(s);
   ASSERT_STREQ(s = dqcs_sim_get_author(a, "d"), "b"); if (s) free(s);
@@ -161,7 +161,7 @@ TEST(sim_new, auto_naming) {
     DQCS_PTYPE_FRONT,
     true
   );
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   ASSERT_STREQ(s = dqcs_sim_get_name(a, "front"), "m"); if (s) free(s);
   ASSERT_STREQ(s = dqcs_sim_get_name(a, "op1"), "a"); if (s) free(s);
@@ -183,7 +183,7 @@ TEST(sim_new, missing_frontend) {
     DQCS_PTYPE_OPER,
     true
   );
-  ASSERT_EQ(a, 0);
+  ASSERT_EQ(a, 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: missing frontend");
   EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
@@ -198,7 +198,7 @@ TEST(sim_new, missing_backend) {
     DQCS_PTYPE_OPER,
     true
   );
-  ASSERT_EQ(a, 0);
+  ASSERT_EQ(a, 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: missing backend");
   EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
@@ -213,7 +213,7 @@ TEST(sim_new, duplicate_frontend) {
     DQCS_PTYPE_FRONT,
     true
   );
-  ASSERT_EQ(a, 0);
+  ASSERT_EQ(a, 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: duplicate frontend");
   EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
@@ -228,7 +228,7 @@ TEST(sim_new, duplicate_backend) {
     DQCS_PTYPE_BACK,
     true
   );
-  ASSERT_EQ(a, 0);
+  ASSERT_EQ(a, 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: duplicate backend");
   EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
@@ -238,22 +238,22 @@ TEST(sim_new, duplicate_name) {
   dqcs_handle_t a, b;
 
   a = dqcs_scfg_new();
-  ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   b = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   b = dqcs_tcfg_new(b, "a");
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   ASSERT_EQ(dqcs_scfg_push_plugin(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   b = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "e", "f", "g");
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   b = dqcs_tcfg_new(b, "a");
-  ASSERT_NE(b, 0) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   ASSERT_EQ(dqcs_scfg_push_plugin(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   a = dqcs_sim_new(a);
-  ASSERT_EQ(a, 0);
+  ASSERT_EQ(a, 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: duplicate plugin name 'a'");
 
   EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
