@@ -1,5 +1,5 @@
 use crate::{
-    common::log::{tee_file::TeeFile, LoglevelFilter},
+    common::log::{tee_file::TeeFileConfiguration, LoglevelFilter},
     host::configuration::PluginProcessConfiguration,
 };
 use serde::{Deserialize, Serialize};
@@ -13,8 +13,8 @@ pub struct PluginLogConfiguration {
     /// Specifies the verbosity of the messages sent to DQCsim.
     pub verbosity: LoglevelFilter,
 
-    /// Specifies the tee files for this plugin.
-    pub tee_files: Vec<TeeFile>,
+    /// Specifies the tee file configurations for this plugin.
+    pub tee_files: Vec<TeeFileConfiguration>,
 }
 
 impl PluginLogConfiguration {

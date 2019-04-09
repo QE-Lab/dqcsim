@@ -301,37 +301,24 @@ TEST(pcfg, tee) {
   EXPECT_STREQ(extract_array_from_dump("tee_files:", s), "tee_files: []");
   if (s) free(s);
 
-  unlink("warnings");
-  unlink("trace");
-
-  // Add some tees. Note that this immediately creates the files, which we use
-  // to check whether the operation was successful. Note that we don't test the
-  // levels at this time.
+  // Add some tees. Note that this does notcreates the files. Note that we
+  // don't test the levels at this time.
   EXPECT_EQ(dqcs_pcfg_tee(a, dqcs_loglevel_t::DQCS_LOG_WARN, "warnings"), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_pcfg_tee(a, dqcs_loglevel_t::DQCS_LOG_TRACE, "trace"), dqcs_return_t::DQCS_SUCCESS);
 
-  // Check that the files were created.
-  struct stat buffer;
-  EXPECT_EQ(stat("warnings", &buffer), 0);
-  EXPECT_EQ(stat("trace", &buffer), 0);
+  // Check that the tee file configurations were added.
+  s = dqcs_handle_dump(a);
+  EXPECT_STREQ(extract_array_from_dump("tee_files:", s), "tee_files: [ TeeFileConfiguration { filter: Warn, file: \"warnings\" }, TeeFileConfiguration { filter: Trace, file: \"trace\" }]");
+  if (s) free(s);
 
   // Check that we can't do silly things.
   EXPECT_EQ(dqcs_pcfg_tee(a, dqcs_loglevel_t::DQCS_LOG_INVALID, "x"), dqcs_return_t::DQCS_FAILURE);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: invalid level");
   EXPECT_EQ(dqcs_pcfg_tee(a, dqcs_loglevel_t::DQCS_LOG_PASS, "x"), dqcs_return_t::DQCS_FAILURE);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: invalid loglevel filter DQCS_LOG_PASS");
-  EXPECT_NE(stat("x", &buffer), 0);
-  // NOTE TODO: FIXME
-  //EXPECT_EQ(dqcs_pcfg_tee(a, dqcs_loglevel_t::DQCS_LOG_INFO, "."), dqcs_return_t::DQCS_FAILURE);
-  //EXPECT_STREQ(dqcs_error_get(), "Invalid argument: timeouts cannot be negative");
 
   // Delete the handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
-
-  // Delete the created files.
-  unlink("warnings");
-  unlink("trace");
-  unlink("x");
 
   // Leak check.
   EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();

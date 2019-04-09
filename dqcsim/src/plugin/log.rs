@@ -28,12 +28,15 @@ pub fn setup_logging(
         configuration.verbosity,
         log_channel,
     ) as Box<dyn Log>);
+    let tee_files: Result<Vec<_>> = configuration
+        .tee_files
+        .clone()
+        .into_iter()
+        .map(TeeFile::new)
+        .collect();
     loggers.extend(
-        configuration
-            .tee_files
-            .clone()
+        tee_files?
             .into_iter()
-            .map(TeeFile::create)
             .map(Box::new)
             .map(|l| l as Box<dyn Log>),
     );

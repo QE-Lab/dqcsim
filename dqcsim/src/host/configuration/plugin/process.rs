@@ -1,7 +1,7 @@
 use crate::{
     common::{
         error::{inv_arg, oe_err, Result},
-        log::{tee_file::TeeFile, Loglevel, LoglevelFilter},
+        log::{tee_file::TeeFileConfiguration, Loglevel, LoglevelFilter},
         types::{ArbCmd, PluginType},
     },
     host::{
@@ -206,8 +206,8 @@ pub struct PluginProcessNonfunctionalConfiguration {
     /// Specifies the verbosity of the messages sent to DQCsim.
     pub verbosity: LoglevelFilter,
 
-    /// Specifies the tee files for this plugin.
-    pub tee_files: Vec<TeeFile>,
+    /// Specifies the tee file configuration for this plugin.
+    pub tee_files: Vec<TeeFileConfiguration>,
 
     /// Specifies how the stdout stream of the plugin should be connected.
     pub stdout_mode: StreamCaptureMode,

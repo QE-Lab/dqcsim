@@ -1,5 +1,5 @@
 use dqcsim::{
-    common::{log::tee_file::TeeFile, log::*},
+    common::{log::tee_file::TeeFileConfiguration, log::*},
     host::configuration::*,
 };
 
@@ -16,7 +16,7 @@ pub struct PluginNonfunctionalOpts {
     pub verbosity: Option<LoglevelFilter>,
 
     /// Specifies the tee files for this plugin.
-    pub tee_files: Vec<TeeFile>,
+    pub tee_files: Vec<TeeFileConfiguration>,
 
     /// Specifies how the stdout stream of the plugin should be connected.
     /// `None` implies default.

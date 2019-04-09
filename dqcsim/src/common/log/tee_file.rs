@@ -1,4 +1,7 @@
-use crate::common::log::{Log, LogRecord, Loglevel, LoglevelFilter};
+use crate::common::{
+    error::Result,
+    log::{Log, LogRecord, Loglevel, LoglevelFilter},
+};
 use failure::Fail;
 use serde::{Deserialize, Serialize};
 use std::{fs::File, io::Write, path::PathBuf};
@@ -10,58 +13,56 @@ pub enum TeeFileError {
     ParseError(String),
 }
 
-/// Represents a tee file for the logging system.
-#[derive(Debug, Deserialize, Serialize)]
-pub struct TeeFile {
+/// Represents a tee file configuration for the logging system.
+#[derive(Clone, PartialEq, Debug, Deserialize, Serialize)]
+pub struct TeeFileConfiguration {
     pub filter: LoglevelFilter,
     pub file: PathBuf,
-    #[serde(skip)]
+}
+
+impl TeeFileConfiguration {
+    /// Constructs a new TeeFileConfiguration with the provided log level
+    /// filter and path.
+    pub fn new(
+        filter: impl Into<LoglevelFilter>,
+        file: impl Into<PathBuf>,
+    ) -> TeeFileConfiguration {
+        TeeFileConfiguration {
+            filter: filter.into(),
+            file: file.into(),
+        }
+    }
+}
+
+/// TeeFile is the combination of a TeeFileConfiguration and a handle to the
+/// tee file. TeeFile implements the Log trait and can write log records to
+/// the file.
+#[derive(Debug)]
+pub struct TeeFile {
+    /// The TeeFileConfiguration
+    pub configuration: TeeFileConfiguration,
+    /// The file handle, wrapper in an Option to allow implementation of the
+    /// Log trait.
     buffer: Option<File>,
 }
 
-impl Clone for TeeFile {
-    fn clone(&self) -> TeeFile {
-        TeeFile::new(self.filter, self.file.clone())
-    }
-}
-
-impl PartialEq for TeeFile {
-    fn eq(&self, other: &TeeFile) -> bool {
-        self.filter == other.filter && self.file == other.file
-    }
-}
-
 impl TeeFile {
-    /// Convenience method for building a TeeFile. This is the combinatin of build + create.
-    pub fn new(filter: impl Into<LoglevelFilter>, file: impl Into<PathBuf>) -> TeeFile {
-        let file = file.into();
-        TeeFile {
-            filter: filter.into(),
-            file: file.clone(),
-            buffer: Some(File::create(file).unwrap()),
-        }
-    }
-    /// Create the File.
-    pub fn create(mut self) -> TeeFile {
-        self.buffer = Some(File::create(self.file.clone()).unwrap());
-        self
-    }
-    /// Build the TeeFile, but do not create the inner File.
-    pub fn build(filter: impl Into<LoglevelFilter>, file: impl Into<PathBuf>) -> TeeFile {
-        TeeFile {
-            filter: filter.into(),
-            file: file.into(),
-            buffer: None,
-        }
+    /// Constructs a new tee file. Consumes the provided configuration.
+    pub fn new(configuration: TeeFileConfiguration) -> Result<TeeFile> {
+        let buffer = Some(File::create(&configuration.file)?);
+        Ok(TeeFile {
+            buffer,
+            configuration,
+        })
     }
 }
 
 impl Log for TeeFile {
     fn name(&self) -> &str {
-        self.file.to_str().unwrap()
+        self.configuration.file.to_str().unwrap()
     }
     fn enabled(&self, level: Loglevel) -> bool {
-        LoglevelFilter::from(level) <= self.filter
+        LoglevelFilter::from(level) <= self.configuration.filter
     }
     fn log(&self, record: &LogRecord) {
         if let Some(mut buffer) = self.buffer.as_ref() {
@@ -70,13 +71,13 @@ impl Log for TeeFile {
     }
 }
 
-impl ::std::str::FromStr for TeeFile {
+impl ::std::str::FromStr for TeeFileConfiguration {
     type Err = failure::Error;
 
     /// Constructs a TeeFile from its string representation, which is of the
     /// form <filter>:<file>. <filter> is parsed by
     /// `LoglevelFilter::from_str()` and thus supports abbreviations.
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         let mut splitter = s.splitn(2, ':');
         let filter = LoglevelFilter::from_str(splitter.next().unwrap())?;
         let file: PathBuf = splitter
@@ -85,11 +86,11 @@ impl ::std::str::FromStr for TeeFile {
                 TeeFileError::ParseError("Expected a colon in tee file description.".to_string())
             })?
             .into();
-        Ok(TeeFile::build(filter, file))
+        Ok(TeeFileConfiguration { filter, file })
     }
 }
 
-impl ::std::fmt::Display for TeeFile {
+impl ::std::fmt::Display for TeeFileConfiguration {
     /// Turns the TeeFile object into a string representation that can be
     /// parsed by `from_str()`.
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
@@ -101,22 +102,22 @@ impl ::std::fmt::Display for TeeFile {
 mod test {
 
     use super::super::LoglevelFilter;
-    use super::TeeFile;
+    use super::*;
     use std::str::FromStr;
 
     #[test]
     fn from_str() {
         assert_eq!(
-            TeeFile::from_str("info:hello:/there").unwrap(),
-            TeeFile::build(LoglevelFilter::Info, "hello:/there"),
+            TeeFileConfiguration::from_str("info:/tmp/hello:/there").unwrap(),
+            TeeFileConfiguration::new(LoglevelFilter::Info, "/tmp/hello:/there"),
         );
     }
 
     #[test]
     fn to_str() {
         assert_eq!(
-            TeeFile::build(LoglevelFilter::Info, "hello:/there").to_string(),
-            "Info:hello:/there",
+            TeeFileConfiguration::new(LoglevelFilter::Info, "/tmp/hello:/there").to_string(),
+            "Info:/tmp/hello:/there",
         );
     }
 
