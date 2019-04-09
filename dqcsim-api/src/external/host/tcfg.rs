@@ -10,7 +10,10 @@ pub extern "C" fn dqcs_tcfg_new(pdef: dqcs_handle_t, name: *const c_char) -> dqc
         take!(pdef as PluginDefinition);
         Ok(insert(PluginThreadConfiguration::new(
             pdef,
-            PluginLogConfiguration::new(receive_str(name)?, LoglevelFilter::Trace),
+            PluginLogConfiguration::new(
+                receive_optional_str(name)?.unwrap_or(""),
+                LoglevelFilter::Trace,
+            ),
         )))
     })
 }
@@ -43,7 +46,7 @@ pub extern "C" fn dqcs_tcfg_name(tcfg: dqcs_handle_t) -> *mut c_char {
 /// The `ArbCmd` handle is consumed by this function, and is thus invalidated,
 /// if and only if it is successful.
 #[no_mangle]
-pub extern "C" fn dqcs_tcfg_init_arb(tcfg: dqcs_handle_t, cmd: dqcs_handle_t) -> dqcs_return_t {
+pub extern "C" fn dqcs_tcfg_init_cmd(tcfg: dqcs_handle_t, cmd: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(tcfg as &mut PluginThreadConfiguration);
         take!(cmd as ArbCmd);

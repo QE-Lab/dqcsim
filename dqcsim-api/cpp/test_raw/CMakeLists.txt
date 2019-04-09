@@ -20,6 +20,7 @@ package_add_test(qbset qbset.cpp)
 
 # Host
 package_add_test(pcfg pcfg.cpp)
+package_add_test(tcfg tcfg.cpp)
 package_add_test(scfg scfg.cpp)
 
 # Plugin
