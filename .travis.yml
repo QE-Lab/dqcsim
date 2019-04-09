@@ -1,6 +1,5 @@
 language: rust
 sudo: false
-cache: cargo
 
 os:
   - linux
@@ -18,6 +17,14 @@ matrix:
 branches:
   only:
     - master
+
+cache:
+  directories:
+    - $HOME/.cargo
+    - $HOME/kcov
+
+before_cache:
+  - rm -rf $HOME/.cargo/registry
 
 addons:
   apt:
@@ -48,34 +55,40 @@ env:
 install:
   - rustup component add clippy --toolchain="$TRAVIS_RUST_VERSION" || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
   - rustup component add rustfmt
-  - (test -x $HOME/.cargo/bin/cargo-install-update || cargo install cargo-update)
-  - (test -x $HOME/.cargo/bin/mdbook || cargo install mdbook)
-  - (test -x $HOME/.cargo/bin/cargo-make || cargo install cargo-make)
-  - cargo install-update -a
+  - cargo make --version || cargo install --debug cargo-make --vers "0.17.1"
+  - mdbook --version || cargo install --debug mdbook --vers "0.2.3"
+  - |
+    (
+      [ "$TRAVIS_OS_NAME" = "linux" ] &&
+      [ "$TRAVIS_RUST_VERSION" = "stable" ] &&
+      export PATH=$PATH:$HOME/kcov/bin/ &&
+      ( kcov --version ||
+        (
+          wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
+          tar xzf master.tar.gz &&
+          cd kcov-master &&
+          mkdir build &&
+          cd build &&
+          cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov .. &&
+          make &&
+          make install 
+        )
+      )
+    ) || echo "Skipping kcov install"
 
 script:
   - cargo fmt -- --check
-  - make build
+  - cargo check --all-targets
   - make kcov-test
   - cargo clippy -- -Dwarnings
 
 after_success: |
   [ "$TRAVIS_OS_NAME" = "linux" ] &&
   [ "$TRAVIS_RUST_VERSION" = "stable" ] &&
-  wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
-  tar xzf master.tar.gz &&
-  cd kcov-master &&
-  mkdir build &&
-  cd build &&
-  cmake .. &&
-  make &&
-  make install DESTDIR=../../kcov-build &&
-  cd ../.. &&
-  rm -rf kcov-master &&
-  for file in target/debug/{dqcsim,simulation,enum}*; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; ./kcov-build/usr/local/bin/kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
-  for file in `find dqcsim-api/cpp/build/test_* -executable -and -type f`; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; ./kcov-build/usr/local/bin/kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
-  bash <(curl -s https://codecov.io/bash) &&
-  echo "Uploaded code coverage"
+  export PATH=$PATH:$HOME/kcov/bin/ &&
+  for file in target/debug/{dqcsim,simulation,enum}*; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
+  for file in `find dqcsim-api/cpp/build/test_* -executable -and -type f`; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
+  bash <(curl -s https://codecov.io/bash)
 
 before_deploy:
   - cargo doc
