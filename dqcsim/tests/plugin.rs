@@ -1,9 +1,11 @@
 use dqcsim::{
     common::{
+        error::err,
         log::LoglevelFilter,
         types::{ArbCmd, ArbData, PluginMetadata, PluginType},
     },
     host::{
+        accelerator::Accelerator,
         configuration::{
             PluginLogConfiguration, PluginProcessConfiguration, PluginProcessSpecification,
             PluginThreadConfiguration, SimulatorConfiguration,
@@ -175,6 +177,20 @@ fn simulator_to_plugin_arb() {
         "Invalid argument: plugin asdf not found"
     );
 
+    let res = simulation.arb_idx(3, ArbCmd::new("front", "1", ArbData::default()));
+    assert!(res.is_err());
+    assert_eq!(
+        res.unwrap_err().to_string(),
+        "Invalid argument: index 3 out of range"
+    );
+
+    let res = simulation.arb_idx(-5, ArbCmd::new("front", "1", ArbData::default()));
+    assert!(res.is_err());
+    assert_eq!(
+        res.unwrap_err().to_string(),
+        "Invalid argument: index -5 out of range"
+    );
+
     let res = simulation.arb_idx(1, ArbCmd::new("operator", "2", ArbData::default()));
     let mut msg = ArbData::default();
     msg.set_json("{ \"operator\": 2 }").unwrap();
@@ -186,4 +202,84 @@ fn simulator_to_plugin_arb() {
     msg.set_json("{ \"backend\": 3 }").unwrap();
     assert!(res.is_ok());
     assert_eq!(res.unwrap(), msg);
+
+    let res = simulation.arb_idx(-1, ArbCmd::new("backend", "3", ArbData::default()));
+    let mut msg = ArbData::default();
+    msg.set_json("{ \"backend\": 3 }").unwrap();
+    assert!(res.is_ok());
+    assert_eq!(res.unwrap(), msg);
+}
+
+#[test]
+// This tests send/recv to accelerator via simulation api.
+fn send_recv_accelerator() {
+    let (mut frontend, _, backend) = fe_op_be();
+
+    frontend.run = Box::new(|state, _| {
+        assert!(state.send(ArbData::default()).is_ok());
+        let res = state.recv();
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), ArbData::default());
+        Ok(ArbData::default())
+    });
+
+    let ptc = |definition| {
+        PluginThreadConfiguration::new(
+            definition,
+            PluginLogConfiguration::new("", LoglevelFilter::Off),
+        )
+    };
+
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(ptc(frontend))
+        .with_plugin(ptc(backend));
+
+    let simulator = Simulator::new(configuration);
+    assert!(simulator.is_ok());
+
+    let mut simulator = simulator.unwrap();
+    assert!(simulator.simulation.send(ArbData::default()).is_ok());
+
+    // test deadlock
+    let res = simulator.simulation.recv();
+    assert!(res.is_err());
+    assert_eq!(
+        res.unwrap_err().to_string(),
+        "Deadlock: recv() called while queue is empty and accelerator is idle"
+    );
+
+    // start a program
+    assert!(simulator.simulation.start(ArbData::default()).is_ok());
+    let res = simulator.simulation.recv();
+    assert!(res.is_ok());
+}
+
+#[test]
+// This tests basic plugin arb command propagation.
+fn plugin_user_init_fail() {
+    let (mut frontend, _, backend) = fe_op_be();
+
+    frontend.initialize = Box::new(|_, _| err("please help"));
+
+    let ptc = |definition| {
+        PluginThreadConfiguration::new(
+            definition,
+            PluginLogConfiguration::new("", LoglevelFilter::Off),
+        )
+    };
+
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(ptc(frontend))
+        .with_plugin(ptc(backend));
+
+    let simulator = Simulator::new(configuration);
+    assert!(simulator.is_err());
+    assert_eq!(
+        simulator.unwrap_err().to_string(),
+        "Failed to initialize plugin(s): please help"
+    );
 }

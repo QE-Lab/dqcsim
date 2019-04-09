@@ -52,11 +52,7 @@ enum AcceleratorState {
 
 impl AcceleratorState {
     pub fn is_idle(&self) -> bool {
-        if let AcceleratorState::Idle = self {
-            true
-        } else {
-            false
-        }
+        &AcceleratorState::Idle == self
     }
 
     pub fn is_start_pending(&self) -> bool {
@@ -68,11 +64,7 @@ impl AcceleratorState {
     }
 
     pub fn is_blocked(&self) -> bool {
-        if let AcceleratorState::Blocked = self {
-            true
-        } else {
-            false
-        }
+        &AcceleratorState::Blocked == self
     }
 
     pub fn is_wait_pending(&self) -> bool {
@@ -244,12 +236,10 @@ impl Simulation {
 
         for (i, p) in pipeline.iter().enumerate() {
             debug!(
-                "Plugin {} with instance name {} is {} version {} by {}",
+                "Plugin {} with instance name {} is {}",
                 i,
                 p.plugin.name(),
-                p.metadata.get_name(),
-                p.metadata.get_version(),
-                p.metadata.get_author()
+                p.metadata,
             );
         }
 
