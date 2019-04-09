@@ -34,12 +34,7 @@ pub fn setup_logging(
         .into_iter()
         .map(TeeFile::new)
         .collect();
-    loggers.extend(
-        tee_files?
-            .into_iter()
-            .map(Box::new)
-            .map(|l| l as Box<dyn Log>),
-    );
+    loggers.extend(tee_files?.into_iter().map(|l| Box::new(l) as Box<dyn Log>));
     init(loggers)?;
     Ok(())
 }

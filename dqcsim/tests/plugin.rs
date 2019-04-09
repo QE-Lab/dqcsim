@@ -5,12 +5,14 @@ use dqcsim::{
     },
     host::{
         configuration::{
-            PluginLogConfiguration, PluginThreadConfiguration, SimulatorConfiguration,
+            PluginLogConfiguration, PluginProcessConfiguration, PluginProcessSpecification,
+            PluginThreadConfiguration, SimulatorConfiguration,
         },
         simulator::Simulator,
     },
     plugin::definition::PluginDefinition,
 };
+use std::path::PathBuf;
 
 fn fe_op_be() -> (PluginDefinition, PluginDefinition, PluginDefinition) {
     let frontend = PluginDefinition::new(
@@ -29,6 +31,44 @@ fn fe_op_be() -> (PluginDefinition, PluginDefinition, PluginDefinition) {
     );
 
     (frontend, operator, backend)
+}
+
+#[test]
+// This tests bad initialization by plugin type mismatch.
+fn bad_plugin_type() {
+    let frontend = PluginDefinition::new(
+        PluginType::Frontend,
+        PluginMetadata::new("frontend", "dqcsim", "0.1.0"),
+    );
+
+    let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    d.push("../target/debug/examples/plugin");
+    let not_operator = PluginProcessConfiguration::new(
+        "frontend",
+        PluginProcessSpecification::from_sugar(d, PluginType::Operator).unwrap(),
+    );
+    let backend = PluginDefinition::new(
+        PluginType::Backend,
+        PluginMetadata::new("backend", "dqcsim", "0.1.0"),
+    );
+
+    let ptc = |definition| {
+        PluginThreadConfiguration::new(
+            definition,
+            PluginLogConfiguration::new("", LoglevelFilter::Off),
+        )
+    };
+
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(ptc(frontend))
+        .with_plugin(not_operator)
+        .with_plugin(ptc(backend));
+
+    let simulator = Simulator::new(configuration);
+    assert!(simulator.is_err());
+    assert_eq!(simulator.unwrap_err().to_string(), "Failed to initialize plugin(s): Invalid operation: host is expecting a plugin of type Operator, but we\'re a plugin of type Frontend");
 }
 
 #[test]

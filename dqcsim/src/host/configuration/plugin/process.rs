@@ -275,6 +275,12 @@ impl PluginProcessConfiguration {
     }
 }
 
+impl Into<Box<dyn PluginConfiguration>> for PluginProcessConfiguration {
+    fn into(self) -> Box<dyn PluginConfiguration> {
+        Box::new(self) as Box<dyn PluginConfiguration>
+    }
+}
+
 impl PluginConfiguration for PluginProcessConfiguration {
     fn instantiate(self: Box<Self>) -> Box<dyn Plugin> {
         Box::new(PluginProcess::new(*self))
