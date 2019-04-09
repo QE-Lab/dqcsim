@@ -1,13 +1,15 @@
 use dqcsim::{
     common::{
-        log::LoglevelFilter,
+        log::{thread::LogThread, LoglevelFilter},
         types::{ArbCmd, ArbData, PluginMetadata, PluginType},
     },
     host::{
         accelerator::Accelerator,
         configuration::{
-            PluginLogConfiguration, PluginThreadConfiguration, SimulatorConfiguration,
+            PluginLogConfiguration, PluginThreadConfiguration, Seed, SimulatorConfiguration,
         },
+        plugin::Plugin,
+        simulation::Simulation,
         simulator::Simulator,
     },
     plugin::definition::PluginDefinition,
@@ -114,6 +116,13 @@ fn simulation_metadata() {
     assert!(metadata.is_ok());
     assert_eq!(&plugin_metadata, metadata.unwrap());
 
+    let metadata = simulation.get_metadata("asdf");
+    assert!(metadata.is_err());
+    assert_eq!(
+        metadata.unwrap_err().to_string(),
+        "Invalid argument: plugin asdf not found"
+    );
+
     let metadata = simulation.get_metadata_idx(0);
     assert!(metadata.is_ok());
     assert_eq!(&plugin_metadata, metadata.unwrap());
@@ -191,4 +200,96 @@ fn simulation_bad_recv() {
 
     let simulator = Simulator::new(configuration);
     assert!(simulator.is_ok());
+}
+
+#[test]
+fn bad_simulation_pipeline_too_short() {
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(thread_config_type(PluginType::Backend));
+
+    let log_thread = LogThread::spawn(
+        "dqcsim",
+        configuration.dqcsim_level,
+        configuration.stderr_level,
+        configuration.log_callback,
+        configuration.tee_files,
+    )
+    .unwrap();
+
+    let pipeline: Vec<Box<dyn Plugin>> = configuration
+        .plugins
+        .into_iter()
+        .map(|plugin| plugin.instantiate())
+        .collect();
+
+    let simulation = Simulation::new(pipeline, Seed::default(), None, &log_thread);
+    assert!(simulation.is_err());
+    assert_eq!(
+        simulation.unwrap_err().to_string(),
+        "Invalid argument: Simulation must consist of at least a frontend and backend"
+    );
+}
+
+#[test]
+fn bad_simulation_pipeline_fe_op_only() {
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(thread_config_type(PluginType::Frontend))
+        .with_plugin(thread_config_type(PluginType::Operator));
+
+    let log_thread = LogThread::spawn(
+        "dqcsim",
+        configuration.dqcsim_level,
+        configuration.stderr_level,
+        configuration.log_callback,
+        configuration.tee_files,
+    )
+    .unwrap();
+
+    let pipeline: Vec<Box<dyn Plugin>> = configuration
+        .plugins
+        .into_iter()
+        .map(|plugin| plugin.instantiate())
+        .collect();
+
+    let simulation = Simulation::new(pipeline, Seed::default(), None, &log_thread);
+    assert!(simulation.is_err());
+    assert_eq!(
+        simulation.unwrap_err().to_string(),
+        "Failed to initialize plugin(s): Interprocess communication error: io error: No senders exist for this port.; Interprocess communication error: io error: No senders exist for this port."
+    );
+}
+
+#[test]
+fn bad_simulation_pipeline_be_op_only() {
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(thread_config_type(PluginType::Backend))
+        .with_plugin(thread_config_type(PluginType::Operator));
+
+    let log_thread = LogThread::spawn(
+        "dqcsim",
+        configuration.dqcsim_level,
+        configuration.stderr_level,
+        configuration.log_callback,
+        configuration.tee_files,
+    )
+    .unwrap();
+
+    let pipeline: Vec<Box<dyn Plugin>> = configuration
+        .plugins
+        .into_iter()
+        .map(|plugin| plugin.instantiate())
+        .collect();
+
+    let simulation = Simulation::new(pipeline, Seed::default(), None, &log_thread);
+    assert!(simulation.is_err());
+    assert_eq!(
+        simulation.unwrap_err().to_string(),
+        "Failed to initialize plugin(s): Interprocess communication error: io error: No senders exist for this port."
+    );
 }

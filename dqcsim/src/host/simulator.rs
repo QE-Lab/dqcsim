@@ -99,3 +99,45 @@ impl Drop for Simulator {
         self.simulation.drop_plugins();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        common::{
+            log::LoglevelFilter,
+            types::{PluginMetadata, PluginType},
+        },
+        host::configuration::{
+            PluginLogConfiguration, PluginThreadConfiguration, SimulatorConfiguration,
+        },
+        plugin::definition::PluginDefinition,
+    };
+
+    #[test]
+    fn debug() {
+        let configuration = SimulatorConfiguration::default()
+            .without_reproduction()
+            .without_logging()
+            .with_plugin(PluginThreadConfiguration::new(
+                PluginDefinition::new(PluginType::Frontend, PluginMetadata::new("", "", "")),
+                PluginLogConfiguration::new("", LoglevelFilter::Off),
+            ))
+            .with_plugin(PluginThreadConfiguration::new(
+                PluginDefinition::new(PluginType::Backend, PluginMetadata::new("", "", "")),
+                PluginLogConfiguration::new("", LoglevelFilter::Off),
+            ));
+        let simulator = Simulator::new(configuration);
+        assert!(simulator.is_ok());
+        let simulator = simulator.unwrap();
+        assert_eq!(
+            format!("{:?}", simulator).find("imulator { log_thread"),
+            Some(1)
+        );
+
+        assert_eq!(
+            format!("{:?}", simulator.simulation).find("imulation { pipeline"),
+            Some(1)
+        );
+    }
+}

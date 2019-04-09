@@ -6,6 +6,7 @@ use crate::{
         protocol::{PluginToSimulator, SimulatorToPlugin},
         types::{ArbCmd, PluginType},
     },
+    fatal,
     host::{
         configuration::{PluginLogConfiguration, PluginThreadConfiguration},
         plugin::Plugin,
@@ -80,7 +81,14 @@ impl Plugin for PluginThread {
         let (server, server_name) = ipc::IpcOneShotServer::new()?;
 
         // Spawn the thread.
-        self.handle = Some(thread::spawn(move || thread(server_name)));
+        self.handle = Some(thread::spawn(move || {
+            // Set a custom panic hook.
+            std::panic::set_hook(Box::new(|info| {
+                fatal!("{}", info);
+            }));
+            // Start the thread function.
+            thread(server_name)
+        }));
 
         // Wait for the thread to connect.
         let (_, channel) = server.accept()?;
