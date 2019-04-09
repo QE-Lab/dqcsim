@@ -1,11 +1,12 @@
 use super::*;
+use dqcsim::host::accelerator::Accelerator;
 
 /// Constructs a DQCsim simulation.
 ///
 /// The provided handle is consumed if it is a simulation configuration,
 /// regardless of whether simulation construction succeeds.
 #[no_mangle]
-pub extern "C" fn dqcs_sim_init(scfg: dqcs_handle_t) -> dqcs_handle_t {
+pub extern "C" fn dqcs_sim_new(scfg: dqcs_handle_t) -> dqcs_handle_t {
     api_return(0, || {
         take!(scfg as SimulatorConfiguration);
         API_STATE.with(|state| state.borrow().thread_locals_assert_free())?;
@@ -13,6 +14,81 @@ pub extern "C" fn dqcs_sim_init(scfg: dqcs_handle_t) -> dqcs_handle_t {
         let sim = insert(sim);
         API_STATE.with(|state| state.borrow_mut().thread_locals_claim(sim).unwrap());
         Ok(sim)
+    })
+}
+
+/// Starts a program on the simulated accelerator.
+///
+/// This is an asynchronous call: nothing happens until `yield()`,
+/// `recv()`, or `wait()` is called.
+///
+/// The `ArbData` handle is optional; if 0 is passed, an empty data object is
+/// used. If a handle is passed, it is consumed if and only if the API call
+/// succeeds.
+#[no_mangle]
+pub extern "C" fn dqcs_sim_start(sim: dqcs_handle_t, data: dqcs_handle_t) -> dqcs_return_t {
+    api_return_none(|| {
+        resolve!(sim as &mut Simulator);
+        resolve!(data as pending ArbData);
+        let data_ob = {
+            let x: &ArbData = data.as_ref().unwrap();
+            x.clone()
+        };
+        sim.simulation.start(data_ob)?;
+        delete!(resolved data);
+        Ok(())
+    })
+}
+
+/// Waits for the simulated accelerator to finish its current program.
+///
+/// When this succeeds, the return value of the accelerator's `run()`
+/// function is returned in the form of a new handle. When it fails, 0 is
+/// returned.
+///
+/// Deadlocks are detected and prevented by returning an error.
+#[no_mangle]
+pub extern "C" fn dqcs_sim_wait(sim: dqcs_handle_t) -> dqcs_handle_t {
+    api_return(0, || {
+        resolve!(sim as &mut Simulator);
+        Ok(insert(sim.simulation.wait()?))
+    })
+}
+
+/// Sends a message to the simulated accelerator.
+///
+/// This is an asynchronous call: nothing happens until `yield()`,
+/// `recv()`, or `wait()` is called.
+///
+/// The `ArbData` handle is optional; if 0 is passed, an empty data object is
+/// used. If a handle is passed, it is consumed if and only if the API call
+/// succeeds.
+#[no_mangle]
+pub extern "C" fn dqcs_sim_send(sim: dqcs_handle_t, data: dqcs_handle_t) -> dqcs_return_t {
+    api_return_none(|| {
+        resolve!(sim as &mut Simulator);
+        resolve!(data as pending ArbData);
+        let data_ob = {
+            let x: &ArbData = data.as_ref().unwrap();
+            x.clone()
+        };
+        sim.simulation.send(data_ob)?;
+        delete!(resolved data);
+        Ok(())
+    })
+}
+
+/// Waits for the simulated accelerator to send a message to us.
+///
+/// When this succeeds, the received data is returned in the form of a new
+/// handle. When it fails, 0 is returned.
+///
+/// Deadlocks are detected and prevented by returning an error.
+#[no_mangle]
+pub extern "C" fn dqcs_sim_recv(sim: dqcs_handle_t) -> dqcs_handle_t {
+    api_return(0, || {
+        resolve!(sim as &mut Simulator);
+        Ok(insert(sim.simulation.recv()?))
     })
 }
 

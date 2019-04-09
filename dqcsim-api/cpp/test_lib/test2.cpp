@@ -23,11 +23,11 @@ TEST(Test, Test) {
   dqcs_handle_t back = dqcs_pcfg_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "", "target/debug/dqcsim-plugin");
   dqcs_scfg_push_plugin(scfg, back);
 
-  dqcs_handle_t sim = dqcs_sim_init(scfg);
+  dqcs_handle_t sim = dqcs_sim_new(scfg);
 
   dqcs_handle_t arb = dqcs_arb_new();
-  dqcs_accel_start(sim, arb);
-  dqcs_handle_t x = dqcs_accel_wait(sim);
+  dqcs_sim_start(sim, arb);
+  dqcs_handle_t x = dqcs_sim_wait(sim);
   if (!x) {
     printf("Error returned by wait(): %s\n", dqcs_error_get());
   } else {
