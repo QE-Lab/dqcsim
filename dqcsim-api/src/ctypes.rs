@@ -242,13 +242,13 @@ impl From<PluginType> for dqcs_plugin_type_t {
     }
 }
 
-impl Into<PluginType> for dqcs_plugin_type_t {
-    fn into(self) -> PluginType {
+impl Into<Result<PluginType>> for dqcs_plugin_type_t {
+    fn into(self) -> Result<PluginType> {
         match self {
-            dqcs_plugin_type_t::DQCS_PTYPE_FRONT => PluginType::Frontend,
-            dqcs_plugin_type_t::DQCS_PTYPE_OPER => PluginType::Operator,
-            dqcs_plugin_type_t::DQCS_PTYPE_BACK => PluginType::Backend,
-            _ => PluginType::Frontend,
+            dqcs_plugin_type_t::DQCS_PTYPE_FRONT => Ok(PluginType::Frontend),
+            dqcs_plugin_type_t::DQCS_PTYPE_OPER => Ok(PluginType::Operator),
+            dqcs_plugin_type_t::DQCS_PTYPE_BACK => Ok(PluginType::Backend),
+            _ => inv_arg("invalid plugin type"),
         }
     }
 }

@@ -17,11 +17,12 @@ pub extern "C" fn dqcs_pcfg_new(
     spec: *const c_char,
 ) -> dqcs_handle_t {
     api_return(0, || {
+        let typ: Result<PluginType> = typ.into();
         let spec = receive_optional_str(spec)?.filter(|x| !x.is_empty());
         if let Some(spec) = spec {
             Ok(insert(PluginProcessConfiguration::new(
                 receive_optional_str(name)?.unwrap_or(""),
-                PluginProcessSpecification::from_sugar(spec, typ.into())?,
+                PluginProcessSpecification::from_sugar(spec, typ?)?,
             )))
         } else {
             inv_arg("plugin specification must not be empty")
@@ -47,12 +48,13 @@ pub extern "C" fn dqcs_pcfg_new_raw(
     script: *const c_char,
 ) -> dqcs_handle_t {
     api_return(0, || {
+        let typ: Result<PluginType> = typ.into();
         let executable = receive_optional_str(executable)?.filter(|x| !x.is_empty());
         let script = receive_optional_str(script)?.filter(|x| !x.is_empty());
         if let Some(executable) = executable {
             Ok(insert(PluginProcessConfiguration::new(
                 receive_optional_str(name)?.unwrap_or(""),
-                PluginProcessSpecification::new(executable, script, typ),
+                PluginProcessSpecification::new(executable, script, typ?),
             )))
         } else {
             inv_arg("plugin executable must not be empty")

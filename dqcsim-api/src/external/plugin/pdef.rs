@@ -21,12 +21,19 @@ pub extern "C" fn dqcs_pdef_new(
     version: *const c_char,
 ) -> dqcs_handle_t {
     api_return(0, || {
+        let typ: Result<PluginType> = typ.into();
         Ok(insert(PluginDefinition::new(
-            typ.into(),
+            typ?,
             PluginMetadata::new(
-                receive_str(name)?,
-                receive_str(author)?,
-                receive_str(version)?,
+                receive_optional_str(name)?
+                    .filter(|x| !x.is_empty())
+                    .ok_or_else(oe_inv_arg("plugin name is required"))?,
+                receive_optional_str(author)?
+                    .filter(|x| !x.is_empty())
+                    .ok_or_else(oe_inv_arg("author name is required"))?,
+                receive_optional_str(version)?
+                    .filter(|x| !x.is_empty())
+                    .ok_or_else(oe_inv_arg("version string is required"))?,
             ),
         )))
     })
@@ -195,6 +202,9 @@ pub extern "C" fn dqcs_pdef_set_run_cb(
         let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
+        if pdef.get_type() != PluginType::Frontend {
+            return inv_op("the run() callback is only supported for frontends");
+        }
         pdef.run = Box::new(
             move |state: &mut PluginState, args: ArbData| -> Result<ArbData> {
                 let args = insert(args);
@@ -244,6 +254,9 @@ pub extern "C" fn dqcs_pdef_set_allocate_cb(
         let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
+        if pdef.get_type() == PluginType::Frontend {
+            return inv_op("the allocate() callback is not supported for frontends");
+        }
         pdef.allocate = Box::new(
             move |state: &mut PluginState,
                   qubits: Vec<QubitRef>,
@@ -294,6 +307,9 @@ pub extern "C" fn dqcs_pdef_set_free_cb(
         let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
+        if pdef.get_type() == PluginType::Frontend {
+            return inv_op("the free() callback is not supported for frontends");
+        }
         pdef.free = Box::new(
             move |state: &mut PluginState, qubits: Vec<QubitRef>| -> Result<()> {
                 let qubits: QubitReferenceSet = qubits.into_iter().collect();
@@ -367,6 +383,9 @@ pub extern "C" fn dqcs_pdef_set_gate_cb(
         let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
+        if pdef.get_type() == PluginType::Frontend {
+            return inv_op("the gate() callback is not supported for frontends");
+        }
         pdef.gate = Box::new(
             move |state: &mut PluginState, gate: Gate| -> Result<Vec<QubitMeasurementResult>> {
                 let gate_handle = insert(gate);
@@ -444,6 +463,9 @@ pub extern "C" fn dqcs_pdef_set_modify_measurement_cb(
         let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
+        if pdef.get_type() != PluginType::Operator {
+            return inv_op("the modify_measurement() callback is only supported for operators");
+        }
         pdef.modify_measurement = Box::new(
             move |state: &mut PluginState,
                   meas: QubitMeasurementResult|
@@ -491,6 +513,9 @@ pub extern "C" fn dqcs_pdef_set_advance_cb(
         let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
+        if pdef.get_type() == PluginType::Frontend {
+            return inv_op("the advance() callback is not supported for frontends");
+        }
         pdef.advance = Box::new(move |state: &mut PluginState, cycles: u64| -> Result<()> {
             cb_return_none(callback(data.data(), state.into(), cycles as dqcs_cycle_t))
         });
@@ -531,6 +556,9 @@ pub extern "C" fn dqcs_pdef_set_upstream_arb_cb(
         let data = CallbackUserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
+        if pdef.get_type() == PluginType::Frontend {
+            return inv_op("the upstream_arb() callback is not supported for frontends");
+        }
         pdef.upstream_arb = Box::new(
             move |state: &mut PluginState, cmd: ArbCmd| -> Result<ArbData> {
                 let cmd_handle = insert(cmd);
