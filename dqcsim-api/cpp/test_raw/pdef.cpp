@@ -33,21 +33,21 @@ TEST(pdef, types) {
   dqcs_handle_t a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
   ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_FRONT_DEF);
-  EXPECT_EQ(dqcs_pdef_get_type(a), dqcs_plugin_type_t::DQCS_PTYPE_FRONT);
+  EXPECT_EQ(dqcs_pdef_type(a), dqcs_plugin_type_t::DQCS_PTYPE_FRONT);
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 
   // Operator.
   a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_OPER, "a", "b", "c");
   ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_OPER_DEF);
-  EXPECT_EQ(dqcs_pdef_get_type(a), dqcs_plugin_type_t::DQCS_PTYPE_OPER);
+  EXPECT_EQ(dqcs_pdef_type(a), dqcs_plugin_type_t::DQCS_PTYPE_OPER);
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 
   // Backend.
   a = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "a", "b", "c");
   ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_BACK_DEF);
-  EXPECT_EQ(dqcs_pdef_get_type(a), dqcs_plugin_type_t::DQCS_PTYPE_BACK);
+  EXPECT_EQ(dqcs_pdef_type(a), dqcs_plugin_type_t::DQCS_PTYPE_BACK);
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 
   // Invalid.
@@ -67,11 +67,11 @@ TEST(pdef, metadata) {
   ASSERT_NE(a, 0) << "Unexpected error: " << dqcs_error_get();
 
   // Check metadata.
-  EXPECT_STREQ(s = dqcs_pdef_get_name(a), "a");
+  EXPECT_STREQ(s = dqcs_pdef_name(a), "a");
   if (s) free(s);
-  EXPECT_STREQ(s = dqcs_pdef_get_author(a), "b");
+  EXPECT_STREQ(s = dqcs_pdef_author(a), "b");
   if (s) free(s);
-  EXPECT_STREQ(s = dqcs_pdef_get_version(a), "c");
+  EXPECT_STREQ(s = dqcs_pdef_version(a), "c");
   if (s) free(s);
 
   // Delete handle.

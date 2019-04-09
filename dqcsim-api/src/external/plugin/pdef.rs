@@ -41,7 +41,7 @@ pub extern "C" fn dqcs_pdef_new(
 
 /// Returns the plugin type for the given plugin definition object.
 #[no_mangle]
-pub extern "C" fn dqcs_pdef_get_type(pdef: dqcs_handle_t) -> dqcs_plugin_type_t {
+pub extern "C" fn dqcs_pdef_type(pdef: dqcs_handle_t) -> dqcs_plugin_type_t {
     api_return(dqcs_plugin_type_t::DQCS_PTYPE_INVALID, || {
         resolve!(pdef as &PluginDefinition);
         Ok(pdef.get_type().into())
@@ -54,7 +54,7 @@ pub extern "C" fn dqcs_pdef_get_type(pdef: dqcs_handle_t) -> dqcs_plugin_type_t 
 /// string. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure, this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_pdef_get_name(pdef: dqcs_handle_t) -> *mut c_char {
+pub extern "C" fn dqcs_pdef_name(pdef: dqcs_handle_t) -> *mut c_char {
     api_return_string(|| {
         resolve!(pdef as &PluginDefinition);
         Ok(pdef.get_metadata().get_name().to_string())
@@ -67,7 +67,7 @@ pub extern "C" fn dqcs_pdef_get_name(pdef: dqcs_handle_t) -> *mut c_char {
 /// string. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure, this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_pdef_get_author(pdef: dqcs_handle_t) -> *mut c_char {
+pub extern "C" fn dqcs_pdef_author(pdef: dqcs_handle_t) -> *mut c_char {
     api_return_string(|| {
         resolve!(pdef as &PluginDefinition);
         Ok(pdef.get_metadata().get_author().to_string())
@@ -80,7 +80,7 @@ pub extern "C" fn dqcs_pdef_get_author(pdef: dqcs_handle_t) -> *mut c_char {
 /// string. Free it with `free()` when you're done with it to avoid memory
 /// leaks.** On failure, this returns `NULL`.
 #[no_mangle]
-pub extern "C" fn dqcs_pdef_get_version(pdef: dqcs_handle_t) -> *mut c_char {
+pub extern "C" fn dqcs_pdef_version(pdef: dqcs_handle_t) -> *mut c_char {
     api_return_string(|| {
         resolve!(pdef as &PluginDefinition);
         Ok(pdef.get_metadata().get_version().to_string())
