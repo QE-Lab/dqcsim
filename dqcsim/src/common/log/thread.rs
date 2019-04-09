@@ -2,10 +2,13 @@
 
 use crate::{
     common::{
-        error::{oe_log_err, Result},
+        error::{err, oe_log_err, Result},
         log::{
-            callback::LogCallback, deinit, init, proxy::LogProxy, tee_file::TeeFile, Log,
-            LogRecord, Loglevel, LoglevelFilter, PID,
+            callback::LogCallback,
+            deinit, init,
+            proxy::LogProxy,
+            tee_file::{TeeFile, TeeFileConfiguration},
+            Log, LogRecord, Loglevel, LoglevelFilter, PID,
         },
     },
     trace,
@@ -33,7 +36,7 @@ impl LogThread {
         proxy_level: LoglevelFilter,
         stderr_level: LoglevelFilter,
         callback: Option<LogCallback>,
-        tee_files: Vec<TeeFile>,
+        tee_files: Vec<TeeFileConfiguration>,
     ) -> Result<LogThread> {
         // Create the log channel.
         let (sender, receiver): (_, crossbeam_channel::Receiver<LogRecord>) =
@@ -58,6 +61,12 @@ impl LogThread {
 
             let trace = stderr_level >= LoglevelFilter::Trace;
             let debug = stderr_level >= LoglevelFilter::Debug;
+
+            let tee_files: Vec<TeeFile> = tee_files
+                .into_iter()
+                .map(TeeFile::new)
+                .collect::<Result<Vec<_>>>()
+                .or_else(|e| err(e.to_string()))?;
 
             while let Ok(record) = receiver.recv() {
                 let level = LoglevelFilter::from(record.level());

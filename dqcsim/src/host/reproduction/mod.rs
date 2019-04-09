@@ -3,7 +3,7 @@
 use crate::{
     common::{
         error::{err, inv_arg, oe_inv_arg, Result},
-        log::{tee_file::TeeFile, LoglevelFilter},
+        log::{tee_file::TeeFileConfiguration, LoglevelFilter},
         types::PluginType,
     },
     host::configuration::*,
@@ -51,8 +51,8 @@ pub struct PluginModification {
     /// `None`, the value of DQCsim's `--plugin_level` option should be used.
     pub verbosity: Option<LoglevelFilter>,
 
-    /// Specifies the tee files for this plugin.
-    pub tee_files: Vec<TeeFile>,
+    /// Specifies the tee file configuration for this plugin.
+    pub tee_files: Vec<TeeFileConfiguration>,
 
     /// Specifies how the stdout stream of the plugin should be connected.
     /// `None` implies default.

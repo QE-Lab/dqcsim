@@ -1,6 +1,6 @@
 use crate::arg_parse::plugins::*;
 use dqcsim::{
-    common::{log::tee_file::TeeFile, log::*, types::*},
+    common::{log::tee_file::TeeFileConfiguration, log::*, types::*},
     host::{configuration::*, reproduction::*},
 };
 use std::path::PathBuf;
@@ -116,7 +116,7 @@ pub struct DQCsimStructOpt {
         value_name = "level>:<filename",
         number_of_values = 1
     )]
-    pub tee_files: Vec<TeeFile>,
+    pub tee_files: Vec<TeeFileConfiguration>,
 
     /// Sets the logging verbosity for DQCsim itself (the driver and host API).
     #[structopt(
@@ -192,7 +192,7 @@ pub struct PluginStructOpt {
         value_name = "level>:<filename",
         number_of_values = 1
     )]
-    pub tee_files: Vec<TeeFile>,
+    pub tee_files: Vec<TeeFileConfiguration>,
 
     /// Specifies the loglevel that is to be used for logging the plugin's
     /// stdout stream (if any). In addition to the available loglevels, you

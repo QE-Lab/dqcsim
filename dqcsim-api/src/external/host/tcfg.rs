@@ -1,5 +1,5 @@
 use super::*;
-use dqcsim::common::log::tee_file::TeeFile;
+use dqcsim::common::log::tee_file::TeeFileConfiguration;
 
 /// Creates a new plugin thread configuration object from a plugin definition.
 ///
@@ -85,10 +85,12 @@ pub extern "C" fn dqcs_tcfg_tee(
 ) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(tcfg as &mut PluginThreadConfiguration);
-        tcfg.log_configuration.tee_files.push(TeeFile::new(
-            verbosity.into_loglevel_filter()?,
-            receive_str(filename)?,
-        ));
+        tcfg.log_configuration
+            .tee_files
+            .push(TeeFileConfiguration::new(
+                verbosity.into_loglevel_filter()?,
+                receive_str(filename)?,
+            ));
         Ok(())
     })
 }

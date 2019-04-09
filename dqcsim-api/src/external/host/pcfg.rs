@@ -1,5 +1,5 @@
 use super::*;
-use dqcsim::common::log::tee_file::TeeFile;
+use dqcsim::common::log::tee_file::TeeFileConfiguration;
 use std::ptr::null;
 
 /// Creates a new plugin process configuration object using sugared syntax.
@@ -228,7 +228,7 @@ pub extern "C" fn dqcs_pcfg_tee(
 ) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(pcfg as &mut PluginProcessConfiguration);
-        pcfg.nonfunctional.tee_files.push(TeeFile::new(
+        pcfg.nonfunctional.tee_files.push(TeeFileConfiguration::new(
             verbosity.into_loglevel_filter()?,
             receive_str(filename)?,
         ));
