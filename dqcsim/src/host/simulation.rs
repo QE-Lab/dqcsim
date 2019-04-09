@@ -334,6 +334,24 @@ impl Simulation {
         inv_arg(format!("plugin {} not found", name))
     }
 
+    /// Checks plugin index range and allows using negative numbers for
+    /// Pythonic indexation.
+    fn convert_plugin_index(&self, index: isize) -> Result<usize> {
+        let mut conv_index = index;
+        let n_plugins = self.pipeline.len();
+        if conv_index < 0 {
+            conv_index += n_plugins as isize;
+            if conv_index < 0 {
+                inv_arg(format!("index {} out of range", index))?
+            }
+        }
+        let conv_index = conv_index as usize;
+        if conv_index >= n_plugins {
+            inv_arg(format!("index {} out of range", index))?
+        }
+        Ok(conv_index)
+    }
+
     /// Sends an `ArbCmd` message to one of the plugins, referenced by index.
     ///
     /// The frontend always has index 0. 1 through N are used for the operators
@@ -347,18 +365,7 @@ impl Simulation {
     /// all pending asynchronous calls are flushed and executed *before* the
     /// `ArbCmd`.
     pub fn arb_idx(&mut self, index: isize, cmd: impl Into<ArbCmd>) -> Result<ArbData> {
-        let mut index = index;
-        let n_plugins = self.pipeline.len();
-        if index < 0 {
-            index += n_plugins as isize;
-            if index < 0 {
-                inv_arg(format!("index {} out of range", index))?
-            }
-        }
-        let index = index as usize;
-        if index >= n_plugins {
-            inv_arg(format!("index {} out of range", index))?
-        }
+        let index = self.convert_plugin_index(index)?;
 
         // Perform the actual call.
         let cmd = cmd.into();
@@ -385,19 +392,7 @@ impl Simulation {
     /// Returns a reference to the metadata object belonging to the plugin
     /// referenced by index.
     pub fn get_metadata_idx(&self, index: isize) -> Result<&PluginMetadata> {
-        let mut index = index;
-        let n_plugins = self.pipeline.len();
-        if index < 0 {
-            index += n_plugins as isize;
-            if index < 0 {
-                inv_arg(format!("index {} out of range", index))?
-            }
-        }
-        let index = index as usize;
-        if index >= n_plugins {
-            inv_arg(format!("index {} out of range", index))?
-        }
-        Ok(&self.pipeline[index].metadata)
+        Ok(&self.pipeline[self.convert_plugin_index(index)?].metadata)
     }
 
     /// Writes a the reproduction log to a file.

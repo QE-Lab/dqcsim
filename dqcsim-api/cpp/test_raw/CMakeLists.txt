@@ -22,6 +22,7 @@ package_add_test(qbset qbset.cpp)
 package_add_test(pcfg pcfg.cpp)
 package_add_test(tcfg tcfg.cpp)
 package_add_test(scfg scfg.cpp)
+package_add_test(sim_new sim_new.cpp)
 
 # Plugin
 package_add_test(pdef pdef.cpp)
