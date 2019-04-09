@@ -154,11 +154,13 @@ fn simulation_init_cmds() {
         .without_reproduction()
         .without_logging()
         .with_plugin(thread_config_type(PluginType::Backend))
-        .with_plugin(PluginThreadConfiguration {
-            definition,
-            init_cmds: vec![ArbCmd::new("a", "b", ArbData::default())],
-            log_configuration: PluginLogConfiguration::new("", LoglevelFilter::Off),
-        });
+        .with_plugin(
+            PluginThreadConfiguration::new(
+                definition,
+                PluginLogConfiguration::new("", LoglevelFilter::Off),
+            )
+            .with_init_cmd(ArbCmd::new("a", "b", ArbData::default())),
+        );
 
     let simulator = Simulator::new(configuration);
     assert!(simulator.is_ok());

@@ -27,7 +27,7 @@ def arg_type_to_py(typ):
     else:
         return 'L', 'long long'
 
-def gen_callback_installer(name, args):
+def gen_callback_installer(name, args, return_handle):
     user_args = list(map(lambda x: x[0], args[:-3]))
 
     cb_ret = args[-3][0][0]
@@ -142,7 +142,7 @@ pyerr:
     // Make sure the object is callable.
     if (!PyCallable_Check(callable)) {{
         dqcs_error_set("The specified callback is not callable");
-        return DQCS_FAILURE;
+        return {install_fail};
     }}
 
     // Right now we only have a borrowed reference to the callable. We save the
@@ -161,6 +161,7 @@ pyerr:
 {signature};
 '''.format(
     signature = signature,
+    install_fail = '0' if return_handle else 'DQCS_FAILURE',
     name = name,
     user_args = ''.join(['arg%d, ' % i for i in range(len(user_args))]),
     cb_ret = cb_ret,
@@ -358,7 +359,7 @@ for line in data.split('\n\n'):
             #  - anything else: assumed to be castable to long long and
             #    interpreted as such
             if (
-                ret_typ == 'dqcs_return_t'
+                ret_typ in ['dqcs_return_t', 'dqcs_handle_t']
                 and len(args) >= 3
                 and type(args[-3][0]) == list
                 and len(args[-3][0]) >= 2
@@ -366,7 +367,7 @@ for line in data.split('\n\n'):
                 and args[-2][0] == ['void', 'void *']
                 and args[-1][0] == 'void *'
             ):
-                line += '\n' + gen_callback_installer(name, args)
+                line += '\n' + gen_callback_installer(name, args, ret_typ == 'dqcs_handle_t')
 
             # RULE: the following functions:
             #  - dqcs_accel_*

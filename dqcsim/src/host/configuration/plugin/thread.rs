@@ -6,18 +6,49 @@ use crate::{
     },
     host::{
         configuration::{PluginConfiguration, PluginLogConfiguration, ReproductionPathStyle},
-        plugin::{thread::PluginThread, Plugin},
+        plugin::{
+            thread::{PluginThread, PluginThreadClosure},
+            Plugin,
+        },
         reproduction::PluginReproduction,
     },
     plugin::definition::PluginDefinition,
 };
+use std::fmt;
+
+/// Represents the implementation of a plugin thread's functionality, in the
+/// form of one or more closures.
+#[allow(clippy::large_enum_variant)]
+pub enum PluginThreadImplementation {
+    /// The metadata and closures in the PluginDefinition define the behavior
+    /// of the plugin.
+    Definition(PluginDefinition),
+
+    /// The plugin behavior is fully customized through a closure, taking the
+    /// host address as its sole argument. The closure is called from within a
+    /// worker thread. This is supposed to be equivalent to the main() function
+    /// of a plugin process.
+    Closure(PluginThreadClosure, PluginType),
+}
+
+impl fmt::Debug for PluginThreadImplementation {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            PluginThreadImplementation::Definition(def) => def.fmt(fmt),
+            PluginThreadImplementation::Closure(_, typ) => {
+                fmt.debug_tuple("Closure").field(typ).finish()
+            }
+        }
+    }
+}
 
 /// Represents the complete configuration for a plugin running in a local
 /// thread.
 #[derive(Debug)]
 pub struct PluginThreadConfiguration {
-    /// The metadata and closures that define the behavior of the plugin.
-    pub definition: PluginDefinition,
+    /// Implementation of the plugin thread's functionality, in the form of one
+    /// or more closures.
+    pub implementation: PluginThreadImplementation,
 
     /// The vector of `ArbCmd`s passed to the `initialize()` closure.
     ///
@@ -40,10 +71,31 @@ impl PluginThreadConfiguration {
         log_configuration: PluginLogConfiguration,
     ) -> PluginThreadConfiguration {
         PluginThreadConfiguration {
-            definition,
+            implementation: PluginThreadImplementation::Definition(definition),
             init_cmds: vec![],
             log_configuration,
         }
+    }
+
+    /// Creates a new plugin through a custom closure.
+    ///
+    /// The default values are inserted for the configuration options.
+    pub fn new_raw(
+        closure: PluginThreadClosure,
+        plugin_type: PluginType,
+        log_configuration: PluginLogConfiguration,
+    ) -> PluginThreadConfiguration {
+        PluginThreadConfiguration {
+            implementation: PluginThreadImplementation::Closure(closure, plugin_type),
+            init_cmds: vec![],
+            log_configuration,
+        }
+    }
+
+    /// Adds an init cmd to the list, builder style.
+    pub fn with_init_cmd(mut self, cmd: impl Into<ArbCmd>) -> PluginThreadConfiguration {
+        self.init_cmds.push(cmd.into());
+        self
     }
 }
 
@@ -63,7 +115,10 @@ impl PluginConfiguration for PluginThreadConfiguration {
     }
 
     fn get_type(&self) -> PluginType {
-        self.definition.get_type()
+        match &self.implementation {
+            PluginThreadImplementation::Definition(def) => def.get_type(),
+            PluginThreadImplementation::Closure(_, typ) => *typ,
+        }
     }
 
     fn get_reproduction(&self, _: ReproductionPathStyle) -> Result<PluginReproduction> {

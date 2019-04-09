@@ -18,12 +18,47 @@ pub extern "C" fn dqcs_tcfg_new(pdef: dqcs_handle_t, name: *const c_char) -> dqc
     })
 }
 
+/// Creates a new plugin thread configuration object from a callback.
+///
+/// The callback is called by DQCsim from a dedicated thread when DQCsim wants
+/// to start the plugin. The callback must then in some way spawn a plugin
+/// process that connects to the provided simulator string. The callback should
+/// return only when the process terminates.
+#[no_mangle]
+pub extern "C" fn dqcs_tcfg_new_raw(
+    plugin_type: dqcs_plugin_type_t,
+    name: *const c_char,
+    callback: Option<
+        extern "C" fn(user_data: *mut c_void, simulator: *const c_char) -> dqcs_return_t,
+    >,
+    user_free: Option<extern "C" fn(user_data: *mut c_void)>,
+    user_data: *mut c_void,
+) -> dqcs_handle_t {
+    api_return(0, || {
+        let data = CallbackUserData::new(user_free, user_data);
+        let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
+        let callback = Box::new(move |simulator: String| {
+            let simulator = CString::new(simulator).unwrap();
+            callback(data.data(), simulator.as_ptr());
+        });
+        let plugin_type: Result<PluginType> = plugin_type.into();
+        Ok(insert(PluginThreadConfiguration::new_raw(
+            callback,
+            plugin_type?,
+            PluginLogConfiguration::new(
+                receive_optional_str(name)?.unwrap_or(""),
+                LoglevelFilter::Trace,
+            ),
+        )))
+    })
+}
+
 /// Returns the type of the given plugin thread configuration.
 #[no_mangle]
 pub extern "C" fn dqcs_tcfg_type(tcfg: dqcs_handle_t) -> dqcs_plugin_type_t {
     api_return(dqcs_plugin_type_t::DQCS_PTYPE_INVALID, || {
         resolve!(tcfg as &PluginThreadConfiguration);
-        Ok(tcfg.definition.get_type().into())
+        Ok(tcfg.get_type().into())
     })
 }
 

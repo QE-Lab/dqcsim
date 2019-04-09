@@ -21,12 +21,12 @@ pub extern "C" fn dqcs_handle_type(handle: dqcs_handle_t) -> dqcs_handle_type_t 
                 Some(APIObject::QubitMeasurementResultSet(_)) => {
                     Ok(dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET)
                 }
-                Some(APIObject::PluginProcessConfiguration(x)) => match x.specification.typ {
+                Some(APIObject::PluginProcessConfiguration(x)) => match x.get_type() {
                     PluginType::Frontend => Ok(dqcs_handle_type_t::DQCS_HTYPE_FRONT_PROCESS_CONFIG),
                     PluginType::Operator => Ok(dqcs_handle_type_t::DQCS_HTYPE_OPER_PROCESS_CONFIG),
                     PluginType::Backend => Ok(dqcs_handle_type_t::DQCS_HTYPE_BACK_PROCESS_CONFIG),
                 },
-                Some(APIObject::PluginThreadConfiguration(x)) => match x.definition.get_type() {
+                Some(APIObject::PluginThreadConfiguration(x)) => match x.get_type() {
                     PluginType::Frontend => Ok(dqcs_handle_type_t::DQCS_HTYPE_FRONT_THREAD_CONFIG),
                     PluginType::Operator => Ok(dqcs_handle_type_t::DQCS_HTYPE_OPER_THREAD_CONFIG),
                     PluginType::Backend => Ok(dqcs_handle_type_t::DQCS_HTYPE_BACK_THREAD_CONFIG),

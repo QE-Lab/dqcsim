@@ -8,7 +8,9 @@ use crate::{
     },
     fatal,
     host::{
-        configuration::{PluginLogConfiguration, PluginThreadConfiguration},
+        configuration::{
+            PluginLogConfiguration, PluginThreadConfiguration, PluginThreadImplementation,
+        },
         plugin::Plugin,
     },
     plugin::state::PluginState,
@@ -41,30 +43,39 @@ impl fmt::Debug for PluginThread {
 impl PluginThread {
     /// Constructs a plugin thread from a plugin definition and configuration.
     pub fn new(configuration: PluginThreadConfiguration) -> PluginThread {
-        let definition = configuration.definition;
-        let plugin_type = definition.get_type();
-        PluginThread::new_raw(
-            move |server| {
-                PluginState::run(&definition, server).unwrap();
-                trace!("$");
-            },
-            plugin_type,
-            configuration.init_cmds,
-            configuration.log_configuration,
-        )
+        match configuration.implementation {
+            PluginThreadImplementation::Definition(definition) => {
+                let plugin_type = definition.get_type();
+                PluginThread::new_raw(
+                    Box::new(move |server| {
+                        PluginState::run(&definition, server).unwrap();
+                        trace!("$");
+                    }),
+                    plugin_type,
+                    configuration.init_cmds,
+                    configuration.log_configuration,
+                )
+            }
+            PluginThreadImplementation::Closure(closure, plugin_type) => PluginThread::new_raw(
+                closure,
+                plugin_type,
+                configuration.init_cmds,
+                configuration.log_configuration,
+            ),
+        }
     }
 
     /// Construct a plugin thread given the actual function that runs in the
     /// spawned thread and the configuration. This is to be used for testing
     /// only.
     fn new_raw(
-        thread: impl Fn(String) -> () + Send + 'static,
+        thread: PluginThreadClosure,
         plugin_type: PluginType,
         init_cmds: Vec<ArbCmd>,
         log_configuration: PluginLogConfiguration,
     ) -> PluginThread {
         PluginThread {
-            thread: Some(Box::new(thread)),
+            thread: Some(thread),
             handle: None,
             channel: None,
             plugin_type,
