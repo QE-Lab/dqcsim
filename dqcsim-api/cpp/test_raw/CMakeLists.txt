@@ -30,3 +30,4 @@ package_add_test(pdef pdef.cpp)
 
 # Integration
 package_add_test(sim_arbs sim_arbs.cpp)
+package_add_test(sim_host sim_host.cpp)
