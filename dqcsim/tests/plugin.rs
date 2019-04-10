@@ -282,3 +282,32 @@ fn plugin_user_init_fail() {
         "Failed to initialize plugin(s): please help"
     );
 }
+
+#[test]
+// This should not get stuck.
+fn debug_deadlock() {
+    let (mut frontend, _, backend) = fe_op_be();
+
+    frontend.run = Box::new(|state, _| {
+        // This recv should unblock if the simulation ends.
+        let res = state.recv();
+        assert_eq!(res.unwrap_err().to_string(), "Simulation aborted");
+        Ok(ArbData::default())
+    });
+
+    let ptc = |definition| {
+        PluginThreadConfiguration::new(
+            definition,
+            PluginLogConfiguration::new("", LoglevelFilter::Off),
+        )
+    };
+
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(ptc(frontend))
+        .with_plugin(ptc(backend));
+
+    let mut simulator = Simulator::new(configuration).unwrap();
+    simulator.simulation.start(ArbData::default()).unwrap();
+}

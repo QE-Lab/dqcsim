@@ -59,10 +59,14 @@ impl Plugin for PluginThread {
 
         // Spawn the thread.
         self.handle = Some(thread::spawn(move || {
-            // Set a custom panic hook.
+            // Set a custom panic hook which generates a fatal log record for
+            // panics.
             std::panic::set_hook(Box::new(|info| {
-                fatal!("{}", info);
+                for line in format!("{}", info).split('\n') {
+                    fatal!("{}", line);
+                }
             }));
+
             // Start the thread function.
             thread(server_name)
         }));
@@ -106,7 +110,7 @@ impl Drop for PluginThread {
                     handle
                         .unwrap()
                         .join()
-                        .unwrap_or_else(|_| error!("Thread {} failed", Plugin::name(self)));
+                        .unwrap_or_else(|_| panic!("Thread {} panicked", Plugin::name(self)));
                 }
                 Ok(PluginToSimulator::Failure(error)) => {
                     error!("Thread {} failed to abort: {}", Plugin::name(self), error);
