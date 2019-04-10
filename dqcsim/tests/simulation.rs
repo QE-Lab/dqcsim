@@ -87,7 +87,7 @@ fn simulation_minimal_setup() {
 }
 
 #[test]
-fn simulation_recv_without_start() {
+fn simulation_wait_without_start() {
     let simulation = &mut minimal_simulator().simulation;
     let wait = simulation.wait();
     assert!(wait.is_err());

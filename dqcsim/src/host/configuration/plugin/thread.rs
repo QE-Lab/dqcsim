@@ -61,7 +61,7 @@ impl PluginThreadConfiguration {
         let plugin_type = definition.get_type();
         PluginThreadConfiguration::new_raw(
             Box::new(move |server| {
-                PluginState::run(&definition, server).unwrap();
+                PluginState::run(&definition, server).expect("Plugin thread failed");
                 trace!("$");
             }),
             plugin_type,
