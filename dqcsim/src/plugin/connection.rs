@@ -269,6 +269,15 @@ impl Connection {
                 }
                 IpcSelectionResult::ChannelClosed(id) => {
                     trace!("Channel closed: {:?}", self.incoming_map.get(&id));
+
+                    // Remove channel from incoming map
+                    self.incoming_map.remove(&id);
+
+                    // Make sure to keep buffering incoming messages if there
+                    // are connected incoming channels.
+                    if !self.incoming_map.is_empty() {
+                        self.buffer_incoming()?;
+                    }
                 }
             }
         }
@@ -312,6 +321,12 @@ impl Connection {
                 self.next_downstream_request()
             }
         }
+    }
+}
+
+impl Drop for Connection {
+    fn drop(&mut self) {
+        trace!("Dropping Connection");
     }
 }
 
