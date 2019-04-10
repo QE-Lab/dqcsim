@@ -76,7 +76,7 @@ dqcs_handle_t gate_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t 
 
 // Check that two consecutive runs with the same seed generate the same PRNG
 // streams.
-TEST(sim_random, run_consistency) {
+TEST(plugin_random, run_consistency) {
   samples_t a, b;
   uint64_t seed;
 
@@ -126,7 +126,7 @@ TEST(sim_random, run_consistency) {
 
 // Check that the RPC PRNG stream is unaffected by the upstream response PRNG
 // stream.
-TEST(sim_random, modify_meas_consistency) {
+TEST(plugin_random, modify_meas_consistency) {
   samples_t a, b, c;
 
   {
@@ -183,7 +183,7 @@ TEST(sim_random, modify_meas_consistency) {
 
 // Check that the PRNGs are consistent between OS's and versions, to make sure
 // that reproduction files remain valid.
-TEST(sim_random, system_consistency) {
+TEST(plugin_random, system_consistency) {
   samples_t a, b;
 
   SIM_HEADER;

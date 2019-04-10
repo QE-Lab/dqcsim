@@ -101,7 +101,7 @@ void log_cb(
 }
 
 // Test normal flow.
-TEST(sim_init_drop_log, normal_flow) {
+TEST(plugin_init_drop_log, normal_flow) {
   data_t data;
   SIM_HEADER;
   dqcs_scfg_log_callback(sim, dqcs_loglevel_t::DQCS_LOG_TRACE, log_cb, NULL, &data);
@@ -149,7 +149,7 @@ TEST(sim_init_drop_log, normal_flow) {
 }
 
 // Test error in front initialize.
-TEST(sim_init_drop_log, error_front) {
+TEST(plugin_init_drop_log, error_front) {
   data_t data;
   SIM_HEADER;
   dqcs_scfg_log_callback(sim, dqcs_loglevel_t::DQCS_LOG_TRACE, log_cb, NULL, &data);
@@ -189,7 +189,7 @@ TEST(sim_init_drop_log, error_front) {
 }
 
 // Test error in operator initialize.
-TEST(sim_init_drop_log, error_oper) {
+TEST(plugin_init_drop_log, error_oper) {
   data_t data;
   SIM_HEADER;
   dqcs_scfg_log_callback(sim, dqcs_loglevel_t::DQCS_LOG_TRACE, log_cb, NULL, &data);
@@ -220,7 +220,7 @@ TEST(sim_init_drop_log, error_oper) {
 }
 
 // Test error in backend initialize.
-TEST(sim_init_drop_log, error_back) {
+TEST(plugin_init_drop_log, error_back) {
   data_t data;
   SIM_HEADER;
   dqcs_scfg_log_callback(sim, dqcs_loglevel_t::DQCS_LOG_TRACE, log_cb, NULL, &data);
@@ -242,7 +242,7 @@ TEST(sim_init_drop_log, error_back) {
 }
 
 // Test error in frontend drop.
-TEST(sim_init_drop_log, drop_error_front) {
+TEST(plugin_init_drop_log, drop_error_front) {
   data_t data;
   SIM_HEADER;
   dqcs_scfg_log_callback(sim, dqcs_loglevel_t::DQCS_LOG_TRACE, log_cb, NULL, &data);
@@ -269,7 +269,7 @@ TEST(sim_init_drop_log, drop_error_front) {
 }
 
 // Test error in operator drop.
-TEST(sim_init_drop_log, drop_error_oper) {
+TEST(plugin_init_drop_log, drop_error_oper) {
   data_t data;
   SIM_HEADER;
   dqcs_scfg_log_callback(sim, dqcs_loglevel_t::DQCS_LOG_TRACE, log_cb, NULL, &data);
@@ -296,7 +296,7 @@ TEST(sim_init_drop_log, drop_error_oper) {
 }
 
 // Test error in backend drop.
-TEST(sim_init_drop_log, drop_error_back) {
+TEST(plugin_init_drop_log, drop_error_back) {
   data_t data;
   SIM_HEADER;
   dqcs_scfg_log_callback(sim, dqcs_loglevel_t::DQCS_LOG_TRACE, log_cb, NULL, &data);
