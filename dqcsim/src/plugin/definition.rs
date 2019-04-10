@@ -138,18 +138,6 @@ impl PluginDefinition {
     pub fn get_metadata(&self) -> &PluginMetadata {
         &self.metadata
     }
-
-    /// Executes the plugin using the previously specified callback functions.
-    ///
-    /// `argv` should be set to the command line argument vector, including the
-    /// program name/argv[0]. If no program name is available, just make
-    /// something up to put there. If the return value is an `Err`, its message
-    /// should be printed to `stderr` and exit code 1 should be used.
-    /// If `Ok`, nothing should be printed, and the contained value specifies
-    /// the exit code.
-    pub fn execute(self, _argv: Vec<std::ffi::OsString>) -> Result<i32> {
-        err("not yet implemented")
-    }
 }
 
 #[cfg(test)]
