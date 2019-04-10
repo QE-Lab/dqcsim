@@ -6,11 +6,12 @@ use crate::{
         protocol::{PluginToSimulator, SimulatorToPlugin},
         types::{ArbCmd, PluginType},
     },
-    fatal,
+    error, fatal,
     host::{
         configuration::{PluginLogConfiguration, PluginThreadConfiguration},
         plugin::Plugin,
     },
+    trace,
 };
 use ipc_channel::ipc;
 use std::{fmt, thread};
@@ -92,5 +93,41 @@ impl Plugin for PluginThread {
 }
 
 impl Drop for PluginThread {
-    fn drop(&mut self) {}
+    fn drop(&mut self) {
+        trace!("Dropping PluginThread");
+
+        // Attempt to send Abort request.
+        if self.handle.is_some() && self.channel.is_some() {
+            match self.rpc(SimulatorToPlugin::Abort) {
+                Ok(PluginToSimulator::Success) => {
+                    let handle = self.handle.take();
+
+                    // Wait for thread to join.
+                    handle
+                        .unwrap()
+                        .join()
+                        .unwrap_or_else(|_| error!("Thread {} failed", Plugin::name(self)));
+                }
+                Ok(PluginToSimulator::Failure(error)) => {
+                    error!("Thread {} failed to abort: {}", Plugin::name(self), error);
+                }
+                Ok(_) => {
+                    error!("Unexected reply from {}", Plugin::name(self));
+                }
+                Err(error) => {
+                    error!("Failed to send Abort to {}: {}", Plugin::name(self), error);
+                }
+            }
+        } else if self.handle.is_none() {
+            error!("Thread handle for {} already dropped", Plugin::name(self));
+        } else {
+            error!("Channel to {} already closed", Plugin::name(self));
+        }
+
+        // Close the simulator channel.
+        self.channel.take();
+
+        // Drop the thread handle
+        self.handle.take();
+    }
 }
