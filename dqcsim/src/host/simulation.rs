@@ -8,7 +8,7 @@ use crate::{
         protocol::{FrontendRunRequest, PluginToSimulator},
         types::{ArbCmd, ArbData, PluginMetadata},
     },
-    debug,
+    debug, error,
     host::{
         accelerator::Accelerator,
         configuration::Seed,
@@ -254,7 +254,16 @@ impl Simulation {
 
     /// Drains the plugin pipeline so their drop() implementations get called.
     pub fn drop_plugins(&mut self) {
-        self.pipeline.drain(..);
+        trace!("Implicit yield() prior to dropping plugins...");
+        if let Err(e) = self.internal_yield() {
+            error!("Implicit yield to frontend failed: {}", e.to_string());
+        }
+        trace!("Dropping plugins...");
+        for p in self.pipeline.drain(..) {
+            let name = p.plugin.name();
+            let _ = p;
+            trace!("Dropped {}...", name);
+        }
     }
 
     #[allow(clippy::borrowed_box)]
