@@ -259,3 +259,71 @@ TEST(sim_new, duplicate_name) {
   EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
 
+// Check that we're not allowed to make a second simulator until we delete the
+// first one.
+TEST(sim_new, double_sim) {
+  dqcs_handle_t a, b, c;
+
+  // Create simulator 1.
+  a = dqcs_scfg_new();
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
+
+  b = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
+  b = dqcs_tcfg_new(b, "d");
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_EQ(dqcs_scfg_push_plugin(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+
+  b = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "e", "f", "g");
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
+  b = dqcs_tcfg_new(b, "h");
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_EQ(dqcs_scfg_push_plugin(a, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+
+  a = dqcs_sim_new(a);
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
+
+  // Try to create simulator 2.
+  c = dqcs_scfg_new();
+  ASSERT_NE(c, 0u) << "Unexpected error: " << dqcs_error_get();
+
+  b = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
+  b = dqcs_tcfg_new(b, "d");
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_EQ(dqcs_scfg_push_plugin(c, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+
+  b = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "e", "f", "g");
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
+  b = dqcs_tcfg_new(b, "h");
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_EQ(dqcs_scfg_push_plugin(c, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+
+  ASSERT_EQ(dqcs_sim_new(c), 0u);
+  EXPECT_EQ(dqcs_error_get(), "Invalid operation: cannot claim DQCsim thread-local storage; already claimed by handle " + std::to_string(a));
+
+  dqcs_handle_delete(a);
+
+  // Try again; it should work now.
+  c = dqcs_scfg_new();
+  ASSERT_NE(c, 0u) << "Unexpected error: " << dqcs_error_get();
+
+  b = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c");
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
+  b = dqcs_tcfg_new(b, "d");
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_EQ(dqcs_scfg_push_plugin(c, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+
+  b = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "e", "f", "g");
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
+  b = dqcs_tcfg_new(b, "h");
+  ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
+  ASSERT_EQ(dqcs_scfg_push_plugin(c, b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+
+  c = dqcs_sim_new(c);
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
+
+  dqcs_handle_delete(c);
+
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
+}

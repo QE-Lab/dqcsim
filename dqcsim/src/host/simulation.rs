@@ -451,15 +451,19 @@ impl Accelerator for Simulation {
     ///
     /// Deadlocks are detected and prevented by throwing an error message.
     fn wait(&mut self) -> Result<ArbData> {
-        self.record_host_call(HostCall::Wait);
-        if self.state.is_wait_pending() {
-            self.state.take_data()
+        if self.state.is_idle() {
+            inv_op("accelerator is not running; call start() first")
         } else {
-            self.internal_yield()?;
+            self.record_host_call(HostCall::Wait);
             if self.state.is_wait_pending() {
                 self.state.take_data()
             } else {
-                err("Deadlock: accelerator is blocked on recv() while we are expecting it to return")
+                self.internal_yield()?;
+                if self.state.is_wait_pending() {
+                    self.state.take_data()
+                } else {
+                    err("Deadlock: accelerator is blocked on recv() while we are expecting it to return")
+                }
             }
         }
     }
@@ -479,15 +483,19 @@ impl Accelerator for Simulation {
     ///
     /// Deadlocks are detected and prevented by throwing an error message.
     fn recv(&mut self) -> Result<ArbData> {
-        self.record_host_call(HostCall::Recv);
-        if let Some(data) = self.accelerator_to_host_data.pop_front() {
-            Ok(data)
+        if self.state.is_idle() && self.accelerator_to_host_data.is_empty() {
+            err("Deadlock: recv() called while queue is empty and accelerator is idle")
         } else {
-            self.internal_yield()?;
+            self.record_host_call(HostCall::Recv);
             if let Some(data) = self.accelerator_to_host_data.pop_front() {
                 Ok(data)
             } else {
-                err("Deadlock: recv() called while queue is empty and accelerator is idle")
+                self.internal_yield()?;
+                if let Some(data) = self.accelerator_to_host_data.pop_front() {
+                    Ok(data)
+                } else {
+                    err("Deadlock: accelerator exited before sending data")
+                }
             }
         }
     }

@@ -52,6 +52,8 @@ inline char *extract_array_from_dump(const char *marker, char *dump) {
   dqcs_handle_t front, oper, back, sim; \
   sim = dqcs_scfg_new(); \
   ASSERT_NE(sim, 0u) << "Unexpected error: " << dqcs_error_get(); \
+  ASSERT_EQ(dqcs_scfg_repro_disable(sim), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get(); \
+  /*ASSERT_EQ(dqcs_scfg_stderr_verbosity_set(sim, dqcs_loglevel_t::DQCS_LOG_TRACE), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();*/ \
   front = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_FRONT, "a", "b", "c"); \
   ASSERT_NE(front, 0u) << "Unexpected error: " << dqcs_error_get(); \
   oper = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_OPER, "a", "b", "c"); \

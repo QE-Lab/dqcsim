@@ -50,7 +50,7 @@ inline void dqcs_log_format(
   // Perform the actual formatting operation.
   va_list ap2;
   va_start(ap2, fmt);
-  vsnprintf(buffer, size, fmt, ap);
+  vsnprintf(buffer, size, fmt, ap2);
   va_end(ap2);
 
   // Send to DQCsim.
@@ -91,7 +91,7 @@ inline void dqcs_log_format(
     __FILE__,                             \
     __LINE__,                             \
     fmt,                                  \
-    __VA_ARGS__                           \
+    ##__VA_ARGS__                         \
   )
 
 /**
@@ -105,7 +105,7 @@ inline void dqcs_log_format(
     __FILE__,                             \
     __LINE__,                             \
     fmt,                                  \
-    __VA_ARGS__                           \
+    ##__VA_ARGS__                         \
   )
 
 /**
@@ -119,7 +119,7 @@ inline void dqcs_log_format(
     __FILE__,                             \
     __LINE__,                             \
     fmt,                                  \
-    __VA_ARGS__                           \
+    ##__VA_ARGS__                         \
   )
 
 /**
@@ -133,7 +133,7 @@ inline void dqcs_log_format(
     __FILE__,                             \
     __LINE__,                             \
     fmt,                                  \
-    __VA_ARGS__                           \
+    ##__VA_ARGS__                         \
   )
 
 /**
@@ -147,7 +147,7 @@ inline void dqcs_log_format(
     __FILE__,                             \
     __LINE__,                             \
     fmt,                                  \
-    __VA_ARGS__                           \
+    ##__VA_ARGS__                         \
   )
 
 /**
@@ -161,7 +161,7 @@ inline void dqcs_log_format(
     __FILE__,                             \
     __LINE__,                             \
     fmt,                                  \
-    __VA_ARGS__                           \
+    ##__VA_ARGS__                         \
   )
 
 /**
@@ -175,8 +175,5 @@ inline void dqcs_log_format(
     __FILE__,                             \
     __LINE__,                             \
     fmt,                                  \
-    __VA_ARGS__                           \
+    ##__VA_ARGS__                         \
   )
-
-#undef DQCS_LANGUAGE
-#undef DQCS_LOGLEVEL_PREFIX

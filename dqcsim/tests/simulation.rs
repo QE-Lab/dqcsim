@@ -87,13 +87,13 @@ fn simulation_minimal_setup() {
 }
 
 #[test]
-fn simulation_deadlock() {
+fn simulation_recv_without_start() {
     let simulation = &mut minimal_simulator().simulation;
     let wait = simulation.wait();
     assert!(wait.is_err());
     assert_eq!(
         wait.unwrap_err().to_string(),
-        "Deadlock: accelerator is blocked on recv() while we are expecting it to return"
+        "Invalid operation: accelerator is not running; call start() first"
     );
 }
 
