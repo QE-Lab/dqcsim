@@ -139,6 +139,33 @@ pub struct PluginState<'a> {
     /// downstream_qubit_ref_generator of the upstream plugin.
     upstream_qubit_ref_generator: QubitRefGenerator,
 
+    /// The upstream sequence number up to which we've called the user's
+    /// callbacks for.
+    ///
+    /// This is NOT necessarily the point up to which we've actually completed
+    /// the requests from the upstream plugin's perspective if we're an
+    /// operator. Specifically operator.gate() calls may postpone delivery of
+    /// measurement results through the operator.modify_measurement() callback.
+    /// We can only send the CompletedUpTo message when all the qubit results
+    /// for these messages are in.
+    upstream_issued_up_to: SequenceNumber,
+
+    /// Stores mappings from downstream sequence numbers (.0) to upstream
+    /// sequence numbers (.1) to memorize postponed measurement results in
+    /// operator plugins.
+    ///
+    /// When a measurement gate is performed that does not immediately return
+    /// all measurement results, an entry is made here using the current
+    /// downstream TX sequence number and the current upstream sequence number.
+    /// We're only allowed to acknowledge the upstream sequence number with
+    /// `CompletedUpTo` when the downstream sequence number is acknowledged.
+    /// At that point the entry is removed from this deque.
+    upstream_postponed: VecDeque<(SequenceNumber, SequenceNumber)>,
+
+    /// The latest upstream sequence number for which we've sent the
+    /// `CompletedUpTo` message.
+    upstream_completed_up_to: SequenceNumber,
+
     /// Downstream sequence number generator.
     downstream_sequence_tx: SequenceNumberGenerator,
 
@@ -293,6 +320,8 @@ impl<'a> PluginState<'a> {
         // read/waited upon, and the downstream plugin is sufficiently lagging
         // behind us.
         if let Some(data) = self.downstream_qubit_data.get_mut(&measurement.qubit) {
+            trace!("Caching measurement for qubit {}...", measurement.qubit);
+
             // Current simulation time.
             let timestamp = self.downstream_cycle_rx;
 
@@ -311,18 +340,39 @@ impl<'a> PluginState<'a> {
             // Update the measurement data.
             data.measurement.replace(QubitMeasurementData {
                 value: measurement.value,
-                data: measurement.data,
+                data: measurement.data.clone(),
                 timestamp,
                 timer,
             });
+
+            // If we're an operator, propagate the measurement upstream using
+            // the `modify_measurement()` callback.
+            if self.definition.get_type() == PluginType::Operator {
+                let measurements = (self.definition.modify_measurement)(self, measurement)?;
+                for measurement in measurements {
+                    self.connection
+                        .send(OutgoingMessage::Upstream(GatestreamUp::Measured(
+                            measurement,
+                        )))?;
+                }
+            }
+        } else {
+            trace!(
+                "Not caching measurement for qubit {}; no data exists (anymore)",
+                measurement.qubit
+            );
         }
         Ok(())
     }
 
     /// Verifies that the queued measurement results correspond with the
     /// `measures` vectors in the respective gates that we sent, and saves the
-    /// downstream sequence number.
+    /// downstream sequence number. We may also need to forward the
+    /// `CompletedUpTo` message upstream (with the sequence number mapped to
+    /// upstream sequence numbers appropriately) if previously postponed
+    /// results have been received.
     fn received_downstream_sequence(&mut self, sequence: SequenceNumber) -> Result<()> {
+        trace!("Downstream completed up to {}", sequence);
         // Update the sequence number.
         self.downstream_sequence_rx = sequence;
 
@@ -422,6 +472,53 @@ impl<'a> PluginState<'a> {
             }
         }
 
+        // Update the upstream_postponed mapping to see if we can propagate the
+        // acknowledgement upstream.
+        let mut updates = false;
+        while !self.upstream_postponed.is_empty() {
+            let mut acknowledged = false;
+            if let Some((downstream, _)) = self.upstream_postponed.front() {
+                acknowledged = self.downstream_sequence_rx.acknowledges(*downstream);
+            }
+            if acknowledged {
+                updates = true;
+                self.upstream_postponed.pop_front();
+            } else {
+                break;
+            }
+        }
+        if updates {
+            self.check_completed_up_to()?;
+        }
+
+        Ok(())
+    }
+
+    /// Check whether we can/need to send the next CompletedUpTo message.
+    fn check_completed_up_to(&mut self) -> Result<()> {
+        let mut completed_up_to = self.upstream_issued_up_to;
+
+        // Check the upstream_postponed map to see if any command with an
+        // upstream sequence number lower than self.upstream_issued_up_to
+        // still has postponed results that have not been received from
+        // downstream yet. In that case, we can only indicate completion up to
+        // the sequence number immediately before that one.
+        if let Some((_, upstream)) = self.upstream_postponed.front() {
+            if completed_up_to.after(upstream.preceding()) {
+                completed_up_to = upstream.preceding();
+            }
+        }
+
+        // Send a `CompletedUpTo` message if there are any requests to
+        // acknowledge.
+        if completed_up_to.after(self.upstream_completed_up_to) {
+            trace!("We've completed up to {}", completed_up_to);
+            self.connection
+                .send(OutgoingMessage::Upstream(GatestreamUp::CompletedUpTo(
+                    completed_up_to,
+                )))?;
+            self.upstream_completed_up_to = completed_up_to;
+        }
         Ok(())
     }
 
@@ -437,13 +534,16 @@ impl<'a> PluginState<'a> {
                 self.received_downstream_sequence(sequence)?;
             }
             GatestreamUp::Failure(sequence, message) => {
-                self.received_downstream_sequence(sequence)?;
                 error!("Error from downstream plugin: {}", message);
                 debug!("The sequence number was {}", sequence);
                 fatal!("Desynchronized with downstream plugin due to downstream error, cannot continue!");
                 err("simulation failed due to downstream error")?;
             }
             GatestreamUp::Measured(measurement) => {
+                trace!(
+                    "Downstream sent measurement for qubit {}",
+                    measurement.qubit
+                );
                 self.downstream_measurement_queue.push_back(measurement);
             }
             GatestreamUp::Advanced(cycles) => {
@@ -561,11 +661,20 @@ impl<'a> PluginState<'a> {
                                     ))?;
                                 }
                             }
-                            if !measures.is_empty() && self.definition.get_type() != PluginType::Operator {
-                                err(format!(
-                                    "user-defined gate() function failed to return measurement for qubits {}",
-                                    enum_variants::friendly_enumerate(measures.into_iter(), Some("or"))
-                                ))?;
+                            if !measures.is_empty() {
+                                if self.definition.get_type() == PluginType::Operator {
+                                    // These measurement results are postponed
+                                    // until we receive (and maybe modify) them
+                                    // from downstream.
+                                    trace!("Postponing measurement results for {} until downstream {}", sequence, self.downstream_sequence_tx.get_previous());
+                                    self.upstream_postponed.push_back((self.downstream_sequence_tx.get_previous(), sequence));
+                                } else {
+                                    // Backends cannot postpone.
+                                    err(format!(
+                                        "user-defined gate() function failed to return measurement for qubits {}",
+                                        enum_variants::friendly_enumerate(measures.into_iter(), Some("or"))
+                                    ))?;
+                                }
                             }
                             Ok(())
                         })
@@ -575,15 +684,25 @@ impl<'a> PluginState<'a> {
                             .send(OutgoingMessage::Upstream(GatestreamUp::Advanced(cycles)))
                             .and_then(|_| (self.definition.advance)(self, cycles)),
                     };
-                    let response = OutgoingMessage::Upstream(match response {
-                        Ok(_) => GatestreamUp::CompletedUpTo(sequence),
-                        Err(e) => {
-                            let e = e.to_string();
-                            error!("{}", e);
-                            GatestreamUp::Failure(sequence, e)
-                        }
-                    });
-                    self.connection.send(response)?;
+
+                    // Propagate errors.
+                    if let Err(e) = response {
+                        let e = e.to_string();
+                        error!("{}", e);
+                        self.connection
+                            .send(OutgoingMessage::Upstream(GatestreamUp::Failure(
+                                sequence, e,
+                            )))?;
+                    }
+
+                    // Save that we've completed the downstream handling of the
+                    // upstream requests stream up to this point.
+                    self.upstream_issued_up_to = sequence;
+                    trace!("We've just finished issuing {}", sequence);
+
+                    // Changing upstream_issued_up_to means we may have to send
+                    // the next CompletedUpTo message (probably, actually).
+                    self.check_completed_up_to()?;
                 }
                 IncomingMessage::Upstream(GatestreamDown::ArbRequest(cmd)) => {
                     let response = match (self.definition.upstream_arb)(self, cmd) {
@@ -675,6 +794,9 @@ impl<'a> PluginState<'a> {
             downstream_cycle_tx: Cycle::t_zero(),
             downstream_cycle_rx: Cycle::t_zero(),
             upstream_qubit_ref_generator: QubitRefGenerator::new(),
+            upstream_issued_up_to: SequenceNumber::none(),
+            upstream_postponed: VecDeque::new(),
+            upstream_completed_up_to: SequenceNumber::none(),
             downstream_qubit_data: HashMap::new(),
             downstream_measurement_queue: VecDeque::new(),
             downstream_expected_measurements: VecDeque::new(),
