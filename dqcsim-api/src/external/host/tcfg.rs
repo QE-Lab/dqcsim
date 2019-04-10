@@ -28,9 +28,7 @@ pub extern "C" fn dqcs_tcfg_new(pdef: dqcs_handle_t, name: *const c_char) -> dqc
 pub extern "C" fn dqcs_tcfg_new_raw(
     plugin_type: dqcs_plugin_type_t,
     name: *const c_char,
-    callback: Option<
-        extern "C" fn(user_data: *mut c_void, simulator: *const c_char) -> dqcs_return_t,
-    >,
+    callback: Option<extern "C" fn(user_data: *mut c_void, simulator: *const c_char) -> ()>,
     user_free: Option<extern "C" fn(user_data: *mut c_void)>,
     user_data: *mut c_void,
 ) -> dqcs_handle_t {
