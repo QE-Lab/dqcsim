@@ -254,29 +254,29 @@ impl Connection {
     }
 
     /// Buffer incoming messages.
+    /// If there are connected channels make sure at least one additional
+    /// message is pending in the buffer.
     fn buffer_incoming(&mut self) -> Result<()> {
-        // Store incoming message in the buffer.
-        for event in self.incoming.select()? {
-            match event {
-                IpcSelectionResult::MessageReceived(id, msg) => {
-                    if let Some(incoming) = self.incoming_map.get(&id) {
-                        self.incoming_buffer.push_back(match incoming {
-                            Incoming::Simulator => IncomingMessage::Simulator(msg.to()?),
-                            Incoming::Upstream => IncomingMessage::Upstream(msg.to()?),
-                            Incoming::Downstream => IncomingMessage::Downstream(msg.to()?),
-                        });
+        let mut received_any = false;
+        while !received_any && !self.incoming_map.is_empty() {
+            // Store incoming message in the buffer.
+            for event in self.incoming.select()? {
+                match event {
+                    IpcSelectionResult::MessageReceived(id, msg) => {
+                        if let Some(incoming) = self.incoming_map.get(&id) {
+                            self.incoming_buffer.push_back(match incoming {
+                                Incoming::Simulator => IncomingMessage::Simulator(msg.to()?),
+                                Incoming::Upstream => IncomingMessage::Upstream(msg.to()?),
+                                Incoming::Downstream => IncomingMessage::Downstream(msg.to()?),
+                            });
+                            received_any = true;
+                        }
                     }
-                }
-                IpcSelectionResult::ChannelClosed(id) => {
-                    trace!("Channel closed: {:?}", self.incoming_map.get(&id));
+                    IpcSelectionResult::ChannelClosed(id) => {
+                        trace!("Channel closed: {:?}", self.incoming_map.get(&id));
 
-                    // Remove channel from incoming map
-                    self.incoming_map.remove(&id);
-
-                    // Make sure to keep buffering incoming messages if there
-                    // are connected incoming channels.
-                    if !self.incoming_map.is_empty() {
-                        self.buffer_incoming()?;
+                        // Remove channel from incoming map
+                        self.incoming_map.remove(&id);
                     }
                 }
             }
@@ -291,8 +291,8 @@ impl Connection {
     /// already closed. Returns Ok(None) if both request channels are closed.
     /// This method blocks until a new request is available.
     pub fn next_request(&mut self) -> Result<Option<IncomingMessage>> {
-        // Fetch new stuff if buffer is empty.
         if self.incoming_buffer.is_empty() {
+            // Make sure at least one additional message is availale.
             self.buffer_incoming()?;
         }
         Ok(self.incoming_buffer.pop_front())
@@ -312,9 +312,8 @@ impl Connection {
         } else {
             // Buffer incoming messages.
             self.buffer_incoming()?;
-            // If there are no events after a buffer call, all channels have
-            // closed!
-            if self.incoming_buffer.is_empty() {
+            // If there are no connected channels return None.
+            if self.incoming_map.is_empty() {
                 Ok(None)
             } else {
                 // Check if the new messages contain a downstream message.
