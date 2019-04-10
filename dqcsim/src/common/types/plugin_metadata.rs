@@ -49,7 +49,7 @@ impl fmt::Display for PluginMetadata {
         write!(
             f,
             "{} version {} by {}",
-            self.name, self.author, self.version
+            self.name, self.version, self.author
         )
     }
 }
