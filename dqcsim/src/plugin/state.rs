@@ -819,11 +819,20 @@ impl<'a> PluginState<'a> {
                 self.downstream_sequence_tx.get_next(),
                 PipelinedGatestreamDown::Gate(gate),
             )))?;
+        let sequence = self.downstream_sequence_tx.get_previous();
+
+        // Update the last-mutation sequence number for the measured qubits.
+        for measure in measures.iter() {
+            self.downstream_qubit_data
+                .get_mut(measure)
+                .unwrap()
+                .last_mutation = sequence;
+        }
 
         // Store which measurements we're expecting.
         if !measures.is_empty() {
             self.downstream_expected_measurements
-                .push_back((self.downstream_sequence_tx.get_previous(), measures));
+                .push_back((sequence, measures));
         }
 
         Ok(())
