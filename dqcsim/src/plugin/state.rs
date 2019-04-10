@@ -261,9 +261,9 @@ impl<'a> PluginState<'a> {
         // If start is set, call the run() callback.
         let return_value = if let Some(args) = req.start {
             self.inside_run = true;
-            let return_value = (self.definition.run)(self, args)?;
+            let return_value = (self.definition.run)(self, args);
             self.inside_run = false;
-            Some(return_value)
+            Some(return_value?)
         } else {
             None
         };
