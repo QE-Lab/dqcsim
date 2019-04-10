@@ -1,6 +1,6 @@
 use crate::{
     common::{
-        error::{err, Result},
+        error::{inv_op, Result},
         types::{
             ArbCmd, ArbData, Gate, PluginMetadata, PluginType, QubitMeasurementResult, QubitRef,
         },
@@ -82,13 +82,13 @@ impl PluginDefinition {
                 metadata: metadata.into(),
                 initialize: Box::new(|_, _| Ok(())),
                 drop: Box::new(|_| Ok(())),
-                run: Box::new(|_, _| err("run() is not implemented")),
-                allocate: Box::new(|_, _, _| err("frontend.allocate() called")),
-                free: Box::new(|_, _| err("frontend.free() called")),
-                gate: Box::new(|_, _| err("frontend.gate() called")),
-                modify_measurement: Box::new(|_, _| err("frontend.modify_measurement() called")),
-                advance: Box::new(|_, _| err("frontend.advance() called")),
-                upstream_arb: Box::new(|_, _| err("frontend.upstream_arb() called")),
+                run: Box::new(|_, _| inv_op("run() is not implemented")),
+                allocate: Box::new(|_, _, _| inv_op("frontend.allocate() called")),
+                free: Box::new(|_, _| inv_op("frontend.free() called")),
+                gate: Box::new(|_, _| inv_op("frontend.gate() called")),
+                modify_measurement: Box::new(|_, _| inv_op("frontend.modify_measurement() called")),
+                advance: Box::new(|_, _| inv_op("frontend.advance() called")),
+                upstream_arb: Box::new(|_, _| inv_op("frontend.upstream_arb() called")),
                 host_arb: Box::new(|_, _| Ok(ArbData::default())),
             },
             PluginType::Operator => PluginDefinition {
@@ -96,7 +96,7 @@ impl PluginDefinition {
                 metadata: metadata.into(),
                 initialize: Box::new(|_, _| Ok(())),
                 drop: Box::new(|_| Ok(())),
-                run: Box::new(|_, _| err("operator.run() called")),
+                run: Box::new(|_, _| inv_op("operator.run() called")),
                 allocate: Box::new(|state, qubits, cmds| {
                     state.allocate(qubits.len(), cmds).map(|_| ())
                 }),
@@ -112,11 +112,11 @@ impl PluginDefinition {
                 metadata: metadata.into(),
                 initialize: Box::new(|_, _| Ok(())),
                 drop: Box::new(|_| Ok(())),
-                run: Box::new(|_, _| err("backend.run() called")),
+                run: Box::new(|_, _| inv_op("backend.run() called")),
                 allocate: Box::new(|_, _, _| Ok(())),
                 free: Box::new(|_, _| Ok(())),
-                gate: Box::new(|_, _| err("gate() is not implemented")),
-                modify_measurement: Box::new(|_, _| err("backend.modify_measurement() called")),
+                gate: Box::new(|_, _| inv_op("gate() is not implemented")),
+                modify_measurement: Box::new(|_, _| inv_op("backend.modify_measurement() called")),
                 advance: Box::new(|_, _| Ok(())),
                 upstream_arb: Box::new(|_, _| Ok(ArbData::default())),
                 host_arb: Box::new(|_, _| Ok(ArbData::default())),

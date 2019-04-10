@@ -102,6 +102,40 @@ TEST(sim_host, start_wait_block) {
   EXPECT_EQ(ud.counter, 1);
 }
 
+// Start followed by wait, accelerator returns error.
+TEST(sim_host, start_wait_error) {
+  SIM_HEADER;
+  user_data_t ud = {"run() was here", 0};
+  dqcs_pdef_set_run_cb(front, run_cb, NULL, &ud);
+  SIM_CONSTRUCT;
+
+  dqcs_handle_t a;
+  MAKE_ARB(a, "{}", "return_error", "hello");
+  EXPECT_EQ(dqcs_sim_start(sim, a), dqcs_return_t::DQCS_SUCCESS);
+
+  EXPECT_EQ(dqcs_sim_wait(sim), 0u);
+  EXPECT_STREQ(dqcs_error_get(), "hello");
+
+  SIM_FOOTER;
+
+  EXPECT_EQ(ud.counter, 1);
+}
+
+// Start followed by wait, accelerator not implemented.
+TEST(sim_host, start_wait_unimplemented) {
+  SIM_HEADER;
+  SIM_CONSTRUCT;
+
+  dqcs_handle_t a;
+  MAKE_ARB(a, "{}", "a");
+  EXPECT_EQ(dqcs_sim_start(sim, a), dqcs_return_t::DQCS_SUCCESS);
+
+  EXPECT_EQ(dqcs_sim_wait(sim), 0u);
+  EXPECT_STREQ(dqcs_error_get(), "Invalid operation: run() is not implemented");
+
+  SIM_FOOTER;
+}
+
 // Start followed by another start.
 TEST(sim_host, double_start) {
   SIM_HEADER;
