@@ -156,81 +156,30 @@ impl Simulation {
 
         // Initialize the plugins.
         let mut downstream = None;
+        let mut metadata = vec![];
         let mut rng = ChaChaRng::seed_from_u64(seed.value);
-        let (metadata, errors): (Vec<_>, Vec<_>) = pipeline
-            .iter_mut()
-            .rev()
-            .map(|plugin| {
-                let res = plugin.initialize(logger, &downstream, rng.next_u64())?;
-                downstream = res.upstream;
-                Ok(res.metadata)
-            })
-            .partition(Result::is_ok);
-
-        // Check for initialization errors.
-        if !errors.is_empty() {
-            let mut messages = String::new();
-            for e in errors {
-                let e = e.unwrap_err();
-                if messages.is_empty() {
-                    messages = e.to_string();
-                } else {
-                    messages = format!("{}; {}", messages, e.to_string());
-                }
-            }
-            err(format!("Failed to initialize plugin(s): {}", messages))?
+        for plugin in pipeline.iter_mut().rev() {
+            let res = plugin.initialize(logger, &downstream, rng.next_u64())?;
+            downstream = res.upstream;
+            metadata.push(res.metadata);
         }
 
         // Tell downstream plugins to wait for a connection from upstream
         // plugins.
-        let (_, errors): (Vec<_>, Vec<_>) = pipeline
-            .iter_mut()
-            .skip(1)
-            .rev()
-            .map(|plugin| plugin.accept_upstream())
-            .partition(Result::is_ok);
-
-        // Check for initialization errors.
-        if !errors.is_empty() {
-            let mut messages = String::new();
-            for e in errors {
-                let e = e.unwrap_err();
-                if messages.is_empty() {
-                    messages = e.to_string();
-                } else {
-                    messages = format!("{}; {}", messages, e.to_string());
-                }
-            }
-            err(format!("Failed to initialize plugin(s): {}", messages))?
+        for plugin in pipeline.iter_mut().skip(1).rev() {
+            plugin.accept_upstream()?
         }
 
         // Run the user intialization code.
-        let (_, errors): (Vec<_>, Vec<_>) = pipeline
-            .iter_mut()
-            .rev()
-            .map(|plugin| plugin.user_initialize())
-            .partition(Result::is_ok);
-
-        // Check for initialization errors.
-        if !errors.is_empty() {
-            let mut messages = String::new();
-            for e in errors {
-                let e = e.unwrap_err();
-                if messages.is_empty() {
-                    messages = e.to_string();
-                } else {
-                    messages = format!("{}; {}", messages, e.to_string());
-                }
-            }
-            err(format!("Failed to initialize plugin(s): {}", messages))?
+        for plugin in pipeline.iter_mut().rev() {
+            plugin.user_initialize()?
         }
 
-        // Fix up the metadata vector.
-        let metadata: Vec<_> = metadata.into_iter().map(Result::unwrap).rev().collect();
-
+        // Zip the plugin and metadata vectors together. Note that the metadata
+        // vector is reversed at this point!
         let pipeline: Vec<_> = pipeline
             .into_iter()
-            .zip(metadata.into_iter())
+            .zip(metadata.into_iter().rev())
             .map(|(plugin, metadata)| InitializedPlugin { plugin, metadata })
             .collect();
 

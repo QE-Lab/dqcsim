@@ -61,7 +61,7 @@ inline char *extract_array_from_dump(const char *marker, char *dump) {
   back = dqcs_pdef_new(dqcs_plugin_type_t::DQCS_PTYPE_BACK, "a", "b", "c"); \
   ASSERT_NE(back, 0u) << "Unexpected error: " << dqcs_error_get()
 
-#define SIM_CONSTRUCT \
+#define SIM_CONSTRUCT_ \
   front = dqcs_tcfg_new(front, NULL); \
   ASSERT_NE(front, 0u) << "Unexpected error: " << dqcs_error_get(); \
   ASSERT_EQ(dqcs_scfg_push_plugin(sim, front), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get(); \
@@ -71,13 +71,20 @@ inline char *extract_array_from_dump(const char *marker, char *dump) {
   back = dqcs_tcfg_new(back, NULL); \
   ASSERT_NE(back, 0u) << "Unexpected error: " << dqcs_error_get(); \
   ASSERT_EQ(dqcs_scfg_push_plugin(sim, back), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get(); \
-  sim = dqcs_sim_new(sim); \
+  sim = dqcs_sim_new(sim) \
+
+#define SIM_CONSTRUCT \
+  SIM_CONSTRUCT_; \
   ASSERT_NE(sim, 0u) << "Unexpected error: " << dqcs_error_get()
 
 #define SIM_FOOTER \
   EXPECT_EQ(dqcs_handle_delete(sim), dqcs_return_t::DQCS_SUCCESS); \
   EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get()
 
+#define SIM_CONSTRUCT_FAIL(msg) \
+  SIM_CONSTRUCT_; \
+  ASSERT_EQ(sim, 0u); \
+  ASSERT_STREQ(dqcs_error_get(), msg) \
 
 #define MAKE_ARB(arb, json, ...) do { \
   arb = dqcs_arb_new(); \

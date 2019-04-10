@@ -277,8 +277,5 @@ fn plugin_user_init_fail() {
 
     let simulator = Simulator::new(configuration);
     assert!(simulator.is_err());
-    assert_eq!(
-        simulator.unwrap_err().to_string(),
-        "Failed to initialize plugin(s): please help"
-    );
+    assert_eq!(simulator.unwrap_err().to_string(), "please help");
 }
