@@ -551,13 +551,12 @@ impl<'a> PluginState<'a> {
                                         .send(OutgoingMessage::Upstream(GatestreamUp::Measured(measurement)))?;
                                 } else {
                                     err(format!(
-                                        "user-defined gate() function did not return measurement or \
-                                        returned multiple measurements for qubit {}",
+                                        "user-defined gate() function returned multiple measurements for qubit {}",
                                         measurement.qubit
                                     ))?;
                                 }
                             }
-                            if !measures.is_empty() {
+                            if !measures.is_empty() && self.definition.get_type() != PluginType::Operator {
                                 err(format!(
                                     "user-defined gate() function failed to return measurement for qubits {}",
                                     enum_variants::friendly_enumerate(measures.into_iter(), Some("or"))
