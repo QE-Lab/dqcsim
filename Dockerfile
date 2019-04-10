@@ -23,4 +23,4 @@ RUN apt-get update && \
 
 ADD . .
 
-RUN make commit
+RUN make test

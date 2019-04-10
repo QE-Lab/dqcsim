@@ -165,6 +165,9 @@ pub struct PluginState<'a> {
     /// Expected measurements according to the `measures` sets of the gates
     /// we sent downstream.
     downstream_expected_measurements: VecDeque<(SequenceNumber, HashSet<QubitRef>)>,
+
+    /// Aborted flag indicates if the plugin received the aborted signal.
+    aborted: bool,
 }
 
 impl<'a> PluginState<'a> {
@@ -455,92 +458,93 @@ impl<'a> PluginState<'a> {
     /// The returned boolean indicates whether the message was an abort,
     /// implying that we should break out of our run loop.
     fn handle_incoming_message(&mut self, request: IncomingMessage) -> Result<bool> {
-        let mut aborted = false;
-        match request {
-            IncomingMessage::Simulator(message) => {
-                if let Some(ref mut rng) = self.rng {
-                    rng.select(0)
-                }
-                self.synchronized_to_rpcs = true;
+        // Don't handle message after Abort request has been handled.
+        if !self.aborted {
+            match request {
+                IncomingMessage::Simulator(message) => {
+                    if let Some(ref mut rng) = self.rng {
+                        rng.select(0)
+                    }
+                    self.synchronized_to_rpcs = true;
 
-                let response = OutgoingMessage::Simulator(match message {
-                    SimulatorToPlugin::Initialize(req) => match self.handle_init(*req) {
-                        Ok(x) => PluginToSimulator::Initialized(x),
-                        Err(e) => {
-                            let e = e.to_string();
-                            error!("{}", e);
-                            PluginToSimulator::Failure(e.to_string())
-                        }
-                    },
-                    SimulatorToPlugin::AcceptUpstream => match self.handle_accept_upstream() {
-                        Ok(_) => PluginToSimulator::Success,
-                        Err(e) => {
-                            let e = e.to_string();
-                            error!("{}", e);
-                            PluginToSimulator::Failure(e.to_string())
-                        }
-                    },
-                    SimulatorToPlugin::UserInitialize(req) => {
-                        match (self.definition.initialize)(self, req.init_cmds) {
+                    let response = OutgoingMessage::Simulator(match message {
+                        SimulatorToPlugin::Initialize(req) => match self.handle_init(*req) {
+                            Ok(x) => PluginToSimulator::Initialized(x),
+                            Err(e) => {
+                                let e = e.to_string();
+                                error!("{}", e);
+                                PluginToSimulator::Failure(e.to_string())
+                            }
+                        },
+                        SimulatorToPlugin::AcceptUpstream => match self.handle_accept_upstream() {
                             Ok(_) => PluginToSimulator::Success,
                             Err(e) => {
                                 let e = e.to_string();
                                 error!("{}", e);
                                 PluginToSimulator::Failure(e.to_string())
                             }
+                        },
+                        SimulatorToPlugin::UserInitialize(req) => {
+                            match (self.definition.initialize)(self, req.init_cmds) {
+                                Ok(_) => PluginToSimulator::Success,
+                                Err(e) => {
+                                    let e = e.to_string();
+                                    error!("{}", e);
+                                    PluginToSimulator::Failure(e.to_string())
+                                }
+                            }
                         }
-                    }
-                    SimulatorToPlugin::Abort => {
-                        aborted = true;
-                        match self.handle_abort() {
-                            Ok(_) => PluginToSimulator::Success,
+                        SimulatorToPlugin::Abort => {
+                            self.aborted = true;
+                            match self.handle_abort() {
+                                Ok(_) => PluginToSimulator::Success,
+                                Err(e) => {
+                                    let e = e.to_string();
+                                    error!("{}", e);
+                                    PluginToSimulator::Failure(e.to_string())
+                                }
+                            }
+                        }
+                        SimulatorToPlugin::RunRequest(req) => match self.handle_run(req) {
+                            Ok(x) => PluginToSimulator::RunResponse(x),
                             Err(e) => {
                                 let e = e.to_string();
                                 error!("{}", e);
                                 PluginToSimulator::Failure(e.to_string())
                             }
-                        }
-                    }
-                    SimulatorToPlugin::RunRequest(req) => match self.handle_run(req) {
-                        Ok(x) => PluginToSimulator::RunResponse(x),
-                        Err(e) => {
-                            let e = e.to_string();
-                            error!("{}", e);
-                            PluginToSimulator::Failure(e.to_string())
-                        }
-                    },
-                    SimulatorToPlugin::ArbRequest(req) => {
-                        match (self.definition.host_arb)(self, req) {
-                            Ok(x) => PluginToSimulator::ArbResponse(x),
-                            Err(e) => {
-                                let e = e.to_string();
-                                error!("{}", e);
-                                PluginToSimulator::Failure(e.to_string())
+                        },
+                        SimulatorToPlugin::ArbRequest(req) => {
+                            match (self.definition.host_arb)(self, req) {
+                                Ok(x) => PluginToSimulator::ArbResponse(x),
+                                Err(e) => {
+                                    let e = e.to_string();
+                                    error!("{}", e);
+                                    PluginToSimulator::Failure(e.to_string())
+                                }
                             }
                         }
-                    }
-                });
-                self.connection.send(response)?;
-            }
-            IncomingMessage::Upstream(GatestreamDown::Pipelined(sequence, message)) => {
-                if let Some(ref mut rng) = self.rng {
-                    rng.select(1)
+                    });
+                    self.connection.send(response)?;
                 }
-                self.synchronized_to_rpcs = true;
+                IncomingMessage::Upstream(GatestreamDown::Pipelined(sequence, message)) => {
+                    if let Some(ref mut rng) = self.rng {
+                        rng.select(1)
+                    }
+                    self.synchronized_to_rpcs = true;
 
-                let response = match message {
-                    PipelinedGatestreamDown::Allocate(num_qubits, commands) => {
-                        let qubits = self.upstream_qubit_ref_generator.allocate(num_qubits);
-                        (self.definition.allocate)(self, qubits, commands)
-                    }
-                    PipelinedGatestreamDown::Free(qubits) => {
-                        self.upstream_qubit_ref_generator.free(qubits.clone());
-                        (self.definition.free)(self, qubits)
-                    }
-                    PipelinedGatestreamDown::Gate(gate) => {
-                        let mut measures: HashSet<_> =
-                            gate.get_measures().iter().cloned().collect();
-                        (self.definition.gate)(self, gate).and_then(|measurements| {
+                    let response = match message {
+                        PipelinedGatestreamDown::Allocate(num_qubits, commands) => {
+                            let qubits = self.upstream_qubit_ref_generator.allocate(num_qubits);
+                            (self.definition.allocate)(self, qubits, commands)
+                        }
+                        PipelinedGatestreamDown::Free(qubits) => {
+                            self.upstream_qubit_ref_generator.free(qubits.clone());
+                            (self.definition.free)(self, qubits)
+                        }
+                        PipelinedGatestreamDown::Gate(gate) => {
+                            let mut measures: HashSet<_> =
+                                gate.get_measures().iter().cloned().collect();
+                            (self.definition.gate)(self, gate).and_then(|measurements| {
                             for measurement in measurements {
                                 if measures.remove(&measurement.qubit) {
                                     self.connection
@@ -561,32 +565,34 @@ impl<'a> PluginState<'a> {
                             }
                             Ok(())
                         })
-                    }
-                    PipelinedGatestreamDown::Advance(cycles) => self
-                        .connection
-                        .send(OutgoingMessage::Upstream(GatestreamUp::Advanced(cycles)))
-                        .and_then(|_| (self.definition.advance)(self, cycles)),
-                };
-                let response = OutgoingMessage::Upstream(match response {
-                    Ok(_) => GatestreamUp::CompletedUpTo(sequence),
-                    Err(e) => {
-                        let e = e.to_string();
-                        error!("{}", e);
-                        GatestreamUp::Failure(sequence, e)
-                    }
-                });
-                self.connection.send(response)?;
+                        }
+                        PipelinedGatestreamDown::Advance(cycles) => self
+                            .connection
+                            .send(OutgoingMessage::Upstream(GatestreamUp::Advanced(cycles)))
+                            .and_then(|_| (self.definition.advance)(self, cycles)),
+                    };
+                    let response = OutgoingMessage::Upstream(match response {
+                        Ok(_) => GatestreamUp::CompletedUpTo(sequence),
+                        Err(e) => {
+                            let e = e.to_string();
+                            error!("{}", e);
+                            GatestreamUp::Failure(sequence, e)
+                        }
+                    });
+                    self.connection.send(response)?;
+                }
+                IncomingMessage::Upstream(GatestreamDown::ArbRequest(cmd)) => {
+                    let response = match (self.definition.upstream_arb)(self, cmd) {
+                        Ok(r) => GatestreamUp::ArbSuccess(r),
+                        Err(e) => GatestreamUp::ArbFailure(e.to_string()),
+                    };
+                    self.connection.send(OutgoingMessage::Upstream(response))?;
+                }
+                IncomingMessage::Downstream(message) => self.handle_downstream_message(message)?,
             }
-            IncomingMessage::Upstream(GatestreamDown::ArbRequest(cmd)) => {
-                let response = match (self.definition.upstream_arb)(self, cmd) {
-                    Ok(r) => GatestreamUp::ArbSuccess(r),
-                    Err(e) => GatestreamUp::ArbFailure(e.to_string()),
-                };
-                self.connection.send(OutgoingMessage::Upstream(response))?;
-            }
-            IncomingMessage::Downstream(message) => self.handle_downstream_message(message)?,
         }
-        Ok(aborted)
+
+        Ok(self.aborted)
     }
 
     /// Blockingly receive messages from downstream until the request with the
@@ -650,6 +656,7 @@ impl<'a> PluginState<'a> {
             downstream_qubit_data: HashMap::new(),
             downstream_measurement_queue: VecDeque::new(),
             downstream_expected_measurements: VecDeque::new(),
+            aborted: false,
         };
 
         while let Some(request) = state.connection.next_request()? {
