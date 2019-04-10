@@ -55,6 +55,11 @@ impl RandomNumberGenerator {
         self.selected = index;
     }
 
+    /// Returns the currently selected RNG.
+    pub fn get_selected(&self) -> usize {
+        self.selected
+    }
+
     /// Generates a random 64-bit number using the active RNG.
     pub fn random_u64(&mut self) -> u64 {
         self.rngs[self.selected].next_u64()
@@ -594,9 +599,9 @@ impl<'a> PluginState<'a> {
         Ok(self.aborted)
     }
 
-    /// Blockingly receive messages from downstream until the request with the
-    /// specified sequence number has been acknowledged.
-    fn synchronize_downstream_up_to(&mut self, num: SequenceNumber) -> Result<()> {
+    /// Helper function for synchronize_downstream_up_to(). Do not call this
+    /// directly.
+    fn _synchronize_downstream_up_to(&mut self, num: SequenceNumber) -> Result<()> {
         while num.after(self.downstream_sequence_rx) {
             match self.connection.next_downstream_request()? {
                 Some(IncomingMessage::Downstream(message)) => {
@@ -607,6 +612,24 @@ impl<'a> PluginState<'a> {
             }
         }
         Ok(())
+    }
+
+    /// Blockingly receive messages from downstream until the request with the
+    /// specified sequence number has been acknowledged.
+    fn synchronize_downstream_up_to(&mut self, num: SequenceNumber) -> Result<()> {
+        // While handling downstream messages, we need to select the downstream
+        // PRNG and indicate that we're not synchronized to the RPCs, because
+        // it's not deterministic how many downstream messages will end up
+        // being handled here. This is done automatically when the downstream
+        // message is handled. However, when we return, we need to restore the
+        // previous state, as we're synchronous again at that point.
+        let rng_index = self.rng.as_ref().map(|x| x.get_selected()).unwrap_or(0);
+        let result = self._synchronize_downstream_up_to(num);
+        if let Some(ref mut rng) = self.rng {
+            rng.select(rng_index);
+        }
+        self.synchronized_to_rpcs = true;
+        result
     }
 
     /// Blockingly receive messages from downstream until all requests have
