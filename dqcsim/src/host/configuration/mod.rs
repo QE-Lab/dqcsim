@@ -19,7 +19,7 @@ pub use plugin::{
         PluginProcessConfiguration, PluginProcessFunctionalConfiguration,
         PluginProcessNonfunctionalConfiguration, PluginProcessSpecification,
     },
-    thread::{PluginThreadConfiguration, PluginThreadImplementation},
+    thread::PluginThreadConfiguration,
     PluginConfiguration,
 };
 

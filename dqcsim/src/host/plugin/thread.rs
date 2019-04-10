@@ -8,13 +8,9 @@ use crate::{
     },
     fatal,
     host::{
-        configuration::{
-            PluginLogConfiguration, PluginThreadConfiguration, PluginThreadImplementation,
-        },
+        configuration::{PluginLogConfiguration, PluginThreadConfiguration},
         plugin::Plugin,
     },
-    plugin::state::PluginState,
-    trace,
 };
 use ipc_channel::ipc;
 use std::{fmt, thread};
@@ -43,44 +39,13 @@ impl fmt::Debug for PluginThread {
 impl PluginThread {
     /// Constructs a plugin thread from a plugin definition and configuration.
     pub fn new(configuration: PluginThreadConfiguration) -> PluginThread {
-        match configuration.implementation {
-            PluginThreadImplementation::Definition(definition) => {
-                let plugin_type = definition.get_type();
-                PluginThread::new_raw(
-                    Box::new(move |server| {
-                        PluginState::run(&definition, server).unwrap();
-                        trace!("$");
-                    }),
-                    plugin_type,
-                    configuration.init_cmds,
-                    configuration.log_configuration,
-                )
-            }
-            PluginThreadImplementation::Closure(closure, plugin_type) => PluginThread::new_raw(
-                closure,
-                plugin_type,
-                configuration.init_cmds,
-                configuration.log_configuration,
-            ),
-        }
-    }
-
-    /// Construct a plugin thread given the actual function that runs in the
-    /// spawned thread and the configuration. This is to be used for testing
-    /// only.
-    fn new_raw(
-        thread: PluginThreadClosure,
-        plugin_type: PluginType,
-        init_cmds: Vec<ArbCmd>,
-        log_configuration: PluginLogConfiguration,
-    ) -> PluginThread {
         PluginThread {
-            thread: Some(thread),
+            thread: Some(configuration.closure),
             handle: None,
             channel: None,
-            plugin_type,
-            init_cmds,
-            log_configuration,
+            plugin_type: configuration.plugin_type,
+            init_cmds: configuration.init_cmds,
+            log_configuration: configuration.log_configuration,
         }
     }
 }

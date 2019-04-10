@@ -12,43 +12,20 @@ use crate::{
         },
         reproduction::PluginReproduction,
     },
-    plugin::definition::PluginDefinition,
+    plugin::{definition::PluginDefinition, state::PluginState},
+    trace,
 };
 use std::fmt;
 
-/// Represents the implementation of a plugin thread's functionality, in the
-/// form of one or more closures.
-#[allow(clippy::large_enum_variant)]
-pub enum PluginThreadImplementation {
-    /// The metadata and closures in the PluginDefinition define the behavior
-    /// of the plugin.
-    Definition(PluginDefinition),
-
-    /// The plugin behavior is fully customized through a closure, taking the
-    /// host address as its sole argument. The closure is called from within a
-    /// worker thread. This is supposed to be equivalent to the main() function
-    /// of a plugin process.
-    Closure(PluginThreadClosure, PluginType),
-}
-
-impl fmt::Debug for PluginThreadImplementation {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            PluginThreadImplementation::Definition(def) => def.fmt(fmt),
-            PluginThreadImplementation::Closure(_, typ) => {
-                fmt.debug_tuple("Closure").field(typ).finish()
-            }
-        }
-    }
-}
-
 /// Represents the complete configuration for a plugin running in a local
 /// thread.
-#[derive(Debug)]
 pub struct PluginThreadConfiguration {
-    /// Implementation of the plugin thread's functionality, in the form of one
-    /// or more closures.
-    pub implementation: PluginThreadImplementation,
+    /// The closure that's called from within the plugin thread. It is
+    /// responsible for calling `PluginState::run()` in one way or another.
+    pub closure: PluginThreadClosure,
+
+    /// The type of plugin that the closure is expected to start.
+    pub plugin_type: PluginType,
 
     /// The vector of `ArbCmd`s passed to the `initialize()` closure.
     ///
@@ -62,6 +39,17 @@ pub struct PluginThreadConfiguration {
     pub log_configuration: PluginLogConfiguration,
 }
 
+impl fmt::Debug for PluginThreadConfiguration {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        fmt.debug_struct("PluginThreadConfiguration")
+            .field("closure", &"...".to_string())
+            .field("plugin_type", &self.plugin_type)
+            .field("init_cmds", &self.init_cmds)
+            .field("log_configuration", &self.log_configuration)
+            .finish()
+    }
+}
+
 impl PluginThreadConfiguration {
     /// Creates a new plugin configuration.
     ///
@@ -70,11 +58,15 @@ impl PluginThreadConfiguration {
         definition: PluginDefinition,
         log_configuration: PluginLogConfiguration,
     ) -> PluginThreadConfiguration {
-        PluginThreadConfiguration {
-            implementation: PluginThreadImplementation::Definition(definition),
-            init_cmds: vec![],
+        let plugin_type = definition.get_type();
+        PluginThreadConfiguration::new_raw(
+            Box::new(move |server| {
+                PluginState::run(&definition, server).unwrap();
+                trace!("$");
+            }),
+            plugin_type,
             log_configuration,
-        }
+        )
     }
 
     /// Creates a new plugin through a custom closure.
@@ -86,7 +78,8 @@ impl PluginThreadConfiguration {
         log_configuration: PluginLogConfiguration,
     ) -> PluginThreadConfiguration {
         PluginThreadConfiguration {
-            implementation: PluginThreadImplementation::Closure(closure, plugin_type),
+            closure,
+            plugin_type,
             init_cmds: vec![],
             log_configuration,
         }
@@ -115,10 +108,7 @@ impl PluginConfiguration for PluginThreadConfiguration {
     }
 
     fn get_type(&self) -> PluginType {
-        match &self.implementation {
-            PluginThreadImplementation::Definition(def) => def.get_type(),
-            PluginThreadImplementation::Closure(_, typ) => *typ,
-        }
+        self.plugin_type
     }
 
     fn get_reproduction(&self, _: ReproductionPathStyle) -> Result<PluginReproduction> {
