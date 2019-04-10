@@ -43,8 +43,13 @@ pub extern "C" fn dqcs_plugin_start(
 ) -> dqcs_handle_t {
     api_return(0, || {
         take!(pdef as PluginDefinition);
-        let simulator = receive_str(simulator)?;
+        let simulator = receive_str(simulator)?.to_string();
         Ok(insert(std::thread::spawn(move || {
+            // Make sure panics are printed.
+            std::panic::set_hook(Box::new(|info| {
+                eprintln!("{}", info);
+            }));
+
             PluginState::run(&pdef, simulator)
         })))
     })
