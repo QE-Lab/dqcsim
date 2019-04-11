@@ -14,7 +14,7 @@ setup(
     author = 'TU Delft Quantum & Computer Architecture, QuTech',
     packages = [
         'dqcsim',
-        'dqcsim.arbdata',
+        'dqcsim.common',
     ],
     package_dir = {'dqcsim': 'dqcsim'},
     ext_modules = [Extension(

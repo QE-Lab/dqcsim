@@ -12,6 +12,19 @@ def _check_json(ob):
         raise TypeError("Invalid JSON/CBOR object: {!r}".format(ob))
 
 class ArbData(object):
+    """Represents an ArbData object.
+
+    ArbData objects are used to transfer user-specified data from one DQCsim
+    plugin to another. They are composed of a CBOR-like object (superset of
+    JSON) and a list of binary strings. The Python interface to DQCsim wraps
+    ArbData objects in a class that behaves like a list and a dict at the same
+    time; the list containing the binary strings and the dict containing the
+    toplevel JSON/CBOR object entries. The class enforces that the binary
+    string list entries implement Python's buffer protocol (bytes, bytearray,
+    etc.) and that the JSON/CBOR entries are serializable as such using the
+    cbor library.
+    """
+
     def __init__(self, *args, **kwargs):
         """Constructs an ArbData object.
 

@@ -1,5 +1,5 @@
 
-__all__ = ['raw', 'ArbData']
+__all__ = ['raw', 'common']
 
 import dqcsim._dqcsim as raw
-from dqcsim.arbdata import ArbData
+from dqcsim import common
