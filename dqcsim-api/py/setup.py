@@ -14,9 +14,9 @@ setup(
     author = 'TU Delft Quantum & Computer Architecture, QuTech',
     packages = [
         'dqcsim',
-        'dqcsim.host',
+        'dqcsim.arbdata',
     ],
-    package_dir = {'dqcsim': 'src'},
+    package_dir = {'dqcsim': 'dqcsim'},
     ext_modules = [Extension(
         'dqcsim._dqcsim',
         ['gen/dqcsim.c'],
@@ -24,5 +24,10 @@ setup(
         runtime_library_dirs = [os.environ['DQCSIM_HOME'] + '/lib'],
         libraries = ['dqcsim'],
         extra_compile_args = ['-std=c99']
-    )]
+    )],
+    install_requires=[
+        'cbor',
+    ],
+    test_suite='nose.collector',
+    tests_require=['nose'],
 )

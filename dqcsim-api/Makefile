@@ -3,7 +3,8 @@ ifndef DQCSIM_HOME
 $(error $$DQCSIM_HOME is not set)
 endif
 
-PY_SOURCES = $(shell find py/src -name '*.py')
+PY_SOURCES = $(shell find py/dqcsim -name '*.py')
+PY_TESTS = $(shell find py/tests -name '*.py')
 UNAME = $(shell uname)
 
 ifeq ($(UNAME),Linux)
@@ -105,28 +106,29 @@ py/gen/dqcsim.c: py/gen/dqcsim.i py/gen/dqcsim.h
 
 .PHONY: py-build
 py-build: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
-	cd py && python3 setup.py build -b gen/debug/build
+	cd py && python3 setup.py build
 
 .PHONY: py-release
 py-release: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
-	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py build -b gen/release/build
+	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py build
 
 .PHONY: py-install
 py-install: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
-	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py build -b gen/release/build install --user --prefix=
+	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py install --user --prefix=
 
 .PHONY: py-test
-py-test:
-# TODO
+py-test: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES) $(PY_TESTS)
+	cd py && python3 setup.py test
 
 .PHONY: py-clean
 py-clean:
-	rm -rf py/gen/debug
-	rm -rf py/gen/release
+	rm -rf py/build
 	rm -rf py/gen/*.c
 	rm -rf py/gen/*.i
 	rm -rf py/dist
 	rm -rf py/dqcsim.egg-info
+	rm -rf $(shell find py -name __pycache__)
+	rm -f $(shell find py/dqcsim -type f -and -not -name '*.py')
 
 #------------------------------------------------------------------------------
 # Combo targets

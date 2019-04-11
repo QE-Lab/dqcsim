@@ -1,3 +1,9 @@
+__pycache__
 /gen/
 /dist/
 /dqcsim.egg-info/
+/build/
+/dqcsim/*
+!/dqcsim/*/
+!/dqcsim/*.py
+/dqcsim/__pycache__
