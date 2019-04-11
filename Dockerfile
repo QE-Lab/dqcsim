@@ -21,6 +21,6 @@ RUN apt-get update && \
     rustup component add rustfmt && \
     cargo install cargo-make
 
-ADD . .
+COPY . .
 
 RUN make test
