@@ -7,3 +7,4 @@ __pycache__
 !/dqcsim/*/
 !/dqcsim/*.py
 /dqcsim/__pycache__
+/.eggs/

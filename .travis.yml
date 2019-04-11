@@ -88,6 +88,10 @@ after_success: |
   export PATH=$PATH:$HOME/kcov/bin/ &&
   for file in target/debug/{dqcsim,simulation,plugin,enum,quantum}*; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/cpp/build/,/dqcsim/tests/ --exclude-region='#[cfg(test)]:#[cfg(testkcovstopmarker)]' --verify "target/cov/$(basename $file)" "$file"; done &&
   for file in `find dqcsim-api/cpp/build/test_* -executable -and -type f`; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/cpp/build/,/dqcsim/tests/ --exclude-region='#[cfg(test)]:#[cfg(testkcovstopmarker)]' --verify "target/cov/$(basename $file)" "$file"; done &&
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/target/debug &&
+  cd dqcsim-api/py &&
+  kcov --python-parser=python3 --include-pattern=/py/dqcsim/ ../../target/cov setup.py test &&
+  cd ../.. &&
   bash <(curl -s https://codecov.io/bash)
 
 before_deploy:
