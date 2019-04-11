@@ -83,3 +83,59 @@ impl QubitRefGenerator {
         // Intentionally no-op
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn construct_generator() {
+        let mut q1 = QubitRefGenerator::default();
+        let mut q2 = QubitRefGenerator::new();
+        assert_eq!(q1.allocate(2), q2.allocate(2));
+    }
+
+    #[test]
+    fn alloc_free() {
+        let mut q = QubitRefGenerator::default();
+        let qrefs = q.allocate(1);
+        assert_eq!(qrefs.len(), 1);
+        q.free(vec![QubitRef::from_foreign(4).unwrap()]);
+        let qrefs = q.allocate(1);
+        assert_eq!(qrefs[0], QubitRef::from_foreign(2).unwrap());
+    }
+
+    #[test]
+    fn convert_qrefs() {
+        let mut q = QubitRefGenerator::new();
+
+        let qr = QubitRef::from_foreign(0);
+        assert_eq!(qr, None);
+
+        let qr = QubitRef::from_foreign(1).unwrap();
+        assert_eq!(qr, (q.allocate(1))[0]);
+
+        assert_eq!(42, QubitRef::from_foreign(42).unwrap().to_foreign());
+
+        assert_eq!(0, QubitRef::option_to_foreign(None));
+        assert_eq!(
+            42,
+            QubitRef::option_to_foreign(Some(QubitRef::from_foreign(42).unwrap()))
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn convert_zero() {
+        let _ = QubitRef(0).to_foreign();
+    }
+
+    #[test]
+    fn display_qref() {
+        let qubits = QubitRefGenerator::default().allocate(1);
+        assert_eq!(qubits[0].to_string(), "1");
+        let s: String = qubits[0].into();
+        assert_eq!(s, "1".to_string());
+    }
+
+}
