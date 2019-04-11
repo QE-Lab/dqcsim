@@ -102,3 +102,58 @@ impl QubitMeasurementResult {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn display() {
+        let m = QubitMeasurementValue::Undefined;
+        assert_eq!(m.to_string(), "?");
+        let m = QubitMeasurementValue::Zero;
+        assert_eq!(m.to_string(), "0");
+        let m = QubitMeasurementValue::One;
+        assert_eq!(m.to_string(), "1");
+    }
+
+    #[test]
+    fn is_funcs() {
+        let m = QubitMeasurementValue::Undefined;
+        assert!(m.is_undefined());
+        let m = QubitMeasurementValue::Zero;
+        assert!(m.is_zero());
+        let m = QubitMeasurementValue::One;
+        assert!(m.is_one());
+    }
+
+    #[test]
+    fn convert() {
+        let m = QubitMeasurementValue::Undefined;
+        let o: Option<bool> = m.into();
+        assert_eq!(o, None);
+        let t: QubitMeasurementValue = o.into();
+        assert!(t.is_undefined());
+
+        let m = QubitMeasurementValue::One;
+        let o: Option<bool> = m.into();
+        assert_eq!(o, Some(true));
+        let t: QubitMeasurementValue = o.into();
+        assert!(t.is_one());
+
+        let m = QubitMeasurementValue::Zero;
+        let o: Option<bool> = m.into();
+        assert_eq!(o, Some(false));
+        let t: QubitMeasurementValue = o.into();
+        assert!(t.is_zero());
+
+        let z = false;
+        let m: QubitMeasurementValue = z.into();
+        assert!(m.is_zero());
+
+        let o = true;
+        let m: QubitMeasurementValue = o.into();
+        assert!(m.is_one());
+    }
+
+}
