@@ -3,6 +3,7 @@ use dqcsim::{
     host::{accelerator::Accelerator, reproduction::HostCall, simulator::Simulator},
     info, note,
 };
+use std::ffi::OsString;
 
 use failure::Error;
 
@@ -58,8 +59,12 @@ fn run(
     Ok(())
 }
 
-fn internal_main() -> Result<(), Error> {
-    let mut cfg = CommandLineConfiguration::parse().or_else(|e| {
+fn internal_main<I, T>(args: I) -> Result<(), Error>
+where
+    I: IntoIterator<Item = T>,
+    T: Into<OsString> + Clone,
+{
+    let mut cfg = CommandLineConfiguration::parse_from(args).or_else(|e| {
         println!("{}", e);
         Err(e)
     })?;
@@ -87,7 +92,7 @@ fn internal_main() -> Result<(), Error> {
 }
 
 fn main() {
-    let result = internal_main();
+    let result = internal_main(std::env::args());
     std::process::exit(match result {
         Ok(_) => 0,
         Err(_) => 1,
