@@ -83,7 +83,7 @@ impl ::std::str::FromStr for TeeFileConfiguration {
         let file: PathBuf = splitter
             .next()
             .ok_or_else(|| {
-                TeeFileError::ParseError("Expected a colon in tee file description.".to_string())
+                TeeFileError::ParseError("expected a colon in tee file description".to_string())
             })?
             .into();
         Ok(TeeFileConfiguration { filter, file })
@@ -111,7 +111,17 @@ mod test {
             TeeFileConfiguration::from_str("info:/tmp/hello:/there").unwrap(),
             TeeFileConfiguration::new(LoglevelFilter::Info, "/tmp/hello:/there"),
         );
-        assert!(TeeFileConfiguration::from_str("hello").is_err());
+
+        let tfc = TeeFileConfiguration::from_str("hello");
+        assert!(tfc.is_err());
+        assert_eq!(tfc.unwrap_err().to_string(), "hello is not a valid loglevel filter, valid values are off, fatal, error, warn, note, info, debug, or trace");
+
+        let tfc = TeeFileConfiguration::from_str("info");
+        assert!(tfc.is_err());
+        assert_eq!(
+            tfc.unwrap_err().to_string(),
+            "expected a colon in tee file description"
+        );
     }
 
     #[test]
@@ -128,6 +138,14 @@ mod test {
         assert_eq!(
             format!("{:?}", tf),
             "TeeFileConfiguration { filter: Info, file: \"hello:/there\" }"
+        );
+
+        let tfc = TeeFileConfiguration::new(LoglevelFilter::Trace, "/dev/zero");
+        let tf = TeeFile::new(tfc);
+
+        assert_eq!(
+            format!("{:?}", tf.unwrap()),
+            "TeeFile { configuration: TeeFileConfiguration { filter: Trace, file: \"/dev/zero\" }, buffer: Some(File { fd: 5, path: \"/dev/zero\", read: false, write: true }) }"
         );
     }
 
