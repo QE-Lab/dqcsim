@@ -69,6 +69,7 @@ impl Cycle {
 
 impl Into<u64> for Cycle {
     fn into(self) -> u64 {
+        assert!(self.0 >= 0, "Cycle count negative");
         self.0 as u64
     }
 }
@@ -76,5 +77,66 @@ impl Into<u64> for Cycle {
 impl Into<i64> for Cycle {
     fn into(self) -> i64 {
         self.0
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn zero() {
+        let c = Cycle::t_zero();
+        assert_eq!(c, Cycle(0i64));
+    }
+
+    #[test]
+    fn advance() {
+        let c = Cycle::t_zero();
+        let c = c.advance(1234u64);
+        assert_eq!(c, Cycle(1234));
+        let c = c.advance(1u64);
+        assert_eq!(c, Cycle(1235));
+    }
+
+    #[test]
+    #[should_panic]
+    fn overflow() {
+        let c = Cycle::t_zero();
+        c.advance(std::u64::MAX);
+    }
+
+    #[test]
+    #[should_panic]
+    fn convert_negative() {
+        let a = 18446744073709551574u64;
+        let c = Cycle(-42);
+        let c: u64 = c.into();
+        assert_eq!(a, c);
+    }
+
+    #[test]
+    fn convert() {
+        let a = 1234u64;
+        let c = Cycle(1234);
+        let c: u64 = c.into();
+        assert_eq!(a, c);
+
+        let a = 1234i64;
+        let c = Cycle(1234);
+        let c: i64 = c.into();
+        assert_eq!(a, c);
+    }
+
+    #[test]
+    fn ops() {
+        let a = Cycle(21);
+        let b: CycleDelta = 21;
+        let c: CycleDelta = -2;
+        assert_eq!(a + b, Cycle(42));
+        assert_eq!(a - b, Cycle(0));
+        assert_eq!(a + c, Cycle(19));
+        assert_eq!(a - c, Cycle(23));
+        assert_eq!(a - a, 0 as CycleDelta);
     }
 }
