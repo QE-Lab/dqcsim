@@ -460,15 +460,22 @@ impl<'a> PluginState<'a> {
                 .1
                 .drain()
             {
-                warn!(
-                    "missing measurement data for qubit {}, setting to undefined; bug in downstream plugin!",
-                    qubit
-                );
-                self.handle_measurement(QubitMeasurementResult::new(
-                    qubit,
-                    QubitMeasurementValue::Undefined,
-                    ArbData::default(),
-                ))?;
+                if self.downstream_qubit_data.contains_key(&qubit) {
+                    warn!(
+                        "missing measurement data for qubit {}, setting to undefined; bug in downstream plugin!",
+                        qubit
+                    );
+                    self.handle_measurement(QubitMeasurementResult::new(
+                        qubit,
+                        QubitMeasurementValue::Undefined,
+                        ArbData::default(),
+                    ))?;
+                } else {
+                    trace!(
+                        "missing measurement data for qubit {}, which has already been deallocated",
+                        qubit
+                    );
+                }
             }
         }
 
