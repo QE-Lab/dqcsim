@@ -37,7 +37,7 @@ class Tests(unittest.TestCase):
         a = ArbCmd('x', 'y', b'a', b'b', b'c', b=3, c=4, d=5)
         a_handle = a.to_raw()
         self.maxDiff = None
-        self.assertEqual(raw.dqcs_handle_dump(a_handle), """ArbCmd(
+        self.assertEqual(str(a_handle), """ArbCmd(
     ArbCmd {
         interface_identifier: "x",
         operation_identifier: "y",
@@ -77,7 +77,6 @@ class Tests(unittest.TestCase):
 )""")
 
         self.assertEqual(ArbCmd.from_raw(a_handle), a)
-        raw.dqcs_handle_delete(a_handle)
 
 if __name__ == '__main__':
     unittest.main()

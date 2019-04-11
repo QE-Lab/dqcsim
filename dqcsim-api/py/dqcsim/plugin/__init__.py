@@ -1,9 +1,11 @@
 
-__all__ = ['Plugin']
+__all__ = ['Frontend', 'Operator', 'Backend']
 
 from enum import Enum
 import dqcsim._dqcsim as raw
+from dqcsim.common import *
 import sys
+
 
 class PluginType(Enum):
     """Represents a plugin type."""
@@ -19,15 +21,9 @@ class JoinHandle(object):
 
     def wait(self):
         """Waits for the associated plugin to finish executing."""
-        if self._handle is not None:
+        if self._handle:
             raw.dqcs_plugin_wait(self._handle)
-            raw.dqcs_handle_delete(self._handle)
-            self._handle = None
-
-    def __del__(self):
-        if self._handle is not None:
-            raw.dqcs_handle_delete(self._handle)
-            self._handle = None
+            self._handle.take()
 
 class Plugin(object):
     """Represents a plugin implementation. Must be subclassed; use Frontend,
@@ -38,15 +34,57 @@ class Plugin(object):
         self._state_handle = None
         self._started = False
 
-    # TODO: dqcsim functions operating on plugin states
+    def _pc(self, plugin_fn, *args):
+        """Use this to call dqcs_plugin functions that take a plugin state."""
+        if self._state_handle is None:
+            raise RuntimeError("Cannot call plugin operator outside of a callback")
+        return plugin_fn(self._state_handle, *args)
 
-    @classmethod
-    def _to_pdef(cls):
+    def _cb(self, state_handle, fn, *args, **kwargs):
+        """Use this to call DQCsim callback functions (defined in this object)
+        to store the state handle."""
+        if self._state_handle is not None:
+            raise RuntimeError("Invalid state, recursive callback")
+        self._state_handle = state_handle
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            self._state_handle = None
+
+    def random_float(self):
+        """Produces a random floating point value between 0 (inclusive) and 1
+        (exclusive).
+
+        This function is guaranteed to return the same result every time as
+        long as the random seed allocated to us by DQCsim stays the same. This
+        allows simulations to be reproduced using a reproduction file. Without
+        such a reproduction file or user-set seed, this is of course properly
+        (pseudo)randomized."""
+        return self._pc(raw.dqcs_plugin_random_f64)
+
+    def random_long(self):
+        """Produces a random 64-bit unsigned integer.
+
+        This function is guaranteed to return the same result every time as
+        long as the random seed allocated to us by DQCsim stays the same. This
+        allows simulations to be reproduced using a reproduction file. Without
+        such a reproduction file or user-set seed, this is of course properly
+        (pseudo)randomized."""
+        return self._pc(raw.dqcs_plugin_random_u64)
+
+    def _parse_argv(self):
+        """Parses argv to get the simulator address."""
+        if len(sys.argv) != 2:
+            print("Usage: [python3] <script> <simulator-address>", file=sys.stderr)
+            print("Note: you should be calling this Python script with DQCsim!", file=sys.stderr)
+            sys.exit(1)
+        return sys.argv[1]
+
+    def _to_pdef(self, cls):
         """Creates a plugin definition handle for this plugin."""
         # TODO: callback functions
         raise NotImplemented()
 
-    @classmethod
     def run(self, simulator=None):
         """Instantiates and runs the plugin.
 
@@ -54,6 +92,8 @@ class Plugin(object):
         when initializing. It is usually passed as the first argument to the
         plugin process; therefore, if it is not specified, it is taken directly
         from sys.argv."""
+        if not hasattr(self, '_state_handle'):
+            raise RuntimeError("It looks like you've overwritten __init__ and forgot to call super().__init__(). Please fix!")
         if self._started:
             raise RuntimeError("Plugin has been started before. Make a new instance!")
         if simulator is None:
@@ -61,7 +101,6 @@ class Plugin(object):
         raw.dqcs_plugin_run(self._to_pdef(), simulator)
         self._started = True
 
-    @classmethod
     def start(self, simulator=None):
         """Instantiates and starts the plugin.
 
@@ -70,16 +109,43 @@ class Plugin(object):
         JoinHandle, which contains a wait() method that can be used to wait
         until the plugin finishes executing. Alternatively, if this is not
         done, the plugin thread will (try to) survive past even the main
-        thread."""
+        thread.
+
+        Note that the JoinHandle can NOT be transferred to a different
+        thread!"""
+        if not hasattr(self, '_state_handle'):
+            raise RuntimeError("It looks like you've overwritten __init__ and forgot to call super().__init__(). Please fix!")
         if self._started:
             raise RuntimeError("Plugin has been started before. Make a new instance!")
         if simulator is None:
             simulator = self._parse_argv()
-        handle = raw.dqcs_plugin_start(self._to_pdef(), simulator)
+        handle = Handle(raw.dqcs_plugin_start(self._to_pdef(), simulator))
         self._started = True
         return JoinHandle(handle)
 
-class Frontend(Plugin):
+class GateStreamSource(Plugin):
+    """Adds gatestream source functions."""
+
+    def allocate(self, num_qubits, *cmds):
+        """Instructs the downstream plugin to allocate the given number of
+        qubits.
+
+        This function returns a list of qubit references that you can use to
+        refer to the qubits in later function calls. These are just integers.
+
+        Optionally, you can pass (a list of) ArbCmd objects to associate with
+        the qubits."""
+        return QbSet.from_raw(Handle(self._pc(
+            raw.dqcs_plugin_allocate,
+            num_qubits,
+            ArbCmdQueue.to_raw(cq)
+        )))
+
+    def free(self, *qubits):
+        """Instructs the downstream plugin to free the given qubits."""
+        return self._pc(raw.dqcs_plugin_free, QbSet.to_raw(*qubits))
+
+class Frontend(GateStreamSource):
     """Implements a frontend plugin.
 
     Frontends execute mixed quantum-classical algorithms, turning them into a
@@ -133,7 +199,7 @@ class Frontend(Plugin):
         """Returns that this is a frontend plugin."""
         return PluginType.FRONT
 
-class Operator(Plugin):
+class Operator(GateStreamSource):
     """Implements an operator plugin.
 
     Operators sit between frontends and backends, allowing them to observe or

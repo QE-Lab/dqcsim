@@ -4,6 +4,7 @@ except ImportError:
     raise Exception("Failed to load DQCsim: missing cbor library")
 
 import dqcsim._dqcsim as raw
+from dqcsim.common.handle import Handle
 
 def _check_json(ob):
     try:
@@ -144,34 +145,36 @@ class ArbData(object):
     def from_raw(cls, handle):
         """Constructs an ArbData object from a raw API handle."""
         # Load CBOR.
-        cb = bytearray(256)
-        cbl = raw.dqcs_arb_cbor_get(handle, cb)
-        if cbl > 256:
-            cb = bytearray(cbl)
-            raw.dqcs_arb_cbor_get(handle, cb)
-        kwargs = cbor.loads(cb)
+        with handle as hndl:
+            cb = bytearray(256)
+            cbl = raw.dqcs_arb_cbor_get(hndl, cb)
+            if cbl > 256:
+                cb = bytearray(cbl)
+                raw.dqcs_arb_cbor_get(hndl, cb)
+            kwargs = cbor.loads(cb)
 
-        # Load binary arguments.
-        args = []
-        for i in range(raw.dqcs_arb_len(handle)):
-            arg = bytearray(256)
-            argl = raw.dqcs_arb_get_raw(handle, i, arg)
-            if argl > 256:
-                arg = bytearray(argl)
-                raw.dqcs_arb_get_raw(handle, i, arg)
-            args.append(bytes(arg[:argl]))
+            # Load binary arguments.
+            args = []
+            for i in range(raw.dqcs_arb_len(hndl)):
+                arg = bytearray(256)
+                argl = raw.dqcs_arb_get_raw(hndl, i, arg)
+                if argl > 256:
+                    arg = bytearray(argl)
+                    raw.dqcs_arb_get_raw(hndl, i, arg)
+                args.append(bytes(arg[:argl]))
 
         return ArbData(*args, **kwargs)
 
     def to_raw(self, handle=None):
         """Makes an API handle for this ArbData object."""
         if handle is None:
-            handle = raw.dqcs_arb_new()
+            handle = Handle(raw.dqcs_arb_new())
         else:
-            raw.dqcs_arb_clear(handle)
-        raw.dqcs_arb_cbor_set(handle, cbor.dumps(self._json))
-        for arg in self._args:
-            raw.dqcs_arb_push_raw(handle, arg)
+            raw.dqcs_arb_clear(int(handle))
+        with handle as hndl:
+            raw.dqcs_arb_cbor_set(hndl, cbor.dumps(self._json))
+            for arg in self._args:
+                raw.dqcs_arb_push_raw(hndl, arg)
         return handle
 
     def __repr__(self):

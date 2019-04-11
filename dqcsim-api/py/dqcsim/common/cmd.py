@@ -1,6 +1,7 @@
 
 import dqcsim._dqcsim as raw
-from dqcsim.common import ArbData
+from dqcsim.common.arb import ArbData
+from dqcsim.common.handle import Handle
 import re
 
 _ident_re = re.compile(r'[a-zA-Z0-9_]+')
@@ -56,14 +57,15 @@ class ArbCmd(ArbData):
     def from_raw(cls, handle):
         """Constructs an ArbCmd object from a raw API handle."""
         arg = ArbData.from_raw(handle)
-        cmd = ArbCmd(raw.dqcs_cmd_iface_get(handle), raw.dqcs_cmd_oper_get(handle))
+        with handle as hndl:
+            cmd = ArbCmd(raw.dqcs_cmd_iface_get(hndl), raw.dqcs_cmd_oper_get(hndl))
         cmd._args = arg._args
         cmd._json = arg._json
         return cmd
 
     def to_raw(self):
         """Makes an API handle for this ArbCmd object."""
-        handle = raw.dqcs_cmd_new(self._iface, self._oper)
+        handle = Handle(raw.dqcs_cmd_new(self._iface, self._oper))
         super().to_raw(handle)
         return handle
 

@@ -132,7 +132,7 @@ class Operations(unittest.TestCase):
 
     def test_handles(self):
         a = ArbData(b'a', b'b', b'c', b=3, c=4, d=5).to_raw()
-        self.assertEqual(raw.dqcs_handle_dump(a), """ArbData(
+        self.assertEqual(str(a), """ArbData(
     ArbData {
         json: Object(
             {
@@ -168,7 +168,7 @@ class Operations(unittest.TestCase):
 )""")
 
         ArbData(b'c', b'd', b'e', b=6, c=7, d=8).to_raw(a)
-        self.assertEqual(raw.dqcs_handle_dump(a), """ArbData(
+        self.assertEqual(str(a), """ArbData(
     ArbData {
         json: Object(
             {
@@ -204,7 +204,6 @@ class Operations(unittest.TestCase):
 )""")
 
         self.assertEqual(ArbData.from_raw(a), ArbData(b'c', b'd', b'e', b=6, c=7, d=8))
-        raw.dqcs_handle_delete(a)
 
 if __name__ == '__main__':
     unittest.main()
