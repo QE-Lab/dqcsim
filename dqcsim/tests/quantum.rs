@@ -365,16 +365,120 @@ fn backend_arb() {
 }
 
 #[test]
+fn measurement_non_alloc() {
+    let mut frontend = PluginDefinition::new(
+        PluginType::Frontend,
+        PluginMetadata::new("frontend", "dqcsim", "0.1.0"),
+    );
+
+    frontend.initialize = Box::new(|state, _| {
+        let m = state.get_measurement(QubitRef::from_foreign(1).unwrap());
+        assert!(m.is_err());
+        assert_eq!(
+            m.unwrap_err().to_string(),
+            "Invalid argument: qubit 1 is not allocated"
+        );
+        Ok(())
+    });
+
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(PluginThreadConfiguration::new(
+            frontend,
+            PluginLogConfiguration::new("front", LoglevelFilter::Trace),
+        ))
+        .with_plugin(PluginThreadConfiguration::new(
+            PluginDefinition::new(
+                PluginType::Backend,
+                PluginMetadata::new("backend", "dqcsim", "0.1.0"),
+            ),
+            PluginLogConfiguration::new("backend", LoglevelFilter::Trace),
+        ));
+
+    let simulator = Simulator::new(configuration);
+    assert!(simulator.is_ok());
+}
+
+#[test]
+fn measurement_not_measured() {
+    let mut frontend = PluginDefinition::new(
+        PluginType::Frontend,
+        PluginMetadata::new("frontend", "dqcsim", "0.1.0"),
+    );
+
+    frontend.initialize = Box::new(|state, _| {
+        let q = state.allocate(1, vec![]).expect("alloc fail");
+        let m = state.get_measurement(q[0]);
+        assert!(m.is_err());
+        assert_eq!(
+            m.unwrap_err().to_string(),
+            "Invalid argument: qubit 1 has not been measured yet"
+        );
+        Ok(())
+    });
+
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(PluginThreadConfiguration::new(
+            frontend,
+            PluginLogConfiguration::new("front", LoglevelFilter::Trace),
+        ))
+        .with_plugin(PluginThreadConfiguration::new(
+            PluginDefinition::new(
+                PluginType::Backend,
+                PluginMetadata::new("backend", "dqcsim", "0.1.0"),
+            ),
+            PluginLogConfiguration::new("backend", LoglevelFilter::Trace),
+        ));
+
+    let simulator = Simulator::new(configuration);
+    assert!(simulator.is_ok());
+}
+
+#[test]
+fn free_non_alloc() {
+    let mut frontend = PluginDefinition::new(
+        PluginType::Frontend,
+        PluginMetadata::new("frontend", "dqcsim", "0.1.0"),
+    );
+
+    frontend.initialize = Box::new(|state, _| {
+        let m = state.free(vec![QubitRef::from_foreign(1).unwrap()]);
+        assert!(m.is_err());
+        assert_eq!(
+            m.unwrap_err().to_string(),
+            "Invalid argument: qubit 1 is not allocated"
+        );
+        Ok(())
+    });
+
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(PluginThreadConfiguration::new(
+            frontend,
+            PluginLogConfiguration::new("front", LoglevelFilter::Trace),
+        ))
+        .with_plugin(PluginThreadConfiguration::new(
+            PluginDefinition::new(
+                PluginType::Backend,
+                PluginMetadata::new("backend", "dqcsim", "0.1.0"),
+            ),
+            PluginLogConfiguration::new("backend", LoglevelFilter::Trace),
+        ));
+
+    let simulator = Simulator::new(configuration);
+    assert!(simulator.is_ok());
+}
+
+#[test]
 // This attempts to simulate the quantum specific methods.
 fn quantum_minimal() {
     let mut backend = PluginDefinition::new(
         PluginType::Backend,
         PluginMetadata::new("backend", "dqcsim", "0.1.0"),
-    );
-
-    let mut frontend = PluginDefinition::new(
-        PluginType::Frontend,
-        PluginMetadata::new("frontend", "dqcsim", "0.1.0"),
     );
 
     #[derive(Debug)]
@@ -427,7 +531,7 @@ fn quantum_minimal() {
         PluginMetadata::new("frontend", "dqcsim", "0.1.0"),
     );
 
-    let mut operator = PluginDefinition::new(
+    let operator = PluginDefinition::new(
         PluginType::Operator,
         PluginMetadata::new("operator", "dqcsim", "0.1.0"),
     );
@@ -441,24 +545,6 @@ fn quantum_minimal() {
         assert_eq!(
             format!("{:?}", qubits),
             "[QubitRef(1), QubitRef(2), QubitRef(3), QubitRef(4)]"
-        );
-
-        state
-            .free(vec![QubitRef::from_foreign(1).unwrap()])
-            .unwrap();
-
-        let use_after_free = state.get_measurement(QubitRef::from_foreign(1).unwrap());
-        assert!(use_after_free.is_err());
-        assert_eq!(
-            use_after_free.unwrap_err().to_string(),
-            "Invalid argument: qubit 1 is not allocated"
-        );
-
-        let not_measured = state.get_measurement(QubitRef::from_foreign(2).unwrap());
-        assert!(not_measured.is_err());
-        assert_eq!(
-            not_measured.unwrap_err().to_string(),
-            "Invalid argument: qubit 2 has not been measured yet"
         );
 
         let bad_measure = Gate::new_measurement(vec![

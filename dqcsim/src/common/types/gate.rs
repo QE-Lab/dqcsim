@@ -138,7 +138,7 @@ impl Gate {
         }
 
         // Check the size of the matrix.
-        let expected_size = 4 << (targets.len() - 1);
+        let expected_size = (2 * targets.len()) * (2 * targets.len());
         if matrix.len() != expected_size {
             return inv_arg(format!(
                 "the matrix is expected to be of size {} but was {}",
@@ -282,4 +282,125 @@ impl Gate {
             )
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn qref(q: u64) -> QubitRef {
+        QubitRef::from_foreign(q).unwrap()
+    }
+
+    #[test]
+    fn new_unitary_no_targets() {
+        let targets = vec![];
+        let controls = vec![];
+        let matrix = vec![];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: at least one target qubit is required"
+        );
+    }
+
+    #[test]
+    fn new_unitary_dup_target() {
+        let targets = vec![qref(1), qref(1)];
+        let controls = vec![];
+        let matrix = vec![];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: qubit 1 is used more than once"
+        );
+
+        let targets = vec![qref(1)];
+        let controls = vec![qref(1)];
+        let matrix = vec![];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: qubit 1 is used more than once"
+        );
+    }
+
+    #[test]
+    fn new_unitary_bad_matrix_size() {
+        let targets = vec![qref(2)];
+        let controls = vec![qref(1)];
+        let matrix = vec![
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+        ];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: the matrix is expected to be of size 4 but was 3"
+        );
+
+        let targets = vec![qref(2), qref(3)];
+        let controls = vec![];
+        let matrix = vec![Complex64::new(1f64, 1f64)];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: the matrix is expected to be of size 16 but was 1"
+        );
+
+        let targets = vec![qref(1), qref(2), qref(3)];
+        let controls = vec![];
+        let matrix = vec![Complex64::new(1f64, 1f64)];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: the matrix is expected to be of size 36 but was 1"
+        );
+
+        let targets = vec![qref(1), qref(2), qref(3), qref(4)];
+        let controls = vec![];
+        let matrix = vec![Complex64::new(1f64, 1f64)];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: the matrix is expected to be of size 64 but was 1"
+        );
+    }
+
+    #[test]
+    fn new_unitary() {
+        let targets = vec![qref(1)];
+        let controls = vec![qref(2)];
+        let matrix = vec![
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+        ];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_ok());
+        let g = g.unwrap();
+        assert_eq!(g.get_name(), None);
+        assert_eq!(g.get_targets(), [qref(1)]);
+        assert_eq!(g.get_controls(), [qref(2)]);
+        assert_eq!(g.get_measures(), []);
+        assert_eq!(
+            g.get_matrix(),
+            Some(vec![
+                Complex64::new(1f64, 1f64),
+                Complex64::new(1f64, 1f64),
+                Complex64::new(1f64, 1f64),
+                Complex64::new(1f64, 1f64),
+            ])
+        );
+    }
+
 }
