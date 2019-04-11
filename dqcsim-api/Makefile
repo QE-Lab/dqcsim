@@ -118,7 +118,7 @@ py-install: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
 
 .PHONY: py-test
 py-test: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES) $(PY_TESTS)
-	cd py && python3 setup.py test
+	cd py && LD_LIBRARY_PATH=$(shell pwd)/../target/debug python3 setup.py test
 
 .PHONY: py-clean
 py-clean:
