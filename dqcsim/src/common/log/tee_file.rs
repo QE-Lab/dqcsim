@@ -143,9 +143,8 @@ mod test {
         let tfc = TeeFileConfiguration::new(LoglevelFilter::Trace, "/dev/zero");
         let tf = TeeFile::new(tfc);
 
-        assert_eq!(
-            format!("{:?}", tf.unwrap()),
-            "TeeFile { configuration: TeeFileConfiguration { filter: Trace, file: \"/dev/zero\" }, buffer: Some(File { fd: 5, path: \"/dev/zero\", read: false, write: true }) }"
+        assert!(
+            format!("{:?}", tf.unwrap()).starts_with("TeeFile { configuration: TeeFileConfiguration { filter: Trace, file: \"/dev/zero\" }, buffer: Some(File {")
         );
     }
 
