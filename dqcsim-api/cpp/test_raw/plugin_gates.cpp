@@ -49,6 +49,46 @@ using namespace dqcsim;
   if (!dqcs_plugin_advance(state, cycles)) return dqcs_return_t::DQCS_FAILURE; \
   } while (0)
 
+#define EXPECT_CYCLE(cycle) do { \
+  if (dqcs_plugin_get_cycle(state) != cycle) { \
+    dqcs_error_set("Unexpected cycle count"); \
+    return dqcs_return_t::DQCS_FAILURE; \
+  } \
+  } while (0)
+
+#define EXPECT_MEASUREMENT(qubit, m, t, s) do { \
+  dqcs_cycle_t cycle = dqcs_plugin_get_cycles_between_measures(state, qubit); \
+  if (cycle != t) { \
+    dqcs_log_fatal("Received unexpected cycles between measures: %d != %d on line %d", (int)cycle, (int)t, __LINE__); \
+    dqcs_error_set("Received unexpected cycles between measures"); \
+    return dqcs_return_t::DQCS_FAILURE; \
+  } \
+  cycle = dqcs_plugin_get_cycles_since_measure(state, qubit); \
+  if (cycle != s) { \
+    dqcs_log_fatal("Received unexpected cycles since measure: %d != %d on line %d", (int)cycle, (int)t, __LINE__); \
+    dqcs_error_set("Received unexpected cycles since measure"); \
+    return dqcs_return_t::DQCS_FAILURE; \
+  } \
+  dqcs_handle_t meas = dqcs_plugin_get_measurement(state, qubit); \
+  if (dqcs_measurement_t::m == dqcs_measurement_t::DQCS_MEAS_INVALID) { \
+    if (meas) { \
+      dqcs_error_set("Unexpected measurement data"); \
+      return dqcs_return_t::DQCS_FAILURE; \
+    } \
+  } else { \
+    if (dqcs_meas_qubit_get(meas) != qubit) { \
+      dqcs_error_set("Received measurement data for wrong qubit"); \
+      return dqcs_return_t::DQCS_FAILURE; \
+    } \
+    dqcs_measurement_t value = dqcs_meas_value_get(meas); \
+    if (value != dqcs_measurement_t::m) { \
+      dqcs_log_fatal("Received unexpected measurement value: %d != %d on line %d", (int)value, (int)dqcs_measurement_t::m, __LINE__); \
+      dqcs_error_set("Received unexpected measurement value"); \
+      return dqcs_return_t::DQCS_FAILURE; \
+    } \
+  } \
+  } while (0)
+
 typedef struct {
   std::string gate_name;
   std::vector<dqcs_qubit_t> targets;
@@ -205,7 +245,6 @@ dqcs_handle_t op_modify_measurement_cb(void *user_data, dqcs_plugin_state_t stat
   return meas_data;
 }
 
-
 #define EXPECT_QUBITS(vec, ...) do { \
   dqcs_qubit_t qubits[] = {__VA_ARGS__}; \
   size_t i = 0; \
@@ -248,17 +287,22 @@ dqcs_handle_t op_modify_measurement_cb(void *user_data, dqcs_plugin_state_t stat
 // results.
 dqcs_return_t initialize_cb_no_feedback(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
   ALLOC(10);
-
+  EXPECT_CYCLE(0);
   GATE("MEAS", QUBITS(), QUBITS(), QUBITS(1, 2, 3, 4, 5));
   ADVANCE(3);
+  EXPECT_CYCLE(3);
   GATE("X", QUBITS(1), QUBITS(), QUBITS());
   GATE("Y", QUBITS(2), QUBITS(), QUBITS());
   GATE("Z", QUBITS(3), QUBITS(), QUBITS());
+  EXPECT_CYCLE(3);
   ADVANCE(2);
+  EXPECT_CYCLE(5);
   GATE("CNOT", QUBITS(4), QUBITS(5), QUBITS());
+  EXPECT_CYCLE(5);
   ADVANCE(5);
+  EXPECT_CYCLE(10);
   GATE("MEAS", QUBITS(), QUBITS(), QUBITS(3, 4, 5, 6, 7));
-
+  EXPECT_CYCLE(10);
   FREE(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
   return dqcs_return_t::DQCS_SUCCESS;
 }
@@ -371,5 +415,180 @@ TEST(plugin_gates, no_feedback_with_broken_operator) {
   EXPECT_ADVANCE(back_data.ops, 5);
   EXPECT_GATE(back_data.ops, "MEAS", QUBITS(), QUBITS(), QUBITS(7, 8, 11, 12));
   EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_DONE(back_data.ops);
+}
+
+// Test a stream of gates and advancements without fetching any measurement
+// results.
+dqcs_return_t initialize_cb_with_feedback(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
+  long test = (long)user_data;
+
+  // Measure non-existant qubit.
+  EXPECT_MEASUREMENT(2, DQCS_MEAS_INVALID, -1, -1);
+
+  ALLOC(10);
+  EXPECT_CYCLE(0);
+
+  GATE("MEAS", QUBITS(), QUBITS(), QUBITS(1, 2, 3, 4, 5));
+
+  // Results before a measurement.
+  EXPECT_MEASUREMENT(6, DQCS_MEAS_INVALID, -1, -1);
+
+  // Results after a measurement.
+  switch (test) {
+    case 0: EXPECT_MEASUREMENT(2, DQCS_MEAS_ZERO, -1, 0); break; // Received from backend
+    case 1: EXPECT_MEASUREMENT(2, DQCS_MEAS_ONE, -1, 0); break; // Modified by op
+    case 2: EXPECT_MEASUREMENT(2, DQCS_MEAS_UNDEFINED, -1, 0); break; // Missing due to broken op
+  }
+
+  // Broken operator will spuriously send data for qubits 3, 7, and 8. Make
+  // sure that these are ignored.
+  EXPECT_MEASUREMENT(3, DQCS_MEAS_ZERO, -1, 0);
+  EXPECT_MEASUREMENT(8, DQCS_MEAS_INVALID, -1, -1);
+
+  ADVANCE(3);
+  EXPECT_CYCLE(3);
+
+  // Results after a measurement + advance.
+  EXPECT_MEASUREMENT(3, DQCS_MEAS_ZERO, -1, 3);
+
+  GATE("X", QUBITS(1), QUBITS(), QUBITS());
+  GATE("Y", QUBITS(2), QUBITS(), QUBITS());
+  GATE("Z", QUBITS(3), QUBITS(), QUBITS());
+  EXPECT_CYCLE(3);
+  ADVANCE(2);
+  EXPECT_CYCLE(5);
+  GATE("CNOT", QUBITS(4), QUBITS(5), QUBITS());
+  EXPECT_CYCLE(5);
+  ADVANCE(5);
+  EXPECT_CYCLE(10);
+  GATE("MEAS", QUBITS(), QUBITS(), QUBITS(3, 4, 5, 6, 7));
+  EXPECT_CYCLE(10);
+
+  // Test measurement timer.
+  EXPECT_MEASUREMENT(3, DQCS_MEAS_ZERO, 10, 0);
+  ADVANCE(5);
+  EXPECT_MEASUREMENT(3, DQCS_MEAS_ZERO, 10, 5);
+
+  FREE(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+
+  // Measure deallocated qubit.
+  EXPECT_MEASUREMENT(2, DQCS_MEAS_INVALID, -1, -1);
+
+  return dqcs_return_t::DQCS_SUCCESS;
+}
+
+TEST(plugin_gates, with_feedback) {
+  back_data_t back_data;
+
+  SIM_HEADER;
+  ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, initialize_cb_with_feedback, NULL, (void*)0), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_gate_cb(back, back_gate_cb, NULL, &back_data), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_advance_cb(back, back_advance_cb, NULL, &back_data), dqcs_return_t::DQCS_SUCCESS);
+  SIM_CONSTRUCT;
+  SIM_FOOTER;
+
+  EXPECT_GATE(back_data.ops, "MEAS", QUBITS(), QUBITS(), QUBITS(1, 2, 3, 4, 5));
+  EXPECT_ADVANCE(back_data.ops, 3);
+  EXPECT_GATE(back_data.ops, "X", QUBITS(1), QUBITS(), QUBITS());
+  EXPECT_GATE(back_data.ops, "Y", QUBITS(2), QUBITS(), QUBITS());
+  EXPECT_GATE(back_data.ops, "Z", QUBITS(3), QUBITS(), QUBITS());
+  EXPECT_ADVANCE(back_data.ops, 2);
+  EXPECT_GATE(back_data.ops, "CNOT", QUBITS(4), QUBITS(5), QUBITS());
+  EXPECT_ADVANCE(back_data.ops, 5);
+  EXPECT_GATE(back_data.ops, "MEAS", QUBITS(), QUBITS(), QUBITS(3, 4, 5, 6, 7));
+  EXPECT_ADVANCE(back_data.ops, 5);
+  EXPECT_DONE(back_data.ops);
+}
+
+TEST(plugin_gates, with_feedback_with_operator) {
+  back_data_t back_data, oper_data;
+
+  SIM_HEADER;
+  ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, initialize_cb_with_feedback, NULL, (void*)1), dqcs_return_t::DQCS_SUCCESS);
+
+  ASSERT_EQ(dqcs_pdef_set_allocate_cb(oper, op_allocate_cb, NULL, &oper_data), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_free_cb(oper, op_free_cb, NULL, &back_data), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_gate_cb(oper, op_gate_cb, NULL, &oper_data), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_advance_cb(oper, op_advance_cb, NULL, &oper_data), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_modify_measurement_cb(oper, op_modify_measurement_cb, NULL, &oper_data), dqcs_return_t::DQCS_SUCCESS);
+
+  ASSERT_EQ(dqcs_pdef_set_gate_cb(back, back_gate_cb, NULL, &back_data), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_advance_cb(back, back_advance_cb, NULL, &back_data), dqcs_return_t::DQCS_SUCCESS);
+  SIM_CONSTRUCT;
+  SIM_FOOTER;
+
+  EXPECT_GATE(oper_data.ops, "MEAS", QUBITS(), QUBITS(), QUBITS(1, 2, 3, 4, 5));
+  EXPECT_ADVANCE(oper_data.ops, 3);
+  EXPECT_GATE(oper_data.ops, "X", QUBITS(1), QUBITS(), QUBITS());
+  EXPECT_GATE(oper_data.ops, "Y", QUBITS(2), QUBITS(), QUBITS());
+  EXPECT_GATE(oper_data.ops, "Z", QUBITS(3), QUBITS(), QUBITS());
+  EXPECT_ADVANCE(oper_data.ops, 2);
+  EXPECT_GATE(oper_data.ops, "CNOT", QUBITS(4), QUBITS(5), QUBITS());
+  EXPECT_ADVANCE(oper_data.ops, 5);
+  EXPECT_GATE(oper_data.ops, "MEAS", QUBITS(), QUBITS(), QUBITS(3, 4, 5, 6, 7));
+  EXPECT_ADVANCE(oper_data.ops, 5);
+  EXPECT_DONE(oper_data.ops);
+
+  EXPECT_GATE(back_data.ops, "MEAS", QUBITS(), QUBITS(), QUBITS(3, 4, 7, 8));
+  EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_ADVANCE(back_data.ops, 6);
+  EXPECT_GATE(back_data.ops, "X", QUBITS(1, 2), QUBITS(), QUBITS());
+  EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_GATE(back_data.ops, "Y", QUBITS(3, 4), QUBITS(), QUBITS());
+  EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_GATE(back_data.ops, "Z", QUBITS(5, 6), QUBITS(), QUBITS());
+  EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_ADVANCE(back_data.ops, 4);
+  EXPECT_GATE(back_data.ops, "CNOT", QUBITS(7, 8), QUBITS(9, 10), QUBITS());
+  EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_ADVANCE(back_data.ops, 10);
+  EXPECT_GATE(back_data.ops, "MEAS", QUBITS(), QUBITS(), QUBITS(7, 8, 11, 12));
+  EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_ADVANCE(back_data.ops, 10);
+  EXPECT_DONE(back_data.ops);
+}
+
+TEST(plugin_gates, with_feedback_with_broken_operator) {
+  back_data_t back_data, oper_data;
+
+  SIM_HEADER;
+  ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, initialize_cb_with_feedback, NULL, (void*)2), dqcs_return_t::DQCS_SUCCESS);
+
+  ASSERT_EQ(dqcs_pdef_set_allocate_cb(oper, op_allocate_cb, NULL, &oper_data), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_free_cb(oper, op_free_cb, NULL, &back_data), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_gate_cb(oper, op_gate_cb, NULL, &oper_data), dqcs_return_t::DQCS_SUCCESS);
+  // note: advance and modify_measurement missing; the latter causes
+  // incorrect measurement data.
+
+  ASSERT_EQ(dqcs_pdef_set_gate_cb(back, back_gate_cb, NULL, &back_data), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_advance_cb(back, back_advance_cb, NULL, &back_data), dqcs_return_t::DQCS_SUCCESS);
+  SIM_CONSTRUCT;
+  SIM_FOOTER;
+
+  EXPECT_GATE(oper_data.ops, "MEAS", QUBITS(), QUBITS(), QUBITS(1, 2, 3, 4, 5));
+  EXPECT_GATE(oper_data.ops, "X", QUBITS(1), QUBITS(), QUBITS());
+  EXPECT_GATE(oper_data.ops, "Y", QUBITS(2), QUBITS(), QUBITS());
+  EXPECT_GATE(oper_data.ops, "Z", QUBITS(3), QUBITS(), QUBITS());
+  EXPECT_GATE(oper_data.ops, "CNOT", QUBITS(4), QUBITS(5), QUBITS());
+  EXPECT_GATE(oper_data.ops, "MEAS", QUBITS(), QUBITS(), QUBITS(3, 4, 5, 6, 7));
+  EXPECT_DONE(oper_data.ops);
+
+  EXPECT_GATE(back_data.ops, "MEAS", QUBITS(), QUBITS(), QUBITS(3, 4, 7, 8));
+  EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_ADVANCE(back_data.ops, 3);
+  EXPECT_GATE(back_data.ops, "X", QUBITS(1, 2), QUBITS(), QUBITS());
+  EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_GATE(back_data.ops, "Y", QUBITS(3, 4), QUBITS(), QUBITS());
+  EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_GATE(back_data.ops, "Z", QUBITS(5, 6), QUBITS(), QUBITS());
+  EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_ADVANCE(back_data.ops, 2);
+  EXPECT_GATE(back_data.ops, "CNOT", QUBITS(7, 8), QUBITS(9, 10), QUBITS());
+  EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_ADVANCE(back_data.ops, 5);
+  EXPECT_GATE(back_data.ops, "MEAS", QUBITS(), QUBITS(), QUBITS(7, 8, 11, 12));
+  EXPECT_ADVANCE(back_data.ops, 1);
+  EXPECT_ADVANCE(back_data.ops, 5);
   EXPECT_DONE(back_data.ops);
 }
