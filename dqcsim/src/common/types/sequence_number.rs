@@ -20,7 +20,8 @@ impl SequenceNumber {
     }
 
     /// Returns true if this sequence number comes after the given sequence
-    /// number. Every sequence number comes after `SequenceNumber::none()`.
+    /// number. Every sequence number comes after `SequenceNumber::none()`,
+    /// except for `SequenceNumber::none()` which never comes after anything.
     pub fn after(self, other: SequenceNumber) -> bool {
         self.0 > other.0
     }
@@ -75,4 +76,63 @@ impl SequenceNumberGenerator {
     pub fn get_previous(&self) -> SequenceNumber {
         self.previous
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn construct_generator() {
+        let mut s1 = SequenceNumberGenerator::default();
+        let mut s2 = SequenceNumberGenerator::new();
+        assert_eq!(s1.get_next(), s2.get_next());
+    }
+
+    #[test]
+    fn gets() {
+        let mut s = SequenceNumberGenerator::default();
+        assert_eq!(s.get_previous(), SequenceNumber(0));
+        assert_eq!(s.get_previous(), SequenceNumber(0));
+        assert_eq!(s.get_next(), SequenceNumber(1));
+        assert_eq!(s.get_next(), SequenceNumber(2));
+        assert_eq!(s.get_previous(), SequenceNumber(2));
+        assert_eq!(s.get_next(), SequenceNumber(3));
+        assert_eq!(s.get_previous(), SequenceNumber(3));
+    }
+
+    #[test]
+    fn seqs() {
+        let mut s = SequenceNumberGenerator::default();
+        let sn = s.get_previous();
+
+        assert_eq!(sn.preceding(), SequenceNumber(0));
+        assert!(!sn.after(SequenceNumber(0)));
+        assert!(!sn.after(SequenceNumber(1)));
+        assert!(sn.acknowledges(SequenceNumber(0)));
+        assert!(!sn.acknowledges(SequenceNumber(1)));
+
+        let sn = s.get_next();
+        assert_eq!(sn.preceding(), SequenceNumber(0));
+        assert!(sn.after(SequenceNumber(0)));
+        assert!(!sn.after(SequenceNumber(1)));
+        assert!(sn.acknowledges(SequenceNumber(0)));
+        assert!(sn.acknowledges(SequenceNumber(1)));
+
+        let sn = s.get_next();
+        assert_eq!(sn.preceding(), SequenceNumber(1));
+        assert!(sn.after(SequenceNumber(0)));
+        assert!(sn.after(SequenceNumber(1)));
+        assert!(!sn.after(SequenceNumber(2)));
+        assert!(sn.acknowledges(SequenceNumber(0)));
+        assert!(sn.acknowledges(SequenceNumber(1)));
+        assert!(sn.acknowledges(SequenceNumber(2)));
+        assert!(!sn.acknowledges(SequenceNumber(3)));
+    }
+
+    #[test]
+    fn display() {
+        assert_eq!(SequenceNumber(123).to_string(), "123");
+    }
+
 }

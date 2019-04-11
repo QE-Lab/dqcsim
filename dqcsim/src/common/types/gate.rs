@@ -138,7 +138,7 @@ impl Gate {
         }
 
         // Check the size of the matrix.
-        let expected_size = 4 << (targets.len() - 1);
+        let expected_size = 2usize.pow(2 * targets.len() as u32);
         if matrix.len() != expected_size {
             return inv_arg(format!(
                 "the matrix is expected to be of size {} but was {}",
@@ -224,7 +224,7 @@ impl Gate {
             if targets.is_empty() {
                 return inv_arg("cannot specify a matrix when there are no target qubits");
             } else {
-                let expected_size = 4 << (targets.len() - 1);
+                let expected_size = 2usize.pow(2 * targets.len() as u32);
                 if m.len() != expected_size {
                     return inv_arg(format!(
                         "the matrix is expected to be of size {} but was {}",
@@ -282,4 +282,293 @@ impl Gate {
             )
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn qref(q: u64) -> QubitRef {
+        QubitRef::from_foreign(q).unwrap()
+    }
+
+    #[test]
+    fn new_unitary_no_targets() {
+        let targets = vec![];
+        let controls = vec![];
+        let matrix = vec![];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: at least one target qubit is required"
+        );
+    }
+
+    #[test]
+    fn new_unitary_dup_target() {
+        let targets = vec![qref(1), qref(1)];
+        let controls = vec![];
+        let matrix = vec![];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: qubit 1 is used more than once"
+        );
+
+        let targets = vec![qref(1)];
+        let controls = vec![qref(1)];
+        let matrix = vec![];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: qubit 1 is used more than once"
+        );
+    }
+
+    #[test]
+    fn new_unitary_bad_matrix_size() {
+        let targets = vec![qref(2)];
+        let controls = vec![qref(1)];
+        let matrix = vec![
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+        ];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: the matrix is expected to be of size 4 but was 3"
+        );
+
+        let targets = vec![qref(2), qref(3)];
+        let controls = vec![];
+        let matrix = vec![Complex64::new(1f64, 1f64)];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: the matrix is expected to be of size 16 but was 1"
+        );
+
+        let targets = vec![qref(1), qref(2), qref(3)];
+        let controls = vec![];
+        let matrix = vec![Complex64::new(1f64, 1f64)];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: the matrix is expected to be of size 64 but was 1"
+        );
+
+        let targets = vec![qref(1), qref(2), qref(3), qref(4)];
+        let controls = vec![];
+        let matrix = vec![Complex64::new(1f64, 1f64)];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: the matrix is expected to be of size 256 but was 1"
+        );
+    }
+
+    #[test]
+    fn new_unitary() {
+        let targets = vec![qref(1)];
+        let controls = vec![qref(2)];
+        let matrix = vec![
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+        ];
+        let g = Gate::new_unitary(targets, controls, matrix);
+        assert!(g.is_ok());
+        let g = g.unwrap();
+        assert_eq!(g.get_name(), None);
+        assert_eq!(g.get_targets(), [qref(1)]);
+        assert_eq!(g.get_controls(), [qref(2)]);
+        assert_eq!(g.get_measures(), []);
+        assert_eq!(
+            g.get_matrix(),
+            Some(vec![
+                Complex64::new(1f64, 1f64),
+                Complex64::new(1f64, 1f64),
+                Complex64::new(1f64, 1f64),
+                Complex64::new(1f64, 1f64),
+            ])
+        );
+    }
+
+    #[test]
+    fn new_measurement_dup_qubit() {
+        let g = Gate::new_measurement(vec![qref(1), qref(1)]);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: qubit 1 is measured more than once"
+        );
+    }
+
+    #[test]
+    fn new_measurement() {
+        let g = Gate::new_measurement(vec![qref(1)]);
+        assert!(g.is_ok());
+        let g = g.unwrap();
+        assert_eq!(g.get_name(), None);
+        assert_eq!(g.get_targets(), []);
+        assert_eq!(g.get_controls(), []);
+        assert_eq!(g.get_measures(), [qref(1)]);
+        assert_eq!(g.get_matrix(), None);
+    }
+
+    #[test]
+    fn new_custom_dup_qubit() {
+        let name = "";
+        let targets = vec![qref(1)];
+        let controls = vec![qref(1)];
+        let measures = vec![];
+        let matrix = Some(vec![
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+        ]);
+        let data = ArbData::default();
+        let g = Gate::new_custom(name, targets, controls, measures, matrix, data);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: qubit 1 is used more than once"
+        );
+
+        let name = "";
+        let targets = vec![qref(1), qref(1)];
+        let controls = vec![];
+        let measures = vec![];
+        let matrix = Some(vec![
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+        ]);
+        let data = ArbData::default();
+        let g = Gate::new_custom(name, targets, controls, measures, matrix, data);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: qubit 1 is used more than once"
+        );
+    }
+
+    #[test]
+    fn new_custom_dup_measure() {
+        let name = "";
+        let targets = vec![];
+        let controls = vec![];
+        let measures = vec![qref(1), qref(1)];
+        let matrix: Option<Vec<Complex64>> = None;
+        let data = ArbData::default();
+        let g = Gate::new_custom(name, targets, controls, measures, matrix, data);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: qubit 1 is measured more than once"
+        );
+    }
+
+    #[test]
+    fn new_custom_matrix_no_targets() {
+        let name = "";
+        let targets = vec![];
+        let controls = vec![];
+        let measures = vec![];
+        let matrix = Some(vec![
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+        ]);
+        let data = ArbData::default();
+        let g = Gate::new_custom(name, targets, controls, measures, matrix, data);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: cannot specify a matrix when there are no target qubits"
+        );
+    }
+
+    #[test]
+    fn new_custom_bad_size() {
+        let name = "";
+        let targets = vec![qref(1)];
+        let controls = vec![];
+        let measures = vec![];
+        let matrix = Some(vec![
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+            Complex64::new(1f64, 1f64),
+        ]);
+        let data = ArbData::default();
+        let g = Gate::new_custom(name, targets, controls, measures, matrix, data);
+        assert!(g.is_err());
+        assert_eq!(
+            g.unwrap_err().to_string(),
+            "Invalid argument: the matrix is expected to be of size 4 but was 3"
+        );
+    }
+
+    #[test]
+    fn new_custom() {
+        let name = "I";
+        let targets = vec![qref(1)];
+        let controls = vec![qref(2)];
+        let measures = vec![qref(3)];
+        let matrix = Some(vec![
+            Complex64::new(1f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(1f64, 0f64),
+        ]);
+        let data = ArbData::default();
+        let g = Gate::new_custom(name, targets, controls, measures, matrix, data);
+        assert!(g.is_ok());
+        let g = g.unwrap();
+        assert_eq!(g.get_name(), Some("I"));
+        assert_eq!(g.get_targets(), [qref(1)]);
+        assert_eq!(g.get_controls(), [qref(2)]);
+        assert_eq!(g.get_measures(), [qref(3)]);
+        assert_eq!(
+            g.get_matrix(),
+            Some(vec![
+                Complex64::new(1f64, 0f64),
+                Complex64::new(0f64, 0f64),
+                Complex64::new(0f64, 0f64),
+                Complex64::new(1f64, 0f64),
+            ])
+        );
+    }
+
+    #[test]
+    fn debug() {
+        let name = "I";
+        let targets = vec![qref(1)];
+        let controls = vec![qref(2)];
+        let measures = vec![qref(3)];
+        let matrix = Some(vec![
+            Complex64::new(1f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(1f64, 0f64),
+        ]);
+        let data = ArbData::default();
+        let g = Gate::new_custom(name, targets, controls, measures, matrix, data);
+        assert!(g.is_ok());
+        let g = g.unwrap();
+        assert_eq!(format!("{:?}", g), "Gate { name: Some(\"I\"), targets: [QubitRef(1)], controls: [QubitRef(2)], measures: [QubitRef(3)], matrix: [InternalComplex64 { re: 1.0, im: 0.0 }, InternalComplex64 { re: 0.0, im: 0.0 }, InternalComplex64 { re: 0.0, im: 0.0 }, InternalComplex64 { re: 1.0, im: 0.0 }], data: ArbData { json: Object({}), args: [] } }");
+    }
+
 }
