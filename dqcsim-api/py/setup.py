@@ -15,6 +15,7 @@ setup(
     packages = [
         'dqcsim',
         'dqcsim.common',
+        'dqcsim.plugin',
     ],
     package_dir = {'dqcsim': 'dqcsim'},
     ext_modules = [Extension(

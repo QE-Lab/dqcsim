@@ -1,7 +1,3 @@
-try:
-    import cbor
-except ImportError:
-    raise Exception("Failed to load DQCsim: missing cbor library")
 
 import dqcsim._dqcsim as raw
 from dqcsim.common import ArbData
