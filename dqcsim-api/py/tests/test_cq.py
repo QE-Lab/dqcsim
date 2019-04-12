@@ -83,5 +83,8 @@ class Tests(unittest.TestCase):
 )""")
         self.assertEqual(ArbCmdQueue.from_raw(a), [ArbCmd('a', 'b'), ArbCmd('c', 'd')])
 
+        with self.assertRaises(TypeError):
+            a = ArbCmdQueue.to_raw(33)
+
 if __name__ == '__main__':
     unittest.main()

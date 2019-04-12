@@ -17,6 +17,9 @@ class Tests(unittest.TestCase):
         with self.assertRaises(ValueError):
             ArbCmd(" hello ", "dkbng")
 
+        with self.assertRaises(ValueError):
+            ArbCmd("a", ".dkbng")
+
         self.assertEqual(repr(ArbCmd("a", "b", b"c", d="e")), "ArbCmd('a', 'b', b'c', d='e')")
 
     def test_getters(self):

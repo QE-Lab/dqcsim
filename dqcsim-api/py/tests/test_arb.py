@@ -68,7 +68,7 @@ class Operations(unittest.TestCase):
         with self.assertRaises(TypeError):
             a["test"] = ArbData()
 
-    def test_del(self):
+    def test_del_eq(self):
         a = ArbData(b'a', b'b', b'c', a=3, b=4, c=5)
         del a[1]
         del a["b"]
@@ -77,6 +77,7 @@ class Operations(unittest.TestCase):
         self.assertEqual(a, ArbData(b'a', b'c', a=3, c=5))
         self.assertNotEqual(a, ArbData(b'a', b'd', a=3, c=5))
         self.assertNotEqual(a, ArbData(b'a', b'c', a=3, c=6))
+        self.assertNotEqual(a, 3)
 
     def test_contains(self):
         a = ArbData(b'a', b'b', b'c', b=3, c=4, d=5)
@@ -204,6 +205,12 @@ class Operations(unittest.TestCase):
 )""")
 
         self.assertEqual(ArbData.from_raw(a), ArbData(b'c', b'd', b'e', b=6, c=7, d=8))
+
+    def test_long_data(self):
+        data = list(range(256))
+        bdata = bytes(data) * 4
+        a = ArbData(bdata, b=data)
+        self.assertEqual(ArbData.from_raw(a.to_raw()), a)
 
 if __name__ == '__main__':
     unittest.main()

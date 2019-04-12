@@ -3,8 +3,8 @@ import dqcsim._dqcsim as raw
 class Handle(object):
     """Wrapper for DQCsim API handles that automatically deallocates the
     underlying handle when it is garbage collected."""
-    def __init__(self, handle):
-        self._handle = handle
+    def __init__(self, handle=0):
+        self._handle = int(handle)
 
     def __bool__(self):
         return self._handle is not None and self._handle > 0
@@ -36,14 +36,15 @@ class Handle(object):
         pass
 
     def __del__(self):
-        if self:
-            try:
-                raw.dqcs_handle_delete(self._handle)
-            except RuntimeError:
-                # We're probably being called from the generational garbage
-                # collector (a different thread). Nothing we can do about it.
-                # We have to leak the handle.
-                pass
+        if hasattr(self, '_handle'):
+            if self:
+                try:
+                    raw.dqcs_handle_delete(self._handle)
+                except RuntimeError:
+                    # We're probably being called from the generational garbage
+                    # collector (a different thread). Nothing we can do about it.
+                    # We have to leak the handle.
+                    pass
 
     def __repr__(self):
         return "Handle({})".format(self._handle)
