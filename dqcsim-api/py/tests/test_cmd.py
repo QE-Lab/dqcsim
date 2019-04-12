@@ -1,6 +1,7 @@
 import unittest
 
-from dqcsim.common import ArbCmd, ArbData
+from dqcsim.common.arb import ArbData
+from dqcsim.common.cmd import ArbCmd
 from dqcsim import raw
 
 class Tests(unittest.TestCase):

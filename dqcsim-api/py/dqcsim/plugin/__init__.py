@@ -1,5 +1,36 @@
+"""Contains the base classes for implementing DQCsim plugins.
 
-__all__ = ['Frontend', 'Operator', 'Backend']
+You should be implementing one of `Frontend`, `Operator`, or `Backend`. The
+documentation of these classes indicates which functions you should implement
+to specify the plugin's functionality. Overriding `__init__()` is also allowed,
+but if you do this you must call `super().__init__()`.
+
+A completed plugin script looks something like this:
+
+    from dqcsim.plugin import Frontend
+    from dqcsim.common.arb import ArbData
+
+    class MyPlugin(Frontend):
+        def get_name(self):
+            return "My Plugin"
+
+        def get_author(self):
+            return "Me!"
+
+        def get_version(self):
+            return "3.14"
+
+        def handle_run(*args, **kwargs):
+            # Just return whatever argument we received as the return value!
+            return ArbData(*args, **kwargs)
+
+    MyPlugin().run()
+
+This allows the script to be called using DQCsim's command-line interface by
+simply specifying the Python script.
+"""
+
+__all__ = ['Frontend', 'Operator', 'Backend', 'GateStreamSource', 'Plugin']
 
 from enum import Enum
 import dqcsim._dqcsim as raw
@@ -153,46 +184,53 @@ class Frontend(GateStreamSource):
     host program, with which they can communicate by means of an ArbData queue
     in either direction.
 
-    The following functions MUST be overridden by the user:
+    The following functions MUST be implemented by the user:
 
-     - get_name() -> PluginType
-       Must return the name of the plugin implementation.
+     - `get_name() -> PluginType`
 
-     - get_author() -> PluginType
-       Must return the name of the plugin author.
+        Must return the name of the plugin implementation.
 
-     - get_version() -> PluginType
-       Must return the plugin's version string.
+     - `get_author() -> PluginType`
 
-     - handle_run(*args, **kwargs) -> ArbData or None
-       Called by the host program through its start() API call. The positional
-       arguments are set to the list of binary strings from the ArbData
-       argument, and **kwargs is set to the JSON object. The returned ArbData
-       object can be retrieved by the host using the wait() API call. If you
-       return None, an empty ArbData object will be automatically generated for
-       the response.
+        Must return the name of the plugin author.
 
-    The following functions MAY be overridden by the user:
+     - `get_version() -> PluginType`
 
-     - handle_init(cmds: [ArbCmd]) -> None
-       Called by the simulator to initialize this plugin. The cmds parameter
-       is passed a list of ArbCmds that the simulator wishes to associate with
-       the plugin. If this function is not implemented, or if it is implemented
-       but does not take an argument, the initialization ArbCmds are treated as
-       regular host arbs (that is, they're passed to
-       handle_host_<iface>_<oper>() if those functions do exist).
+        Must return the plugin's version string.
 
-     - handle_drop() -> None
-       Called by the simulator when the simulation terminates.
+     - `handle_run(*args, **kwargs) -> ArbData or None`
 
-     - handle_host_<iface>_<oper>(*args, **kwargs) -> ArbData or None
-       Called when an ArbCmd is received from the host with the interface and
-       operation identifiers embedded in the name. That is, you don't have to
-       do interface/operation identifier matching yourself; you just specify
-       the operations that you support. The positional arguments are set to the
-       list of binary strings attached to the ArbCmd, and **kwargs is set to
-       the JSON object. If you return None, an empty ArbData object will be
-       automatically generated for the response.
+        Called by the host program through its start() API call. The positional
+        arguments are set to the list of binary strings from the ArbData
+        argument, and **kwargs is set to the JSON object. The returned ArbData
+        object can be retrieved by the host using the wait() API call. If you
+        return None, an empty ArbData object will be automatically generated for
+        the response.
+
+    The following functions MAY be implemented by the user:
+
+     - `handle_init(cmds: [ArbCmd]) -> None`
+
+        Called by the simulator to initialize this plugin. The cmds parameter
+        is passed a list of ArbCmds that the simulator wishes to associate with
+        the plugin. If this function is not implemented, or if it is implemented
+        but does not take an argument, the initialization ArbCmds are treated as
+        regular host arbs (that is, they're passed to
+        handle_host_<iface>_<oper>() if those functions do exist).
+
+     - `handle_drop() -> None`
+
+        Called by the simulator when the simulation terminates.
+
+     - `handle_host_<iface>_<oper>(*args, **kwargs) -> ArbData or None`
+
+        Called when an ArbCmd is received from the host with the interface and
+        operation identifiers embedded in the name. That is, you don't have to
+        do interface/operation identifier matching yourself; you just specify
+        the operations that you support. The positional arguments are set to the
+        list of binary strings attached to the ArbCmd, and **kwargs is set to
+        the JSON object. If you return None, an empty ArbData object will be
+        automatically generated for the response.
     """
 
     def get_type():
@@ -205,105 +243,120 @@ class Operator(GateStreamSource):
     Operators sit between frontends and backends, allowing them to observe or
     modify the quantum gate and measurement streams between them.
 
-    The following functions MUST be overridden by the user:
+    The following functions MUST be implemented by the user:
 
-     - get_name() -> PluginType
-       Must return the name of the plugin implementation.
+     - `get_name() -> PluginType`
 
-     - get_author() -> PluginType
-       Must return the name of the plugin author.
+        Must return the name of the plugin implementation.
 
-     - get_version() -> PluginType
-       Must return the plugin's version string.
+     - `get_author() -> PluginType`
 
-    The following functions MAY be overridden by the user:
+        Must return the name of the plugin author.
 
-     - handle_init(cmds: [ArbCmd]) -> None
-       Called by the simulator to initialize this plugin. The cmds parameter
-       is passed a list of ArbCmds that the simulator wishes to associate with
-       the plugin. If this function is not implemented, or if it is implemented
-       but does not take an argument, the initialization ArbCmds are treated as
-       regular host arbs (that is, they're passed to
-       handle_host_<iface>_<oper>() if those functions do exist).
+     - `get_version() -> PluginType`
 
-     - handle_drop() -> None
-       Called by the simulator when the simulation terminates.
+        Must return the plugin's version string.
 
-     - handle_allocate(qubits: [Qubit], cmds: [ArbCmd]) -> None
-       Called when the upstream plugin needs more qubits. The qubits list
-       specifies the (integer) references that will be used by future calls to
-       refer to the qubits (thus, the length of the list is the number of
-       qubits that are to be allocated). The cmds parameter is passed a list of
-       ArbCmds that the upstream plugin wants to associate with the qubits.
+    The following functions MAY be implemented by the user:
 
-     - handle_free(qubits: [Qubit]) -> None
-       Called when the upstream plugin doesn't need the specified qubits
-       anymore.
+     - `handle_init(cmds: [ArbCmd]) -> None`
 
-     - handle_unitary_gate(targets: [Qubit], matrix: [[complex]]) -> None
-       Called when a unitary gate must be handled: it must apply the given
-       unitary matrix to the given list of qubits.
+        Called by the simulator to initialize this plugin. The cmds parameter
+        is passed a list of ArbCmds that the simulator wishes to associate with
+        the plugin. If this function is not implemented, or if it is implemented
+        but does not take an argument, the initialization ArbCmds are treated as
+        regular host arbs (that is, they're passed to
+        handle_host_<iface>_<oper>() if those functions do exist).
 
-     - handle_controlled_gate(targets: [Qubit], controls: [Qubit], matrix: [[complex]]) -> None
-       Called when a controlled gate must be handled: it must apply the given
-       unitary matrix to the target qubits "if the control qubits are set". In
-       other words, it must first turn the given matrix into a controlled
-       matrix for the specified number of control qubits, and then apply that
-       gate to the concatenation of the target and control lists. If this
-       function is not specified, this matrix upscaling is performed
-       automatically, allowing handle_unitary_gate() to be called instead.
-       You only have to implement this if your implementation can get a
-       performance boost by doing this conversion manually.
+     - `handle_drop() -> None`
 
-     - handle_measurement_gate(meas: [Qubit]) -> [Measurement]
-       Called when a measurement must be performed. The measurement basis is
-       fixed to the Z-axis; custom gates should be used when different
-       measurement bases are required.
+        Called by the simulator when the simulation terminates.
 
-       The returned map MAY contain measurement entries for all the qubits
-       specified by the qubits parameter, but it is also allowed to not specify
-       the measurement results at this time, if an appropriate measurement gate
-       is sent downstream and an appropriate handle_measurement_gate()
-       implementation is provided (or its default is sufficient). This is
-       called postponing. Doing this is more performant than reading the
-       measurement results of the downstream gate and returning those, because
-       it doesn't require waiting for those results to become available.
+     - `handle_allocate(qubits: [Qubit], cmds: [ArbCmd]) -> None`
 
-     - handle_<name>_gate(
-         targets: [Qubit],
-         controls: [Qubit],
-         measures: [Qubit],
-         matrix: [[complex]] or None,
-         *args, **kwargs
-       ) -> {Qubit: value} or None
-       Called when a custom (named) gate must be performed. The targets,
-       controls, measures, and matrix share the functionality of
-       handle_controlled_gate() and handle_measurement_gate(), as does the
-       return value for the latter. Custom gates also have an attached ArbData,
-       of which the binary string list is passed to *args, and the JSON object
-       is passed to **kwargs.
+        Called when the upstream plugin needs more qubits. The qubits list
+        specifies the (integer) references that will be used by future calls to
+        refer to the qubits (thus, the length of the list is the number of
+        qubits that are to be allocated). The cmds parameter is passed a list of
+        ArbCmds that the upstream plugin wants to associate with the qubits.
 
-     - handle_measurement(meas: Measurement) -> [measurements]
-       Called when measurement data is received from the downstream plugin,
-       allowing it to be modified before it is forwarded upstream. Modification
-       includes not passing the measurement through (by returning an empty
-       list), turning it into multiple measurements, changing the qubit
-       reference to support qubit mapping, or just changing the measurement
-       data itself to introduce errors or compensate for an earlier
-       modification of the gatestream.
+     - `handle_free(qubits: [Qubit]) -> None`
 
-     - handle_advance(cycles: [int]) -> None
-       Called to advance simulation time.
+        Called when the upstream plugin doesn't need the specified qubits
+        anymore.
 
-     - handle_<host|upstream>_<iface>_<oper>(*args, **kwargs) -> ArbData or None
-       Called when an ArbCmd is received from the upstream plugin or from the
-       host with the interface and operation identifiers embedded in the name.
-       That is, you don't have to do interface/operation identifier matching
-       yourself; you just specify the operations that you support. The
-       positional arguments are set to the list of binary strings attached to
-       the ArbCmd, and **kwargs is set to the JSON object. If you return None,
-       an empty ArbData object will be automatically generated for the
-       response.
+     - `handle_unitary_gate(targets: [Qubit], matrix: [[complex]]) -> None`
+
+        Called when a unitary gate must be handled: it must apply the given
+        unitary matrix to the given list of qubits.
+
+     - `handle_controlled_gate(targets: [Qubit], controls: [Qubit], matrix: [[complex]]) -> None`
+
+        Called when a controlled gate must be handled: it must apply the given
+        unitary matrix to the target qubits "if the control qubits are set". In
+        other words, it must first turn the given matrix into a controlled
+        matrix for the specified number of control qubits, and then apply that
+        gate to the concatenation of the target and control lists. If this
+        function is not specified, this matrix upscaling is performed
+        automatically, allowing handle_unitary_gate() to be called instead.
+        You only have to implement this if your implementation can get a
+        performance boost by doing this conversion manually.
+
+     - `handle_measurement_gate(meas: [Qubit]) -> [Measurement]`
+
+        Called when a measurement must be performed. The measurement basis is
+        fixed to the Z-axis; custom gates should be used when different
+        measurement bases are required.
+
+        The returned map MAY contain measurement entries for all the qubits
+        specified by the qubits parameter, but it is also allowed to not specify
+        the measurement results at this time, if an appropriate measurement gate
+        is sent downstream and an appropriate handle_measurement_gate()
+        implementation is provided (or its default is sufficient). This is
+        called postponing. Doing this is more performant than reading the
+        measurement results of the downstream gate and returning those, because
+        it doesn't require waiting for those results to become available.
+
+     -  `handle_<name>_gate(
+            targets: [Qubit],
+            controls: [Qubit],
+            measures: [Qubit],
+            matrix: [[complex]] or None,
+            *args, **kwargs
+        ) -> {Qubit: value} or None
+        `
+
+        Called when a custom (named) gate must be performed. The targets,
+        controls, measures, and matrix share the functionality of
+        handle_controlled_gate() and handle_measurement_gate(), as does the
+        return value for the latter. Custom gates also have an attached ArbData,
+        of which the binary string list is passed to *args, and the JSON object
+        is passed to **kwargs.
+
+     - `handle_measurement(meas: Measurement) -> [measurements]`
+
+        Called when measurement data is received from the downstream plugin,
+        allowing it to be modified before it is forwarded upstream. Modification
+        includes not passing the measurement through (by returning an empty
+        list), turning it into multiple measurements, changing the qubit
+        reference to support qubit mapping, or just changing the measurement
+        data itself to introduce errors or compensate for an earlier
+        modification of the gatestream.
+
+     - `handle_advance(cycles: [int]) -> None`
+
+        Called to advance simulation time.
+
+     - `handle_<host|upstream>_<iface>_<oper>(*args, **kwargs) -> ArbData or None`
+
+        Called when an ArbCmd is received from the upstream plugin or from the
+        host with the interface and operation identifiers embedded in the name.
+        That is, you don't have to do interface/operation identifier matching
+        yourself; you just specify the operations that you support. The
+        positional arguments are set to the list of binary strings attached to
+        the ArbCmd, and **kwargs is set to the JSON object. If you return None,
+        an empty ArbData object will be automatically generated for the
+        response.
     """
 
     def get_type():
@@ -316,89 +369,102 @@ class Backend(Plugin):
     Backends consume a quantum gate stream, simulate the gates and qubits, and
     return measurement data to the upstream plugin.
 
-    The following functions MUST be overridden by the user:
+    The following functions MUST be implemented by the user:
 
-     - get_name() -> PluginType
-       Must return the name of the plugin implementation.
+     - `get_name() -> PluginType`
 
-     - get_author() -> PluginType
-       Must return the name of the plugin author.
+        Must return the name of the plugin implementation.
 
-     - get_version() -> PluginType
-       Must return the plugin's version string.
+     - `get_author() -> PluginType`
 
-     - handle_unitary_gate(targets: [Qubit], matrix: [[complex]]) -> None
-       Called when a unitary gate must be handled: it must apply the given
-       unitary matrix to the given list of qubits.
+        Must return the name of the plugin author.
 
-     - handle_measurement_gate(qubits: [Qubit]) -> [Measurement]
-       Called when a measurement must be performed. The measurement basis is
-       fixed to the Z-axis; custom gates should be used when different
-       measurement bases are required. The returned list must contain
-       measurement data for exactly those qubits specified by the qubits
-       parameter.
+     - `get_version() -> PluginType`
 
-    The following functions MAY be overridden by the user:
+        Must return the plugin's version string.
 
-     - handle_init(cmds: [ArbCmd]) -> None
-       Called by the simulator to initialize this plugin. The cmds parameter
-       is passed a list of ArbCmds that the simulator wishes to associate with
-       the plugin. If this function is not implemented, or if it is implemented
-       but does not take an argument, the initialization ArbCmds are treated as
-       regular host arbs (that is, they're passed to
-       handle_host_<iface>_<oper>() if those functions do exist).
+     - `handle_unitary_gate(targets: [Qubit], matrix: [[complex]]) -> None`
 
-     - handle_drop() -> None
-       Called by the simulator when the simulation terminates.
+        Called when a unitary gate must be handled: it must apply the given
+        unitary matrix to the given list of qubits.
 
-     - handle_allocate(qubits: [Qubit], cmds: [ArbCmd]) -> None
-       Called when the upstream plugin needs more qubits. The qubits list
-       specifies the (integer) references that will be used by future calls to
-       refer to the qubits (thus, the length of the list is the number of
-       qubits that are to be allocated). The cmds parameter is passed a list of
-       ArbCmds that the upstream plugin wants to associate with the qubits.
+     - `handle_measurement_gate(qubits: [Qubit]) -> [Measurement]`
 
-     - handle_free(qubits: [Qubit]) -> None
-       Called when the upstream plugin doesn't need the specified qubits
-       anymore.
+        Called when a measurement must be performed. The measurement basis is
+        fixed to the Z-axis; custom gates should be used when different
+        measurement bases are required. The returned list must contain
+        measurement data for exactly those qubits specified by the qubits
+        parameter.
 
-     - handle_controlled_gate(targets: [Qubit], controls: [Qubit], matrix: [[complex]]) -> None
-       Called when a controlled gate must be handled: it must apply the given
-       unitary matrix to the target qubits "if the control qubits are set". In
-       other words, it must first turn the given matrix into a controlled
-       matrix for the specified number of control qubits, and then apply that
-       gate to the concatenation of the target and control lists. If this
-       function is not specified, this matrix upscaling is performed
-       automatically, allowing handle_unitary_gate() to be called instead.
-       You only have to implement this if your implementation can get a
-       performance boost by doing this conversion manually.
+    The following functions MAY be implemented by the user:
 
-     - handle_<name>_gate(
-         targets: [Qubit],
-         controls: [Qubit],
-         measures: [Qubit],
-         matrix: [[complex]] or None,
-         *args, **kwargs
-       ) -> [Measurement]
-       Called when a custom (named) gate must be performed. The targets,
-       controls, measures, and matrix share the functionality of
-       handle_controlled_gate() and handle_measurement_gate(), as does the
-       return value for the latter. Custom gates also have an attached ArbData,
-       of which the binary string list is passed to *args, and the JSON object
-       is passed to **kwargs.
+     - `handle_init(cmds: [ArbCmd]) -> None`
 
-     - handle_advance(cycles: [int]) -> None
-       Called to advance simulation time.
+        Called by the simulator to initialize this plugin. The cmds parameter
+        is passed a list of ArbCmds that the simulator wishes to associate with
+        the plugin. If this function is not implemented, or if it is implemented
+        but does not take an argument, the initialization ArbCmds are treated as
+        regular host arbs (that is, they're passed to
+        handle_host_<iface>_<oper>() if those functions do exist).
 
-     - handle_<host|upstream>_<iface>_<oper>(*args, **kwargs) -> ArbData or None
-       Called when an ArbCmd is received from the upstream plugin or from the
-       host with the interface and operation identifiers embedded in the name.
-       That is, you don't have to do interface/operation identifier matching
-       yourself; you just specify the operations that you support. The
-       positional arguments are set to the list of binary strings attached to
-       the ArbCmd, and **kwargs is set to the JSON object. If you return None,
-       an empty ArbData object will be automatically generated for the
-       response.
+     - `handle_drop() -> None`
+
+        Called by the simulator when the simulation terminates.
+
+     - `handle_allocate(qubits: [Qubit], cmds: [ArbCmd]) -> None`
+
+        Called when the upstream plugin needs more qubits. The qubits list
+        specifies the (integer) references that will be used by future calls to
+        refer to the qubits (thus, the length of the list is the number of
+        qubits that are to be allocated). The cmds parameter is passed a list of
+        ArbCmds that the upstream plugin wants to associate with the qubits.
+
+     - `handle_free(qubits: [Qubit]) -> None`
+
+        Called when the upstream plugin doesn't need the specified qubits
+        anymore.
+
+     - `handle_controlled_gate(targets: [Qubit], controls: [Qubit], matrix: [[complex]]) -> None`
+
+        Called when a controlled gate must be handled: it must apply the given
+        unitary matrix to the target qubits "if the control qubits are set". In
+        other words, it must first turn the given matrix into a controlled
+        matrix for the specified number of control qubits, and then apply that
+        gate to the concatenation of the target and control lists. If this
+        function is not specified, this matrix upscaling is performed
+        automatically, allowing handle_unitary_gate() to be called instead.
+        You only have to implement this if your implementation can get a
+        performance boost by doing this conversion manually.
+
+     - `handle_<name>_gate(
+            targets: [Qubit],
+            controls: [Qubit],
+            measures: [Qubit],
+            matrix: [[complex]] or None,
+            *args, **kwargs
+        ) -> [Measurement]`
+
+        Called when a custom (named) gate must be performed. The targets,
+        controls, measures, and matrix share the functionality of
+        handle_controlled_gate() and handle_measurement_gate(), as does the
+        return value for the latter. Custom gates also have an attached ArbData,
+        of which the binary string list is passed to *args, and the JSON object
+        is passed to **kwargs.
+
+     - `handle_advance(cycles: [int]) -> None`
+
+        Called to advance simulation time.
+
+     - `handle_<host|upstream>_<iface>_<oper>(*args, **kwargs) -> ArbData or None`
+
+        Called when an ArbCmd is received from the upstream plugin or from the
+        host with the interface and operation identifiers embedded in the name.
+        That is, you don't have to do interface/operation identifier matching
+        yourself; you just specify the operations that you support. The
+        positional arguments are set to the list of binary strings attached to
+        the ArbCmd, and **kwargs is set to the JSON object. If you return None,
+        an empty ArbData object will be automatically generated for the
+        response.
     """
 
     def get_type():

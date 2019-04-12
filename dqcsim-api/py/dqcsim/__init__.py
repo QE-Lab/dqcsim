@@ -1,5 +1,5 @@
 
-__all__ = ['raw', 'common']
+__all__ = ['raw', 'common', 'plugin']
 
 import dqcsim._dqcsim as raw
 from dqcsim import common

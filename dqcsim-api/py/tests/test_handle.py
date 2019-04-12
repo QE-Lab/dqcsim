@@ -1,6 +1,6 @@
 import unittest
 
-from dqcsim.common import Handle
+from dqcsim.common.handle import Handle
 from dqcsim import raw
 
 class Tests(unittest.TestCase):

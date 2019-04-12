@@ -1,6 +1,6 @@
 import unittest
 
-from dqcsim.common import ArbData
+from dqcsim.common.arb import ArbData
 from dqcsim import raw
 
 class Constructor(unittest.TestCase):

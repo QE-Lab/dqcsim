@@ -120,6 +120,13 @@ py-install: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
 py-test: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES) $(PY_TESTS)
 	cd py && LD_LIBRARY_PATH=$(shell pwd)/../target/debug python3 setup.py test
 
+# NOTE: py-doc depends on py-test to make sure the shared objects are correctly
+# spammed around by setup.py, and to make sure that pdoc3 is installed.
+.PHONY: py-doc
+py-doc: py-test
+	rm -rf py/build/doc
+	cd py && LD_LIBRARY_PATH=$(shell pwd)/../target/debug PYTHONPATH=. pdoc3 --html --html-dir build/doc dqcsim
+
 .PHONY: py-clean
 py-clean:
 	rm -rf py/build

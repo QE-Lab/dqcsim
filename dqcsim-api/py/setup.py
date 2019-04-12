@@ -34,4 +34,5 @@ setup(
     ],
     test_suite='nose.collector',
     tests_require=['nose'],
+    setup_requires=['pdoc3']
 )

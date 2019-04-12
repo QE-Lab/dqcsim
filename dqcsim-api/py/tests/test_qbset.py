@@ -1,6 +1,6 @@
 import unittest
 
-from dqcsim.common import QbSet
+from dqcsim.common.qbset import QbSet
 from dqcsim import raw
 
 class Tests(unittest.TestCase):
