@@ -22,6 +22,16 @@ class Constructor(unittest.TestCase):
         with self.assertRaises(TypeError):
             ArbData(a=ArbData())
 
+    def test_copy(self):
+        x = ArbData(b'a', b'b', a=3, b="hello", c={}, d=[1, 2.3, "four"])
+        xr = repr(x)
+        y = ArbData(x)
+        self.assertEqual(repr(y), xr)
+        x['d'][1] = 2.5
+        self.assertEqual(repr(y), xr)
+        x[0] = b'x'
+        self.assertEqual(repr(y), xr)
+
 class Operations(unittest.TestCase):
 
     def test_bool(self):

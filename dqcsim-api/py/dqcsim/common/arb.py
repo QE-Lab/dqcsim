@@ -7,6 +7,7 @@ except ImportError:
 
 import dqcsim._dqcsim as raw
 from dqcsim.common.handle import Handle
+import copy
 
 def _check_json(ob):
     try:
@@ -38,14 +39,18 @@ class ArbData(object):
             ArbData(b"test1", b"test2", answer=42)
 
         constructs an ArbData object with JSON `{"answer": 42}` and arguments
-        `[b"test1", b"test2"]`.
+        `[b"test1", b"test2"]`. You can also pass an `ArbData` object as the
+        sole argument, in which case a copy will be made.
         """
-        # Ensure that all args support the buffer protocol.
-        for arg in args:
-            memoryview(arg)
-        self._args = list(args)
-        _check_json(kwargs)
-        self._json = kwargs
+        if len(args) == 1 and not kwargs and isinstance(args[0], ArbData):
+            self._args = copy.deepcopy(args[0]._args)
+            self._json = copy.deepcopy(args[0]._json)
+        else:
+            for arg in args:
+                memoryview(arg)
+            self._args = list(args)
+            _check_json(kwargs)
+            self._json = kwargs
 
     def __bool__(self):
         """Returns whether there is non-default data in this ArbData object."""
