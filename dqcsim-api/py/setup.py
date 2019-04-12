@@ -7,9 +7,12 @@ try:
 except KeyError:
     libdir = '../../target/debug'
 
+with open('../Cargo.toml', 'r') as f:
+    version = next(filter(lambda x: x.startswith('version = '), f.readlines()), 'version = "?.?.?"').split('"')[1]
+
 setup(
     name = 'dqcsim',
-    version = '1.0', # TODO: retrieve from cargo
+    version = version,
     description = 'Python bindings for DQCsim, the Delft Quantum & Classical Simulator',
     author = 'TU Delft Quantum & Computer Architecture, QuTech',
     packages = [
