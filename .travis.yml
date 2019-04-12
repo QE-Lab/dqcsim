@@ -15,10 +15,6 @@ rust:
 #   allow_failures:
 #     - rust: nightly
 
-branches:
-  only:
-    - master
-
 cache:
   directories:
     - $HOME/.cargo
