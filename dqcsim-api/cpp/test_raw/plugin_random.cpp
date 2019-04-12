@@ -108,6 +108,8 @@ TEST(plugin_random, run_consistency) {
   EXPECT_EQ(b.u64s.size(), 18u);
 
   while (!a.f64s.empty() && !b.f64s.empty()) {
+    EXPECT_UNIT_RANGE(a.f64s.front());
+    EXPECT_UNIT_RANGE(b.f64s.front());
     EXPECT_EQ(a.f64s.front(), b.f64s.front());
     a.f64s.pop();
     b.f64s.pop();
@@ -115,8 +117,6 @@ TEST(plugin_random, run_consistency) {
   EXPECT_EQ(a.f64s.empty(), b.f64s.empty());
 
   while (!a.u64s.empty() && !b.u64s.empty()) {
-    EXPECT_UNIT_RANGE(a.f64s.front());
-    EXPECT_UNIT_RANGE(b.f64s.front());
     EXPECT_EQ(a.u64s.front(), b.u64s.front());
     a.u64s.pop();
     b.u64s.pop();
