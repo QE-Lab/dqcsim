@@ -80,9 +80,8 @@ install:
 
 script:
   - cargo fmt -- --check
-  - cargo check --all-targets
+  - cargo clippy --all-targets -- -Dwarnings
   - make kcov-test
-  - cargo clippy -- -Dwarnings
 
 after_success: |
   [ "$TRAVIS_OS_NAME" = "linux" ] &&
