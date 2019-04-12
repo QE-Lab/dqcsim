@@ -192,7 +192,7 @@ mod test {
         );
         assert_eq!(
             Timeout::from_str("12.3").unwrap(),
-            Timeout::Duration(Duration::new(12, 300000000))
+            Timeout::Duration(Duration::new(12, 300_000_000))
         );
         assert_eq!(
             Timeout::from_str("20s").unwrap(),
@@ -212,11 +212,11 @@ mod test {
         );
         assert_eq!(
             Timeout::from_str("25ms").unwrap(),
-            Timeout::Duration(Duration::new(0, 25000000))
+            Timeout::Duration(Duration::new(0, 25_000_000))
         );
         assert_eq!(
             Timeout::from_str("25us").unwrap(),
-            Timeout::Duration(Duration::new(0, 25000))
+            Timeout::Duration(Duration::new(0, 25_000))
         );
         assert_eq!(
             Timeout::from_str("25ns").unwrap(),
@@ -224,7 +224,7 @@ mod test {
         );
         assert_eq!(
             Timeout::from_str("2h3m20s100ms").unwrap(),
-            Timeout::Duration(Duration::new(2 * 60 * 60 + 3 * 60 + 20, 100000000))
+            Timeout::Duration(Duration::new(2 * 60 * 60 + 3 * 60 + 20, 100_000_000))
         );
         assert_eq!(
             Timeout::from_str("nope").unwrap_err().to_string(),

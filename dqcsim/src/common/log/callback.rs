@@ -67,7 +67,7 @@ mod tests {
             }),
             LoglevelFilter::Debug,
         );
-        &(callback.callback)(&record);
+        (callback.callback)(&record);
         assert_eq!(callback.name(), "?");
         assert!(callback.enabled(Loglevel::Debug));
         assert!(!callback.enabled(Loglevel::Trace));

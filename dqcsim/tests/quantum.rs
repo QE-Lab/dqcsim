@@ -518,7 +518,7 @@ fn quantum_minimal() {
         let mut measurement = Vec::with_capacity(gate.get_measures().len());
         for q in gate.get_measures() {
             measurement.push(QubitMeasurementResult::new(
-                q.clone(),
+                *q,
                 QubitMeasurementValue::Zero,
                 ArbData::default(),
             ));
@@ -557,7 +557,7 @@ fn quantum_minimal() {
             "Invalid argument: qubit 2 is measured more than once"
         );
 
-        let _measure = state
+        state
             .gate(Gate::new_measurement(vec![QubitRef::from_foreign(3).unwrap()]).unwrap())
             .unwrap();
 

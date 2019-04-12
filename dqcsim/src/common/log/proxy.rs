@@ -56,6 +56,7 @@ impl<T: Sender<Item = LogRecord>> Log for LogProxy<T> {
 mod tests {
     use crate::common::log::{proxy::LogProxy, thread::LogThread, Log, Loglevel, LoglevelFilter};
 
+    #[allow(clippy::cyclomatic_complexity)]
     #[test]
     fn proxy_level() {
         let log_thread = LogThread::spawn(

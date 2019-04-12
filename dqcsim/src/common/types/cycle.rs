@@ -109,7 +109,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn convert_negative() {
-        let a = 18446744073709551574u64;
+        let a = 18_446_744_073_709_551_574u64;
         let c = Cycle(-42);
         let c: u64 = c.into();
         assert_eq!(a, c);
@@ -128,6 +128,7 @@ mod tests {
         assert_eq!(a, c);
     }
 
+    #[allow(clippy::eq_op)]
     #[test]
     fn ops() {
         let a = Cycle(21);
