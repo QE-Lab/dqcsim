@@ -227,9 +227,9 @@ mod tests {
             vec![],
         )
         .unwrap();
-        #[cfg(os = "macos")]
+        #[cfg(target_os = "macos")]
         assert_eq!(&format!("{:?}", _lt).as_str()[..100], "LogThread { sender: Some(Sender { .. }), ipc_sender: Some(IpcSender { os_sender: OsIpcSender { port:");
-        #[cfg(os = "linux")]
+        #[cfg(target_os = "linux")]
         assert_eq!(&format!("{:?}", _lt).as_str()[..98], "LogThread { sender: Some(Sender { .. }), ipc_sender: Some(IpcSender { os_sender: OsIpcSender { fd:");
     }
 }
