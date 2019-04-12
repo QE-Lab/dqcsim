@@ -25,8 +25,8 @@ class Tests(unittest.TestCase):
 
     def test_getters(self):
         c = ArbCmd("a", "b")
-        self.assertEqual(c.iface(), "a")
-        self.assertEqual(c.oper(), "b")
+        self.assertEqual(c.iface, "a")
+        self.assertEqual(c.oper, "b")
 
     def test_eq(self):
         a = ArbCmd("a", "b")
@@ -39,7 +39,7 @@ class Tests(unittest.TestCase):
 
     def test_handles(self):
         a = ArbCmd('x', 'y', b'a', b'b', b'c', b=3, c=4, d=5)
-        a_handle = a.to_raw()
+        a_handle = a._to_raw()
         self.maxDiff = None
         self.assertEqual(str(a_handle), """ArbCmd(
     ArbCmd {
@@ -80,7 +80,7 @@ class Tests(unittest.TestCase):
     }
 )""")
 
-        self.assertEqual(ArbCmd.from_raw(a_handle), a)
+        self.assertEqual(ArbCmd._from_raw(a_handle), a)
 
 if __name__ == '__main__':
     unittest.main()

@@ -132,7 +132,7 @@ class Operations(unittest.TestCase):
         self.assertEqual(a, ArbData())
 
     def test_handles(self):
-        a = ArbData(b'a', b'b', b'c', b=3, c=4, d=5).to_raw()
+        a = ArbData(b'a', b'b', b'c', b=3, c=4, d=5)._to_raw()
         self.assertEqual(str(a), """ArbData(
     ArbData {
         json: Object(
@@ -168,7 +168,7 @@ class Operations(unittest.TestCase):
     }
 )""")
 
-        ArbData(b'c', b'd', b'e', b=6, c=7, d=8).to_raw(a)
+        ArbData(b'c', b'd', b'e', b=6, c=7, d=8)._to_raw(a)
         self.assertEqual(str(a), """ArbData(
     ArbData {
         json: Object(
@@ -204,13 +204,13 @@ class Operations(unittest.TestCase):
     }
 )""")
 
-        self.assertEqual(ArbData.from_raw(a), ArbData(b'c', b'd', b'e', b=6, c=7, d=8))
+        self.assertEqual(ArbData._from_raw(a), ArbData(b'c', b'd', b'e', b=6, c=7, d=8))
 
     def test_long_data(self):
         data = list(range(256))
         bdata = bytes(data) * 4
         a = ArbData(bdata, b=data)
-        self.assertEqual(ArbData.from_raw(a.to_raw()), a)
+        self.assertEqual(ArbData._from_raw(a._to_raw()), a)
 
 if __name__ == '__main__':
     unittest.main()

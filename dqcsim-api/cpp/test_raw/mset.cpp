@@ -81,6 +81,15 @@ TEST(mset, test) {
 
   EXPECT_EQ(dqcs_mset_len(a), 1);
 
+  // Check take-any.
+  EXPECT_NE(b = dqcs_mset_take_any(a), 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_meas_qubit_get(b), 1u);
+  EXPECT_EQ(dqcs_meas_value_get(b), dqcs_measurement_t::DQCS_MEAS_ZERO);
+  EXPECT_EQ(dqcs_handle_delete(b), dqcs_return_t::DQCS_SUCCESS);
+
+  EXPECT_EQ(dqcs_mset_take_any(a), 0u);
+  EXPECT_STREQ(dqcs_error_get(), "Invalid argument: measurement set is empty");
+
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
 

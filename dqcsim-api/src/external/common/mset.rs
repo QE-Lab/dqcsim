@@ -96,3 +96,19 @@ pub extern "C" fn dqcs_mset_remove(mset: dqcs_handle_t, qubit: dqcs_qubit_t) -> 
         Ok(())
     })
 }
+
+/// Returns the measurement result for any of the qubits contained in a
+/// measurement result set and removes it from the set.
+///
+/// This is useful for iteration.
+#[no_mangle]
+pub extern "C" fn dqcs_mset_take_any(mset: dqcs_handle_t) -> dqcs_handle_t {
+    api_return(0, || {
+        resolve!(mset as &mut QubitMeasurementResultSet);
+        let qubit = *mset
+            .keys()
+            .next()
+            .ok_or_else(oe_inv_arg("measurement set is empty"))?;
+        Ok(insert(mset.remove(&qubit).unwrap().clone()))
+    })
+}

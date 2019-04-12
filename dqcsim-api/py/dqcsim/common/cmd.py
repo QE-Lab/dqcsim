@@ -1,3 +1,4 @@
+"""Contains a class wrapper for `ArbCmd` objects."""
 
 import dqcsim._dqcsim as raw
 from dqcsim.common.arb import ArbData
@@ -28,7 +29,7 @@ class ArbCmd(ArbData):
         The first two positional arguments are the interface identifier and the
         operation identifier. They must be valid identifiers, i.e. matching the
         regex /[a-zA-Z_0-9]+/. The remaining positional arguments and the
-        keyword arguments are used to construct the ArbData argument.
+        keyword arguments are used to construct the `ArbData` argument.
         """
         iface = str(iface)
         if not _ident_re.match(iface):
@@ -40,12 +41,14 @@ class ArbCmd(ArbData):
         self._iface = iface
         self._oper = oper
 
+    @property
     def iface(self):
-        """Returns the interface identifier."""
+        """The interface identifier."""
         return self._iface
 
+    @property
     def oper(self):
-        """Returns the operation identifier."""
+        """The operation identifier."""
         return self._oper
 
     def __eq__(self, other):
@@ -54,19 +57,19 @@ class ArbCmd(ArbData):
         return False
 
     @classmethod
-    def from_raw(cls, handle):
+    def _from_raw(cls, handle):
         """Constructs an ArbCmd object from a raw API handle."""
-        arg = ArbData.from_raw(handle)
+        arg = ArbData._from_raw(handle)
         with handle as hndl:
             cmd = ArbCmd(raw.dqcs_cmd_iface_get(hndl), raw.dqcs_cmd_oper_get(hndl))
         cmd._args = arg._args
         cmd._json = arg._json
         return cmd
 
-    def to_raw(self):
+    def _to_raw(self):
         """Makes an API handle for this ArbCmd object."""
         handle = Handle(raw.dqcs_cmd_new(self._iface, self._oper))
-        super().to_raw(handle)
+        super()._to_raw(handle)
         return handle
 
     def __repr__(self):

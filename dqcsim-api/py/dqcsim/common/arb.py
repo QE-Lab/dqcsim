@@ -1,3 +1,5 @@
+"""Contains a class wrapper for `ArbData` objects."""
+
 try:
     import cbor
 except ImportError:
@@ -35,8 +37,8 @@ class ArbData(object):
 
             ArbData(b"test1", b"test2", answer=42)
 
-        constructs an ArbData object with JSON {"answer": 42} and arguments
-        ["test1", "test2"].
+        constructs an ArbData object with JSON `{"answer": 42}` and arguments
+        `[b"test1", b"test2"]`.
         """
         # Ensure that all args support the buffer protocol.
         for arg in args:
@@ -142,7 +144,7 @@ class ArbData(object):
         return False
 
     @classmethod
-    def from_raw(cls, handle):
+    def _from_raw(cls, handle):
         """Constructs an ArbData object from a raw API handle."""
         # Load CBOR.
         with handle as hndl:
@@ -165,7 +167,7 @@ class ArbData(object):
 
         return ArbData(*args, **kwargs)
 
-    def to_raw(self, handle=None):
+    def _to_raw(self, handle=None):
         """Makes an API handle for this ArbData object."""
         if handle is None:
             handle = Handle(raw.dqcs_arb_new())

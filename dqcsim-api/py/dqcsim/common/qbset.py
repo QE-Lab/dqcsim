@@ -1,20 +1,17 @@
 import dqcsim._dqcsim as raw
 from dqcsim.common.handle import Handle
 
-class QbSet(object):
+class QubitSet(object):
     @classmethod
-    def from_raw(cls, handle):
+    def _from_raw(cls, handle):
         with handle as hndl:
             qubits = []
-            try:
-                while True:
-                    qubits.append(raw.dqcs_qbset_pop(hndl))
-            except RuntimeError:
-                pass
+            while raw.dqcs_qbset_len(hndl) > 0:
+                qubits.append(raw.dqcs_qbset_pop(hndl))
         return qubits
 
     @classmethod
-    def to_raw(cls, *qubits):
+    def _to_raw(cls, *qubits):
         if len(qubits) == 1 and not isinstance(qubits[0], int):
             qubits = qubits[0]
         handle = Handle(raw.dqcs_qbset_new())
