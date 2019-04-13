@@ -3,7 +3,9 @@
 use crate::{
     common::{error::Result, log::thread::LogThread},
     host::{
-        configuration::SimulatorConfiguration, plugin::Plugin, reproduction::Reproduction,
+        configuration::{PluginConfiguration, SimulatorConfiguration},
+        plugin::Plugin,
+        reproduction::Reproduction,
         simulation::Simulation,
     },
     trace, warn,
@@ -77,7 +79,7 @@ impl Simulator {
         let pipeline: Vec<Box<dyn Plugin>> = configuration
             .plugins
             .into_iter()
-            .map(|plugin| plugin.instantiate())
+            .map(PluginConfiguration::instantiate)
             .collect();
 
         // Construct simulation.

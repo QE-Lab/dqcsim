@@ -75,6 +75,9 @@ impl PluginDefinition {
     ///
     /// The callbacks can be overridden by modifying the boxed callback fields
     /// directly.
+    #[allow(clippy::redundant_closure)]
+    // Not sure how to fix the lifetime problems that resolving the above
+    // clippy caused...
     pub fn new(typ: PluginType, metadata: impl Into<PluginMetadata>) -> PluginDefinition {
         match typ {
             PluginType::Frontend => PluginDefinition {

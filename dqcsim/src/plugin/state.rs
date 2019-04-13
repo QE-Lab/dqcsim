@@ -749,7 +749,11 @@ impl<'a> PluginState<'a> {
         // being handled here. This is done automatically when the downstream
         // message is handled. However, when we return, we need to restore the
         // previous state, as we're synchronous again at that point.
-        let rng_index = self.rng.as_ref().map(|x| x.get_selected()).unwrap_or(0);
+        let rng_index = self
+            .rng
+            .as_ref()
+            .map(RandomNumberGenerator::get_selected)
+            .unwrap_or(0);
         let result = self._synchronize_downstream_up_to(num);
         if let Some(ref mut rng) = self.rng {
             rng.select(rng_index);

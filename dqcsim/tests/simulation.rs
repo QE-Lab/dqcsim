@@ -205,6 +205,7 @@ fn simulation_bad_recv() {
 }
 
 #[test]
+#[allow(clippy::redundant_closure)]
 fn bad_simulation_pipeline_too_short() {
     let configuration = SimulatorConfiguration::default()
         .without_reproduction()
@@ -235,6 +236,7 @@ fn bad_simulation_pipeline_too_short() {
 }
 
 #[test]
+#[allow(clippy::redundant_closure)]
 fn bad_simulation_pipeline_fe_op_only() {
     let configuration = SimulatorConfiguration::default()
         .without_reproduction()
@@ -272,6 +274,7 @@ fn bad_simulation_pipeline_fe_op_only() {
 }
 
 #[test]
+#[allow(clippy::redundant_closure)]
 fn bad_simulation_pipeline_be_op_only() {
     let configuration = SimulatorConfiguration::default()
         .without_reproduction()
