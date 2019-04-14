@@ -23,23 +23,33 @@ class ArbCmd(ArbData):
     identifier is matched but the operation identifier is not.
     """
 
-    def __init__(self, iface, oper, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         """Constructs an ArbCmd object.
 
         The first two positional arguments are the interface identifier and the
         operation identifier. They must be valid identifiers, i.e. matching the
         regex /[a-zA-Z_0-9]+/. The remaining positional arguments and the
         keyword arguments are used to construct the `ArbData` argument.
+        Alternatively, another `ArbCmd` object can be specified as the sole
+        argument to make a copy.
         """
-        iface = str(iface)
-        if not _ident_re.match(iface):
-            raise ValueError('iface is not a valid identifier: {!r}'.format(iface))
-        oper = str(oper)
-        if not _ident_re.match(oper):
-            raise ValueError('oper is not a valid identifier: {!r}'.format(oper))
-        super().__init__(*args, **kwargs)
-        self._iface = iface
-        self._oper = oper
+        if len(args) == 1 and not kwargs and isinstance(args[0], ArbCmd):
+            super().__init__(args[0])
+            self._iface = args[0]._iface
+            self._oper = args[0]._oper
+        elif len(args) >= 2:
+            iface, oper, *args = args
+            iface = str(iface)
+            if not _ident_re.match(iface):
+                raise ValueError('iface is not a valid identifier: {!r}'.format(iface))
+            oper = str(oper)
+            if not _ident_re.match(oper):
+                raise ValueError('oper is not a valid identifier: {!r}'.format(oper))
+            super().__init__(*args, **kwargs)
+            self._iface = iface
+            self._oper = oper
+        else:
+            raise TypeError('Invalid arguments passed to ArbCmd constructor')
 
     @property
     def iface(self):

@@ -23,6 +23,8 @@ class Tests(unittest.TestCase):
 
         self.assertEqual(repr(ArbCmd("a", "b", b"c", d="e")), "ArbCmd('a', 'b', b'c', d='e')")
 
+        self.assertEqual(repr(ArbCmd(ArbCmd("a", "b", b"c", d="e"))), "ArbCmd('a', 'b', b'c', d='e')")
+
     def test_getters(self):
         c = ArbCmd("a", "b")
         self.assertEqual(c.iface, "a")
