@@ -230,14 +230,6 @@ pub struct CommandLineConfiguration {
 }
 
 impl CommandLineConfiguration {
-    /// Produces a DQCsim configuration from `std::env::args()`.
-    ///
-    /// This is just a shorthand for `parse_from(std::env::args())`, refer
-    /// to its docs for more info.
-    pub fn parse() -> Result<CommandLineConfiguration, Error> {
-        CommandLineConfiguration::parse_from(std::env::args())
-    }
-
     /// Produces a DQCsim configuration from the specified command line
     /// argument iterable.
     ///
@@ -449,4 +441,25 @@ fn format_error_ctxt<T>(ctxt: &str, e: impl Into<Error>) -> Result<T, Error> {
         e.into().to_string()
     )))
     .into())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn debug() {
+        let c = CommandLineConfiguration {
+            host_calls: vec![],
+            host_stdout: true,
+            dqcsim: SimulatorConfiguration::default().with_seed("test"),
+            reproduction_file: None,
+        };
+
+        assert_eq!(format!("{:?}", c), "CommandLineConfiguration { host_calls: [], host_stdout: true, dqcsim: SimulatorConfiguration { seed: Seed { value: 14402189752926126668 }, stderr_level: Info, tee_files: [], log_callback: None, dqcsim_level: Trace, plugins: [], reproduction_path_style: Some(Keep) }, reproduction_file: None }");
+    }
+
+    #[test]
+    fn help() {}
+
 }

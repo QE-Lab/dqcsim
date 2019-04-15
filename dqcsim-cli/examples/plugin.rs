@@ -37,8 +37,9 @@ fn main() -> Result<(), Error> {
         Ok(())
     });
 
-    definition.run = Box::new(|_state, _| {
+    definition.run = Box::new(|state, _| {
         info!("running run callback!");
+        state.send(ArbData::default()).expect("send failed");
         Ok(ArbData::default())
     });
 

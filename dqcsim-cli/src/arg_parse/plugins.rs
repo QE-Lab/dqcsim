@@ -110,3 +110,124 @@ impl PluginDefinition {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dqcsim::{
+        common::types::PluginType, host::configuration::PluginProcessNonfunctionalConfiguration,
+    };
+
+    #[test]
+    fn non_func_opt() {
+        let pnfo = PluginNonfunctionalOpts::default();
+        assert_eq!(
+            pnfo,
+            PluginNonfunctionalOpts {
+                verbosity: None,
+                tee_files: vec![],
+                stdout_mode: None,
+                stderr_mode: None,
+                accept_timeout: None,
+                shutdown_timeout: None,
+            },
+        );
+    }
+
+    #[test]
+    fn non_func_opt_debug() {
+        let pnfo = PluginNonfunctionalOpts::default();
+        assert_eq!(
+            format!("{:?}", pnfo),
+            "PluginNonfunctionalOpts { verbosity: None, tee_files: [], stdout_mode: None, stderr_mode: None, accept_timeout: None, shutdown_timeout: None }",
+        );
+    }
+
+    #[test]
+    fn into_process_conf() {
+        let p = PluginNonfunctionalOpts::default();
+        let c: PluginProcessNonfunctionalConfiguration = p.into_config(LoglevelFilter::Debug);
+        assert_eq!(
+            c,
+            PluginProcessNonfunctionalConfiguration {
+                verbosity: LoglevelFilter::Debug,
+                tee_files: vec![],
+                stdout_mode: StreamCaptureMode::Capture(Loglevel::Info),
+                stderr_mode: StreamCaptureMode::Capture(Loglevel::Info),
+                accept_timeout: Timeout::from_seconds(5),
+                shutdown_timeout: Timeout::from_seconds(5),
+            }
+        );
+
+        let p = PluginNonfunctionalOpts {
+            verbosity: Some(LoglevelFilter::Fatal),
+            tee_files: vec![TeeFileConfiguration::new(
+                LoglevelFilter::Error,
+                "/dev/null",
+            )],
+            stdout_mode: Some(StreamCaptureMode::Null),
+            stderr_mode: Some(StreamCaptureMode::Pass),
+            accept_timeout: Some(Timeout::Infinite),
+            shutdown_timeout: Some(Timeout::from_seconds(1)),
+        };
+        let c: PluginProcessNonfunctionalConfiguration = p.into_config(LoglevelFilter::Debug);
+        assert_eq!(
+            c,
+            PluginProcessNonfunctionalConfiguration {
+                verbosity: LoglevelFilter::Fatal,
+                tee_files: vec![TeeFileConfiguration::new(
+                    LoglevelFilter::Error,
+                    "/dev/null",
+                )],
+                stdout_mode: StreamCaptureMode::Null,
+                stderr_mode: StreamCaptureMode::Pass,
+                accept_timeout: Timeout::Infinite,
+                shutdown_timeout: Timeout::from_seconds(1),
+            }
+        );
+    }
+
+    #[test]
+    fn into_def_conf() {
+        let p = PluginDefinition {
+            name: "name".to_string(),
+            specification: PluginProcessSpecification::from_sugar(
+                "/bin/echo",
+                PluginType::Operator,
+            )
+            .unwrap(),
+            functional: PluginProcessFunctionalConfiguration::default(),
+            nonfunctional: PluginNonfunctionalOpts::default(),
+        };
+        let c: PluginProcessConfiguration = p.into_config(LoglevelFilter::Trace);
+        assert_eq!(
+            c,
+            PluginProcessConfiguration {
+                name: "name".to_string(),
+                specification: PluginProcessSpecification::from_sugar(
+                    "/bin/echo",
+                    PluginType::Operator
+                )
+                .unwrap(),
+                functional: PluginProcessFunctionalConfiguration::default(),
+                nonfunctional: PluginProcessNonfunctionalConfiguration::default(),
+            }
+        );
+    }
+
+    #[test]
+    fn debug() {
+        let p = PluginDefinition {
+            name: "name".to_string(),
+            specification: PluginProcessSpecification::from_sugar(
+                "/bin/echo",
+                PluginType::Operator,
+            )
+            .unwrap(),
+            functional: PluginProcessFunctionalConfiguration::default(),
+            nonfunctional: PluginNonfunctionalOpts::default(),
+        };
+        assert_eq!(format!("{:?}", p), "PluginDefinition { name: \"name\", specification: PluginProcessSpecification { executable: \"/bin/echo\", script: None, typ: Operator }, functional: PluginProcessFunctionalConfiguration { init: [], env: [], work: \".\" }, nonfunctional: PluginNonfunctionalOpts { verbosity: None, tee_files: [], stdout_mode: None, stderr_mode: None, accept_timeout: None, shutdown_timeout: None } }");
+    }
+
+}
