@@ -157,6 +157,19 @@ fn host_call_arb() {
     .stderr(predicate::str::contains(
         "Executing 'arb(...)' host call...",
     ));
+
+    cli!(
+        "--host-stdout",
+        "--call",
+        "arb:front:b.c:{\"answer\": 42},x,y,z",
+        *PLUGIN,
+        *PLUGIN
+    )
+    .success()
+    .stdout(predicate::str::contains("arb:"))
+    .stderr(predicate::str::contains(
+        "Executing 'arb(...)' host call...",
+    ));
 }
 
 #[test]
@@ -197,8 +210,15 @@ fn host_call_yield() {
 }
 
 #[test]
+fn host_call_recv() {
+    cli!("--call", "send:{},a.b", "--call", "recv", *PLUGIN, *PLUGIN)
+        .success()
+        .stderr(predicate::str::contains("Executing 'recv()' host call..."));
+}
+
+#[test]
 fn host_call_recv_deadlock() {
-    cli!("--call", "recv", *PLUGIN, *PLUGIN)
+    cli!("--call", "recv", "--call", "recv", *PLUGIN, *PLUGIN)
         .failure()
         .stderr(predicate::str::contains("Executing 'recv()' host call..."))
         .stderr(predicate::str::contains(
@@ -254,6 +274,34 @@ fn host_stdout() {
     cli!("--host-stdout", *PLUGIN, *PLUGIN)
         .success()
         .stdout(predicate::str::contains("wait(): {}"));
+}
+
+#[test]
+fn with_operator() {
+    cli!(*PLUGIN, *PLUGIN, *PLUGIN)
+        .success()
+        .stderr(predicate::str::contains("op1"));
+}
+
+#[test]
+fn plugin_config_name() {
+    cli!(*PLUGIN, "--name", "frontend-test", *PLUGIN)
+        .success()
+        .stderr(predicate::str::contains("frontend-test"));
+}
+
+#[test]
+fn plugin_env_mod() {
+    cli!(*PLUGIN, "--env", "key:value", *PLUGIN).success();
+    cli!(*PLUGIN, "--env", "~key", *PLUGIN).success();
+}
+
+#[test]
+fn double_start_insert_wait() {
+    cli!("-C", "start", "-C", "start", *PLUGIN, *PLUGIN)
+        .success()
+        .stderr(predicate::str::contains("Executing 'start(...)' host call...").count(2))
+        .stderr(predicates::str::contains("Executing 'wait()' host call...").count(2));
 }
 
 #[test]

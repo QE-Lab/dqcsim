@@ -214,4 +214,20 @@ mod tests {
             }
         );
     }
+
+    #[test]
+    fn debug() {
+        let p = PluginDefinition {
+            name: "name".to_string(),
+            specification: PluginProcessSpecification::from_sugar(
+                "/bin/echo",
+                PluginType::Operator,
+            )
+            .unwrap(),
+            functional: PluginProcessFunctionalConfiguration::default(),
+            nonfunctional: PluginNonfunctionalOpts::default(),
+        };
+        assert_eq!(format!("{:?}", p), "PluginDefinition { name: \"name\", specification: PluginProcessSpecification { executable: \"/bin/echo\", script: None, typ: Operator }, functional: PluginProcessFunctionalConfiguration { init: [], env: [], work: \".\" }, nonfunctional: PluginNonfunctionalOpts { verbosity: None, tee_files: [], stdout_mode: None, stderr_mode: None, accept_timeout: None, shutdown_timeout: None } }");
+    }
+
 }
