@@ -199,23 +199,24 @@ pub extern "C" fn dqcs_scfg_log_callback(
                             ts_sec = 0;
                             ts_nano = 0;
                         }
+                        let payload = CString::new(record.payload())?;
+                        let logger = CString::new(record.logger())?;
+                        let module_path = record
+                            .module_path()
+                            .map(CString::new)
+                            .map_or(Ok(None), |v| v.map(Some))?;
+                        let file = record
+                            .file()
+                            .map(CString::new)
+                            .map_or(Ok(None), |v| v.map(Some))?;
                         callback(
                             data.data(),
-                            CString::new(record.payload())?.as_ptr(),
-                            CString::new(record.logger())?.as_ptr(),
+                            payload.as_ptr(),
+                            logger.as_ptr(),
                             record.level().into(),
-                            match record.module_path() {
-                                Some(x) => CString::new(x)?.as_ptr(),
-                                None => null(),
-                            },
-                            match record.file() {
-                                Some(x) => CString::new(x)?.as_ptr(),
-                                None => null(),
-                            },
-                            match record.line() {
-                                Some(x) => x,
-                                None => 0,
-                            },
+                            module_path.as_ref().map(|x| x.as_ptr()).unwrap_or(null()),
+                            file.as_ref().map(|x| x.as_ptr()).unwrap_or(null()),
+                            record.line().unwrap_or(0),
                             ts_sec,
                             ts_nano,
                             record.process(),
