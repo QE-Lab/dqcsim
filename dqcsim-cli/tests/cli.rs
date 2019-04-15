@@ -65,6 +65,11 @@ fn help() {
         .failure()
         .code(1)
         .stdout(predicate::str::contains("Used to specify the host API call sequence. Refer to the \"host call sequence\" section for more info."));
+
+    cli!("plugin", "--help")
+        // TODO: jeroen other helps exit with failure code 1
+        .success()
+        .stdout(predicates::str::contains("PLUGIN OPTIONS"));
 }
 
 #[test]
@@ -373,4 +378,79 @@ fn no_repro_out_repro_out() {
     .stdout(predicate::str::contains(
         "The argument '--no-repro-out' cannot be used with '--repro-out <filename>'",
     ));
+}
+
+#[test]
+fn reproduce_bad_path() {
+    cli!("--reproduce", "./asdf")
+        .failure()
+        .stdout(predicates::str::contains("While reading reproduction file"));
+}
+
+#[test]
+fn reproduce() {
+    cli!(
+        "--repro-out",
+        "./dqcsim-cli.test.repro.out",
+        *PLUGIN,
+        *PLUGIN
+    )
+    .success();
+    cli!("--reproduce", "./dqcsim-cli.test.repro.out").success();
+
+    // illegal name override
+    cli!(
+        "--reproduce",
+        "./dqcsim-cli.test.repro.out",
+        "@front",
+        "-n",
+        "override-name"
+    )
+    .failure()
+    .stdout(predicates::str::contains(
+        "cannot be used when referencing a previously defined plugin",
+    ));
+
+    // illegal work override
+    cli!(
+        "--reproduce",
+        "./dqcsim-cli.test.repro.out",
+        "@front",
+        "--work",
+        "work"
+    )
+    .failure()
+    .stdout(predicates::str::contains(
+        "cannot be used when referencing a previously defined plugin",
+    ));
+
+    // override verbosity
+    cli!(
+        "--reproduce",
+        "./dqcsim-cli.test.repro.out",
+        "@front",
+        "-l",
+        "fatal"
+    )
+    .success();
+
+    // exact reproduce
+    cli!(
+        "--reproduce-exactly",
+        "./dqcsim-cli.test.repro.out",
+        "@front",
+        "-l",
+        "fatal"
+    )
+    .success();
+
+    // def with reproduce
+    cli!("--reproduce", "./dqcsim-cli.test.repro.out", *PLUGIN)
+        .failure()
+        .stdout(predicates::str::contains("Cannot define new plugins while"));
+
+    // mod with def
+    cli!(*PLUGIN, *PLUGIN, "@front", "-l", "trace")
+        .failure()
+        .stdout(predicates::str::contains("Cannot modify plugins unless"));
 }
