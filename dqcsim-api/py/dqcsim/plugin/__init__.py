@@ -20,7 +20,7 @@ A completed plugin script looks something like this:
         def get_version(self):
             return "3.14"
 
-        def handle_run(*args, **kwargs):
+        def handle_run(self, *args, **kwargs):
             # Just return whatever argument we received as the return value!
             return ArbData(*args, **kwargs)
 
@@ -35,10 +35,11 @@ __pdoc__ = {
     'JoinHandle.__init__': False
 }
 
-from enum import Enum
 import dqcsim._dqcsim as raw
 from dqcsim.common import *
 import sys
+import inspect
+import traceback
 
 class JoinHandle(object):
     """Returned by `Plugin.start()` to allow waiting for completion."""
@@ -142,6 +143,71 @@ class Plugin(object):
         return self._pc(raw.dqcs_plugin_random_u64)
 
     #==========================================================================
+    # Logging functions
+    #==========================================================================
+    def _log(self, level, msg, *args, **kwargs):
+        # NOTE: we don't need the state handle technically, but this ensures
+        # that we're in the right thread.
+        if self._state_handle is None:
+            raise RuntimeError("Cannot call plugin operator outside of a callback")
+        msg = str(msg)
+        if args or kwargs:
+            msg = msg.format(*args, **kwargs)
+        frame = inspect.currentframe().f_back.f_back
+        module = frame.f_globals.get('__name__', '?')
+        fname = frame.f_globals.get('__file__', '?')
+        lineno = frame.f_lineno
+        raw.dqcs_log_raw(level, module, fname, lineno, msg)
+
+    def log(self, level, msg, *args, **kwargs):
+        """Logs a message with the specified loglevel to DQCsim.
+
+        If any additional positional or keyword arguments are specified, the
+        message is formatted using `str.format()`. Otherwise, `str()` is
+        applied to the message."""
+        # NOTE: this level of indirection is needed to make function name,
+        # filename, and line number metadata correct.
+        if not isinstance(level, Loglevel):
+            raise TypeError('level must be a Loglevel')
+        self._log(level, msg, *args, **kwargs)
+
+    def trace(self, msg, *args, **kwargs):
+        """Convenience function for logging trace messages. See `log()`."""
+        self._log(Loglevel.TRACE, msg, *args, **kwargs)
+
+    def debug(self, msg, *args, **kwargs):
+        """Convenience function for logging debug messages. See `log()`."""
+        self._log(Loglevel.DEBUG, msg, *args, **kwargs)
+
+    def info(self, msg, *args, **kwargs):
+        """Convenience function for logging info messages. See `log()`."""
+        self._log(Loglevel.INFO, msg, *args, **kwargs)
+
+    def note(self, msg, *args, **kwargs):
+        """Convenience function for logging note messages. See `log()`."""
+        self._log(Loglevel.NOTE, msg, *args, **kwargs)
+
+    def warn(self, msg, *args, **kwargs):
+        """Convenience function for logging warning messages. See `log()`."""
+        self._log(Loglevel.WARN, msg, *args, **kwargs)
+
+    def warning(self, msg, *args, **kwargs):
+        """Convenience function for logging warning messages. See `log()`."""
+        self._log(Loglevel.WARN, msg, *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        """Convenience function for logging error messages. See `log()`."""
+        self._log(Loglevel.ERROR, msg, *args, **kwargs)
+
+    def critical(self, msg, *args, **kwargs):
+        """Convenience function for logging fatal messages. See `log()`."""
+        self._log(Loglevel.FATAL, msg, *args, **kwargs)
+
+    def fatal(self, msg, *args, **kwargs):
+        """Convenience function for logging fatal messages. See `log()`."""
+        self._log(Loglevel.FATAL, msg, *args, **kwargs)
+
+    #==========================================================================
     # Callback helpers
     #==========================================================================
     def _cb(self, state_handle, name, *args, **kwargs):
@@ -150,34 +216,39 @@ class Plugin(object):
                 raise RuntimeError("Invalid state, recursive callback")
             self._state_handle = state_handle
             try:
-                return getattr(self, name)(*args, **kwargs)
+                try:
+                    return getattr(self, name)(*args, **kwargs)
+                except Exception as e:
+                    for line in traceback.format_exc().split('\n'):
+                        self.trace(line)
+                    raise
             finally:
                 self._state_handle = None
-        raise NotImplemented("Python plugin doesn't implement {}(), which is a required function!".format(name))
+        raise NotImplementedError("Python plugin doesn't implement {}(), which is a required function!".format(name))
 
     def _route_converted_arb(self, state_handle, source, cmd):
-        if cmd.iface not in self._arb_interfaces[source]:
+        if cmd.iface not in self._arb_interfaces.get(source, {}):
             return None
         try:
             return self._cb(state_handle,
                 'handle_{}_{}_{}'.format(source, cmd.iface, cmd.oper),
                 *cmd._args, **cmd._json
             )
-        except NotImplemented:
-            raise NotImplemented("Invalid operation {} for interface {}".format(cmd.oper, cmd.iface))
+        except NotImplementedError:
+            raise ValueError("Invalid operation ID {} for interface ID {}".format(cmd.oper, cmd.iface))
 
     def _route_initialize(self, state_handle, init_cmds_handle):
         cmds = ArbCmdQueue._from_raw(Handle(init_cmds_handle))
         try:
             self._cb(state_handle, 'handle_init', cmds)
-        except NotImplemented:
+        except NotImplementedError:
             for cmd in cmds:
                 self._route_converted_arb(state_handle, 'host', cmd)
 
     def _route_drop(self, state_handle):
         try:
             self._cb(state_handle, 'handle_drop')
-        except NotImplemented:
+        except NotImplementedError:
             pass
 
     def _route_host_arb(self, state_handle, cmd_handle):
@@ -207,24 +278,124 @@ class GateStreamSource(Plugin):
     #==========================================================================
     # API functions operating on plugin state
     #==========================================================================
-    def allocate(self, num_qubits, *cmds):
-        """Instructs the downstream plugin to allocate the given number of
-        qubits.
+    def allocate(self, num_qubits=None, *cmds):
+        """Instructs the downstream plugin to allocate one or more qubits.
 
-        This function returns a list of qubit references that you can use to
-        refer to the qubits in later function calls. These are just integers.
+        If `num_qubits` is specified, this function returns a list of qubit
+        references that you can use to refer to the qubits in later function
+        calls. These are just integers. If `num_qubits` is not specified or
+        `None`, a single qubit is allocated and returned without being wrapped
+        in a list.
 
         Optionally, you can pass (a list of) ArbCmd objects to associate with
         the qubits."""
-        return QbSet.from_raw(Handle(self._pc(
-            raw.dqcs_plugin_allocate,
-            num_qubits,
-            ArbCmdQueue.to_raw(cq)
-        )))
+        with ArbCmdQueue._to_raw(cmds) as cmds:
+            qubits = QubitSet._from_raw(Handle(self._pc(
+                raw.dqcs_plugin_allocate,
+                1 if num_qubits is None else num_qubits,
+                cmds
+            )))
+        if num_qubits is None:
+            return qubits[0]
+        else:
+            return qubits
 
     def free(self, *qubits):
         """Instructs the downstream plugin to free the given qubits."""
-        return self._pc(raw.dqcs_plugin_free, QbSet.to_raw(*qubits))
+        with QubitSet._to_raw(qubits) as qubits:
+            self._pc(raw.dqcs_plugin_free, qubits)
+
+    def unitary(self, targets, matrix, controls=[]):
+        """Instructs the downstream plugin to execute a unitary quantum gate.
+
+        `targets` must be a non-empty iterable of qubits or a single qubit,
+        representing the qubit(s) targeted by the gate. `matrix` must be a
+        unitary matrix appropriately sized for the number of target qubits,
+        specified as a row-major one-dimensional list of Python complex
+        numbers. `controls` optionally allows additional control qubits to be
+        specified to make controlled gates; these qubits should NOT be
+        reflected in the gate matrix. The matrix will automatically be extended
+        by the downstream plugin, instead. The `targets` and `controls` sets
+        must not intersect.
+        """
+        with QubitSet._to_raw(targets) as targets:
+            with QubitSet._to_raw(controls) as controls:
+                with Handle(raw.dqcs_gate_new_unitary(targets, controls, matrix)) as gate:
+                    self._pc(raw.dqcs_plugin_gate, gate)
+
+    def measure(self, qubits):
+        """Instructs the downstream plugin to measure the given qubits in the
+        Z basis.
+
+        `qubits` must be an iterable of qubits or a single qubit, representing
+        the qubit(s) that are to be measured. If you need to perform a
+        measurement in a different basis, either use custom gates or apply the
+        appropriate rotations before (and, if necessary, after) the
+        measurement.
+        """
+        with QubitSet._to_raw(qubits) as qubits:
+            with Handle(raw.dqcs_gate_new_measurement(qubits)) as gate:
+                self._pc(raw.dqcs_plugin_gate, gate)
+
+    def custom_gate(self, name, targets=[], controls=[], measures=[], matrix=None, *args, **kwargs):
+        """Instructs the downstream plugin to execute a custom gate.
+
+        `name` must be a non-empty string identifying the gate to be performed.
+        `targets`, `constrols`, and `measures` must be iterables of qubits or
+        singular qubits, representing respectively the set of qubits to operate
+        on, the set of control qubits for controlled gates, and the set of
+        qubits measured by the gate.  The `targets` and `controls` sets must
+        not intersect. If specified, `matrix` must be a unitary matrix
+        appropriately sized for the number of target qubits, specified as a
+        row-major one-dimensional list of Python complex numbers. If no matrix
+        is applicable or necessary for the custom gate, `None` can be used
+        instead. The remainder of the arguments are passed to the constructor
+        for `ArbData`; the resulting `ArbData` object is passed along with the
+        gate for custom data.
+        """
+        with QubitSet._to_raw(targets) as targets:
+            with QubitSet._to_raw(controls) as controls:
+                with QubitSet._to_raw(measures) as measures:
+                    gate = Handle(raw.dqcs_gate_new_custom(name, targets, controls, measures, matrix))
+                    ArbData(*args, **kwargs)._to_raw(gate)
+                    with gate as gate:
+                        self._pc(raw.dqcs_plugin_gate, gate)
+
+    def get_measurement(self, qubit):
+        """Returns the `Measurement` representing the latest measurement result
+        for the given downstream qubit."""
+        return Measurement._from_raw(Handle(self._pc(raw.dqcs_plugin_get_measurement, qubit)))
+
+    def get_cycles_since_measure(self, qubit):
+        """Returns the number of cycles that have been advanced since the
+        latest measurement of the given downstream qubit."""
+        return self._pc(raw.dqcs_plugin_get_cycles_since_measure, qubit)
+
+    def get_cycles_between_measures(self, qubit):
+        """Returns the number of cycles that were advanced between the
+        latest measurement of the given downstream qubit and the one before."""
+        return self._pc(raw.dqcs_plugin_get_cycles_between_measures, qubit)
+
+    def advance(self, cycles):
+        """Instructs the downstream plugin to advance the simulation time.
+
+        `cycles` must be a nonnegative integer, representing the number of
+        cycles to advance the simulation by. The simulation time after the
+        advancement is returned."""
+        return self._pc(raw.dqcs_plugin_advance, int(cycles))
+
+    def get_cycle(self):
+        """Returns the current simulation time for the downstream plugin."""
+        return self._pc(raw.dqcs_plugin_get_cycle)
+
+    def arb(self, *args, **kwargs):
+        """Sends an `ArbCmd` to the downstream plugin.
+
+        The arguments passed to this function are forwarded directly to the
+        `ArbCmd` constructor. The return value is an `ArbData` object
+        representing the value returned by the command."""
+        with ArbCmd(*args, **kwargs)._to_raw() as cmd:
+            return ArbData._from_raw(Handle(self._pc(raw.dqcs_plugin_arb, cmd)))
 
 class Frontend(GateStreamSource):
     """Implements a frontend plugin.
@@ -315,7 +486,7 @@ class Frontend(GateStreamSource):
             raise TypeError("User implementation of handle_run() should return None or ArbData but returned {}".format(type(result)))
         return result._to_raw().take()
 
-    def _to_pdef(self, cls):
+    def _to_pdef(self):
         """Creates a plugin definition handle for this plugin."""
         pdef = self._new_pdef(raw.DQCS_PTYPE_FRONT)
         with pdef as pd:
@@ -444,10 +615,10 @@ class Operator(GateStreamSource):
         response.
     """
 
-    def _to_pdef(self, cls):
+    def _to_pdef(self):
         """Creates a plugin definition handle for this plugin."""
         # TODO: callback functions
-        raise NotImplemented()
+        raise NotImplementedError()
 
 class Backend(Plugin):
     """Implements a backend plugin.
@@ -561,24 +732,27 @@ class Backend(Plugin):
         cmds = ArbCmdQueue._from_raw(Handle(cmds_handle))
         try:
             self._cb(state_handle, 'handle_allocate', qubits, cmds)
-        except NotImplemented:
+        except NotImplementedError:
             pass
 
     def _route_free(self, state_handle, qubits_handle):
         qubits = QubitSet._from_raw(Handle(qubits_handle))
         try:
             self._cb(state_handle, 'handle_free', qubits)
-        except NotImplemented:
+        except NotImplementedError:
             pass
 
     def _route_gate(self, state_handle, gate_handle):
         name = None
         if raw.dqcs_gate_is_custom(gate_handle):
             name = raw.dqcs_gate_name(gate_handle)
-        targets = QubitSet._from_raw(Handle(dqcs_gate_targets(gate_handle)))
-        controls = QubitSet._from_raw(Handle(dqcs_gate_controls(gate_handle)))
-        measures = QubitSet._from_raw(Handle(dqcs_gate_measures(gate_handle)))
-        matrix = dqcs_gate_matrix(gate_handle)
+        targets = QubitSet._from_raw(Handle(raw.dqcs_gate_targets(gate_handle)))
+        controls = QubitSet._from_raw(Handle(raw.dqcs_gate_controls(gate_handle)))
+        measures = QubitSet._from_raw(Handle(raw.dqcs_gate_measures(gate_handle)))
+        if raw.dqcs_gate_has_matrix(gate_handle):
+            matrix = raw.dqcs_gate_matrix(gate_handle)
+        else:
+            matrix = None
 
         measurements = []
         if name is None:
@@ -586,7 +760,7 @@ class Backend(Plugin):
                 if controls:
                     try:
                         self._cb(state_handle, 'handle_controlled_gate', targets, controls, matrix)
-                    except NotImplemented:
+                    except NotImplementedError:
                         pass
 
                     # Convert the gate matrix to a controlled gate matrix.
@@ -598,7 +772,7 @@ class Backend(Plugin):
                     offset = ext_size - cur_size
 
                     # Make zero matrix of the right size.
-                    ext_matrix = [0.0+0.0j] * range(ext_size * ext_size)
+                    ext_matrix = [0.0+0.0j] * (ext_size * ext_size)
 
                     # Override the lower-right block of the upscaled matrix
                     # with the original matrix.
@@ -623,25 +797,25 @@ class Backend(Plugin):
                 targets, controls, measures, matrix, *data._args, **data._json
             )
 
-        raise MeasurementSet._to_raw(measurements).take()
+        return MeasurementSet._to_raw(measurements).take()
 
     def _route_advance(self, state_handle, cycles):
         try:
             self._cb(state_handle, 'handle_advance', cycles)
-        except NotImplemented:
+        except NotImplementedError:
             pass
 
     def _route_upstream_arb(self, state_handle, cmd_handle):
-        result = self._route_converted_arb(state_handle, 'host', ArbCmd._from_raw(Handle(cmd_handle)))
+        result = self._route_converted_arb(state_handle, 'upstream', ArbCmd._from_raw(Handle(cmd_handle)))
         if result is None:
             result = ArbData()
         if not isinstance(result, ArbData):
-            raise TypeError("User implementation of host arb should return None or ArbData but returned {}".format(type(result)))
+            raise TypeError("User implementation of upstream arb should return None or ArbData but returned {}".format(type(result)))
         return result._to_raw().take()
 
-    def _to_pdef(self, cls):
+    def _to_pdef(self):
         """Creates a plugin definition handle for this plugin."""
-        pdef = super()._new_pdef(typ)
+        pdef = self._new_pdef(raw.DQCS_PTYPE_BACK)
         with pdef as pd:
             raw.dqcs_pdef_set_allocate_cb_pyfun(pd, self._route_allocate)
             raw.dqcs_pdef_set_free_cb_pyfun(pd, self._route_free)
