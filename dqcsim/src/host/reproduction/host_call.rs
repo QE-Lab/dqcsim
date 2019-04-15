@@ -173,4 +173,23 @@ mod test {
         );
     }
 
+    #[test]
+    fn display() {
+        assert_eq!(
+            format!("{}", HostCall::Start(ArbData::default())),
+            "start:{}"
+        );
+        assert_eq!(format!("{}", HostCall::Send(ArbData::default())), "send:{}");
+        assert_eq!(
+            format!(
+                "{}",
+                HostCall::Arb("a".to_string(), ArbCmd::new("a", "b", ArbData::default()))
+            ),
+            "arb:a:a.b:{}"
+        );
+        assert_eq!(format!("{}", HostCall::Wait), "wait");
+        assert_eq!(format!("{}", HostCall::Recv), "recv");
+        assert_eq!(format!("{}", HostCall::Yield), "yield");
+    }
+
 }
