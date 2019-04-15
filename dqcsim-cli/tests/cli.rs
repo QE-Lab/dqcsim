@@ -112,6 +112,110 @@ fn host_call_ok() {
 }
 
 #[test]
+fn host_call_send_no_data() {
+    cli!("--call", "send", *PLUGIN, *PLUGIN)
+        .failure()
+        .code(1)
+        .stdout(predicate::str::contains(
+            "Invalid value for '--call <call>...': Invalid argument: the send API call requires an ArbData argument",
+        ));
+}
+
+#[test]
+fn host_call_arb_no_data() {
+    cli!("--call", "arb", *PLUGIN, *PLUGIN)
+        .failure()
+        .code(1)
+        .stdout(predicate::str::contains(
+            "the arb API call requires a plugin and an ArbCmd argument",
+        ));
+}
+
+#[test]
+fn host_call_arb_plugin_not_found() {
+    cli!(
+        "--call",
+        "arb:a:b.c:{\"answer\": 42},x,y,z",
+        *PLUGIN,
+        *PLUGIN
+    )
+    .failure()
+    .stderr(predicate::str::contains(
+        "Invalid argument: plugin a not found",
+    ));
+}
+
+#[test]
+fn host_call_arb() {
+    cli!(
+        "--call",
+        "arb:front:b.c:{\"answer\": 42},x,y,z",
+        *PLUGIN,
+        *PLUGIN
+    )
+    .success()
+    .stderr(predicate::str::contains(
+        "Executing 'arb(...)' host call...",
+    ));
+}
+
+#[test]
+fn host_call_wait_data() {
+    cli!("--call", "wait:{},a.b", *PLUGIN, *PLUGIN)
+        .failure()
+        .code(1)
+        .stdout(predicate::str::contains(
+            "the wait API call does not take an argument",
+        ));
+}
+
+#[test]
+fn host_call_recv_data() {
+    cli!("--call", "recv:{},a.b", *PLUGIN, *PLUGIN)
+        .failure()
+        .code(1)
+        .stdout(predicate::str::contains(
+            "the recv API call does not take an argument",
+        ));
+}
+
+#[test]
+fn host_call_yield_data() {
+    cli!("--call", "yield:{},a.b", *PLUGIN, *PLUGIN)
+        .failure()
+        .code(1)
+        .stdout(predicate::str::contains(
+            "the yield API call does not take an argument",
+        ));
+}
+
+#[test]
+fn host_call_yield() {
+    cli!("--call", "yield", *PLUGIN, *PLUGIN)
+        .success()
+        .stderr(predicate::str::contains("Executing 'yield()' host call..."));
+}
+
+#[test]
+fn host_call_recv_deadlock() {
+    cli!("--call", "recv", *PLUGIN, *PLUGIN)
+        .failure()
+        .stderr(predicate::str::contains("Executing 'recv()' host call..."))
+        .stderr(predicate::str::contains(
+            "Deadlock: accelerator exited before sending data",
+        ));
+}
+
+#[test]
+fn host_call_send() {
+    cli!("--call", "send:{},a.b", *PLUGIN, *PLUGIN)
+        .success()
+        .stderr(predicate::str::contains(
+            "Executing 'send(...)' host call...",
+        ));
+}
+
+#[test]
 fn host_call_with_reproduce() {
     cli!(
         "--reproduce",
@@ -190,4 +294,35 @@ fn no_repro_out() {
         .stderr(predicate::str::contains(
             "Simulation completed successfully.",
         ));
+}
+
+#[test]
+fn repro_out() {
+    cli!("--repro-out", "/not_allowed", *PLUGIN, *PLUGIN)
+        .success()
+        .stderr(predicate::str::contains(
+            "When trying to write reproduction file:",
+        ));
+
+    cli!("--repro-out", "/tmp/repro-out.out", *PLUGIN, *PLUGIN)
+        .success()
+        .stderr(predicate::str::contains(
+            "Simulation completed successfully.",
+        ));
+}
+
+#[test]
+fn no_repro_out_repro_out() {
+    cli!(
+        "--no-repro-out",
+        "--repro-out",
+        "/tmp/repro.out",
+        *PLUGIN,
+        *PLUGIN
+    )
+    .failure()
+    .code(1)
+    .stdout(predicate::str::contains(
+        "The argument '--no-repro-out' cannot be used with '--repro-out <filename>'",
+    ));
 }
