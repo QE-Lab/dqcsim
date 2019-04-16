@@ -42,6 +42,7 @@ class ArbData(object):
         `[b"test1", b"test2"]`. You can also pass an `ArbData` object as the
         sole argument, in which case a copy will be made.
         """
+        super().__init__()
         if len(args) == 1 and not kwargs and isinstance(args[0], ArbData):
             self._args = copy.deepcopy(args[0]._args)
             self._json = copy.deepcopy(args[0]._json)

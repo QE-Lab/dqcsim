@@ -28,9 +28,25 @@ A completed plugin script looks something like this:
 
 This allows the script to be called using DQCsim's command-line interface by
 simply specifying the Python script.
+
+You can use the `@plugin` decorator to make plugin classes a little shorter. It
+automatically generates the metadata getters for you.
+
+    @plugin("My Plugin", "Me!", "3.14")
+    class MyPlugin(Frontend):
+        def handle_run(self, *args, **kwargs):
+            ...
 """
 
-__all__ = ['Frontend', 'Operator', 'Backend', 'GateStreamSource', 'Plugin', 'JoinHandle']
+__all__ = [
+    'Frontend',
+    'Operator',
+    'Backend',
+    'GateStreamSource',
+    'Plugin',
+    'JoinHandle',
+    'plugin'
+]
 __pdoc__ = {
     'JoinHandle.__init__': False
 }
@@ -44,6 +60,7 @@ import traceback
 class JoinHandle(object):
     """Returned by `Plugin.start()` to allow waiting for completion."""
     def __init__(self, handle):
+        super().__init__()
         if raw.dqcs_handle_type(handle) != raw.DQCS_HTYPE_PLUGIN_JOIN:
             raise TypeError("Specified handle is not a JoinHandle")
         self._handle = handle
@@ -54,6 +71,22 @@ class JoinHandle(object):
             raw.dqcs_plugin_wait(self._handle)
             self._handle.take()
 
+class plugin(object):
+    """Decorator for Plugin class implementations to take some of the
+    boilerplate code away."""
+
+    def __init__(self, name, author, version):
+        super().__init__()
+        self._name = name
+        self._author = author
+        self._version = version
+
+    def __call__(self, cls):
+        setattr(cls, "get_name", lambda _: self._name)
+        setattr(cls, "get_author", lambda _: self._author)
+        setattr(cls, "get_version", lambda _: self._version)
+        return cls
+
 class Plugin(object):
     """Represents a plugin implementation. Must be subclassed; use Frontend,
     Operator, or Backend instead."""
@@ -62,6 +95,8 @@ class Plugin(object):
     # Launching the plugin
     #==========================================================================
     def __init__(self):
+        super().__init__()
+
         """Creates the plugin object."""
         # CPython's trace functionality is used by kcov to test Python
         # coverage. That's great and all, but when we call into the C API and

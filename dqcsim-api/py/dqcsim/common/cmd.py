@@ -33,6 +33,7 @@ class ArbCmd(ArbData):
         Alternatively, another `ArbCmd` object can be specified as the sole
         argument to make a copy.
         """
+        super().__init__()
         if len(args) == 1 and not kwargs and isinstance(args[0], ArbCmd):
             super().__init__(args[0])
             self._iface = args[0]._iface

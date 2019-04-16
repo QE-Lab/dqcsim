@@ -7,16 +7,8 @@ import logging
 class Tests(unittest.TestCase):
 
     def test_1(self):
+        @plugin("My frontend plugin", "Me!", "3.14")
         class MyFrontend(Frontend):
-            def get_name(self):
-                return "My frontend plugin"
-
-            def get_author(self):
-                return "Me!"
-
-            def get_version(self):
-                return "3.14"
-
             def handle_run(self, *args, **kwargs):
                 self.info("Running with: {}, {}", args, kwargs)
                 q = self.allocate()

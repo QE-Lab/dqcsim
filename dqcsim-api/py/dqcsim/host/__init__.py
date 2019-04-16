@@ -112,6 +112,7 @@ class Simulator(object):
             streams) that pass the specified filter to be logged to the given
             log file, in addition to their normal handling.
         """
+        super().__init__()
         self._sim_handle = None
         self._front = None
         self._opers = []
