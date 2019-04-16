@@ -1,0 +1,4 @@
+[tasks.install]
+dependencies = ["release"]
+command = "make"
+args = ["install"]

@@ -198,6 +198,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "dqcsbenull"
+version = "0.1.0"
+dependencies = [
+ "dqcsim 0.1.0",
+]
+
+[[package]]
+name = "dqcsfenull"
+version = "0.1.0"
+dependencies = [
+ "dqcsim 0.1.0",
+]
+
+[[package]]
 name = "dqcsim"
 version = "0.1.0"
 dependencies = [
@@ -250,6 +264,13 @@ dependencies = [
  "predicates 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "structopt 0.2.15 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "dqcsopnull"
+version = "0.1.0"
+dependencies = [
+ "dqcsim 0.1.0",
 ]
 
 [[package]]
