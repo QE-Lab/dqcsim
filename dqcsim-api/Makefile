@@ -3,6 +3,8 @@ ifndef DQCSIM_HOME
 $(error $$DQCSIM_HOME is not set)
 endif
 
+PYTHON = `which python3`
+
 PY_SOURCES = $(shell find py/dqcsim -name '*.py')
 PY_TESTS = $(shell find py/tests -name '*.py')
 UNAME = $(shell uname)
@@ -97,7 +99,7 @@ cpp-prune:
 # Python API targets
 #------------------------------------------------------------------------------
 py/gen/dqcsim.i: py/add_swig_directives.py py/gen/dqcsim.h
-	python3 $^ $@
+	$(PYTHON) $^ $@
 
 py/gen/dqcsim.c: py/gen/dqcsim.i py/gen/dqcsim.h
 	mkdir -p py/gen
@@ -106,19 +108,23 @@ py/gen/dqcsim.c: py/gen/dqcsim.i py/gen/dqcsim.h
 
 .PHONY: py-build
 py-build: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
-	cd py && python3 setup.py build
+	cd py && $(PYTHON) setup.py build
 
 .PHONY: py-release
 py-release: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
-	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py build
+	cd py && DQCSIM_RUST_RELEASE=1 $(PYTHON) setup.py build
 
 .PHONY: py-install
 py-install: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES)
-	cd py && DQCSIM_RUST_RELEASE=1 python3 setup.py install --user --prefix=
+	cd py && DQCSIM_RUST_RELEASE=1 $(PYTHON) setup.py install --user --prefix=
+	mkdir -p $(DQCSIM_HOME)/bin
+	ln -fs $(PYTHON) $(DQCSIM_HOME)/bin/dqcsfepy
+	ln -fs $(PYTHON) $(DQCSIM_HOME)/bin/dqcsoppy
+	ln -fs $(PYTHON) $(DQCSIM_HOME)/bin/dqcsbepy
 
 .PHONY: py-test
 py-test: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES) $(PY_TESTS)
-	cd py && LD_LIBRARY_PATH=$(shell pwd)/../target/debug python3 setup.py test
+	cd py && LD_LIBRARY_PATH=$(shell pwd)/../target/debug $(PYTHON) setup.py test
 
 # NOTE: py-doc depends on py-test to make sure the shared objects are correctly
 # spammed around by setup.py, and to make sure that pdoc3 is installed.
@@ -132,8 +138,12 @@ py-doc: py-test
 .PHONY: py-cov
 py-cov: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES) $(PY_TESTS)
 	rm -rf py/build/cov
-	cd py && LD_LIBRARY_PATH=$(shell pwd)/../target/debug kcov --python-parser=python3 --include-pattern=/py/dqcsim/ --exclude-line=no_kcoverage build/cov setup.py test
+	cd py && LD_LIBRARY_PATH=$(shell pwd)/../target/debug kcov --python-parser=$(PYTHON) --include-pattern=/py/dqcsim/ --exclude-line=no_kcoverage build/cov setup.py test
+	@echo "Reports are here: file://$(shell pwd)/py/build/cov/index.html"
 
+# NOTE: this target is meant for manual invocation! It depends on kcov being
+# installed and there being a graphical environment with a browser to open the
+# reports in.
 .PHONY: py-cov-open
 py-cov-open: py-cov
 	xdg-open py/build/cov/index.html
