@@ -3,6 +3,7 @@
 import dqcsim._dqcsim as raw
 from dqcsim.common import *
 from dqcsim.plugin import *
+import sys
 import os
 
 class Simulator(object):
@@ -157,11 +158,23 @@ class Simulator(object):
                     logger.handle(rec)
                 self._log_capture = to_logging
             elif not callable(self._log_capture):
-                raise TypeError("log_capture must be callable or a string specifying a default callback")
+                raise TypeError("log_capture must be callable or a string identifying a logger from the logging library")
             cb = self._log_capture
             def transmute(message, name, level, source, filename, lineno, time_s, time_ns, tid, pid):
                 cb(message, name, Loglevel(level), source, filename, lineno, time_s * 1000000000 + time_ns, tid, pid)
-            self._log_capture = transmute
+            # Handle trace functions.
+            trace_fn = sys.gettrace()
+            if trace_fn is None:
+                self._log_capture = transmute # no_kcoverage
+            else:
+                # We have a trace function, probably set by kcov for getting
+                # coverage data. Callbacks from the C API run from a new
+                # context every time, so we need to set the trace function
+                # before calling into the callback.
+                def traced(*args):
+                    sys.settrace(trace_fn) # no_kcoverage
+                    transmute(*args) # no_kcoverage
+                self._log_capture = traced
 
         self._log_capture_verbosity = kwargs.pop('log_capture_verbosity', Loglevel.TRACE)
         if not isinstance(self._log_capture_verbosity, Loglevel):

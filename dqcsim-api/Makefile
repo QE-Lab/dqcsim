@@ -127,6 +127,17 @@ py-doc: py-test
 	rm -rf py/build/doc
 	cd py && LD_LIBRARY_PATH=$(shell pwd)/../target/debug PYTHONPATH=. pdoc3 --html --html-dir build/doc dqcsim
 
+# NOTE: this target is meant for manual invocation! It depends on kcov being
+# installed.
+.PHONY: py-cov
+py-cov: py/gen/dqcsim.c py/gen/dqcsim.h py/setup.py $(PY_SOURCES) $(PY_TESTS)
+	rm -rf py/build/cov
+	cd py && LD_LIBRARY_PATH=$(shell pwd)/../target/debug kcov --python-parser=python3 --include-pattern=/py/dqcsim/ --exclude-line=no_kcoverage build/cov setup.py test
+
+.PHONY: py-cov-open
+py-cov-open: py-cov
+	xdg-open py/build/cov/index.html
+
 .PHONY: py-clean
 py-clean:
 	rm -rf py/build
