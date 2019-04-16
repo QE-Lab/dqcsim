@@ -20,10 +20,6 @@ class Tests(unittest.TestCase):
                 return ArbData(*args, **kwargs)
 
         class MyBackend(Backend):
-            def __init__(self):
-                super().__init__()
-                self._arb_interfaces = {'upstream': {'a'}}
-
             def get_name(self):
                 return "My backend plugin"
 

@@ -94,10 +94,23 @@ class Plugin(object):
     #==========================================================================
     # Launching the plugin
     #==========================================================================
-    def __init__(self):
+    def __init__(self, host_arb_ifaces=None, upstream_arb_ifaces=None):
+        """Creates the plugin object.
+
+        Overriding `__init__()` in your implementation is fine, but you must
+        call `super().__init__()` if you do this.
+
+        Among other things, this function auto-detects which arb interfaces are
+        supported by your plugin by scanning for `handle_host_*()` and
+        `handle_upstream_*()` implementations. However, this auto-detection
+        will fail if there are underscores in any of the supported interface or
+        operation IDs. In this case, you MUST override `__init__()` and call
+        `super().__init__(host_arb_ifaces, upstream_arb_ifaces)`, where the two
+        arguments are lists of strings representing the supported interface
+        IDs.
+        """
         super().__init__()
 
-        """Creates the plugin object."""
         # CPython's trace functionality is used by kcov to test Python
         # coverage. That's great and all, but when we call into the C API and
         # the C API calls back into us (from another thread, no less), we're in
@@ -123,6 +136,34 @@ class Plugin(object):
         # plugin instances/threads, which would mess up the "thread-safety"
         # of `_state_handle`.
         self._started = False
+
+        # Configure the supported arb interfaces.
+        self._arb_interfaces = {}
+        if host_arb_ifaces is not None:
+            self._arb_interfaces['host'] = set(host_arb_ifaces)
+        if upstream_arb_ifaces is not None:
+            self._arb_interfaces['upstream'] = set(upstream_arb_ifaces)
+        for source in ['host', 'upstream']:
+            if source in self._arb_interfaces:
+                continue
+
+            # Try to auto-detect arb interfaces for this source.
+            ifaces = set()
+            for mem, _ in inspect.getmembers(self, predicate=inspect.ismethod):
+                if not mem.startswith('handle_{}_'.format(source)):
+                    continue
+                s = mem.split('_')
+                if len(s) > 4:
+                    raise RuntimeError(
+                        "cannot auto-detect interface and operation ID for arb "
+                        "handler {}(), please pass the '{}_arb_ifaces' argument "
+                        "to __init__() to specify the supported interfaces manually"
+                        "".format(mem, source)
+                    )
+                elif len(s) < 4:
+                    continue
+                ifaces.add(s[2])
+            self._arb_interfaces[source] = ifaces
 
     def _parse_argv(self):
         """Parses argv to get the simulator address."""
