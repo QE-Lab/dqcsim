@@ -1,11 +1,11 @@
 use crate::common::{error::Error, log::Loglevel};
-use enum_variants::EnumVariants;
 use serde::{Deserialize, Serialize};
 use std::process::Stdio;
+use strum_macros::{Display, EnumIter, EnumString};
 
 /// All loglevel options plus pass and null, used to specify how a
 /// stdout/stderr stream should be captured.
-#[derive(EnumVariants, Debug, Copy, Clone, PartialEq)]
+#[derive(Display, EnumIter, EnumString, Debug, Copy, Clone, PartialEq)]
 enum StreamCaptureOption {
     Pass,
     Null,

@@ -18,7 +18,7 @@ travis-ci = { repository = "mbrobbel/dqcsim-rs" }
 codecov = { repository = "mbrobbel/dqcsim-rs" }
 
 [workspace]
-members = ["bindings", "lib/enum-variants", "lib/enum-variants-derive"]
+members = ["bindings"]
 
 [features]
 default = ["cli", "null-plugins"]
@@ -27,7 +27,10 @@ null-plugins = []
 kcov = []
 
 [dependencies]
-enum-variants = { path = "lib/enum-variants" }
+strum = "0.15"
+strum_macros = "0.15"
+named_type = "0.2"
+named_type_derive = "0.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_cbor = "0.9"

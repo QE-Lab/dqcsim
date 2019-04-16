@@ -1,6 +1,6 @@
 use crate::arg_parse::plugins::*;
 use dqcsim::{
-    common::{log::tee_file::TeeFileConfiguration, log::*, types::*},
+    common::{error::enum_err, log::tee_file::TeeFileConfiguration, log::*, types::*},
     host::{configuration::*, reproduction::*},
 };
 use std::path::PathBuf;
@@ -55,7 +55,8 @@ pub struct DQCsimStructOpt {
         long = "repro-paths",
         value_name = "style",
         default_value = "keep",
-        case_insensitive = true
+        case_insensitive = true,
+        parse(try_from_str = "parse_enum")
     )]
     pub repro_path_style: ReproductionPathStyle,
 
@@ -104,7 +105,8 @@ pub struct DQCsimStructOpt {
         long = "level",
         value_name = "level",
         default_value = "info",
-        case_insensitive = true
+        case_insensitive = true,
+        parse(try_from_str = "parse_enum")
     )]
     pub stderr_level: LoglevelFilter,
 
@@ -123,7 +125,8 @@ pub struct DQCsimStructOpt {
         long = "dqcsim-level",
         value_name = "level",
         default_value = "trace",
-        case_insensitive = true
+        case_insensitive = true,
+        parse(try_from_str = "parse_enum")
     )]
     pub dqcsim_level: LoglevelFilter,
 
@@ -132,7 +135,8 @@ pub struct DQCsimStructOpt {
         long = "plugin-level",
         value_name = "level",
         default_value = "trace",
-        case_insensitive = true
+        case_insensitive = true,
+        parse(try_from_str = "parse_enum")
     )]
     pub plugin_level: LoglevelFilter,
 
@@ -225,6 +229,17 @@ pub struct PluginStructOpt {
     /// m, s, ms, us, ns), or "infinity" to disable the timeout.
     #[structopt(long = "shutdown-timeout", value_name = "level")]
     pub shutdown_timeout: Option<Timeout>,
+}
+
+fn parse_enum<E, I>(a: &str) -> Result<E, String>
+where
+    E: std::str::FromStr
+        + strum::IntoEnumIterator<Iterator = I>
+        + named_type::NamedType
+        + std::fmt::Display,
+    I: Iterator<Item = E>,
+{
+    E::from_str(a).map_err(|_| enum_err::<E, _>(a).to_string())
 }
 
 impl From<&PluginStructOpt> for PluginNonfunctionalOpts {

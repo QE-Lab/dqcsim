@@ -1,24 +1,31 @@
-use enum_variants::EnumVariants;
+use named_type::NamedType;
+use named_type_derive::*;
 use serde::{Deserialize, Serialize};
 use std::{
     env::current_dir,
     io,
     path::{Path, PathBuf},
 };
+use strum_macros::{Display, EnumIter, EnumString};
 
 /// Represents the style for storing paths in a reproduction file.
-#[derive(EnumVariants, Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
+#[derive(
+    Display, EnumIter, EnumString, NamedType, Debug, Clone, Copy, PartialEq, Deserialize, Serialize,
+)]
 pub enum ReproductionPathStyle {
     /// Specifies that paths should be saved the same way they were specified
     /// on the command line.
+    #[strum(to_string = "Keep", serialize = "keep", serialize = "k")]
     Keep,
 
     /// Specifies that all paths should be saved relative to DQCsim's working
     /// directory.
+    #[strum(to_string = "Relative", serialize = "relative", serialize = "r")]
     Relative,
 
     /// Specifies that all paths should be saved canonically, i.e. relative to
     /// the root directory.
+    #[strum(to_string = "Absolute", serialize = "absolute", serialize = "a")]
     Absolute,
 }
 

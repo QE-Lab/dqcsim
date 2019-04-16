@@ -119,11 +119,13 @@ use crate::common::{
     error,
     error::{ErrorKind, ResultExt},
 };
-use enum_variants::EnumVariants;
 use lazy_static::lazy_static;
+use named_type::NamedType;
+use named_type_derive::*;
 use ref_thread_local::ref_thread_local;
 use serde::{Deserialize, Serialize};
 use std::{cell::RefCell, fmt};
+use strum_macros::{Display, EnumIter, EnumString};
 
 /// The Log trait.
 ///
@@ -180,7 +182,20 @@ ref_thread_local! {
 }
 
 /// Loglevel for log records.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Serialize, Deserialize, EnumVariants)]
+#[derive(
+    Copy,
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    PartialOrd,
+    Serialize,
+    Deserialize,
+    EnumString,
+    Display,
+    EnumIter,
+    NamedType,
+)]
 pub enum Loglevel {
     /// This loglevel is to be used for reporting a fatal error, resulting from
     /// the owner of the logger getting into an illegal state from which it
@@ -239,23 +254,44 @@ impl Into<term::color::Color> for Loglevel {
 }
 
 /// LoglevelFilter for implementors of the Log trait.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Serialize, Deserialize, EnumVariants)]
+#[derive(
+    Copy,
+    Clone,
+    Debug,
+    Eq,
+    PartialEq,
+    PartialOrd,
+    Serialize,
+    Deserialize,
+    EnumString,
+    Display,
+    EnumIter,
+    NamedType,
+)]
 pub enum LoglevelFilter {
     /// A level lower than all log levels.
+    #[strum(to_string = "Off", serialize = "off", serialize = "o")]
     Off = 0,
     /// Corresponds to the `Fatal` log level.
+    #[strum(to_string = "Fatal", serialize = "fatal", serialize = "f")]
     Fatal,
     /// Corresponds to the `Error` log level.
+    #[strum(to_string = "Error", serialize = "error", serialize = "e")]
     Error,
     /// Corresponds to the `Warn` log level.
+    #[strum(to_string = "Warn", serialize = "warn", serialize = "w")]
     Warn,
     /// Corresponds to the `Note` log level.
+    #[strum(to_string = "Note", serialize = "note", serialize = "n")]
     Note,
     /// Corresponds to the `Info` log level.
+    #[strum(to_string = "Info", serialize = "info", serialize = "i")]
     Info,
     /// Corresponds to the `Debug` log level.
+    #[strum(to_string = "Debug", serialize = "debug", serialize = "d")]
     Debug,
     /// Corresponds to the `Trace` log level.
+    #[strum(to_string = "Trace", serialize = "trace", serialize = "t")]
     Trace,
 }
 

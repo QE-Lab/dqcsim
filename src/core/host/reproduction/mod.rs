@@ -5,6 +5,7 @@ use crate::{
         error::{err, inv_arg, oe_inv_arg, Result},
         log::{tee_file::TeeFileConfiguration, LoglevelFilter},
         types::PluginType,
+        util::friendly_enumerate,
     },
     host::configuration::*,
 };
@@ -104,7 +105,7 @@ impl PluginModification {
         inv_arg(format!(
             "There is no plugin named {}. The available plugins are {}.",
             self.name,
-            enum_variants::friendly_enumerate(to.iter().map(|x| &x.name[..]), Some("or"))
+            friendly_enumerate(to.iter().map(|x| &x.name[..]), Some("or"))
         ))
     }
 }

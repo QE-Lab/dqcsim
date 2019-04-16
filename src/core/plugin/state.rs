@@ -11,6 +11,7 @@ use crate::{
             QubitMeasurementValue, QubitRef, QubitRefGenerator, SequenceNumber,
             SequenceNumberGenerator,
         },
+        util::friendly_enumerate,
     },
     debug, error, fatal,
     plugin::{
@@ -679,7 +680,7 @@ impl<'a> PluginState<'a> {
                                     // Backends cannot postpone.
                                     err(format!(
                                         "user-defined gate() function failed to return measurement for qubits {}",
-                                        enum_variants::friendly_enumerate(measures.into_iter(), Some("or"))
+                                        friendly_enumerate(measures.into_iter(), Some("or"))
                                     ))?;
                                 }
                             }

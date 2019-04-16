@@ -11,6 +11,7 @@
 //! [`Fail`]: ../../failure/trait.Fail.html
 //! [`Context`]: ../../failure/struct.Context.html
 
+use crate::common::util::{friendly_enumerate, friendly_name};
 use failure::{Backtrace, Context, Fail};
 use std::{fmt, fmt::Display, result};
 
@@ -123,6 +124,24 @@ pub fn oe_err(s: impl Into<String>) -> impl FnOnce() -> Error {
     move || ErrorKind::Other(s.into()).into()
 }
 
+/// Shorthand for producing an enum match error.
+pub fn enum_err<E, I>(s: &str) -> Error
+where
+    E: strum::IntoEnumIterator<Iterator = I> + Display + named_type::NamedType,
+    I: Iterator<Item = E>,
+{
+    ErrorKind::InvalidArgument(format!(
+        "{} is not a valid {}, valid values are {}",
+        s,
+        friendly_name(E::short_type_name()),
+        friendly_enumerate(
+            E::iter().map(|e| format!("{}", e).to_lowercase()),
+            Some("or")
+        )
+    ))
+    .into()
+}
+
 impl Fail for Error {
     fn cause(&self) -> Option<&Fail> {
         self.ctx.cause()
@@ -197,8 +216,8 @@ impl From<ipc_channel::Error> for Error {
     }
 }
 
-impl From<enum_variants::EnumVariantError> for Error {
-    fn from(error: enum_variants::EnumVariantError) -> Error {
+impl From<strum::ParseError> for Error {
+    fn from(error: strum::ParseError) -> Error {
         let msg = error.to_string();
         Error {
             ctx: Context::new(ErrorKind::InvalidArgument(msg)),
@@ -257,13 +276,5 @@ impl From<crossbeam_channel::RecvError> for Error {
         Error {
             ctx: Context::new(ErrorKind::ITCError(msg)),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn add() {
-        assert_eq!(2 + 2, 4);
     }
 }
