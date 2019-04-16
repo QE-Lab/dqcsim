@@ -67,8 +67,6 @@ impl Plugin for PluginProcess {
         }
 
         command
-            // TODO: matthijs remove this
-            .arg(&self.configuration.name)
             // Pass simulator address
             .arg(server_name)
             // Set working directory
@@ -94,6 +92,24 @@ impl Plugin for PluginProcess {
 
         // Spawn child process
         self.child = Some(command.spawn()?);
+
+        // Setup pipes
+        if let StreamCaptureMode::Capture(level) = self.configuration.nonfunctional.stderr_mode {
+            proxy_stdio(
+                format!("{}::stderr", self.configuration.name),
+                Box::new(self.child.as_mut().unwrap().stderr.take().expect("stderr")),
+                logger.get_sender(),
+                level,
+            );
+        }
+        if let StreamCaptureMode::Capture(level) = self.configuration.nonfunctional.stdout_mode {
+            proxy_stdio(
+                format!("{}::stdout", self.configuration.name),
+                Box::new(self.child.as_mut().unwrap().stdout.take().expect("stdout")),
+                logger.get_sender(),
+                level,
+            );
+        }
 
         // Connect and get channel from child process
         match self.configuration.nonfunctional.accept_timeout {
@@ -138,24 +154,6 @@ impl Plugin for PluginProcess {
                     err("plugin did not connect within specified timeout")?
                 }
             }
-        }
-
-        // Setup pipes
-        if let StreamCaptureMode::Capture(level) = self.configuration.nonfunctional.stderr_mode {
-            proxy_stdio(
-                format!("{}::stderr", self.configuration.name),
-                Box::new(self.child.as_mut().unwrap().stderr.take().expect("stderr")),
-                logger.get_sender(),
-                level,
-            );
-        }
-        if let StreamCaptureMode::Capture(level) = self.configuration.nonfunctional.stdout_mode {
-            proxy_stdio(
-                format!("{}::stdout", self.configuration.name),
-                Box::new(self.child.as_mut().unwrap().stdout.take().expect("stdout")),
-                logger.get_sender(),
-                level,
-            );
         }
 
         Ok(())

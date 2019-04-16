@@ -40,13 +40,17 @@ macro_rules! cli {
 }
 
 lazy_static! {
-    static ref PLUGIN_PATH: PathBuf = assert_cmd::cargo::cargo_bin("examples/plugin");
-    static ref PLUGIN: &'static str = PLUGIN_PATH.to_str().unwrap();
+    static ref FRONTEND_PATH: PathBuf = assert_cmd::cargo::cargo_bin("examples/null-frontend");
+    static ref FRONTEND: &'static str = FRONTEND_PATH.to_str().unwrap();
+    static ref OPERATOR_PATH: PathBuf = assert_cmd::cargo::cargo_bin("examples/null-operator");
+    static ref OPERATOR: &'static str = OPERATOR_PATH.to_str().unwrap();
+    static ref BACKEND_PATH: PathBuf = assert_cmd::cargo::cargo_bin("examples/null-backend");
+    static ref BACKEND: &'static str = BACKEND_PATH.to_str().unwrap();
 }
 
 #[test]
 fn with_macro() {
-    cli!(*PLUGIN, *PLUGIN).success();
+    cli!(*FRONTEND, *BACKEND).success();
 }
 
 #[test]
@@ -108,7 +112,7 @@ fn host_call_no_value() {
 
 #[test]
 fn host_call_ok() {
-    cli!("--call", "start", "--call", "wait", *PLUGIN, *PLUGIN)
+    cli!("--call", "start", "--call", "wait", *FRONTEND, *BACKEND)
         .success()
         .stderr(predicate::str::contains(
             "Executing 'start(...)' host call...",
@@ -118,7 +122,7 @@ fn host_call_ok() {
 
 #[test]
 fn host_call_send_no_data() {
-    cli!("--call", "send", *PLUGIN, *PLUGIN)
+    cli!("--call", "send", *FRONTEND, *BACKEND)
         .failure()
         .code(1)
         .stdout(predicate::str::contains(
@@ -128,7 +132,7 @@ fn host_call_send_no_data() {
 
 #[test]
 fn host_call_arb_no_data() {
-    cli!("--call", "arb", *PLUGIN, *PLUGIN)
+    cli!("--call", "arb", *FRONTEND, *BACKEND)
         .failure()
         .code(1)
         .stdout(predicate::str::contains(
@@ -141,8 +145,8 @@ fn host_call_arb_plugin_not_found() {
     cli!(
         "--call",
         "arb:a:b.c:{\"answer\": 42},x,y,z",
-        *PLUGIN,
-        *PLUGIN
+        *FRONTEND,
+        *BACKEND
     )
     .failure()
     .stderr(predicate::str::contains(
@@ -155,8 +159,8 @@ fn host_call_arb() {
     cli!(
         "--call",
         "arb:front:b.c:{\"answer\": 42},x,y,z",
-        *PLUGIN,
-        *PLUGIN
+        *FRONTEND,
+        *BACKEND
     )
     .success()
     .stderr(predicate::str::contains(
@@ -167,8 +171,8 @@ fn host_call_arb() {
         "--host-stdout",
         "--call",
         "arb:front:b.c:{\"answer\": 42},x,y,z",
-        *PLUGIN,
-        *PLUGIN
+        *FRONTEND,
+        *BACKEND
     )
     .success()
     .stdout(predicate::str::contains("arb:"))
@@ -179,7 +183,7 @@ fn host_call_arb() {
 
 #[test]
 fn host_call_wait_data() {
-    cli!("--call", "wait:{},a.b", *PLUGIN, *PLUGIN)
+    cli!("--call", "wait:{},a.b", *FRONTEND, *BACKEND)
         .failure()
         .code(1)
         .stdout(predicate::str::contains(
@@ -189,7 +193,7 @@ fn host_call_wait_data() {
 
 #[test]
 fn host_call_recv_data() {
-    cli!("--call", "recv:{},a.b", *PLUGIN, *PLUGIN)
+    cli!("--call", "recv:{},a.b", *FRONTEND, *BACKEND)
         .failure()
         .code(1)
         .stdout(predicate::str::contains(
@@ -199,7 +203,7 @@ fn host_call_recv_data() {
 
 #[test]
 fn host_call_yield_data() {
-    cli!("--call", "yield:{},a.b", *PLUGIN, *PLUGIN)
+    cli!("--call", "yield:{},a.b", *FRONTEND, *BACKEND)
         .failure()
         .code(1)
         .stdout(predicate::str::contains(
@@ -209,21 +213,28 @@ fn host_call_yield_data() {
 
 #[test]
 fn host_call_yield() {
-    cli!("--call", "yield", *PLUGIN, *PLUGIN)
+    cli!("--call", "yield", *FRONTEND, *BACKEND)
         .success()
         .stderr(predicate::str::contains("Executing 'yield()' host call..."));
 }
 
 #[test]
 fn host_call_recv() {
-    cli!("--call", "send:{},a.b", "--call", "recv", *PLUGIN, *PLUGIN)
-        .success()
-        .stderr(predicate::str::contains("Executing 'recv()' host call..."));
+    cli!(
+        "--call",
+        "send:{},a.b",
+        "--call",
+        "recv",
+        *FRONTEND,
+        *BACKEND
+    )
+    .success()
+    .stderr(predicate::str::contains("Executing 'recv()' host call..."));
 }
 
 #[test]
 fn host_call_recv_deadlock() {
-    cli!("--call", "recv", "--call", "recv", *PLUGIN, *PLUGIN)
+    cli!("--call", "recv", "--call", "recv", *FRONTEND, *BACKEND)
         .failure()
         .stderr(predicate::str::contains("Executing 'recv()' host call..."))
         .stderr(predicate::str::contains(
@@ -233,7 +244,7 @@ fn host_call_recv_deadlock() {
 
 #[test]
 fn host_call_send() {
-    cli!("--call", "send:{},a.b", *PLUGIN, *PLUGIN)
+    cli!("--call", "send:{},a.b", *FRONTEND, *BACKEND)
         .success()
         .stderr(predicate::str::contains(
             "Executing 'send(...)' host call...",
@@ -247,8 +258,8 @@ fn host_call_with_reproduce() {
         "/dev/zero",
         "--call",
         "start",
-        *PLUGIN,
-        *PLUGIN
+        *FRONTEND,
+        *BACKEND
     )
     .failure()
     .code(1)
@@ -264,8 +275,8 @@ fn host_call_with_reproduce_exactly() {
         "/dev/zero",
         "-C",
         "start",
-        *PLUGIN,
-        *PLUGIN
+        *FRONTEND,
+        *BACKEND
     )
     .failure()
     .code(1)
@@ -276,34 +287,34 @@ fn host_call_with_reproduce_exactly() {
 
 #[test]
 fn host_stdout() {
-    cli!("--host-stdout", *PLUGIN, *PLUGIN)
+    cli!("--host-stdout", *FRONTEND, *BACKEND)
         .success()
         .stdout(predicate::str::contains("wait(): {}"));
 }
 
 #[test]
 fn with_operator() {
-    cli!(*PLUGIN, *PLUGIN, *PLUGIN)
+    cli!(*FRONTEND, *OPERATOR, *BACKEND)
         .success()
         .stderr(predicate::str::contains("op1"));
 }
 
 #[test]
 fn plugin_config_name() {
-    cli!(*PLUGIN, "--name", "frontend-test", *PLUGIN)
+    cli!(*FRONTEND, "--name", "frontend-test", *BACKEND)
         .success()
         .stderr(predicate::str::contains("frontend-test"));
 }
 
 #[test]
 fn plugin_env_mod() {
-    cli!(*PLUGIN, "--env", "key:value", *PLUGIN).success();
-    cli!(*PLUGIN, "--env", "~key", *PLUGIN).success();
+    cli!(*FRONTEND, "--env", "key:value", *BACKEND).success();
+    cli!(*FRONTEND, "--env", "~key", *BACKEND).success();
 }
 
 #[test]
 fn double_start_insert_wait() {
-    cli!("-C", "start", "-C", "start", *PLUGIN, *PLUGIN)
+    cli!("-C", "start", "-C", "start", *FRONTEND, *BACKEND)
         .success()
         .stderr(predicate::str::contains("Executing 'start(...)' host call...").count(2))
         .stderr(predicates::str::contains("Executing 'wait()' host call...").count(2));
@@ -325,7 +336,7 @@ fn bad_path() {
 
 #[test]
 fn no_backend() {
-    cli!(*PLUGIN)
+    cli!(*FRONTEND)
         .failure()
         .code(1)
         .stdout(predicate::str::contains(
@@ -335,14 +346,14 @@ fn no_backend() {
 
 #[test]
 fn no_repro_out() {
-    cli!(*PLUGIN, "--no-repro-out")
+    cli!(*FRONTEND, "--no-repro-out")
         .failure()
         .code(1)
         .stderr(predicate::str::contains(
             "Found argument '--no-repro-out' which wasn't expected, or isn't valid in this context",
         ));
 
-    cli!("--no-repro-out", *PLUGIN, *PLUGIN)
+    cli!("--no-repro-out", *FRONTEND, *BACKEND)
         .success()
         .stderr(predicate::str::contains(
             "Simulation completed successfully.",
@@ -351,13 +362,13 @@ fn no_repro_out() {
 
 #[test]
 fn repro_out() {
-    cli!("--repro-out", "/not_allowed", *PLUGIN, *PLUGIN)
+    cli!("--repro-out", "/not_allowed", *FRONTEND, *BACKEND)
         .success()
         .stderr(predicate::str::contains(
             "When trying to write reproduction file:",
         ));
 
-    cli!("--repro-out", "/tmp/repro-out.out", *PLUGIN, *PLUGIN)
+    cli!("--repro-out", "/tmp/repro-out.out", *FRONTEND, *BACKEND)
         .success()
         .stderr(predicate::str::contains(
             "Simulation completed successfully.",
@@ -370,8 +381,8 @@ fn no_repro_out_repro_out() {
         "--no-repro-out",
         "--repro-out",
         "/tmp/repro.out",
-        *PLUGIN,
-        *PLUGIN
+        *FRONTEND,
+        *BACKEND
     )
     .failure()
     .code(1)
@@ -392,8 +403,8 @@ fn reproduce() {
     cli!(
         "--repro-out",
         "./dqcsim-cli.test.repro.out",
-        *PLUGIN,
-        *PLUGIN
+        *FRONTEND,
+        *BACKEND
     )
     .success();
     cli!("--reproduce", "./dqcsim-cli.test.repro.out").success();
@@ -445,12 +456,12 @@ fn reproduce() {
     .success();
 
     // def with reproduce
-    cli!("--reproduce", "./dqcsim-cli.test.repro.out", *PLUGIN)
+    cli!("--reproduce", "./dqcsim-cli.test.repro.out", *FRONTEND)
         .failure()
         .stdout(predicates::str::contains("Cannot define new plugins while"));
 
     // mod with def
-    cli!(*PLUGIN, *PLUGIN, "@front", "-l", "trace")
+    cli!(*FRONTEND, *BACKEND, "@front", "-l", "trace")
         .failure()
         .stdout(predicates::str::contains("Cannot modify plugins unless"));
 }

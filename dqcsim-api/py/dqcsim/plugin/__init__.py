@@ -186,7 +186,8 @@ class Plugin(object):
             raise RuntimeError("Plugin has been started before. Make a new instance!")
         if simulator is None:
             simulator = self._parse_argv()
-        raw.dqcs_plugin_run(self._to_pdef(), simulator)
+        with self._to_pdef() as pdef:
+            raw.dqcs_plugin_run(pdef, simulator)
         self._started = True
 
     def start(self, simulator=None):
@@ -207,7 +208,8 @@ class Plugin(object):
             raise RuntimeError("Plugin has been started before. Make a new instance!")
         if simulator is None:
             simulator = self._parse_argv()
-        handle = Handle(raw.dqcs_plugin_start(self._to_pdef(), simulator))
+        with self._to_pdef() as pdef:
+            handle = Handle(raw.dqcs_plugin_start(pdef, simulator))
         self._started = True
         return JoinHandle(handle)
 
