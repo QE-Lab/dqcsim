@@ -9,7 +9,7 @@ use std::env;
 fn main() -> Result<(), Error> {
     let mut definition = PluginDefinition::new(
         PluginType::Backend,
-        PluginMetadata::new(format!("example frontend"), "mb", "0.1.0"),
+        PluginMetadata::new("example backend", "mb", "0.1.0"),
     );
 
     definition.initialize = Box::new(|_state, arb_cmds| {
