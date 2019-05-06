@@ -16,7 +16,7 @@ serde-transcode = "1.1"
 
 # channels
 crossbeam-channel = "0.3"
-ipc-channel = "0.11"
+ipc-channel = "0.12"
 
 # utils
 whoami = "0.5"
