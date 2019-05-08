@@ -1,20 +1,14 @@
-#[cfg(feature = "cli")]
 use dqcsim::{
     error, fatal,
     host::{accelerator::Accelerator, reproduction::HostCall, simulator::Simulator},
     info, note,
 };
-#[cfg(feature = "cli")]
 use failure::Error;
-#[cfg(feature = "cli")]
 use std::ffi::OsString;
 
-#[cfg(feature = "cli")]
 mod arg_parse;
-#[cfg(feature = "cli")]
 use crate::arg_parse::*;
 
-#[cfg(feature = "cli")]
 fn run(
     sim: &mut Simulator,
     host_stdout: bool,
@@ -64,7 +58,6 @@ fn run(
     Ok(())
 }
 
-#[cfg(feature = "cli")]
 fn internal_main<I, T>(args: I) -> Result<(), Error>
 where
     I: IntoIterator<Item = T>,
@@ -97,16 +90,10 @@ where
     sim_result
 }
 
-#[cfg(feature = "cli")]
 fn main() {
     let result = internal_main(std::env::args());
     std::process::exit(match result {
         Ok(_) => 0,
         Err(_) => 1,
     });
-}
-
-#[cfg(not(feature = "cli"))]
-fn main() {
-    println!("Please build dqcsim with the `cli` feature enabled to use this")
 }

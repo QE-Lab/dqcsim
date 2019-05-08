@@ -1,4 +1,9 @@
+# Rust
 target
 **/*.rs.bk
+
+# DQCsim
 *.repro
+
+# macOS
 *.DS_Store

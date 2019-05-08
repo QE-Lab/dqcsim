@@ -2,7 +2,6 @@
 //! testing and perhaps as an example. Measurements return random values with
 //! a 50/50 chance.
 
-#[cfg(feature = "null-plugins")]
 use dqcsim::{
     common::types::{
         ArbData, PluginMetadata, PluginType, QubitMeasurementResult, QubitMeasurementValue,
@@ -10,10 +9,8 @@ use dqcsim::{
     debug, info,
     plugin::{definition::PluginDefinition, state::PluginState},
 };
-#[cfg(feature = "null-plugins")]
 use std::env;
 
-#[cfg(feature = "null-plugins")]
 fn main() {
     let mut definition = PluginDefinition::new(
         PluginType::Backend,
@@ -53,9 +50,4 @@ fn main() {
     });
 
     PluginState::run(&definition, env::args().nth(1).unwrap().as_ref()).unwrap();
-}
-
-#[cfg(not(feature = "null-plugins"))]
-fn main() {
-    println!("Please build dqcsim with the `null-plugins` feature enabled to use this")
 }
