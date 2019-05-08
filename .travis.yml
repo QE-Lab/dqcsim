@@ -1,97 +1,95 @@
 sudo: false
 
-os:
-  - linux
-  - osx
-
-language: rust
-
-rust:
-  - stable
-  - nightly
-
 matrix:
   fast_finish: true
   allow_failures:
     - rust: nightly
-
-cache:
-  directories:
-    - $HOME/.cargo
-    - $HOME/kcov
-
-before_cache:
-  - rm -rf $HOME/.cargo/registry
-
-env:
-  global:
-    - PATH=$PATH:$HOME/kcov/bin/
-    - RUSTFLAGS="-C link-dead-code" 
-
-addons:
-  apt:
-    packages:
-    # kcov
-    - libcurl4-openssl-dev
-    - libelf-dev
-    - libdw-dev
-    - cmake
-    - gcc
-    - binutils-dev
-    - libiberty-dev
-
-install:
-  - rustup component add clippy --toolchain="$TRAVIS_RUST_VERSION" || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
-  - rustup component add rustfmt
-  - mdbook --version || cargo install --debug mdbook --vers "0.2.3"
-  - |
-    (
-      [ "$TRAVIS_OS_NAME" = "linux" ] &&
-      [ "$TRAVIS_RUST_VERSION" = "stable" ] &&
-      ( kcov --version ||
-        (
-          wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
-          tar xzf master.tar.gz &&
-          cd kcov-master &&
-          mkdir build &&
-          cd build &&
-          cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov .. &&
-          make &&
-          make install 
-        )
-      )
-    ) || echo "Skipping kcov install"
-
-script:
-  - cargo fmt --all -- --check
-  - cargo clippy --all --all-targets --all-features -- -Dwarnings
-  - cargo build --all --all-targets --all-features
-  - cargo test --all
-
-after_success: |
-  [ "$TRAVIS_OS_NAME" = "linux" ] &&
-  [ "$TRAVIS_RUST_VERSION" = "stable" ] &&
-  cargo test --features kcov cli -- --test-threads 1 &&
-  for file in target/debug/{dqcsim-*,core-*}; do
-    [ -x "${file}" ] || continue; 
-    mkdir -p "target/cov/$(
-    basename $file)"; 
-    kcov --exclude-pattern=/.cargo,/usr/lib,/tests/,/lib/enum-variants/tests,/bindings --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
-  done &&
-  bash <(curl -s https://codecov.io/bash)
-
-before_deploy:
-  - cargo doc
-  - cd book && mdbook build && mdbook test
-  - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/book/book/doc_
-
-deploy:
-  provider: pages
-  skip-cleanup: true
-  github-token: $GITHUB_TOKEN
-  local-dir: book/book
-  keep-history: false
-  on:
-    branch: master
-    rust: stable
-    condition: $TRAVIS_OS_NAME = linux
+  include:
+    - &rust-job
+      os: osx
+      language: rust
+      rust: stable
+      cache:
+        directories:
+          - $HOME/.cargo
+          - $HOME/kcov
+      before_cache:
+        - rm -rf $HOME/.cargo/registry
+      install:
+        - rustup component add clippy --toolchain="$TRAVIS_RUST_VERSION" || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
+        - rustup component add rustfmt
+      script:
+        - cargo fmt --all -- --check
+        - cargo clippy --all --all-targets --all-features -- -Dwarnings
+        - cargo build --all --all-targets --all-features
+        - cargo test --all
+    - <<: *rust-job
+      os: linux
+      env:
+        - PATH=$PATH:$HOME/kcov/bin/
+        - RUSTFLAGS="-C link-dead-code" 
+      addons:
+        apt:
+          packages:
+            # kcov
+            - libcurl4-openssl-dev
+            - libelf-dev
+            - libdw-dev
+            - cmake
+            - gcc
+            - binutils-dev
+            - libiberty-dev
+      after_success: |
+        mdbook --version || cargo install --debug mdbook --vers "0.2.3"
+        ( kcov --version ||
+          (
+            wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
+            tar xzf master.tar.gz &&
+            cd kcov-master &&
+            mkdir build &&
+            cd build &&
+            cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov .. &&
+            make &&
+            make install
+          )
+        ) || echo "Skipping kcov install"
+        cargo test --features kcov cli -- --test-threads 1 &&
+        for file in target/debug/{dqcsim-*,core-*}; do
+          [ -x "${file}" ] || continue; 
+          mkdir -p "target/cov/$(
+          basename $file)"; 
+          kcov --exclude-pattern=/.cargo,/usr/lib,/tests/,/lib/enum-variants/tests,/bindings --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
+        done &&
+        bash <(curl -s https://codecov.io/bash)
+      before_deploy:
+        - cargo doc
+        - cd book && mdbook build && mdbook test
+        - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/book/book/doc_
+      deploy:
+        provider: pages
+        skip-cleanup: true
+        github-token: $GITHUB_TOKEN
+        local-dir: book/book
+        keep-history: false
+        on:
+          branch: master
+    - <<: *rust-job
+      rust: nightly
+    - <<: *rust-job
+      os: linux
+      rust: nightly
+    - &python-job
+      os: linux
+      dist: xenial
+      language: python
+      python: "3.7"
+      cache: pip
+      install:
+        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
+      script:
+        - rustc --version
+        - python --version
+    - <<: *python-job
+      python: "3.6"
+    - <<: *python-job
+      python: "3.5"
