@@ -19,10 +19,10 @@ matrix:
         - rustup component add clippy --toolchain="$TRAVIS_RUST_VERSION" || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
         - rustup component add rustfmt
       script:
-        - cargo fmt --all -- --check
-        - cargo clippy --all --all-targets --all-features -- -Dwarnings
-        - cargo build --all --all-targets --all-features
-        - cargo test --all
+        - cargo fmt -- --check
+        - cargo clippy --all-targets --all-features -- -Dwarnings
+        - cargo build --all-targets --all-features
+        - cargo test --all-targets
     - <<: *rust-job
       os: linux
       env:
@@ -62,7 +62,7 @@ matrix:
         done &&
         bash <(curl -s https://codecov.io/bash)
       before_deploy:
-        - cargo doc
+        - cargo doc --all-features
         - cd book && mdbook build && mdbook test
         - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/book/book/doc_
       deploy:
