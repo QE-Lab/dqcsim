@@ -115,10 +115,7 @@ fn cli_long_help() {
 
 #[test]
 fn cli_version() {
-    cli!("--version")
-        .failure()
-        .code(1)
-        .stdout(predicate::str::is_match("^DQCsim [0-9].[0-9].[0-9] (.*)").unwrap());
+    cli!("--version").failure().code(1);
 }
 
 #[test]

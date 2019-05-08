@@ -1,5 +1,5 @@
 use super::*;
-use dqcsim::log;
+use crate::log;
 
 /// Primitive API for sending a log message using the current logger.
 ///

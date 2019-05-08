@@ -91,7 +91,8 @@
 //! which thread the cleanup callback is called from! If you use it, make sure
 //! that it is thread-safe.
 
-use dqcsim::{
+use super::*;
+use crate::{
     common::{error::*, log::*, types::*},
     host::{configuration::*, simulator::Simulator},
     plugin::{definition::*, state::*},

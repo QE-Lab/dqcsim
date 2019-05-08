@@ -1,5 +1,5 @@
 use super::*;
-use dqcsim::host::accelerator::Accelerator;
+use crate::host::accelerator::Accelerator;
 
 /// Constructs a DQCsim simulation.
 ///

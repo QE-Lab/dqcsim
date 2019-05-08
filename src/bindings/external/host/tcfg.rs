@@ -1,5 +1,5 @@
 use super::*;
-use dqcsim::common::log::tee_file::TeeFileConfiguration;
+use crate::common::log::tee_file::TeeFileConfiguration;
 
 /// Creates a new plugin thread configuration object from a plugin definition.
 ///

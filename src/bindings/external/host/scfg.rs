@@ -1,5 +1,5 @@
 use super::*;
-use dqcsim::common::{
+use crate::common::{
     log,
     log::{callback::LogCallback, tee_file::TeeFileConfiguration},
 };

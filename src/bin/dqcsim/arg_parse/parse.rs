@@ -6,6 +6,7 @@ use dqcsim::{
     host::{configuration::*, reproduction::*},
 };
 use failure::{Error, Fail};
+use git_testament::{git_testament, render_testament};
 use std::{ffi::OsString, path::PathBuf, str::FromStr};
 use structopt::{clap::AppSettings, StructOpt};
 
@@ -229,6 +230,8 @@ pub struct CommandLineConfiguration {
     pub reproduction_file: Option<PathBuf>,
 }
 
+git_testament!(TESTAMENT);
+
 impl CommandLineConfiguration {
     /// Produces a DQCsim configuration from the specified command line
     /// argument iterable.
@@ -246,12 +249,7 @@ impl CommandLineConfiguration {
         T: Into<OsString> + Clone,
     {
         // Generate the version string.
-        let version = format!(
-            "{} (git {}, {})",
-            env!("CARGO_PKG_VERSION"),
-            env!("GIT_HASH"),
-            env!("GIT_CLEAN")
-        );
+        let version = render_testament!(TESTAMENT);
 
         // Generate the ASCII art.
         let ascii_art = format!(
