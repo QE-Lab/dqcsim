@@ -22,7 +22,7 @@ members = ["bindings"]
 
 [features]
 default = ["cli", "null-plugins"]
-cli = ["structopt", "ansi_term", "clap", "null-plugins"]
+cli = ["structopt", "ansi_term", "clap"]
 null-plugins = []
 kcov = []
 
