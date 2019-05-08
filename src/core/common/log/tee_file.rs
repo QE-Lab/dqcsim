@@ -1,6 +1,7 @@
 use crate::common::{
-    error::{enum_err, Result},
+    error::Result,
     log::{Log, LogRecord, Loglevel, LoglevelFilter},
+    util::friendly_enum_parse,
 };
 use failure::Fail;
 use serde::{Deserialize, Serialize};
@@ -80,8 +81,7 @@ impl ::std::str::FromStr for TeeFileConfiguration {
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         let mut splitter = s.splitn(2, ':');
         let log_filter = splitter.next().unwrap();
-        let filter = LoglevelFilter::from_str(log_filter)
-            .map_err(|_| enum_err::<LoglevelFilter, _>(log_filter))?;
+        let filter: LoglevelFilter = friendly_enum_parse(log_filter)?;
         let file: PathBuf = splitter
             .next()
             .ok_or_else(|| {

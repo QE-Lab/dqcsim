@@ -1,3 +1,5 @@
+use crate::common::error::{inv_arg, Result};
+
 /// Splits a CamelCase name into space-separated lowercase words.
 ///
 /// Abbreviations remain uppercase, as shown in the examples below.
@@ -141,6 +143,50 @@ pub fn friendly_enumerate(
     s
 }
 
+pub fn friendly_enum_parse<E, I>(s: &str) -> Result<E>
+where
+    E: std::str::FromStr
+        + strum::IntoEnumIterator<Iterator = I>
+        + named_type::NamedType
+        + std::fmt::Display,
+    I: Iterator<Item = E>,
+{
+    // Match using a lowercase version of the provided string, so we match
+    // case insensitively.
+    let mut s: String = s.into();
+    s.make_ascii_lowercase();
+
+    // Record possible matches.
+    let mut matches = vec![];
+    for var in E::iter() {
+        let mut var_str: String = var.to_string();
+        var_str.make_ascii_lowercase();
+        if var_str.starts_with(&s) {
+            matches.push((var_str, var));
+        }
+    }
+
+    // We're expecting one match; more is ambiguous, less is no match.
+    match matches.len() {
+        0 => inv_arg(format!(
+            "{} is not a valid {}, valid values are {}",
+            s,
+            friendly_name(E::short_type_name()),
+            friendly_enumerate(
+                E::iter().map(|e| format!("{}", e).to_lowercase()),
+                Some("or")
+            )
+        )),
+        1 => Ok(matches.into_iter().next().unwrap().1),
+        _ => inv_arg(format!(
+            "{} is an ambiguous {}, it could mean either {}",
+            s,
+            friendly_name(E::short_type_name()),
+            friendly_enumerate(matches.into_iter().map(|x| x.0), Some("or"))
+        )),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -202,6 +248,44 @@ mod tests {
         assert_eq!(friendly_enumerate(vec!["one"].into_iter(), None), "one");
         let empty: Vec<String> = vec![];
         assert_eq!(friendly_enumerate(empty.into_iter(), None), "<nothing>");
+    }
+
+    #[test]
+    fn friendlyenumparse() {
+        assert_eq!(
+            friendly_enum_parse::<TestEnum, _>("bar").unwrap(),
+            TestEnum::Bar
+        );
+        assert_eq!(
+            friendly_enum_parse::<TestEnum, _>("BAR").unwrap(),
+            TestEnum::Bar
+        );
+        assert_eq!(
+            friendly_enum_parse::<TestEnum, _>("Bar").unwrap(),
+            TestEnum::Bar
+        );
+        assert_eq!(
+            friendly_enum_parse::<TestEnum, _>("baz").unwrap(),
+            TestEnum::Baz
+        );
+        assert_eq!(
+            friendly_enum_parse::<TestEnum, _>("BA")
+                .unwrap_err()
+                .to_string(),
+            "Invalid argument: ba is an ambiguous test enum, it could mean either bar or baz"
+        );
+        assert_eq!(
+            friendly_enum_parse::<TestEnum, _>("bla")
+                .unwrap_err()
+                .to_string(),
+            "Invalid argument: bla is not a valid test enum, valid values are foo, bar, or baz"
+        );
+        assert_eq!(
+            friendly_enum_parse::<TestEnum, _>("")
+                .unwrap_err()
+                .to_string(),
+            "Invalid argument:  is an ambiguous test enum, it could mean either foo, bar, or baz"
+        );
     }
 
 }

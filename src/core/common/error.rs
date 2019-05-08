@@ -11,7 +11,6 @@
 //! [`Fail`]: ../../failure/trait.Fail.html
 //! [`Context`]: ../../failure/struct.Context.html
 
-use crate::common::util::{friendly_enumerate, friendly_name};
 use failure::{Backtrace, Context, Fail};
 use std::{fmt, fmt::Display, result};
 
@@ -122,24 +121,6 @@ pub fn err<T>(s: impl Into<String>) -> Result<T> {
 /// err() but for or_else() functions.
 pub fn oe_err(s: impl Into<String>) -> impl FnOnce() -> Error {
     move || ErrorKind::Other(s.into()).into()
-}
-
-/// Shorthand for producing an enum match error.
-pub fn enum_err<E, I>(s: &str) -> Error
-where
-    E: strum::IntoEnumIterator<Iterator = I> + Display + named_type::NamedType,
-    I: Iterator<Item = E>,
-{
-    ErrorKind::InvalidArgument(format!(
-        "{} is not a valid {}, valid values are {}",
-        s,
-        friendly_name(E::short_type_name()),
-        friendly_enumerate(
-            E::iter().map(|e| format!("{}", e).to_lowercase()),
-            Some("or")
-        )
-    ))
-    .into()
 }
 
 impl Fail for Error {

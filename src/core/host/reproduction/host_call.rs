@@ -1,6 +1,7 @@
 use crate::common::{
-    error::{enum_err, inv_arg, Error},
+    error::{inv_arg, Error},
     types::{ArbCmd, ArbData},
+    util::friendly_enum_parse,
 };
 use named_type::NamedType;
 use named_type_derive::*;
@@ -55,8 +56,7 @@ impl ::std::str::FromStr for HostCall {
         assert_eq!(splitter.next(), None);
 
         // Parse the function name.
-        let function = HostCallFunction::from_str(function)
-            .map_err(|_| enum_err::<HostCallFunction, _>(function))?;
+        let function: HostCallFunction = friendly_enum_parse(function)?;
 
         // Parse the argument based on the selected function and return.
         match argument {
