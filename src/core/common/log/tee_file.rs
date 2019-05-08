@@ -1,6 +1,7 @@
 use crate::common::{
     error::Result,
     log::{Log, LogRecord, Loglevel, LoglevelFilter},
+    util::friendly_enum_parse,
 };
 use failure::Fail;
 use serde::{Deserialize, Serialize};
@@ -79,7 +80,8 @@ impl ::std::str::FromStr for TeeFileConfiguration {
     /// `LoglevelFilter::from_str()` and thus supports abbreviations.
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         let mut splitter = s.splitn(2, ':');
-        let filter = LoglevelFilter::from_str(splitter.next().unwrap())?;
+        let log_filter = splitter.next().unwrap();
+        let filter: LoglevelFilter = friendly_enum_parse(log_filter)?;
         let file: PathBuf = splitter
             .next()
             .ok_or_else(|| {
@@ -114,7 +116,7 @@ mod test {
 
         let tfc = TeeFileConfiguration::from_str("hello");
         assert!(tfc.is_err());
-        assert_eq!(tfc.unwrap_err().to_string(), "hello is not a valid loglevel filter, valid values are off, fatal, error, warn, note, info, debug, or trace");
+        assert_eq!(tfc.unwrap_err().to_string(), "Invalid argument: hello is not a valid loglevel filter, valid values are off, fatal, error, warn, note, info, debug, or trace");
 
         let tfc = TeeFileConfiguration::from_str("info");
         assert!(tfc.is_err());

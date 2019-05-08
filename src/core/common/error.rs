@@ -197,8 +197,8 @@ impl From<ipc_channel::Error> for Error {
     }
 }
 
-impl From<enum_variants::EnumVariantError> for Error {
-    fn from(error: enum_variants::EnumVariantError) -> Error {
+impl From<strum::ParseError> for Error {
+    fn from(error: strum::ParseError) -> Error {
         let msg = error.to_string();
         Error {
             ctx: Context::new(ErrorKind::InvalidArgument(msg)),
@@ -257,13 +257,5 @@ impl From<crossbeam_channel::RecvError> for Error {
         Error {
             ctx: Context::new(ErrorKind::ITCError(msg)),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn add() {
-        assert_eq!(2 + 2, 4);
     }
 }

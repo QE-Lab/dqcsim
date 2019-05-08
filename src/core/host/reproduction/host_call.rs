@@ -1,12 +1,16 @@
 use crate::common::{
     error::{inv_arg, Error},
     types::{ArbCmd, ArbData},
+    util::friendly_enum_parse,
 };
-use enum_variants::EnumVariants;
+use named_type::NamedType;
+use named_type_derive::*;
 use serde::{Deserialize, Serialize};
+use strum_macros::{Display, EnumIter, EnumString};
 
 /// Represents a host API call name.
-#[derive(EnumVariants, Debug, Copy, Clone, PartialEq)]
+#[derive(Display, NamedType, EnumIter, EnumString, Debug, Copy, Clone, PartialEq)]
+#[strum(serialize_all = "snake_case")]
 enum HostCallFunction {
     Start,
     Wait,
@@ -52,7 +56,7 @@ impl ::std::str::FromStr for HostCall {
         assert_eq!(splitter.next(), None);
 
         // Parse the function name.
-        let function = HostCallFunction::from_str(function)?;
+        let function: HostCallFunction = friendly_enum_parse(function)?;
 
         // Parse the argument based on the selected function and return.
         match argument {
@@ -113,10 +117,6 @@ mod test {
     fn from_str() {
         assert_eq!(
             HostCall::from_str("start").unwrap(),
-            HostCall::Start(ArbData::default())
-        );
-        assert_eq!(
-            HostCall::from_str("ST").unwrap(),
             HostCall::Start(ArbData::default())
         );
         assert_eq!(

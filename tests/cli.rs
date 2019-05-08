@@ -138,6 +138,16 @@ fn cli_host_call_no_value() {
 }
 
 #[test]
+fn cli_host_call_bad_value() {
+    cli!("--call", "hello")
+        .failure()
+        .code(1)
+        .stdout(predicate::str::contains(
+            "Invalid value for '--call <call>...': Invalid argument: hello is not a valid host call function, valid values are start, wait, send, recv, yield, or arb",
+        ));
+}
+
+#[test]
 fn cli_host_call_ok() {
     cli!("--call", "start", "--call", "wait", *FRONTEND, *BACKEND)
         .success()
@@ -279,6 +289,16 @@ fn cli_host_call_send() {
 }
 
 #[test]
+fn cli_bad_repro_paths() {
+    cli!("--repro-paths", "hello", *FRONTEND, *BACKEND)
+        .failure()
+        .code(1)
+        .stdout(predicate::str::contains(
+            "Invalid value for '--repro-paths <style>': Invalid argument: hello is not a valid reproduction path style, valid values are keep, relative, or absolute",
+        ));
+}
+
+#[test]
 fn cli_host_call_with_reproduce() {
     cli!(
         "--reproduce",
@@ -358,6 +378,23 @@ fn cli_bad_path() {
         ))
         .stdout(predicate::str::contains(
             "/asdf' appears to be a path, but the referenced file does not exist",
+        ));
+}
+
+#[test]
+fn cli_loglevel() {
+    cli!("-l", "fatal", *FRONTEND, *BACKEND).success();
+    cli!("-l", "f", *FRONTEND, *BACKEND).success();
+    cli!("-lf", *FRONTEND, *BACKEND).success();
+}
+
+#[test]
+fn cli_bad_loglevel() {
+    cli!("-l", "hello", *FRONTEND, *BACKEND)
+        .failure()
+        .code(1)
+        .stdout(predicate::str::contains(
+            "Invalid value for '--level <level>': Invalid argument: hello is not a valid loglevel filter, valid values are off, fatal, error, warn, note, info, debug, or trace",
         ));
 }
 
