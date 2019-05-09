@@ -91,7 +91,8 @@ matrix:
       install:
         - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
       script:
-        - python setup.py build test
+        - python setup.py build
+        - LD_DEBUG=all python setup.py test
     - <<: *python-job
       python: "3.6"
     - <<: *python-job
