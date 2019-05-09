@@ -10,8 +10,12 @@ fn cbindgen() {
     use std::env;
 
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let out_dir = format!(
+        "{}/../target/include",
+        env::var("CARGO_MANIFEST_DIR").unwrap()
+    );
 
-    let trailer = include_str!("src/bindings/trailer.inc");
+    let trailer = include_str!("../src/bindings/trailer.inc");
 
     // Generate C headers.
     cbindgen::Builder::new()
@@ -20,7 +24,7 @@ fn cbindgen() {
         .with_trailer(trailer)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file("target/dqcsim.h");
+        .write_to_file(format!("{}/dqcsim.h", out_dir));
 
     // Generate C++ minimal API headers.
     cbindgen::Builder::new()
@@ -32,7 +36,7 @@ fn cbindgen() {
         .with_trailer(trailer)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file("target/dqcsim_raw.hpp");
+        .write_to_file(format!("{}/dqcsim_raw.cpp", out_dir));
 
     // Generate SWIG header.
     cbindgen::Builder::new()
@@ -42,7 +46,7 @@ fn cbindgen() {
         .with_documentation(false)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file("target/dqcsim-py.h");
+        .write_to_file(format!("{}/dqcsim-py.h", out_dir));
 }
 
 fn main() {

@@ -7,3 +7,9 @@ target
 
 # macOS
 *.DS_Store
+
+# Python
+.eggs
+__pycache__
+MANIFEST
+*.pyc

@@ -63,13 +63,13 @@ matrix:
         bash <(curl -s https://codecov.io/bash)
       before_deploy:
         - cargo doc --all-features
-        - cd book && mdbook build && mdbook test
-        - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/book/book/doc_
+        - cd doc && mdbook build && mdbook test
+        - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/doc/book/doc_
       deploy:
         provider: pages
         skip-cleanup: true
         github-token: $GITHUB_TOKEN
-        local-dir: book/book
+        local-dir: doc/book
         keep-history: false
         on:
           branch: master
@@ -87,8 +87,8 @@ matrix:
       install:
         - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
       script:
-        - rustc --version
-        - python --version
+        - pip install -r requirements.txt
+        - python setup.py build test sdist bdist_wheel
     - <<: *python-job
       python: "3.6"
     - <<: *python-job
