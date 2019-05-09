@@ -97,8 +97,7 @@ matrix:
     - <<: *python-job
       python: "3.5"
     - name: "Manylinux wheels"
+      language: generic
       os: linux
-      services:
-        - docker
       script:
-        - ./python/tools/manylinux-wheels.sh
+        - ./python/tools/manylinux_wheels.sh

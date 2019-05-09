@@ -1,7 +1,8 @@
-import os, platform
+import os, platform, shutil
 from distutils.command.bdist import bdist as _bdist
 from distutils.command.sdist import sdist as _sdist
 from distutils.command.build import build as _build
+from distutils.command.clean import clean as _clean
 from setuptools.command.egg_info import egg_info as _egg_info
 from setuptools import setup, Extension, find_packages
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
@@ -15,6 +16,11 @@ include_dir = target_dir + "/include"
 debug_dir = target_dir + "/debug"
 build_dir = py_target_dir + "/build"
 dist_dir = py_target_dir + "/dist"
+
+class clean(_clean):
+    def run(self):
+        _clean.run(self)
+        shutil.rmtree(py_target_dir)
 
 class build(_build):
     def initialize_options(self):
@@ -94,11 +100,12 @@ setup(
     },
 
     cmdclass = {
-        'egg_info': egg_info,
-        'build': build,
         'bdist': bdist,
-        'sdist': sdist,
         'bdist_wheel': bdist_wheel,
+        'build': build,
+        'clean': clean,
+        'egg_info': egg_info,
+        'sdist': sdist,
     },
 
     ext_modules = [
