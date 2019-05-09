@@ -1,14 +1,15 @@
-import os
+import os, platform
 from distutils.command.bdist import bdist as _bdist
 from distutils.command.sdist import sdist as _sdist
 from distutils.command.build import build as _build
 from setuptools.command.egg_info import egg_info as _egg_info
 from setuptools import setup, Extension, find_packages
+from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 with open('rust/Cargo.toml', 'r') as f:
     version = next(filter(lambda x: x.startswith('version = '), f.readlines()), 'version = "?.?.?"').split('"')[1]
 
-target_dir = "target"
+target_dir = os.getcwd() + "/target"
 py_target_dir = target_dir + "/python"
 include_dir = target_dir + "/include"
 debug_dir = target_dir + "/debug"
@@ -33,6 +34,19 @@ class bdist(_bdist):
     def finalize_options(self):
         _bdist.finalize_options(self)
         self.dist_dir = dist_dir
+
+class bdist_wheel(_bdist_wheel):
+    def run(self):
+        _bdist_wheel.run(self)
+        impl_tag, abi_tag, plat_tag = self.get_tag()
+        archive_basename = "{}-{}-{}-{}".format(self.wheel_dist_name, impl_tag, abi_tag, plat_tag)
+        wheel_path = os.path.join(self.dist_dir, archive_basename + '.whl')
+        if platform.system() == "Darwin":
+            from delocate.delocating import delocate_wheel
+            delocate_wheel(wheel_path)
+        elif platform.system() == "Linux":
+            from auditwheel.repair import repair_wheel
+            repair_wheel(wheel_path, abi="linux_x86_64", lib_sdir=".libs", out_dir=self.dist_dir, update_tags=False)
 
 class sdist(_sdist):
     def finalize_options(self):
@@ -79,6 +93,7 @@ setup(
         'build': build,
         'bdist': bdist,
         'sdist': sdist,
+        'bdist_wheel': bdist_wheel,
     },
 
     ext_modules = [
@@ -87,13 +102,15 @@ setup(
             [py_target_dir + "/dqcsim.c"],
             libraries = ['dqcsim'],
             library_dirs = [debug_dir],
+            runtime_library_dirs = [debug_dir],
             include_dirs = [include_dir],
             extra_compile_args = ['-std=c99']
         )
     ],
 
     setup_requires = [
-        'plumbum'
+        'plumbum',
+        'delocate; platform_system == "Darwin"',
     ],
 
     install_requires = [

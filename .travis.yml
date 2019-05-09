@@ -88,10 +88,11 @@ matrix:
         apt:
           packages:
             - swig
+            - patchelf
       install:
         - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
       script:
-        - pip install -r requirements.txt
+        - pip install -r dev-requirements.txt
         - python setup.py build test sdist bdist_wheel
     - <<: *python-job
       python: "3.6"

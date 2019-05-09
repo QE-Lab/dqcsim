@@ -13,3 +13,4 @@ target
 __pycache__
 MANIFEST
 *.pyc
+*.so
