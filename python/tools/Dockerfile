@@ -2,7 +2,7 @@ FROM quay.io/pypa/manylinux1_x86_64
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
 	curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip && \
-	unzip swig.zip && \
+	unzip -qq swig.zip && \
 	cd swig-rel-3.0.12 && \
 	./autogen.sh && \
 	./configure --without-pcre && \
