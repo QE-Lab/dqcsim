@@ -26,7 +26,10 @@ class build(_build):
         with local.cwd("rust"):
             local['cargo']["build"]["--no-default-features"]["--features"]["bindings"] & FG
         local['mkdir']("-p", py_target_dir)
-        local['python3']("python/tools/add_swig_directives.py", include_dir + "/dqcsim-py.h", py_target_dir + "/dqcsim.i")
+        import sys
+        sys.path.append("python/tools")
+        import add_swig_directives
+        add_swig_directives.run(include_dir + "/dqcsim-py.h", py_target_dir + "/dqcsim.i")
         local['swig']("-v", "-python", "-py3", "-outdir", py_target_dir, "-o", py_target_dir + "/dqcsim.c", py_target_dir + "/dqcsim.i")
         _build.run(self)
 
@@ -45,8 +48,10 @@ class bdist_wheel(_bdist_wheel):
             from delocate.delocating import delocate_wheel
             delocate_wheel(wheel_path)
         elif platform.system() == "Linux":
-            from auditwheel.repair import repair_wheel
-            repair_wheel(wheel_path, abi="linux_x86_64", lib_sdir=".libs", out_dir=self.dist_dir, update_tags=False)
+            # This only works for manylinux
+            if 'AUDITWHEEL_PLAT' in os.environ:
+                from auditwheel.repair import repair_wheel
+                repair_wheel(wheel_path, abi=os.environ['AUDITWHEEL_PLAT'], lib_sdir=".libs", out_dir=self.dist_dir, update_tags=True)
 
 class sdist(_sdist):
     def finalize_options(self):
