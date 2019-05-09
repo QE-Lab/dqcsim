@@ -84,6 +84,10 @@ matrix:
       language: python
       python: "3.7"
       cache: pip
+      addons:
+        apt:
+          packages:
+            - swig
       install:
         - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
       script:
