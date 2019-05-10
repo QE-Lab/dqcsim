@@ -34,15 +34,24 @@ class build(_build):
                 cargo = local.get('cargo')
                 rustc = local.get('rustc')
             except Exception as e:
+                print("Installing Rust...")
                 rustup = local['curl']['--proto']['=https']['--tlsv1.2']['-sSf']['https://sh.rustup.rs']
-                (rustup | local['sh']) & FG
-            local['cargo']["build"]["--release"]["--features"]["bindings"] & FG
+                sh = local['sh']
+                if os.isatty(sys.stdout.fileno()):
+                    (rustup | sh) & FG
+                else:
+                    (rustup | sh['-s']['--']['-y'])()
+                cargo = local.get('cargo', os.environ.get('HOME', 'root') + '/.cargo/bin/cargo')
+            finally:
+                cargo["build"]["--release"]["--features"]["bindings"] & FG
         
         local['mkdir']("-p", py_target_dir)
         sys.path.append("python/tools")
         import add_swig_directives
         add_swig_directives.run(include_dir + "/dqcsim-py.h", py_target_dir + "/dqcsim.i")
-        local['swig']("-v", "-python", "-py3", "-outdir", py_target_dir, "-o", py_target_dir + "/dqcsim.c", py_target_dir + "/dqcsim.i")
+
+        local["swig"]["-v"]["-python"]["-py3"]["-outdir"][py_target_dir]["-o"][py_target_dir + "/dqcsim.c"][py_target_dir + "/dqcsim.i"] & FG
+        
         _build.run(self)
 
 class bdist(_bdist):
@@ -116,7 +125,7 @@ setup(
         ]),
         ('include', [
             'target/include/dqcsim.h',
-            'target/include/dqcsim_raw.cpp'
+            'target/include/dqcsim_raw.hpp'
         ]),
         ('lib', [
             'target/release/libdqcsim.' + ('so' if platform.system() == "Linux" else 'dylib')

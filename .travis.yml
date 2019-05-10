@@ -78,25 +78,6 @@ matrix:
     - <<: *rust-job
       os: linux
       rust: nightly
-    - &python-job
-      os: linux
-      dist: xenial
-      language: python
-      python: "3.7"
-      cache: pip
-      addons:
-        apt:
-          packages:
-            - swig
-      install:
-        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
-      script:
-        - python setup.py build
-        - LD_DEBUG=libs python setup.py test
-    - <<: *python-job
-      python: "3.6"
-    - <<: *python-job
-      python: "3.5"
     - name: "Manylinux wheels"
       language: generic
       os: linux

@@ -36,7 +36,7 @@ fn cbindgen() {
         .with_trailer(trailer)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file(format!("{}/dqcsim_raw.cpp", out_dir));
+        .write_to_file(format!("{}/dqcsim_raw.hpp", out_dir));
 
     // Generate SWIG header.
     cbindgen::Builder::new()
