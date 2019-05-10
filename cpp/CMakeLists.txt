@@ -38,14 +38,6 @@ add_custom_target(test+verbose COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failur
 #------------------------------------------------------------------------------
 # Search paths
 #------------------------------------------------------------------------------
-include_directories(gen/include)
-
-if(USE_RELEASE_LIB)
-    link_directories(../../target/release)
-else()
-    link_directories(../../target/debug)
-endif()
-
 if(TEST_LIB)
     add_subdirectory(test_lib)
 endif()
