@@ -1,4 +1,4 @@
-import os, platform, shutil
+import os, platform, shutil, sys
 from distutils.command.bdist import bdist as _bdist
 from distutils.command.sdist import sdist as _sdist
 from distutils.command.build import build as _build
@@ -13,7 +13,7 @@ with open('rust/Cargo.toml', 'r') as f:
 target_dir = os.getcwd() + "/target"
 py_target_dir = target_dir + "/python"
 include_dir = target_dir + "/include"
-debug_dir = target_dir + "/debug"
+release_dir = target_dir + "/release"
 build_dir = py_target_dir + "/build"
 dist_dir = py_target_dir + "/dist"
 
@@ -30,9 +30,15 @@ class build(_build):
     def run(self):
         from plumbum import local, FG
         with local.cwd("rust"):
-            local['cargo']["build"]["--no-default-features"]["--features"]["bindings"] & FG
+            try:
+                cargo = local.get('cargo')
+                rustc = local.get('rustc')
+            except Exception as e:
+                rustup = local['curl']['--proto']['=https']['--tlsv1.2']['-sSf']['https://sh.rustup.rs']
+                (rustup | local['sh']) & FG
+            local['cargo']["build"]["--release"]["--features"]["bindings"] & FG
+        
         local['mkdir']("-p", py_target_dir)
-        import sys
         sys.path.append("python/tools")
         import add_swig_directives
         add_swig_directives.run(include_dir + "/dqcsim-py.h", py_target_dir + "/dqcsim.i")
@@ -91,7 +97,30 @@ setup(
         "Operating System :: MacOS",
 
         "Programming Language :: C",
+        "Programming Language :: C++",
+        "Programming Language :: Rust",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         
+        "Topic :: Scientific/Engineering"
+    ],
+
+    data_files = [
+        ('bin', [
+            'target/release/dqcsim',
+            'target/release/dqcsfenull',
+            'target/release/dqcsopnull',
+            'target/release/dqcsbenull'
+        ]),
+        ('include', [
+            'target/include/dqcsim.h',
+            'target/include/dqcsim_raw.cpp'
+        ]),
+        ('lib', [
+            'target/release/libdqcsim.' + ('so' if platform.system() == "Linux" else 'dylib')
+        ])
     ],
 
     packages = find_packages('python'),
@@ -113,8 +142,8 @@ setup(
             'dqcsim._dqcsim',
             [py_target_dir + "/dqcsim.c"],
             libraries = ['dqcsim'],
-            library_dirs = [debug_dir],
-            runtime_library_dirs = [debug_dir],
+            library_dirs = [release_dir],
+            runtime_library_dirs = [release_dir],
             include_dirs = [include_dir],
             extra_compile_args = ['-std=c99']
         )
@@ -129,7 +158,9 @@ setup(
         'cbor',
     ],
     
-    tests_require = ['nose'],
+    tests_require = [
+        'nose'
+    ],
     test_suite = 'nose.collector',
 
     zip_safe = False,
