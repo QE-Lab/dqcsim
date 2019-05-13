@@ -50,11 +50,6 @@ matrix:
       env:
         - PATH=$PATH:$HOME/kcov/bin/
         - RUSTFLAGS="-C link-dead-code"
-      cache:
-        directories:
-          - $HOME/kcov
-      before_cache:
-        - rm -rf $HOME/.cargo/registry
       addons:
         apt:
           packages:
@@ -77,6 +72,7 @@ matrix:
         - cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov ..
         - make
         - make install
+        - cd ../..
       script:
         # Rust coverage
         - cargo build --tests --all-features
@@ -97,12 +93,12 @@ matrix:
           cd build &&
           cmake ../cpp/ &&
           make &&
-          for file in `test_* -executable -and -type f`; 
+          cd ../ &&
+          for file in `build/test_* -executable -and -type f`; 
             do [ -x "${file}" ] || continue; 
             mkdir -p "target/cov/$(basename $file)";
             kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/build/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
-          done &&
-          cd ..
+          done
         # Upload to codecov.io
         - bash <(curl -s https://codecov.io/bash)
     - name: "Manylinux wheels"
