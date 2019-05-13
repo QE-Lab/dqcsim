@@ -47,6 +47,7 @@ matrix:
       language: rust
       rust: stable
       os: linux
+      dist: xenial
       env:
         - PATH=$PATH:$HOME/kcov/bin/
         - RUSTFLAGS="-C link-dead-code"
@@ -54,6 +55,7 @@ matrix:
         apt:
           packages:
             - python3
+            - python3-pip
             - swig
             # kcov
             - libcurl4-openssl-dev
