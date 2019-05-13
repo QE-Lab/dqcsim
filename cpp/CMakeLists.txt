@@ -14,7 +14,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #------------------------------------------------------------------------------
 # CMake options
 #------------------------------------------------------------------------------
-option(USE_RELEASE_LIB  "Use target/release instead of target/debug lib" OFF)
 option(TEST_LIB         "Test the C++ library"                           ON)
 option(TEST_RAW         "Test the raw C API"                             ON)
 

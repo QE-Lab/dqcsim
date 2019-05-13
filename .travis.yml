@@ -12,7 +12,6 @@ matrix:
       cache:
         directories:
           - $HOME/.cargo
-          - $HOME/kcov
       before_cache:
         - rm -rf $HOME/.cargo/registry
       install:
@@ -25,42 +24,8 @@ matrix:
         - cargo test --all-targets
     - <<: *rust-job
       os: linux
-      env:
-        - PATH=$PATH:$HOME/kcov/bin/
-        - RUSTFLAGS="-C link-dead-code" 
-      addons:
-        apt:
-          packages:
-            # kcov
-            - libcurl4-openssl-dev
-            - libelf-dev
-            - libdw-dev
-            - cmake
-            - gcc
-            - binutils-dev
-            - libiberty-dev
-      after_success: |
-        mdbook --version || cargo install --debug mdbook --vers "0.2.3"
-        ( kcov --version ||
-          (
-            wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
-            tar xzf master.tar.gz &&
-            cd kcov-master &&
-            mkdir build &&
-            cd build &&
-            cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov .. &&
-            make &&
-            make install
-          )
-        ) || echo "Skipping kcov install"
-        cargo test --features kcov cli -- --test-threads 1 &&
-        for file in target/debug/{dqcsim-*,core-*}; do
-          [ -x "${file}" ] || continue; 
-          mkdir -p "target/cov/$(
-          basename $file)"; 
-          kcov --exclude-pattern=/.cargo,/usr/lib,/tests/,/lib/enum-variants/tests,/bindings --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
-        done &&
-        bash <(curl -s https://codecov.io/bash)
+      after_success:
+        - mdbook --version || cargo install --debug mdbook --vers "0.2.3"
       before_deploy:
         - cargo doc --all-features
         - cd doc && mdbook build && mdbook test
@@ -78,6 +43,68 @@ matrix:
     - <<: *rust-job
       os: linux
       rust: nightly
+    - name: "Coverage"
+      language: rust
+      rust: stable
+      os: linux
+      env:
+        - PATH=$PATH:$HOME/kcov/bin/
+        - RUSTFLAGS="-C link-dead-code"
+      cache:
+        directories:
+          - $HOME/kcov
+      before_cache:
+        - rm -rf $HOME/.cargo/registry
+      addons:
+        apt:
+          packages:
+            - python3
+            - swig
+            # kcov
+            - libcurl4-openssl-dev
+            - libelf-dev
+            - libdw-dev
+            - cmake
+            - gcc
+            - binutils-dev
+            - libiberty-dev
+      install:
+        - wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz
+        - tar xzf master.tar.gz
+        - cd kcov-master
+        - mkdir build
+        - cd build
+        - cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov ..
+        - make
+        - make install
+      script:
+        # Rust coverage
+        - cargo build --tests --all-features
+        - cargo test --features kcov cli -- --test-threads 1
+        - |
+          for file in target/debug/{dqcsim-*,core-*}; do
+            [ -x "${file}" ] || continue; 
+            mkdir -p "target/cov/$(basename $file)"; 
+            kcov --exclude-pattern=/.cargo,/usr/lib,/tests/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
+          done
+        # Python coverage
+        - python3 setup.py build
+        - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-line=no_kcoverage target/cov setup.py test
+        # CPP coverage
+        - python3 setup.py install
+        - |
+          mkdir build &&
+          cd build &&
+          cmake ../cpp/ &&
+          make &&
+          for file in `test_* -executable -and -type f`; 
+            do [ -x "${file}" ] || continue; 
+            mkdir -p "target/cov/$(basename $file)";
+            kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/build/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
+          done &&
+          cd ..
+        # Upload to codecov.io
+        - bash <(curl -s https://codecov.io/bash)
     - name: "Manylinux wheels"
       language: generic
       os: linux
