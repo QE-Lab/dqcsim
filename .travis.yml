@@ -50,6 +50,7 @@ matrix:
       dist: xenial
       env:
         - RUSTFLAGS="-C link-dead-code"
+        - PATH=$PATH:$HOME/kcov/bin/
         - DQCSIM_DEBUG=""
       addons:
         apt:
@@ -71,7 +72,7 @@ matrix:
         - cd kcov-master
         - mkdir build
         - cd build
-        - cmake ..
+        - cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov ..
         - make
         - make install
         - cd ../..
