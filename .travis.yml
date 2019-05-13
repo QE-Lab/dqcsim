@@ -49,7 +49,6 @@ matrix:
       os: linux
       dist: xenial
       env:
-        - PATH=$PATH:$HOME/kcov/bin/
         - RUSTFLAGS="-C link-dead-code"
       addons:
         apt:
@@ -75,7 +74,7 @@ matrix:
         - make
         - make install
         - cd ../..
-        - pip3 install setuptools
+        - pip3 install setuptools wheel
       script:
         # Rust coverage
         - cargo build --tests --all-features
@@ -89,7 +88,7 @@ matrix:
         # Python coverage
         - python3 setup.py build
         - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-line=no_kcoverage target/cov setup.py test
-        # CPP coverage
+        # C++ coverage
         - python3 setup.py install
         - |
           mkdir build &&
