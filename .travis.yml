@@ -73,6 +73,7 @@ matrix:
         - make
         - make install
         - cd ../..
+        - pip3 install setuptools
       script:
         # Rust coverage
         - cargo build --tests --all-features
