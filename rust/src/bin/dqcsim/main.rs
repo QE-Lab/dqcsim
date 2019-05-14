@@ -203,224 +203,144 @@ mod tests {
         .is_ok());
     }
 
-    // #[test]
-    // fn host_call_wait_data() {
-    //     cli!("--call", "wait:{},a.b", FRONTEND, BACKEND)
-    //         .failure()
-    //         .code(1)
-    //         .stdout(predicate::str::contains(
-    //             "the wait API call does not take an argument",
-    //         ));
-    // }
+    #[test]
+    fn host_call_wait_data() {
+        assert!(err!(cli!("--call", "wait:{},a.b", FRONTEND, BACKEND))
+            .contains("the wait API call does not take an argument"));
+    }
 
-    // #[test]
-    // fn host_call_recv_data() {
-    //     cli!("--call", "recv:{},a.b", FRONTEND, BACKEND)
-    //         .failure()
-    //         .code(1)
-    //         .stdout(predicate::str::contains(
-    //             "the recv API call does not take an argument",
-    //         ));
-    // }
+    #[test]
+    fn host_call_recv_data() {
+        assert!(err!(cli!("--call", "recv:{},a.b", FRONTEND, BACKEND))
+            .contains("the recv API call does not take an argument"));
+    }
 
-    // #[test]
-    // fn host_call_yield_data() {
-    //     cli!("--call", "yield:{},a.b", FRONTEND, BACKEND)
-    //         .failure()
-    //         .code(1)
-    //         .stdout(predicate::str::contains(
-    //             "the yield API call does not take an argument",
-    //         ));
-    // }
+    #[test]
+    fn host_call_yield_data() {
+        assert!(err!(cli!("--call", "yield:{},a.b", FRONTEND, BACKEND))
+            .contains("the yield API call does not take an argument"));
+    }
 
-    // #[test]
-    // fn host_call_yield() {
-    //     cli!("--call", "yield", FRONTEND, BACKEND)
-    //         .success()
-    //         .stderr(predicate::str::contains("Executing 'yield()' host call..."));
-    // }
+    #[test]
+    fn host_call_yield() {
+        assert!(cli!("--call", "yield", FRONTEND, BACKEND).is_ok());
+    }
 
-    // #[test]
-    // fn host_call_recv() {
-    //     cli!(
-    //         "--call",
-    //         "send:{},a.b",
-    //         "--call",
-    //         "recv",
-    //         FRONTEND,
-    //         BACKEND
-    //     )
-    //     .success()
-    //     .stderr(predicate::str::contains("Executing 'recv()' host call..."));
-    // }
+    #[test]
+    fn host_call_recv() {
+        assert!(cli!("--call", "send:{},a.b", "--call", "recv", FRONTEND, BACKEND).is_ok());
+    }
 
-    // #[test]
-    // fn host_call_recv_deadlock() {
-    //     cli!("--call", "recv", "--call", "recv", FRONTEND, BACKEND)
-    //         .failure()
-    //         .stderr(predicate::str::contains("Executing 'recv()' host call..."))
-    //         .stderr(predicate::str::contains(
-    //             "Deadlock: accelerator exited before sending data",
-    //         ));
-    // }
+    #[test]
+    fn host_call_recv_deadlock() {
+        assert!(
+            err!(cli!("--call", "recv", "--call", "recv", FRONTEND, BACKEND))
+                .contains("Deadlock: accelerator exited before sending data")
+        );
+    }
 
-    // #[test]
-    // fn host_call_send() {
-    //     cli!("--call", "send:{},a.b", FRONTEND, BACKEND)
-    //         .success()
-    //         .stderr(predicate::str::contains(
-    //             "Executing 'send(...)' host call...",
-    //         ));
-    // }
+    #[test]
+    fn host_call_send() {
+        assert!(cli!("--call", "send:{},a.b", FRONTEND, BACKEND).is_ok());
+    }
 
-    // #[test]
-    // fn bad_repro_paths() {
-    //     cli!("--repro-paths", "hello", FRONTEND, BACKEND)
-    //         .failure()
-    //         .code(1)
-    //         .stdout(predicate::str::contains(
-    //             "Invalid value for '--repro-paths <style>': Invalid argument: hello is not a valid reproduction path style, valid values are keep, relative, or absolute",
-    //         ));
-    // }
+    #[test]
+    fn bad_repro_paths() {
+        assert!(
+            err!(cli!("--repro-paths", "hello", FRONTEND, BACKEND))
+                .contains("Invalid argument: hello is not a valid reproduction path style, valid values are keep, relative, or absolute")
+        );
+    }
 
-    // #[test]
-    // fn host_call_with_reproduce() {
-    //     cli!(
-    //         "--reproduce",
-    //         "/dev/zero",
-    //         "--call",
-    //         "start",
-    //         FRONTEND,
-    //         BACKEND
-    //     )
-    //     .failure()
-    //     .code(1)
-    //     .stdout(predicate::str::contains(
-    //         "The argument '--reproduce <filename>' cannot be used with '--call <call>...",
-    //     ));
-    // }
+    #[test]
+    fn host_call_with_reproduce() {
+        assert!(err!(cli!(
+            "--reproduce",
+            "/dev/zero",
+            "--call",
+            "start",
+            FRONTEND,
+            BACKEND
+        ))
+        .contains("--reproduce <filename>"));
+    }
 
-    // #[test]
-    // fn host_call_with_reproduce_exactly() {
-    //     cli!(
-    //         "--reproduce-exactly",
-    //         "/dev/zero",
-    //         "-C",
-    //         "start",
-    //         FRONTEND,
-    //         BACKEND
-    //     )
-    //     .failure()
-    //     .code(1)
-    //     .stdout(predicate::str::contains(
-    //         "The argument '--reproduce-exactly <filename>' cannot be used with '--call <call>...",
-    //     ));
-    // }
+    #[test]
+    fn host_call_with_reproduce_exactly() {
+        assert!(err!(cli!(
+            "--reproduce-exactly",
+            "/dev/zero",
+            "-C",
+            "start",
+            FRONTEND,
+            BACKEND
+        ))
+        .contains("--reproduce-exactly <filename>"));
+    }
 
-    // #[test]
-    // fn host_stdout() {
-    //     cli!("--host-stdout", FRONTEND, BACKEND)
-    //         .success()
-    //         .stdout(predicate::str::contains("wait(): {}"));
-    // }
+    #[test]
+    fn host_stdout() {
+        assert!(cli!("--host-stdout", FRONTEND, BACKEND).is_ok());
+    }
 
     #[test]
     fn with_operator() {
         assert!(cli!(FRONTEND, OPERATOR, BACKEND).is_ok());
     }
 
-    // #[test]
-    // fn plugin_config_name() {
-    //     cli!(FRONTEND, "--name", "frontend-test", BACKEND)
-    //         .success()
-    //         .stderr(predicate::str::contains("frontend-test"));
-    // }
+    #[test]
+    fn plugin_config_name() {
+        assert!(cli!(FRONTEND, "--name", "frontend-test", BACKEND).is_ok());
+    }
 
-    // #[test]
-    // fn plugin_env_mod() {
-    //     cli!(FRONTEND, "--env", "key:value", BACKEND).success();
-    //     cli!(FRONTEND, "--env", "~key", BACKEND).success();
-    // }
+    #[test]
+    fn plugin_env_mod() {
+        assert!(cli!(FRONTEND, "--env", "key:value", BACKEND).is_ok());
+        assert!(cli!(FRONTEND, "--env", "~key", BACKEND).is_ok());
+    }
 
-    // #[test]
-    // fn double_start_insert_wait() {
-    //     cli!("-C", "start", "-C", "start", FRONTEND, BACKEND)
-    //         .success()
-    //         .stderr(predicate::str::contains("Executing 'start(...)' host call...").count(2))
-    //         .stderr(predicates::str::contains("Executing 'wait()' host call...").count(2));
-    // }
+    #[test]
+    fn double_start_insert_wait() {
+        assert!(cli!("-C", "start", "-C", "start", FRONTEND, BACKEND).is_ok());
+    }
 
-    // #[test]
-    // fn bad_path() {
-    //     let path = assert_cmd::cargo::cargo_bin("asdf");
-    //     cli!(path.to_str().unwrap())
-    //         .failure()
-    //         .code(1)
-    //         .stdout(predicate::str::contains(
-    //             "While interpreting plugin specification: Invalid argument: the plugin specification",
-    //         ))
-    //         .stdout(predicate::str::contains(
-    //             "/asdf' appears to be a path, but the referenced file does not exist",
-    //         ));
-    // }
+    #[test]
+    fn bad_path() {
+        assert!(err!(cli!("/asdf"))
+            .contains("/asdf' appears to be a path, but the referenced file does not exist"));
+    }
 
-    // #[test]
-    // fn loglevel() {
-    //     cli!("-l", "fatal", FRONTEND, BACKEND).success();
-    //     cli!("-l", "f", FRONTEND, BACKEND).success();
-    //     cli!("-lf", FRONTEND, BACKEND).success();
-    // }
+    #[test]
+    fn loglevel() {
+        assert!(cli!("-l", "fatal", FRONTEND, BACKEND).is_ok());
+        assert!(cli!("-l", "f", FRONTEND, BACKEND).is_ok());
+        assert!(cli!("-lf", FRONTEND, BACKEND).is_ok());
+    }
 
-    // #[test]
-    // fn bad_loglevel() {
-    //     cli!("-l", "hello", FRONTEND, BACKEND)
-    //         .failure()
-    //         .code(1)
-    //         .stdout(predicate::str::contains(
-    //             "Invalid value for '--level <level>': Invalid argument: hello is not a valid loglevel filter, valid values are off, fatal, error, warn, note, info, debug, or trace",
-    //         ));
-    // }
+    #[test]
+    fn bad_loglevel() {
+        assert!(err!(cli!("-l", "hello", FRONTEND, BACKEND)).contains(
+                "Invalid argument: hello is not a valid loglevel filter, valid values are off, fatal, error, warn, note, info, debug, or trace"
+            ));
+    }
 
-    // #[test]
-    // fn no_backend() {
-    //     cli!(FRONTEND)
-    //         .failure()
-    //         .code(1)
-    //         .stdout(predicate::str::contains(
-    //             "While interpreting plugin specification: Invalid argument: could not find plugin executable 'dqcsbeqx', needed for plugin specification 'qx'",
-    //         ));
-    // }
+    #[test]
+    fn no_backend() {
+        assert!(err!(cli!(FRONTEND)).contains(
+                "While interpreting plugin specification: Invalid argument: could not find plugin executable 'dqcsbeqx', needed for plugin specification 'qx'",
+            ));
+    }
 
-    // #[test]
-    // fn no_repro_out() {
-    //     cli!(FRONTEND, "--no-repro-out")
-    //         .failure()
-    //         .code(1)
-    //         .stderr(predicate::str::contains(
-    //             "Found argument '--no-repro-out' which wasn't expected, or isn't valid in this context",
-    //         ));
+    #[test]
+    fn no_repro_out() {
+        assert!(cli!("--no-repro-out", FRONTEND, BACKEND).is_ok());
+    }
 
-    //     cli!("--no-repro-out", FRONTEND, BACKEND)
-    //         .success()
-    //         .stderr(predicate::str::contains(
-    //             "Simulation completed successfully.",
-    //         ));
-    // }
-
-    // #[test]
-    // fn repro_out() {
-    //     cli!("--repro-out", "/not_allowed", FRONTEND, BACKEND)
-    //         .success()
-    //         .stderr(predicate::str::contains(
-    //             "When trying to write reproduction file:",
-    //         ));
-
-    //     cli!("--repro-out", "/tmp/repro-out.out", FRONTEND, BACKEND)
-    //         .success()
-    //         .stderr(predicate::str::contains(
-    //             "Simulation completed successfully.",
-    //         ));
-    // }
+    #[test]
+    fn repro_out() {
+        assert!(cli!("--repro-out", "/not_allowed", FRONTEND, BACKEND).is_ok());
+        assert!(cli!("--repro-out", "/tmp/repro-out.out", FRONTEND, BACKEND).is_ok());
+    }
 
     // #[test]
     // fn no_repro_out_repro_out() {
