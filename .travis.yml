@@ -43,12 +43,13 @@ matrix:
     - <<: *rust-job
       os: linux
       rust: nightly
-    - language: rust
-      rust: stable
+    - <<: *rust-job
+      name: "Coverage"
       os: linux
-      dist: xenial
+      sudo: true
       cache:
         directories:
+          - $HOME/.cargo
           - $HOME/kcov
       env:
         - RUSTFLAGS="-C link-dead-code"
@@ -64,6 +65,11 @@ matrix:
             - gcc
             - binutils-dev
             - libiberty-dev
+            # swig
+            - autogen
+            - automake
+            - autoconf
+            - byacc
       install:
         - |
           ( kcov --version ||
@@ -78,6 +84,19 @@ matrix:
               cd ..
             )
           ) || echo "Skipping kcov install"
+        - |
+          ( swig --version ||
+            (
+              curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
+              unzip -qq swig.zip
+              cd swig-rel-3.0.12
+              ./autogen.sh
+              ./configure --without-pcre
+              make
+              sudo make install
+              cd ..
+            )
+          ) || echo "Skipping swig install"
       script:
         - cargo test --all-targets
         - |
@@ -86,23 +105,24 @@ matrix:
             mkdir -p "target/cov/$(basename $file)"; 
             kcov --exclude-pattern=/.cargo,/usr/lib,/tests/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
           done
+        # Python coverage
+        - python3 setup.py build
+        - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-line=no_kcoverage target/cov setup.py test
+        # C++ coverage
+        - sudo python3 setup.py install
+        - |
+          mkdir build &&
+          cd build &&
+          cmake ../cpp/ &&
+          make &&
+          cd ../ &&
+          for file in `build/test_* -executable -and -type f`; 
+            do [ -x "${file}" ] || continue; 
+            mkdir -p "target/cov/$(basename $file)";
+            kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/build/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
+          done
+        # Upload to codecov
         - bash <(curl -s https://codecov.io/bash)
-        # # Python coverage
-        # - python3 setup.py build
-        # - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-line=no_kcoverage target/cov setup.py test
-        # # C++ coverage
-        # - python3 setup.py install
-        # - |
-        #   mkdir build &&
-        #   cd build &&
-        #   cmake ../cpp/ &&
-        #   make &&
-        #   cd ../ &&
-        #   for file in `build/test_* -executable -and -type f`; 
-        #     do [ -x "${file}" ] || continue; 
-        #     mkdir -p "target/cov/$(basename $file)";
-        #     kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/build/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
-        #   done
     - &python-job
       os: linux
       dist: xenial

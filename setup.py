@@ -10,10 +10,12 @@ from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 with open('rust/Cargo.toml', 'r') as f:
     version = next(filter(lambda x: x.startswith('version = '), f.readlines()), 'version = "?.?.?"').split('"')[1]
 
+debug = 'DQCSIM_DEBUG' in os.environ
+
 target_dir = os.getcwd() + "/target"
 py_target_dir = target_dir + "/python"
 include_dir = target_dir + "/include"
-release_dir = target_dir + "/release"
+output_dir = target_dir + ("/debug" if debug else "/release")
 build_dir = py_target_dir + "/build"
 dist_dir = py_target_dir + "/dist"
 
@@ -43,7 +45,10 @@ class build(_build):
                     (rustup | sh['-s']['--']['-y'])()
                 cargo = local.get('cargo', os.environ.get('HOME', 'root') + '/.cargo/bin/cargo')
             finally:
-                cargo["build"]["--release"]["--features"]["bindings"] & FG
+                if debug:
+                    cargo["build"]["--features"]["bindings"] & FG
+                else:
+                    cargo["build"]["--release"]["--features"]["bindings"] & FG
         
         local['mkdir']("-p", py_target_dir)
         sys.path.append("python/tools")
@@ -118,17 +123,17 @@ setup(
 
     data_files = [
         ('bin', [
-            'target/release/dqcsim',
-            'target/release/dqcsfenull',
-            'target/release/dqcsopnull',
-            'target/release/dqcsbenull'
+            output_dir + '/dqcsim',
+            output_dir + '/dqcsfenull',
+            output_dir + '/dqcsopnull',
+            output_dir + '/dqcsbenull'
         ]),
         ('include', [
             'target/include/dqcsim.h',
             'target/include/dqcsim_raw.hpp'
         ]),
         ('lib', [
-            'target/release/libdqcsim.' + ('so' if platform.system() == "Linux" else 'dylib')
+            output_dir + '/libdqcsim.' + ('so' if platform.system() == "Linux" else 'dylib')
         ])
     ],
 
@@ -151,8 +156,8 @@ setup(
             'dqcsim._dqcsim',
             [py_target_dir + "/dqcsim.c"],
             libraries = ['dqcsim'],
-            library_dirs = [release_dir],
-            runtime_library_dirs = [release_dir],
+            library_dirs = [output_dir],
+            runtime_library_dirs = [output_dir],
             include_dirs = [include_dir],
             extra_compile_args = ['-std=c99']
         )
