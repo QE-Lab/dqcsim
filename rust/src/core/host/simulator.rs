@@ -1,4 +1,4 @@
-//! Simulator driver.
+//! Simulator driver: wraps a `Simulation` and a `LogThread`.
 
 use crate::{
     common::{error::Result, log::thread::LogThread},

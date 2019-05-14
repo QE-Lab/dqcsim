@@ -1,3 +1,6 @@
+//! Implementation of the plugin trait for running the plugin within a thread
+//! inside DQCsim.
+
 use crate::{
     common::{
         channel::SimulatorChannel,

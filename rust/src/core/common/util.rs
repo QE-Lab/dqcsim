@@ -1,3 +1,5 @@
+//! Utility functions that don't belong elsewhere.
+
 use crate::common::error::{inv_arg, Result};
 
 /// Splits a CamelCase name into space-separated lowercase words.
@@ -143,6 +145,11 @@ pub fn friendly_enumerate(
     s
 }
 
+/// Parses a string representing an enum variant into the variant.
+///
+/// This uses fuzzy matching: case doesn't matter, and it is sufficient to
+/// only list the first few characters (just enough to not be ambiguous). The
+/// error messages generated are user-friendly as well.
 pub fn friendly_enum_parse<E, I>(s: &str) -> Result<E>
 where
     E: std::str::FromStr

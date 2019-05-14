@@ -1,3 +1,5 @@
+//! Module containing the runtime structures of a plugin.
+
 use crate::{
     common::{
         error::{err, inv_arg, inv_op, oe_err, Result},

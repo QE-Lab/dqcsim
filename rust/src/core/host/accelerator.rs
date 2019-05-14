@@ -1,3 +1,5 @@
+//! Host API interface trait (start, wait, send, recv).
+
 use crate::common::{error::Result, types::ArbData};
 
 /// Trait containing the primitive operations for an accelerator.

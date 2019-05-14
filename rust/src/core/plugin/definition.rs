@@ -1,3 +1,6 @@
+//! Module containing the structures used to define a plugin prior to its
+//! construction (callbacks etc.).
+
 use crate::{
     common::{
         error::{inv_op, Result},

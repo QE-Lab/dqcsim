@@ -1,3 +1,6 @@
+//! Implementation of the plugin trait for running the plugin within a separate
+//! process.
+
 use crate::{
     common::{
         channel::SimulatorChannel,

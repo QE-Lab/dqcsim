@@ -1,5 +1,4 @@
-//! The `dqcsim-api` library crate provides a C interface to the DQCsim
-//! simulator.
+//! This module provides a C interface to the DQCsim simulator.
 //!
 //! # Handles
 //!

@@ -1,4 +1,5 @@
-//! Simulation instance.
+//! Simulation instance: launches, connects, communicates with, and kills
+//! plugins.
 
 use crate::{
     checked_rpc,
