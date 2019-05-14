@@ -107,8 +107,8 @@ matrix:
             (
               wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz
               tar xzf master.tar.gz
-              mkdir -p build
-              cd build
+              mkdir -p kcov-build
+              cd kcov-build
               cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov ../kcov-master
               make
               make install
@@ -141,7 +141,8 @@ matrix:
         - python3 setup.py build
         - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-line=no_kcoverage target/cov setup.py test
         # C++ coverage
-        - sudo python3 setup.py install
+        - python3 setup.py bdist_wheel
+        - pip3 install target/python/dist/*.whl
         - |
           mkdir build &&
           cd build &&
