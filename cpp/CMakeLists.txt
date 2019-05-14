@@ -14,8 +14,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #------------------------------------------------------------------------------
 # CMake options
 #------------------------------------------------------------------------------
-option(TEST_LIB         "Test the C++ library"                           ON)
-option(TEST_RAW         "Test the raw C API"                             ON)
+option(TEST_CPP         "Test the C++ library"                           ON)
+option(TEST_RAW_C       "Test the raw C API"                             ON)
 
 #------------------------------------------------------------------------------
 # GoogleTest inclusion
@@ -37,10 +37,10 @@ add_custom_target(test+verbose COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failur
 #------------------------------------------------------------------------------
 # Search paths
 #------------------------------------------------------------------------------
-if(TEST_LIB)
-    add_subdirectory(test_lib)
+if(TEST_CPP)
+    add_subdirectory(test_cpp)
 endif()
 
-if(TEST_RAW)
-    add_subdirectory(test_raw)
+if(TEST_RAW_C)
+    add_subdirectory(test_raw_c)
 endif()
