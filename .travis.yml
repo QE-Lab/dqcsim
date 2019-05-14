@@ -82,6 +82,7 @@ matrix:
       env:
         - RUSTFLAGS="-C link-dead-code"
         - PATH=$PATH:$HOME/kcov/bin/
+        - DQCSIM_DEBUG=""
       addons:
         apt:
           packages:
