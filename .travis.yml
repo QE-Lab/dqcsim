@@ -43,11 +43,42 @@ matrix:
     - <<: *rust-job
       os: linux
       rust: nightly
-    - name: "Coverage"
-      language: rust
-      rust: stable
+  
+    - &python-job
       os: linux
       dist: xenial
+      language: python
+      python: "3.5"
+      sudo: true
+      cache: pip
+      env:
+        - DQCSIM_DEBUG=""
+      install:
+        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
+        - curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
+        - unzip -qq swig.zip
+        - cd swig-rel-3.0.12
+        - ./autogen.sh
+        - ./configure --without-pcre
+        - make
+        - sudo make install
+        - cd ..
+      script:
+        - python setup.py build test bdist_wheel
+    - <<: *python-job
+      python: "3.6"
+    - <<: *python-job
+      python: "3.7"
+
+    - <<: *rust-job
+      name: "Coverage"
+      os: linux
+      dist: xenial
+      sudo: true
+      cache:
+        directories:
+          - $HOME/.cargo
+          - $HOME/kcov
       env:
         - RUSTFLAGS="-C link-dead-code"
         - PATH=$PATH:$HOME/kcov/bin/
@@ -55,9 +86,8 @@ matrix:
       addons:
         apt:
           packages:
-            - python3
+            # python
             - python3-pip
-            - swig
             # kcov
             - libcurl4-openssl-dev
             - libelf-dev
@@ -66,21 +96,41 @@ matrix:
             - gcc
             - binutils-dev
             - libiberty-dev
+            # swig
+            - autogen
+            - automake
+            - autoconf
+            - byacc
       install:
-        - wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz
-        - tar xzf master.tar.gz
-        - cd kcov-master
-        - mkdir build
-        - cd build
-        - cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov ..
-        - make
-        - make install
-        - cd ../..
+        - |
+          ( kcov --version ||
+            (
+              wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz
+              tar xzf master.tar.gz
+              mkdir -p kcov-build
+              cd kcov-build
+              cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov ../kcov-master
+              make
+              make install
+              cd ..
+            )
+          ) || echo "Skipping kcov install"
+        - |
+          ( swig --version ||
+            (
+              curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
+              unzip -qq swig.zip
+              cd swig-rel-3.0.12
+              ./autogen.sh
+              ./configure --without-pcre
+              make
+              sudo make install
+              cd ..
+            )
+          ) || echo "Skipping swig install"
         - pip3 install setuptools wheel
       script:
-        # Rust coverage
-        - cargo build --tests --all-features
-        - cargo test --features kcov cli -- --test-threads 1
+        - cargo test --all-targets
         - |
           for file in target/debug/{dqcsim-*,core-*}; do
             [ -x "${file}" ] || continue; 
@@ -91,7 +141,8 @@ matrix:
         - python3 setup.py build
         - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-line=no_kcoverage target/cov setup.py test
         # C++ coverage
-        - python3 setup.py install
+        - python3 setup.py bdist_wheel
+        - pip3 install target/python/dist/*.whl
         - |
           mkdir build &&
           cd build &&
@@ -103,8 +154,9 @@ matrix:
             mkdir -p "target/cov/$(basename $file)";
             kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/build/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
           done
-        # Upload to codecov.io
+        # Upload to codecov
         - bash <(curl -s https://codecov.io/bash)
+
     - name: "Manylinux wheels"
       language: generic
       os: linux
