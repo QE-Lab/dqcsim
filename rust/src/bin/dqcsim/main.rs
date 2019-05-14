@@ -342,95 +342,77 @@ mod tests {
         assert!(cli!("--repro-out", "/tmp/repro-out.out", FRONTEND, BACKEND).is_ok());
     }
 
-    // #[test]
-    // fn no_repro_out_repro_out() {
-    //     cli!(
-    //         "--no-repro-out",
-    //         "--repro-out",
-    //         "/tmp/test.repro",
-    //         FRONTEND,
-    //         BACKEND
-    //     )
-    //     .failure()
-    //     .code(1)
-    //     .stdout(predicate::str::contains(
-    //         "The argument '--no-repro-out' cannot be used with '--repro-out <filename>'",
-    //     ));
-    // }
+    #[test]
+    fn no_repro_out_repro_out() {
+        assert!(err!(cli!(
+            "--no-repro-out",
+            "--repro-out",
+            "/tmp/test.repro",
+            FRONTEND,
+            BACKEND
+        ))
+        .contains("--no-repro-out"));
+    }
 
-    // #[test]
-    // fn reproduce_bad_path() {
-    //     cli!("--reproduce", "./asdf")
-    //         .failure()
-    //         .stdout(predicates::str::contains("While reading reproduction file"));
-    // }
+    #[test]
+    fn reproduce_bad_path() {
+        assert!(err!(cli!("--reproduce", "./asdf")).contains("While reading reproduction file"));
+    }
 
-    // #[test]
-    // fn reproduce() {
-    //     cli!(
-    //         "--repro-out",
-    //         "./dqcsim-cli.test.repro",
-    //         FRONTEND,
-    //         BACKEND
-    //     )
-    //     .success();
-    //     cli!("--reproduce", "./dqcsim-cli.test.repro").success();
+    #[test]
+    fn reproduce() {
+        assert!(cli!("--repro-out", "./dqcsim-cli.test.repro", FRONTEND, BACKEND).is_ok());
+        assert!(cli!("--reproduce", "./dqcsim-cli.test.repro").is_ok());
 
-    //     // illegal name override
-    //     cli!(
-    //         "--reproduce",
-    //         "./dqcsim-cli.test.repro",
-    //         "@front",
-    //         "-n",
-    //         "override-name"
-    //     )
-    //     .failure()
-    //     .stdout(predicates::str::contains(
-    //         "cannot be used when referencing a previously defined plugin",
-    //     ));
+        // illegal name override
+        assert!(err!(cli!(
+            "--reproduce",
+            "./dqcsim-cli.test.repro",
+            "@front",
+            "-n",
+            "override-name"
+        ))
+        .contains("cannot be used when referencing a previously defined plugin"));
 
-    //     // illegal work override
-    //     cli!(
-    //         "--reproduce",
-    //         "./dqcsim-cli.test.repro",
-    //         "@front",
-    //         "--work",
-    //         "work"
-    //     )
-    //     .failure()
-    //     .stdout(predicates::str::contains(
-    //         "cannot be used when referencing a previously defined plugin",
-    //     ));
+        // illegal work override
+        assert!(err!(cli!(
+            "--reproduce",
+            "./dqcsim-cli.test.repro",
+            "@front",
+            "--work",
+            "work"
+        ))
+        .contains("cannot be used when referencing a previously defined plugin"));
 
-    //     // override verbosity
-    //     cli!(
-    //         "--reproduce",
-    //         "./dqcsim-cli.test.repro",
-    //         "@front",
-    //         "-l",
-    //         "fatal"
-    //     )
-    //     .success();
+        // override verbosity
+        assert!(cli!(
+            "--reproduce",
+            "./dqcsim-cli.test.repro",
+            "@front",
+            "-l",
+            "fatal"
+        )
+        .is_ok());
 
-    //     // exact reproduce
-    //     cli!(
-    //         "--reproduce-exactly",
-    //         "./dqcsim-cli.test.repro",
-    //         "@front",
-    //         "-l",
-    //         "fatal"
-    //     )
-    //     .success();
+        // exact reproduce
+        assert!(cli!(
+            "--reproduce-exactly",
+            "./dqcsim-cli.test.repro",
+            "@front",
+            "-l",
+            "fatal"
+        )
+        .is_ok());
 
-    //     // def with reproduce
-    //     cli!("--reproduce", "./dqcsim-cli.test.repro", FRONTEND)
-    //         .failure()
-    //         .stdout(predicates::str::contains("Cannot define new plugins while"));
+        // def with reproduce
+        assert!(
+            err!(cli!("--reproduce", "./dqcsim-cli.test.repro", FRONTEND))
+                .contains("Cannot define new plugins while")
+        );
 
-    //     // mod with def
-    //     cli!(FRONTEND, BACKEND, "@front", "-l", "trace")
-    //         .failure()
-    //         .stdout(predicates::str::contains("Cannot modify plugins unless"));
-    // }
+        // mod with def
+        assert!(err!(cli!(FRONTEND, BACKEND, "@front", "-l", "trace"))
+            .contains("Cannot modify plugins unless"));
+    }
 
 }
