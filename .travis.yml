@@ -129,7 +129,8 @@ matrix:
               cd ..
             )
           ) || echo "Skipping swig install"
-        - pip3 install setuptools wheel auditwheel
+        - pip3 install setuptools wheel
+        - pip3 install auditwheel
       script:
         - cargo test --all-targets
         - |
