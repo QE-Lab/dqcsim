@@ -142,7 +142,7 @@ matrix:
         - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-line=no_kcoverage target/cov setup.py test
         # C++ coverage
         - python3 setup.py bdist_wheel
-        - pip3 install target/python/dist/*.whl
+        - sudo pip3 install target/python/dist/*.whl
         - |
           mkdir build &&
           cd build &&
