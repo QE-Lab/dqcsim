@@ -43,10 +43,10 @@ matrix:
     - <<: *rust-job
       os: linux
       rust: nightly
-    - name: "Rust - coverage"
-      language: rust
+    - language: rust
       rust: stable
       os: linux
+      dist: xenial
       cache:
         directories:
           - $HOME/kcov
@@ -103,6 +103,28 @@ matrix:
         #     mkdir -p "target/cov/$(basename $file)";
         #     kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/build/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
         #   done
+    - &python-job
+      os: linux
+      dist: xenial
+      language: python
+      python: "3.7"
+      sudo: true
+      cache: pip
+      install:
+        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
+        - curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
+        - unzip -qq swig.zip
+        - cd swig-rel-3.0.12
+        - ./autogen.sh
+        - ./configure --without-pcre
+        - make
+        - sudo make install
+      script:
+        - python setup.py build test
+    - <<: *python-job
+      python: "3.6"
+    - <<: *python-job
+      python: "3.5"
     - name: "Manylinux wheels"
       language: generic
       os: linux
