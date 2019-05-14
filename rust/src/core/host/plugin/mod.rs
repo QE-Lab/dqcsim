@@ -1,3 +1,6 @@
+//! Contains structs that manage the lifetime and connections of a single
+//! plugin.
+
 pub mod process;
 pub mod thread;
 

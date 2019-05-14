@@ -22,18 +22,22 @@ crate-type = ["lib", "cdylib"]
 
 [[bin]]
 name = "dqcsim"
+doc = false
 required-features = ["cli"]
 
 [[bin]]
 name = "dqcsbenull"
+doc = false
 required-features = ["null-plugins"]
 
 [[bin]]
 name = "dqcsopnull"
+doc = false
 required-features = ["null-plugins"]
 
 [[bin]]
 name = "dqcsfenull"
+doc = false
 required-features = ["null-plugins"]
 
 [features]
