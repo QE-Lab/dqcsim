@@ -110,6 +110,8 @@ matrix:
       python: "3.7"
       sudo: true
       cache: pip
+      env:
+        - DQCSIM_DEBUG=""
       install:
         - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
         - curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
