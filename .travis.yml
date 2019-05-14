@@ -119,6 +119,7 @@ matrix:
         - ./configure --without-pcre
         - make
         - sudo make install
+        - cd ..
       script:
         - python setup.py build test
     - <<: *python-job
