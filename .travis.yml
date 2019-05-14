@@ -85,6 +85,8 @@ matrix:
       addons:
         apt:
           packages:
+            # python
+            - python3-pip
             # kcov
             - libcurl4-openssl-dev
             - libelf-dev
