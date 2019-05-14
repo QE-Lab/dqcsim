@@ -43,9 +43,37 @@ matrix:
     - <<: *rust-job
       os: linux
       rust: nightly
+  
+    - &python-job
+      os: linux
+      dist: xenial
+      language: python
+      python: "3.5"
+      sudo: true
+      cache: pip
+      env:
+        - DQCSIM_DEBUG=""
+      install:
+        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
+        - curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
+        - unzip -qq swig.zip
+        - cd swig-rel-3.0.12
+        - ./autogen.sh
+        - ./configure --without-pcre
+        - make
+        - sudo make install
+        - cd ..
+      script:
+        - python setup.py build test bdist_wheel
+    - <<: *python-job
+      python: "3.6"
+    - <<: *python-job
+      python: "3.7"
+
     - <<: *rust-job
       name: "Coverage"
       os: linux
+      dist: xenial
       sudo: true
       cache:
         directories:
@@ -97,6 +125,7 @@ matrix:
               cd ..
             )
           ) || echo "Skipping swig install"
+        - pip3 install setuptools wheel
       script:
         - cargo test --all-targets
         - |
@@ -123,31 +152,7 @@ matrix:
           done
         # Upload to codecov
         - bash <(curl -s https://codecov.io/bash)
-    - &python-job
-      os: linux
-      dist: xenial
-      language: python
-      python: "3.7"
-      sudo: true
-      cache: pip
-      env:
-        - DQCSIM_DEBUG=""
-      install:
-        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
-        - curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
-        - unzip -qq swig.zip
-        - cd swig-rel-3.0.12
-        - ./autogen.sh
-        - ./configure --without-pcre
-        - make
-        - sudo make install
-        - cd ..
-      script:
-        - python setup.py build test
-    - <<: *python-job
-      python: "3.6"
-    - <<: *python-job
-      python: "3.5"
+
     - name: "Manylinux wheels"
       language: generic
       os: linux
