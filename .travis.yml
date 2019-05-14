@@ -83,6 +83,7 @@ matrix:
         - RUSTFLAGS="-C link-dead-code"
         - PATH=$PATH:$HOME/kcov/bin/
         - DQCSIM_DEBUG=""
+        - AUDITWHEEL_PLAT=""
       addons:
         apt:
           packages:
@@ -128,7 +129,7 @@ matrix:
               cd ..
             )
           ) || echo "Skipping swig install"
-        - pip3 install setuptools wheel
+        - pip3 install setuptools wheel auditwheel
       script:
         - cargo test --all-targets
         - |
