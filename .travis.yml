@@ -83,7 +83,7 @@ matrix:
         - RUSTFLAGS="-C link-dead-code"
         - PATH=$PATH:$HOME/kcov/bin/
         - DQCSIM_DEBUG=""
-        - AUDITWHEEL_PLAT=""
+        - AUDITWHEEL_PLAT=linux_x86_64
       addons:
         apt:
           packages:
