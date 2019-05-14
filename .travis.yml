@@ -89,6 +89,7 @@ matrix:
           packages:
             # python
             - python3-pip
+            - patchelf
             # kcov
             - libcurl4-openssl-dev
             - libelf-dev
