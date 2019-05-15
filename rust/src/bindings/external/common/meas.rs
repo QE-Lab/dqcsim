@@ -1,13 +1,13 @@
 use super::*;
 
 /// Constructs a new measurement object.
-///
-/// `qubit` must be set to the qubit that was measured, `value` must be set to
-/// its value. The return value is the handle to the measurement object, or 0
-/// if something went wrong.
-///
-/// Note that measurement objects implement the `arb` interface, so additional
-/// data can be attached to the object.
+///>
+///> `qubit` must be set to the qubit that was measured, `value` must be set to
+///> its value. The return value is the handle to the measurement object, or 0
+///> if something went wrong.
+///>
+///> Note that measurement objects implement the `arb` interface, so additional
+///> data can be attached to the object.
 #[no_mangle]
 pub extern "C" fn dqcs_meas_new(qubit: dqcs_qubit_t, value: dqcs_measurement_t) -> dqcs_handle_t {
     api_return(0, || {

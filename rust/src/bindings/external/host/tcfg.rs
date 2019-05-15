@@ -2,8 +2,8 @@ use super::*;
 use crate::common::log::tee_file::TeeFileConfiguration;
 
 /// Creates a new plugin thread configuration object from a plugin definition.
-///
-/// The plugin definition handle is consumed by this function.
+///>
+///> The plugin definition handle is consumed by this function.
 #[no_mangle]
 pub extern "C" fn dqcs_tcfg_new(pdef: dqcs_handle_t, name: *const c_char) -> dqcs_handle_t {
     api_return(0, || {
@@ -19,11 +19,11 @@ pub extern "C" fn dqcs_tcfg_new(pdef: dqcs_handle_t, name: *const c_char) -> dqc
 }
 
 /// Creates a new plugin thread configuration object from a callback.
-///
-/// The callback is called by DQCsim from a dedicated thread when DQCsim wants
-/// to start the plugin. The callback must then in some way spawn a plugin
-/// process that connects to the provided simulator string. The callback should
-/// return only when the process terminates.
+///>
+///> The callback is called by DQCsim from a dedicated thread when DQCsim wants
+///> to start the plugin. The callback must then in some way spawn a plugin
+///> process that connects to the provided simulator string. The callback should
+///> return only when the process terminates.
 #[no_mangle]
 pub extern "C" fn dqcs_tcfg_new_raw(
     plugin_type: dqcs_plugin_type_t,
@@ -61,10 +61,10 @@ pub extern "C" fn dqcs_tcfg_type(tcfg: dqcs_handle_t) -> dqcs_plugin_type_t {
 }
 
 /// Returns the configured name for the given plugin thread.
-///
-/// On success, this **returns a newly allocated string containing the
-/// name. Free it with `free()` when you're done with it to avoid memory
-/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.
+///>
+///> On success, this **returns a newly allocated string containing the
+///> name. Free it with `free()` when you're done with it to avoid memory
+///> leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.
 #[no_mangle]
 pub extern "C" fn dqcs_tcfg_name(tcfg: dqcs_handle_t) -> *mut c_char {
     api_return_string(|| {
@@ -75,9 +75,9 @@ pub extern "C" fn dqcs_tcfg_name(tcfg: dqcs_handle_t) -> *mut c_char {
 
 /// Appends an `ArbCmd` to the list of initialization commands of a plugin
 /// thread.
-///
-/// The `ArbCmd` handle is consumed by this function, and is thus invalidated,
-/// if and only if it is successful.
+///>
+///> The `ArbCmd` handle is consumed by this function, and is thus invalidated,
+///> if and only if it is successful.
 #[no_mangle]
 pub extern "C" fn dqcs_tcfg_init_cmd(tcfg: dqcs_handle_t, cmd: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
@@ -111,8 +111,8 @@ pub extern "C" fn dqcs_tcfg_verbosity_get(tcfg: dqcs_handle_t) -> dqcs_loglevel_
 }
 
 /// Configures a plugin thread to also output its log messages to a file.
-///
-/// `verbosity` configures the verbosity level for the file only.
+///>
+///> `verbosity` configures the verbosity level for the file only.
 #[no_mangle]
 pub extern "C" fn dqcs_tcfg_tee(
     tcfg: dqcs_handle_t,
