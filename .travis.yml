@@ -130,16 +130,16 @@ matrix:
           ) || echo "Skipping swig install"
         - pip3 install setuptools wheel
       script:
-        # - cargo test --all-targets
-        # - |
-        #   for file in target/debug/{dqcsim-*,core-*}; do
-        #     [ -x "${file}" ] || continue; 
-        #     mkdir -p "target/cov/$(basename $file)"; 
-        #     kcov --exclude-pattern=/.cargo,/usr/lib,/tests/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
-        #   done
-        # # Python coverage
-        # - python3 setup.py build
-        # - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-line=no_kcoverage target/cov setup.py test
+        - cargo test --all-targets
+        - |
+          for file in target/debug/{dqcsim-*,core-*}; do
+            [ -x "${file}" ] || continue; 
+            mkdir -p "target/cov/$(basename $file)"; 
+            kcov --exclude-pattern=/.cargo,/usr/lib,/tests/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
+          done
+        # Python coverage
+        - python3 setup.py build
+        - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-line=no_kcoverage target/cov setup.py test
         # C++ coverage
         - python3 setup.py bdist_wheel
         - sudo pip3 install target/python/dist/*.whl
@@ -151,7 +151,6 @@ matrix:
           cd ../ &&
           for file in `find build/test_* -executable -and -type f`; 
             do [ -x "${file}" ] || continue;
-            LD_LIBRARY_PATH=/usr/local/lib/ ldd ${file};
             mkdir -p "target/cov/$(basename $file)";
             LD_LIBRARY_PATH=/usr/local/lib/ kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/build/ --verify "target/cov/$(basename $file)" "$file";
           done

@@ -11,7 +11,12 @@ project(dqcsim_cpp_test
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_library(dqcsim REQUIRED)
+find_library(dqcsim NAMES dqcsim)
+if(NOT dqcsim)
+	message(FATAL_ERROR "dqcsim not found")
+else()
+	message(STATUS "Using dqcsim: ${dqcsim}")
+endif()
 
 #------------------------------------------------------------------------------
 # CMake options
