@@ -1,108 +1,164 @@
-language: rust
 sudo: false
-#dist: xenial
 
-os:
-  - linux
-  - osx
+matrix:
+  fast_finish: true
+  allow_failures:
+    - rust: nightly
+  include:
+    - &rust-job
+      os: osx
+      language: rust
+      rust: stable
+      cache:
+        directories:
+          - $HOME/.cargo
+      before_cache:
+        - rm -rf $HOME/.cargo/registry
+      install:
+        - rustup component add clippy --toolchain="$TRAVIS_RUST_VERSION" || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
+        - rustup component add rustfmt
+      script:
+        - cargo fmt -- --check
+        - cargo clippy --all-targets --all-features -- -Dwarnings
+        - cargo build --all-targets --all-features
+        - cargo test --all-targets
+    - <<: *rust-job
+      os: linux
+      after_success:
+        - mdbook --version || cargo install --debug mdbook --vers "0.2.3"
+      before_deploy:
+        - cargo doc --all-features
+        - cd doc && mdbook build && mdbook test
+        - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/doc/book/doc_
+      deploy:
+        provider: pages
+        skip-cleanup: true
+        github-token: $GITHUB_TOKEN
+        local-dir: doc/book
+        keep-history: false
+        on:
+          branch: master
+    - <<: *rust-job
+      rust: nightly
+    - <<: *rust-job
+      os: linux
+      rust: nightly
+  
+    - &python-job
+      os: linux
+      dist: xenial
+      language: python
+      python: "3.5"
+      sudo: true
+      cache: pip
+      env:
+        - DQCSIM_DEBUG=""
+      install:
+        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
+        - curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
+        - unzip -qq swig.zip
+        - cd swig-rel-3.0.12
+        - ./autogen.sh
+        - ./configure --without-pcre
+        - make
+        - sudo make install
+        - cd ..
+      script:
+        - python setup.py build test bdist_wheel
+    - <<: *python-job
+      python: "3.6"
+    - <<: *python-job
+      python: "3.7"
 
-rust:
-  - stable
-#   - nightly
-
-# matrix:
-#   fast_finish: true
-#   allow_failures:
-#     - rust: nightly
-
-cache:
-  directories:
-    - $HOME/.cargo
-    - $HOME/kcov
-
-before_cache:
-  - rm -rf $HOME/.cargo/registry
-
-addons:
-  apt:
-    packages:
-    # dqcsim
-    - python3
-    - python3-dev
-    - python3-setuptools
-    # python3-pip
-    - swig
-    # kcov
-    - libcurl4-openssl-dev
-    - libelf-dev
-    - libdw-dev
-    - cmake
-    - gcc
-    - binutils-dev
-    - libiberty-dev
-  homebrew:
-    packages:
-    # dqcsim
-    - python3
-    - swig
-
-env:
-  global:
-    - DQCSIM_HOME=$HOME/.dqcsim
-    - PATH=$PATH:$HOME/kcov/bin/
-
-install:
-  # pip3 install --upgrade pip setuptools
-  - rustup component add clippy --toolchain="$TRAVIS_RUST_VERSION" || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
-  - rustup component add rustfmt
-  - cargo make --version || cargo install --debug cargo-make --vers "0.17.1"
-  - mdbook --version || cargo install --debug mdbook --vers "0.2.3"
-  - |
-    (
-      [ "$TRAVIS_OS_NAME" = "linux" ] &&
-      [ "$TRAVIS_RUST_VERSION" = "stable" ] &&
-      ( kcov --version ||
-        (
-          wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
-          tar xzf master.tar.gz &&
-          cd kcov-master &&
+    - <<: *rust-job
+      name: "Coverage"
+      os: linux
+      dist: xenial
+      sudo: true
+      cache:
+        directories:
+          - $HOME/.cargo
+          - $HOME/kcov
+      env:
+        - RUSTFLAGS="-C link-dead-code"
+        - PATH=$PATH:$HOME/kcov/bin/
+        - DQCSIM_DEBUG=""
+      addons:
+        apt:
+          packages:
+            # python
+            - python3-pip
+            # kcov
+            - libcurl4-openssl-dev
+            - libelf-dev
+            - libdw-dev
+            - cmake
+            - gcc
+            - binutils-dev
+            - libiberty-dev
+            # swig
+            - autogen
+            - automake
+            - autoconf
+            - byacc
+      install:
+        - |
+          ( kcov --version ||
+            (
+              wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz
+              tar xzf master.tar.gz
+              mkdir -p kcov-build
+              cd kcov-build
+              cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov ../kcov-master
+              make -j
+              make install
+              cd ..
+            )
+          ) || echo "Skipping kcov install"
+        - |
+          ( swig --version ||
+            (
+              curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
+              unzip -qq swig.zip
+              cd swig-rel-3.0.12
+              ./autogen.sh
+              ./configure --without-pcre
+              make -j
+              sudo make install
+              cd ..
+            )
+          ) || echo "Skipping swig install"
+        - pip3 install setuptools wheel
+      script:
+        - cargo test --all-targets
+        - |
+          for file in target/debug/{dqcsim-*,core-*}; do
+            [ -x "${file}" ] || continue; 
+            mkdir -p "target/cov/$(basename $file)"; 
+            kcov --exclude-pattern=/.cargo,/usr/lib,/tests/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
+          done
+        # Python coverage
+        - python3 setup.py build
+        - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-pattern=/tests --exclude-line=no_kcoverage target/cov setup.py test
+        # C++ coverage
+        - python3 setup.py bdist_wheel
+        - sudo pip3 install target/python/dist/*.whl
+        - |
           mkdir build &&
           cd build &&
-          cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov .. &&
-          make &&
-          make install 
-        )
-      )
-    ) || echo "Skipping kcov install"
+          cmake ../cpp &&
+          make -j &&
+          cd .. &&
+          for file in `find build/test_* -executable -and -type f`; 
+            do [ -x "${file}" ] || continue;
+            mkdir -p "target/cov/$(basename $file)";
+            LD_LIBRARY_PATH=target/debug/ kcov --exclude-pattern=/.cargo,/usr,/cpp --verify "target/cov/$(basename $file)" "$file";
+          done
+        # Upload to codecov
+        - bash <(curl -s https://codecov.io/bash)
 
-script:
-  - cargo fmt -- --check
-  - cargo clippy --all-targets -- -Dwarnings
-  - make kcov-test
-
-after_success: |
-  [ "$TRAVIS_OS_NAME" = "linux" ] &&
-  [ "$TRAVIS_RUST_VERSION" = "stable" ] &&
-  for file in target/debug/*; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/cpp/build/,/dqcsim/tests/,/dqcsim-cli/tests,/enum-variants/tests --exclude-region='#[cfg(test)]:#[cfg(testkcovstopmarker)]' --verify "target/cov/$(basename $file)" "$file"; done &&
-  for file in `find dqcsim-api/cpp/build/test_* -executable -and -type f`; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/cpp/build/,/dqcsim/tests/ --exclude-region='#[cfg(test)]:#[cfg(testkcovstopmarker)]' --verify "target/cov/$(basename $file)" "$file"; done &&
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/target/debug &&
-  cd dqcsim-api/py &&
-  kcov --python-parser=python3 --include-pattern=/py/dqcsim/ --exclude-line=no_kcoverage ../../target/cov setup.py test &&
-  cd ../.. &&
-  bash <(curl -s https://codecov.io/bash)
-
-before_deploy:
-  - cargo doc
-  - cd book && mdbook build && mdbook test
-  - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/book/book/doc_
-
-deploy:
-  provider: pages
-  skip-cleanup: true
-  github-token: $GITHUB_TOKEN
-  local-dir: book/book
-  keep-history: false
-  on:
-    branch: master
-    rust: stable
-    condition: $TRAVIS_OS_NAME = linux
+    - name: "Manylinux wheels"
+      language: generic
+      os: linux
+      script:
+        - ./python/tools/manylinux_wheels.sh

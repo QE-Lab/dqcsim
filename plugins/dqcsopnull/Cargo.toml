@@ -1,8 +1,0 @@
-[package]
-name = "dqcsopnull"
-version = "0.1.0"
-authors = ["Matthijs Brobbel", "Jeroen van Straten"]
-edition = "2018"
-
-[dependencies]
-dqcsim = { path = "../../dqcsim" }

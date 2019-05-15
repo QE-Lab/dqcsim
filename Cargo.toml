@@ -1,15 +1,6 @@
 [workspace]
-
-members = [
-  "dqcsim",
-  "dqcsim-cli",
-  "dqcsim-api",
-  "lib/enum-variants",
-  "lib/enum-variants-derive",
-  "plugins/dqcsfenull",
-  "plugins/dqcsopnull",
-  "plugins/dqcsbenull",
-]
+members = ["rust"]
+default-members = ["rust"]
 
 [profile.release]
-rpath = true
+lto = true
