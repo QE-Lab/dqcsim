@@ -110,7 +110,7 @@ matrix:
               mkdir -p kcov-build
               cd kcov-build
               cmake -DCMAKE_INSTALL_PREFIX=$HOME/kcov ../kcov-master
-              make
+              make -j
               make install
               cd ..
             )
@@ -123,7 +123,7 @@ matrix:
               cd swig-rel-3.0.12
               ./autogen.sh
               ./configure --without-pcre
-              make
+              make -j
               sudo make install
               cd ..
             )
@@ -147,15 +147,12 @@ matrix:
           mkdir build &&
           cd build &&
           cmake ../cpp &&
-          make &&
+          make -j &&
           cd .. &&
           for file in `find build/test_* -executable -and -type f`; 
             do [ -x "${file}" ] || continue;
             mkdir -p "target/cov/$(basename $file)";
             LD_LIBRARY_PATH=target/debug/ kcov --exclude-pattern=/.cargo,/usr,/cpp --verify "target/cov/$(basename $file)" "$file";
-          done
-          for file in `find target/cov/ -name cobertura.xml`;
-            do echo $file; cat $file | grep -n3 bindings;
           done
         # Upload to codecov
         - bash <(curl -s https://codecov.io/bash)
