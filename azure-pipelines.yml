@@ -1,24 +1,31 @@
 jobs:
 
   - job: Python
+    displayName: ${{ format('{0} Python {1}', os, python)}}
     strategy:
       matrix:
         linux_py35:
+          os: "Linux"
           image: "ubuntu-latest"
           python: "3.5"
         linux_py36:
+          os: "Linux"
           image: "ubuntu-latest"
           python: "3.6"
         linux_py37:
+          os: "Linux"
           image: "ubuntu-latest"
           python: "3.7"
         macos_py35:
+          os: "macOS"
           image: "macos-latest"
           python: "3.5"
         macos_py36:
+          os: "macOS"
           image: "macos-latest"
           python: "3.6"
         macos_py37:
+          os: "macOS"
           image: "macos-latest"
           python: "3.7"
     pool:
@@ -33,12 +40,15 @@ jobs:
         displayName: Python version
 
   - job: Rust
+    displayName: ${{ format('{0} Rust {1}', os, python)}}
     strategy:
       matrix:
         linux_stable:
+          os: "Linux"
           image: "ubuntu-latest"
           rust: "stable"
         macos_stable:
+          os: "macOS"
           image: "macos-latest"
           rust: "stable"
     pool:
