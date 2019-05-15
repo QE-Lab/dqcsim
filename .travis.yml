@@ -6,7 +6,7 @@ matrix:
     - rust: nightly
   include:
     - &rust-job
-      os: osx
+      os: linux
       language: rust
       rust: stable
       cache:
@@ -23,25 +23,11 @@ matrix:
         - cargo build --all-targets --all-features
         - cargo test --all-targets
     - <<: *rust-job
-      os: linux
-      after_success:
-        - mdbook --version || cargo install --debug mdbook --vers "0.2.3"
-      before_deploy:
-        - cargo doc --all-features
-        - cd doc && mdbook build && mdbook test
-        - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/doc/book/doc_
-      deploy:
-        provider: pages
-        skip-cleanup: true
-        github-token: $GITHUB_TOKEN
-        local-dir: doc/book
-        keep-history: false
-        on:
-          branch: master
+      os: osx
     - <<: *rust-job
       rust: nightly
     - <<: *rust-job
-      os: linux
+      os: osx
       rust: nightly
   
     - &python-job
@@ -69,6 +55,33 @@ matrix:
       python: "3.6"
     - <<: *python-job
       python: "3.7"
+
+    - <<: *rust-job
+      name: "Docs"
+      sudo: true
+      addons:
+        apt:
+          packages:
+            - python3-pip
+      install:
+        - mdbook --version || cargo install --debug mdbook --vers "0.2.3"
+        - pip3 install pdoc3
+      script:
+        - cargo doc --all-features
+        - python3 setup.py bdist_wheel
+        - sudo pip3 install target/python/dist/*.whl
+      before_deploy:
+        - cd doc && mdbook build && mdbook test
+        - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/doc/book/rust_
+        - pdoc3 --html --output-dir $TRAVIS_BUILD_DIR/doc/book/py_ dqcsim
+      deploy:
+        provider: pages
+        skip-cleanup: true
+        github-token: $GITHUB_TOKEN
+        local-dir: doc/book
+        keep-history: false
+        on:
+          branch: master
 
     - <<: *rust-job
       name: "Coverage"
