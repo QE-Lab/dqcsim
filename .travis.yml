@@ -66,6 +66,7 @@ matrix:
             - python3-pip
       install:
         - mdbook --version || cargo install --debug mdbook --vers "0.2.3"
+        - pip3 install setuptools wheel
         - pip3 install pdoc3
       script:
         - cargo doc --all-features
