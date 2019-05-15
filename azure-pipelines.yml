@@ -1,18 +1,26 @@
-variables:
-  _os: ["ubuntu-18.04", "macos-10.14"]
-  _python: ["3.5", "3.6", "3.7"]
-  _rust: ["stable", "1.34.2"]
-
 jobs:
 
-  - job: python
+  - job: Python
     strategy:
       matrix:
-        ${{ each os in _os }}:
-          ${{ each python in _python }}:
-            ${{ format!('{0} {1}', python, os) }}:
-              image: $(os_)
-              python: $(python)
+        linux_py35:
+          image: "ubuntu-latest"
+          python: "3.5"
+        linux_py36:
+          image: "ubuntu-latest"
+          python: "3.6"
+        linux_py36:
+          image: "ubuntu-latest"
+          python: "3.7"
+        macos_py35:
+          image: "macos-latest"
+          python: "3.5"
+        macos_py36:
+          image: "macos-latest"
+          python: "3.6"
+        macos_py37:
+          image: "macos-latest"
+          python: "3.7"
     pool:
       vmImage: $(image)
     steps:
@@ -24,14 +32,15 @@ jobs:
           python --version
         displayName: Python version
 
-  - job: rust
+  - job: Rust
     strategy:
       matrix:
-        ${{ each os in _os }}:
-          ${{ each rust in _rust }}:
-            ${{ format!('{0} {1}', rust, os) }}:
-              image: $(os)
-              rust: $(rust)
+        linux_stable:
+          image: "ubuntu-latest"
+          rust: "stable"
+        macos_stable:
+          image: "macos-latest"
+          rust: "stable"
     pool:
       vmImage: $(image)
     steps:
