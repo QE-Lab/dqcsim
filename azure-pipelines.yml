@@ -37,7 +37,7 @@ jobs:
       - script: |
           python --version
         displayName: Python version
-    displayName: format('{0} Python {1}', $(os), $(python))
+    displayName: $[format('{0} Python {1}', $(os), $(python))]
 
   - job: Rust
     strategy:
@@ -60,4 +60,4 @@ jobs:
       - script: |
           rustc --version
         displayName: Rust version
-    displayName: format('{0} Rust {1}', $(os), $(rust))
+    displayName: $[format('{0} Rust {1}', $(os), $(rust))]
