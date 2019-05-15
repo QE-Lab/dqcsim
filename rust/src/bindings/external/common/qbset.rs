@@ -72,20 +72,6 @@ pub extern "C" fn dqcs_qbset_len(qbset: dqcs_handle_t) -> ssize_t {
 
 /// Returns a copy of the given qubit set, intended for non-destructive
 /// iteration.
-///>
-///> Iteration works like this.
-///>
-///> ```C
-///> dqcs_handle_t it = dqcs_qbset_copy(qbset);
-///> dqcs_qubit_t qubit = 0;
-///> while (qubit = dqcs_qbset_pop(it)) {
-///>     ...
-///> }
-///> dqcs_handle_delete(it);
-///> ```
-///>
-///> Of course, if you don't care about keeping the set intact, you don't have
-///> to make a copy.
 #[no_mangle]
 pub extern "C" fn dqcs_qbset_copy(qbset: dqcs_handle_t) -> dqcs_handle_t {
     api_return(0, || {

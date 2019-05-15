@@ -26,14 +26,14 @@ The name of the API functions directly corresponds with the name of the
 interface it requires the primary handle it operates on to have: the
 functions have the form `dqcs_<interface>_*`.
 
+## Thread-safety
+
+The global state that the API calls operate on is purely *thread-local*.
+This means that you can't exchange API objects/handles between threads.
+However, this also makes the API perfectly thread-safe.
+
 ## Functions common to all handles
 
 The following functions are available for all handle types.
 
 @@@c_api_gen ^dqcs_handle(?!.*_t$)@@@
-
-## Handles and multithreading
-
-The global state that the API calls operate on is purely *thread-local*.
-This means that you can't exchange API objects/handles between threads.
-However, this also makes the API perfectly thread-safe.

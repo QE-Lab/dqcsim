@@ -270,6 +270,9 @@ if __name__ == '__main__':
 
         template = template.replace('@@@rust_module_doc@@@', module_doc)
 
+        if '@@@c_api_gen_ref@@@' in template:
+            template = template.replace('@@@c_api_gen_ref@@@', entities_to_markdown(sorted(entities, key=lambda e: e[1])))
+
         with open(fname.replace('.apisrc.', '.apigen.'), 'w') as f:
             f.write(template)
 
