@@ -373,11 +373,13 @@ class Plugin(object):
         except NotImplementedError:
             pass
 
-    def _route_converted_arb(self, state_handle, source, cmd):
+    def _route_converted_arb(self, state_handle, source, cmd, forward_fn=None):
         """Routes an `ArbCmd` originating from the given source, which must be
         'upstream' or 'host'. `cmd` should already have been converted to an
         `ArbCmd` object (instead of being passed as a handle)."""
         if cmd.iface not in self._arb_interfaces.get(source, {}):
+            if forward_fn is not None:
+                return forward_fn(cmd)
             return ArbData()
         try:
             result = self._cb(state_handle,
@@ -392,12 +394,14 @@ class Plugin(object):
         except NotImplementedError:
             raise ValueError("Invalid operation ID {} for interface ID {}".format(cmd.oper, cmd.iface))
 
-    def _route_arb(self, state_handle, source, cmd_handle):
+    def _route_arb(self, state_handle, source, cmd_handle, forward_fn=None):
         """Routes an `ArbCmd` originating from the given source, which must be
         'upstream' or 'host'. Takes an integer handle to an `ArbCmd` and
         returns an integer handle to an `ArbData` (that is, they're not wrapped
         in `Handle` objects)."""
-        return self._route_converted_arb(state_handle, source, ArbCmd._from_raw(Handle(cmd_handle)))._to_raw().take()
+        cmd = ArbCmd._from_raw(Handle(cmd_handle))
+        result = self._route_converted_arb(state_handle, source, cmd, forward_fn)
+        return result._to_raw().take()
 
     def _route_host_arb(self, state_handle, cmd_handle):
         """Routes an `ArbCmd` that originates from the host."""
@@ -893,42 +897,57 @@ class Operator(GateStreamSource):
         qubits that are to be allocated). The cmds parameter is passed a list of
         ArbCmds that the upstream plugin wants to associate with the qubits.
 
+        In almost all cases, this handler must call `allocate()` to forward the
+        allocation downstream, in some cases modifying the number of qubits or
+        command list. If the handler is not specified, the allocation is
+        forwarded automatically.
+
      - `handle_free(qubits: [Qubit]) -> None`
 
         Called when the upstream plugin doesn't need the specified qubits
         anymore.
 
+        In almost all cases, this handler must call `free()` to forward the
+        deallocation downstream. If the operator performs some kind of mapping
+        function and/or modifies allocations, it may also need to modify the
+        qubit list. If the handler is not specified, the deallocation is
+        forwarded automatically.
+
      - `handle_unitary_gate(targets: [Qubit], matrix: [complex]) -> None`
 
-        Called when a unitary gate must be handled: it must apply the given
-        unitary matrix to the given list of qubits.
+        Called when the upstream plugin wants to execute a non-controlled
+        unitary gate. The gate is normally forwarded downstream using
+        `unitary()`. If this callback is not defined, DQCsim attempts to call
+        `handle_controlled_gate()` with an empty list for the control qubits.
+        If that callback is also not defined, the gate is forwarded downstream
+        automatically.
 
      - `handle_controlled_gate(targets: [Qubit], controls: [Qubit], matrix: [complex]) -> None`
 
-        Called when a controlled gate must be handled: it must apply the given
-        unitary matrix to the target qubits "if the control qubits are set". In
-        other words, it must first turn the given matrix into a controlled
-        matrix for the specified number of control qubits, and then apply that
-        gate to the concatenation of the target and control lists. If this
-        function is not specified, this matrix upscaling is performed
-        automatically, allowing `handle_unitary_gate()` to be called instead.
-        You only have to implement this if your implementation can get a
-        performance boost by doing this conversion manually.
+        Called when the upstream plugin wants to execute a controlled unitary
+        gate, or a non-controlled gate if `handle_unitary_gate()` is not
+        defined. The gate is normally forwarded downstream using `unitary()`.
+        If this handler is not defined, the gate is forwarded downstream
+        automatically.
 
      - `handle_measurement_gate(meas: [Qubit]) -> [Measurement]`
 
-        Called when a measurement must be performed. The measurement basis is
-        fixed to the Z-axis; custom gates should be used when different
-        measurement bases are required.
+        Called when the upstream plugin wants to execute a basic Z-basis
+        measurement on the given set of qubits. The gate is normally forwarded
+        downstream using `measure()`. If this handler is not defined, this is
+        done automatically.
 
-        The returned map MAY contain measurement entries for all the qubits
-        specified by the qubits parameter, but it is also allowed to not specify
-        the measurement results at this time, if an appropriate measurement gate
-        is sent downstream and an appropriate `handle_measurement_gate()`
-        implementation is provided (or its default is sufficient). This is
-        called postponing. Doing this is more performant than reading the
-        measurement results of the downstream gate and returning those, because
-        it doesn't require waiting for those results to become available.
+        The result of this handler must be that measurements for exactly those
+        qubits specified in `meas` are forwarded upstream after all downstream
+        gates issued by it finish executing. Usually this happens naturally by
+        forwarding the measurement gate unchanged. However, operators that
+        perform some kind of qubit remapping will need to do some extra work
+        to perform the inverse mapping when the measurements are returned
+        upstream. The recommended way to do this is by defining
+        `handle_measurement()`, but it is also possible to return measurement
+        results directly in the same way backends must do it (or to do a
+        combination of the two). The latter might negatively impact simulation
+        speed, though.
 
      -  `handle_<name>_gate(
             targets: [Qubit],
@@ -942,11 +961,14 @@ class Operator(GateStreamSource):
         Called when a custom (named) gate must be performed. The targets,
         controls, measures, and matrix share the functionality of
         `handle_controlled_gate()` and `handle_measurement_gate()`, as does the
-        return value for the latter. Custom gates also have an attached ArbData,
-        of which the binary string list is passed to `*args`, and the JSON
-        object is passed to `**kwargs`.
+        return value for the latter. Custom gates also have an attached
+        `ArbData`, of which the binary string list is passed to `*args`, and
+        the JSON object is passed to `**kwargs`.
 
-     - `handle_measurement(meas: Measurement) -> [measurements]`
+        The gate is normally forwarded downstream using `custom_gate()`.
+        If this handler is not defined, this is done automatically.
+
+     - `handle_measurement(meas: Measurement) -> [Measurement]`
 
         Called when measurement data is received from the downstream plugin,
         allowing it to be modified before it is forwarded upstream. Modification
@@ -954,28 +976,156 @@ class Operator(GateStreamSource):
         list), turning it into multiple measurements, changing the qubit
         reference to support qubit mapping, or just changing the measurement
         data itself to introduce errors or compensate for an earlier
-        modification of the gatestream.
+        modification of the gatestream. If this handler is not defined,
+        measurements are forwarded without modification.
 
      - `handle_advance(cycles: int) -> None`
 
-        Called to advance simulation time.
+        Called when the upstream plugin wants to advance simulation time.
+        Normally this handler calls `advance(cycles)` in response, which is the
+        default behavior if it is not defined. The primary use of this handler
+        is to send additional gates downstream to model errors.
 
      - `handle_<host|upstream>_<iface>_<oper>(*args, **kwargs) -> ArbData or None`
 
-        Called when an ArbCmd is received from the upstream plugin or from the
-        host with the interface and operation identifiers embedded in the name.
-        That is, you don't have to do interface/operation identifier matching
-        yourself; you just specify the operations that you support. The
-        positional arguments are set to the list of binary strings attached to
-        the ArbCmd, and **kwargs is set to the JSON object. If you return None,
-        an empty ArbData object will be automatically generated for the
-        response.
+        Called when an `ArbCmd` is received from the upstream plugin or from
+        the host with the interface and operation identifiers embedded in the
+        name. That is, you don't have to do interface/operation identifier
+        matching yourself; you just specify the operations that you support.
+        The positional arguments are set to the list of binary strings attached
+        to the `ArbCmd`, and `**kwargs` is set to the JSON object. If you
+        return `None`, an empty `ArbData` object will be automatically
+        generated for the response.
+
+        If no handlers are available for the requested command interface, the
+        command is forwarded downstream. If there is at least one, it is NOT
+        forwarded downstream, even if the requested operation does not have a
+        handler (an error will be reported instead).
     """
+
+    #==========================================================================
+    # Callback helpers
+    #==========================================================================
+    def _route_allocate(self, state_handle, qubits_handle, cmds_handle):
+        """Routes the allocate callback to user code."""
+        qubits = QubitSet._from_raw(Handle(qubits_handle))
+        cmds = ArbCmdQueue._from_raw(Handle(cmds_handle))
+        self._cb(state_handle, 'handle_allocate', qubits, cmds)
+
+    def _route_free(self, state_handle, qubits_handle):
+        """Routes the free callback to user code."""
+        qubits = QubitSet._from_raw(Handle(qubits_handle))
+        self._cb(state_handle, 'handle_free', qubits)
+
+    def _forward_unitary_gate(self, targets, controls, matrix):
+        self.unitary(targets, matrix, controls)
+
+    def _forward_measurement_gate(self, qubits):
+        self.measure(qubits)
+
+    def _route_gate(self, state_handle, gate_handle):
+        """Routes the gate callback to user code."""
+
+        name = None
+        if raw.dqcs_gate_is_custom(gate_handle):
+            name = raw.dqcs_gate_name(gate_handle)
+
+        # Forward gate types that don't have handlers as soon as possible.
+        fast_forward = False
+        if name is None:
+            if raw.dqcs_gate_has_controls(gate_handle):
+                fast_forward = not hasattr(self, 'handle_controlled_gate')
+            elif raw.dqcs_gate_has_targets(gate_handle):
+                fast_forward = (
+                    not hasattr(self, 'handle_unitary_gate')
+                    and not hasattr(self, 'handle_controlled_gate'))
+            else:
+                fast_forward = True
+            if raw.dqcs_gate_has_measures(gate_handle):
+                fast_forward = fast_forward and not hasattr(self, 'handle_measurement_gate')
+        else:
+            fast_forward = not hasattr(self, 'handle_{}_gate'.format(name))
+        if fast_forward:
+            raw.dqcs_plugin_gate(state_handle, gate_handle)
+            return
+
+        # Convert from Rust domain to Python domain.
+        targets = QubitSet._from_raw(Handle(raw.dqcs_gate_targets(gate_handle)))
+        controls = QubitSet._from_raw(Handle(raw.dqcs_gate_controls(gate_handle)))
+        measures = QubitSet._from_raw(Handle(raw.dqcs_gate_measures(gate_handle)))
+        if raw.dqcs_gate_has_matrix(gate_handle):
+            matrix = raw.dqcs_gate_matrix(gate_handle)
+        else:
+            matrix = None
+
+        # Route to the user's callback functions or execute the default
+        # actions.
+        measurements = []
+        if name is None:
+            if targets and matrix:
+                try:
+                    if not controls and hasattr(self, 'handle_unitary_gate'):
+                        self._cb(state_handle, 'handle_unitary_gate', targets, matrix)
+                    else:
+                        self._cb(state_handle, 'handle_controlled_gate', targets, controls, matrix)
+                except NotImplementedError:
+                    self._cb(state_handle, '_forward_unitary_gate', targets, controls, matrix)
+            if measures:
+                try:
+                    measurements = self._cb(state_handle, 'handle_measurement_gate', measures)
+                except NotImplementedError:
+                    self._cb(state_handle, '_forward_measurement_gate', measures)
+        else:
+            data = ArbData._from_raw(Handle(gate_handle))
+            # Note that `handle_<name>_gate` must exist at this point,
+            # otherwise it would have been forwarded earlier.
+            cb_name = 'handle_{}_gate'.format(name)
+            assert(hasattr(self, cb_name))
+            measurements = self._cb(state_handle,
+                cb_name, targets, controls, measures, matrix, *data._args, **data._json)
+
+        return MeasurementSet._to_raw(measurements).take()
+
+    def _route_measurement(self, state_handle, measurement_handle):
+        """Routes the measurement callback to user code."""
+        measurement = Measurement._from_raw(Handle(measurement_handle))
+        measurements = self._cb(state_handle, 'handle_measurement', measurement)
+        return MeasurementSet._to_raw(measurements).take()
+
+    def _route_advance(self, state_handle, cycles):
+        """Routes the advance callback to user code."""
+        self._cb(state_handle, 'handle_advance', cycles)
+
+    def _route_upstream_arb(self, state_handle, cmd_handle):
+        """Routes an `ArbCmd` that originates from the upstream plugin."""
+        return self._route_arb(state_handle, 'upstream', cmd_handle, self.arb)
 
     def _to_pdef(self):
         """Creates a plugin definition handle for this plugin."""
-        # TODO: callback functions
-        raise NotImplementedError()
+        pdef = self._new_pdef(raw.DQCS_PTYPE_BACK)
+        with pdef as pd:
+            # Install Python callback handlers only when the user actually has
+            # handlers defined for them. When they're not installed, events
+            # will be forwarded downstream by Rust code, which is probably
+            # significantly faster.
+            handlers = set((
+                member[0]
+                for member in inspect.getmembers(
+                    self, predicate=inspect.ismethod)
+                if member[0].startswith('handle_')))
+            if 'handle_allocate' in handlers:
+                raw.dqcs_pdef_set_allocate_cb_pyfun(pd, self._cbent('allocate'))
+            if 'handle_free' in handlers:
+                raw.dqcs_pdef_set_free_cb_pyfun(pd, self._cbent('free'))
+            if any(map(lambda name: name.endswith('_gate'), handlers)):
+                raw.dqcs_pdef_set_gate_cb_pyfun(pd, self._cbent('gate'))
+            if 'handle_measurement' in handlers:
+                raw.dqcs_pdef_set_measurement_cb_pyfun(pd, self._cbent('measurement'))
+            if 'handle_advance' in handlers:
+                raw.dqcs_pdef_set_advance_cb_pyfun(pd, self._cbent('advance'))
+            if any(map(lambda name: name.startswith('handle_upstream_'), handlers)):
+                raw.dqcs_pdef_set_upstream_arb_cb_pyfun(pd, self._cbent('upstream_arb'))
+        return pdef
 
 class Backend(Plugin):
     """Implements a backend plugin.
