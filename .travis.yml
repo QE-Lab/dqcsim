@@ -64,6 +64,8 @@ matrix:
         apt:
           packages:
             - python3-pip
+      env:
+        - DQCSIM_DEBUG=""
       install:
         - mdbook --version || cargo install --debug mdbook --vers "0.2.3"
         - pip3 install setuptools wheel
