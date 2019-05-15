@@ -83,13 +83,11 @@ matrix:
         - RUSTFLAGS="-C link-dead-code"
         - PATH=$PATH:$HOME/kcov/bin/
         - DQCSIM_DEBUG=""
-        - AUDITWHEEL_PLAT=linux_x86_64
       addons:
         apt:
           packages:
             # python
             - python3-pip
-            - patchelf
             # kcov
             - libcurl4-openssl-dev
             - libelf-dev
@@ -133,19 +131,20 @@ matrix:
         - pip3 install setuptools wheel
         - pip3 install auditwheel
       script:
-        - cargo test --all-targets
-        - |
-          for file in target/debug/{dqcsim-*,core-*}; do
-            [ -x "${file}" ] || continue; 
-            mkdir -p "target/cov/$(basename $file)"; 
-            kcov --exclude-pattern=/.cargo,/usr/lib,/tests/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
-          done
-        # Python coverage
-        - python3 setup.py build
-        - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-line=no_kcoverage target/cov setup.py test
+        # - cargo test --all-targets
+        # - |
+        #   for file in target/debug/{dqcsim-*,core-*}; do
+        #     [ -x "${file}" ] || continue; 
+        #     mkdir -p "target/cov/$(basename $file)"; 
+        #     kcov --exclude-pattern=/.cargo,/usr/lib,/tests/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
+        #   done
+        # # Python coverage
+        # - python3 setup.py build
+        # - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-line=no_kcoverage target/cov setup.py test
         # C++ coverage
         - python3 setup.py bdist_wheel
         - sudo pip3 install target/python/dist/*.whl
+        - find / -name 'libdqcsim.so'
         - |
           mkdir build &&
           cd build &&
@@ -153,7 +152,8 @@ matrix:
           make &&
           cd ../ &&
           for file in `find build/test_* -executable -and -type f`; 
-            do [ -x "${file}" ] || continue; 
+            do [ -x "${file}" ] || continue;
+            ldd ${file}
             mkdir -p "target/cov/$(basename $file)";
             kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/build/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
           done
