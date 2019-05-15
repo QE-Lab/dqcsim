@@ -58,6 +58,7 @@ matrix:
 
     - <<: *rust-job
       name: "Docs"
+      dist: xenial
       sudo: true
       addons:
         apt:
