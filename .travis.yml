@@ -152,7 +152,7 @@ matrix:
           for file in `find build/test_* -executable -and -type f`; 
             do [ -x "${file}" ] || continue;
             mkdir -p "target/cov/$(basename $file)";
-            LD_LIBRARY_PATH=/usr/local/lib/ kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/build/ --verify "target/cov/$(basename $file)" "$file";
+            LD_LIBRARY_PATH=target/debug/ kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/build/ --verify "target/cov/$(basename $file)" "$file";
           done
         # Upload to codecov
         - bash <(curl -s https://codecov.io/bash)
