@@ -1,44 +1,44 @@
-parameters:
-  os: ["ubuntu-18.04", "macos-10.14"]
-  python: ["3.5", "3.6", "3.7"]
-  rust: ["stable", "1.34.2"]
+variables:
+  _os: ["ubuntu-18.04", "macos-10.14"]
+  _python: ["3.5", "3.6", "3.7"]
+  _rust: ["stable", "1.34.2"]
 
 jobs:
 
   - job: python
     strategy:
       matrix:
-        ${{ each os in parameters.os }}:
-          ${{ each python in parameters.python }}:
+        ${{ each os in _os }}:
+          ${{ each python in _python }}:
             ${{ format!('{0} {1}', python, os) }}:
-              image: $(os)
+              image: $(os_)
               python: $(python)
     pool:
       vmImage: $(image)
     steps:
-      - displayName: Use Python $(python)
-        task: UsePythonVersion@0
+      - task: UsePythonVersion@0
         inputs:
           versionSpec: $(python)
-      - displayName: Python version
-        script: |
+        displayName: Use Python $(python)
+      - script: |
           python --version
+        displayName: Python version
 
   - job: rust
     strategy:
       matrix:
-        ${{ each os in parameters.os }}:
-          ${{ each rust in parameters.rust }}:
+        ${{ each os in _os }}:
+          ${{ each rust in _rust }}:
             ${{ format!('{0} {1}', rust, os) }}:
               image: $(os)
               rust: $(rust)
     pool:
       vmImage: $(image)
     steps:
-      - displayName: Use Rust $(rust)
-        script: |
+      - script: |
           curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $(rust)
           echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
-      - displayName: Rust version
-        script: |
+        displayName: Use Rust $(rust)
+      - script: |
           rustc --version
+        displayName: Rust version
