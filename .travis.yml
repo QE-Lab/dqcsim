@@ -69,7 +69,7 @@ matrix:
         - pip3 install setuptools wheel
         - pip3 install pdoc3
       script:
-        - cargo doc --all-features
+        - cargo doc --no-deps --all-features
         - python3 setup.py bdist_wheel
         - sudo pip3 install target/python/dist/*.whl
       before_deploy:
