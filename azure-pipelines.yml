@@ -9,7 +9,7 @@ jobs:
         linux_py36:
           image: "ubuntu-latest"
           python: "3.6"
-        linux_py36:
+        linux_py37:
           image: "ubuntu-latest"
           python: "3.7"
         macos_py35:
