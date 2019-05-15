@@ -129,7 +129,6 @@ matrix:
             )
           ) || echo "Skipping swig install"
         - pip3 install setuptools wheel
-        - pip3 install auditwheel
       script:
         # - cargo test --all-targets
         # - |
@@ -153,7 +152,8 @@ matrix:
           cd ../ &&
           for file in `find build/test_* -executable -and -type f`; 
             do [ -x "${file}" ] || continue;
-            ldd ${file}
+            ldd ${file};
+            objdump -x ${file} | grep RPATH;
             mkdir -p "target/cov/$(basename $file)";
             kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/build/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
           done

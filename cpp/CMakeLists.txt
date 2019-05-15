@@ -11,6 +11,8 @@ project(dqcsim_cpp_test
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_library(dqcsim REQUIRED)
+
 #------------------------------------------------------------------------------
 # CMake options
 #------------------------------------------------------------------------------
