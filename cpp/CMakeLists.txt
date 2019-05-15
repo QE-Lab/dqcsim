@@ -11,12 +11,18 @@ project(dqcsim_cpp_test
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_library(dqcsim NAMES dqcsim)
+if(NOT dqcsim)
+	message(FATAL_ERROR "dqcsim not found")
+else()
+	message(STATUS "Using dqcsim: ${dqcsim}")
+endif()
+
 #------------------------------------------------------------------------------
 # CMake options
 #------------------------------------------------------------------------------
-option(USE_RELEASE_LIB  "Use target/release instead of target/debug lib" OFF)
-option(TEST_LIB         "Test the C++ library"                           ON)
-option(TEST_RAW         "Test the raw C API"                             ON)
+option(TEST_CPP         "Test the C++ library"                           ON)
+option(TEST_RAW_C       "Test the raw C API"                             ON)
 
 #------------------------------------------------------------------------------
 # GoogleTest inclusion
@@ -38,18 +44,10 @@ add_custom_target(test+verbose COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failur
 #------------------------------------------------------------------------------
 # Search paths
 #------------------------------------------------------------------------------
-include_directories(gen/include)
-
-if(USE_RELEASE_LIB)
-    link_directories(../../target/release)
-else()
-    link_directories(../../target/debug)
+if(TEST_CPP)
+    add_subdirectory(test_cpp)
 endif()
 
-if(TEST_LIB)
-    add_subdirectory(test_lib)
-endif()
-
-if(TEST_RAW)
-    add_subdirectory(test_raw)
+if(TEST_RAW_C)
+    add_subdirectory(test_raw_c)
 endif()
