@@ -64,9 +64,22 @@ matrix:
         apt:
           packages:
             - python3-pip
+            # swig
+            - autogen
+            - automake
+            - autoconf
+            - byacc
       env:
         - DQCSIM_DEBUG=""
       install:
+        - curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
+        - unzip -qq swig.zip
+        - cd swig-rel-3.0.12
+        - ./autogen.sh
+        - ./configure --without-pcre
+        - make
+        - sudo make install
+        - cd ..
         - mdbook --version || cargo install --debug mdbook --vers "0.2.3"
         - pip3 install setuptools wheel
         - pip3 install pdoc3
