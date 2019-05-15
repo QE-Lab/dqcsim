@@ -7,7 +7,7 @@
 [![PyPi](https://img.shields.io/pypi/pyversions/dqcsim.svg)](https://pypi.org/project/dqcsim/)
 [![Crates](https://badgen.net/crates/v/dqcsim)](https://crates.io/dqcsim)
 [![Linux build](https://img.shields.io/drone/build/mbrobbel/dqcsim-rs/master.svg?logo=linux&logoColor=white)](https://cloud.drone.io/mbrobbel/dqcsim-rs)
-[![macOS build](https://img.shields.io/travis/mbrobbel/dqcsim-rs/master.svg?label=build&logo=apple&logoColor=white)](https://travis-ci.com/mbrobbel/dqcsim-rs)
+[![macOS build](https://img.shields.io/travis/com/mbrobbel/dqcsim-rs/master.svg?label=build&logo=apple&logoColor=white)](https://travis-ci.com/mbrobbel/dqcsim-rs)
 [![Codecov](https://badgen.net/codecov/c/github/mbrobbel/dqcsim-rs)](https://codecov.io/gh/mbrobbel/dqcsim-rs)
 [![Dependencies](https://deps.rs/repo/github/mbrobbel/dqcsim-rs/status.svg)](https://deps.rs/repo/github/mbrobbel/dqcsim-rs)
 
