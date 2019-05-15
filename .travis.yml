@@ -146,13 +146,16 @@ matrix:
         - |
           mkdir build &&
           cd build &&
-          cmake ../cpp/ &&
+          cmake ../cpp &&
           make &&
-          cd ../ &&
+          cd .. &&
           for file in `find build/test_* -executable -and -type f`; 
             do [ -x "${file}" ] || continue;
             mkdir -p "target/cov/$(basename $file)";
-            LD_LIBRARY_PATH=target/debug/ kcov --exclude-pattern=/.cargo,/usr/lib,/cpp/test_,/build/ --verify "target/cov/$(basename $file)" "$file";
+            LD_LIBRARY_PATH=target/debug/ kcov --exclude-pattern=/.cargo,/usr,/cpp --verify "target/cov/$(basename $file)" "$file";
+          done
+          for file in `find target/cov/ -name cobertura.xml`;
+            do echo $file; cat $file | grep -n3 bindings;
           done
         # Upload to codecov
         - bash <(curl -s https://codecov.io/bash)
