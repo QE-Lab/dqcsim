@@ -1,7 +1,5 @@
 # DQCsim
 
-<!--[![Platform](https://badgen.net/badge/platform/Linux,macOS?list=1)]()-->
-<!--[![Docs](https://docs.rs/dqcsim/badge.svg)](https://docs.rs/dqcsim)-->
 [![License](https://badgen.net/badge/license/Apache-2.0/blue)](https://github.com/mbrobbel/dqcsim-rs/blob/master/LICENSE)
 [![Docs](https://badgen.net/badge/docs/%20?color=green)](https://mbrobbel.github.io/dqcsim-rs/)
 [![PyPi](https://img.shields.io/pypi/pyversions/dqcsim.svg)](https://pypi.org/project/dqcsim/)
@@ -61,32 +59,8 @@ This will install just the DQCsim core files and so-called "null" plugins for te
 
 <details><summary><i>What if I don't have superuser access, or don't want to pollute my root directory?</i></summary><table><tr><td>
 
-There are two alternatives:
+Refer to the more extended instructions [here](https://mbrobbel.github.io/dqcsim-rs/intro/install.html).
 
-<details><summary>Install into your home directory.</summary><table><tr><td>
-
-Run
-
-    $ pip3 install dqcsim --user
-
-This will normally install the package into `~/.local`. You should probably check if `~/.local/bin` is in your `$PATH` environment variable, otherwise the command-line interface and plugins may not work out of the box. If you're developing in C or C++, you'll also have to add the following to `CFLAGS`: `-I ~/.local/include -L ~/.local/lib`.
-
-</td></tr></table></details>
-<details><summary>Use a <a href="https://docs.python.org/3/library/venv.html#creating-virtual-environments">venv</a>.</summary><table><tr><td>
-
-To do this, create an install directory wherever you want, and then run
-
-    $ python3 -m venv <your-install-directory>
-    $ source <your-install-directory>/bin/activate
-    (venv) $ pip3 install dqcsim
-
-To leave the `venv`, run
-
-    (venv) $ deactivate
-
-If you're developing in C or C++, you'll also have to add the following to `CFLAGS`: `-I <your-install-directory>/include -L <your-install-directory>/lib`.
-
-</td></tr></table></details>
 </td></tr></table></details>
 <details><summary><i>What if I don't want to use Python?</i></summary><table><tr><td>
 
@@ -111,7 +85,7 @@ DQCsim is currently restricted to Linux and macOS due to the Rust crate we're us
 
 ## Getting started
 
-TODO
+Read the [documentation](https://mbrobbel.github.io/dqcsim-rs/)!
 
 ## Contributing to DQCsim
 

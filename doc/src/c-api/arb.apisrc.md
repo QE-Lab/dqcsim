@@ -11,15 +11,6 @@ also be copied to another `ArbData`.
 
 @@@c_api_gen ^dqcs_arb_assign$@@@
 
-An `ArbData` object consists of a JSON-like object (specifically CBOR, which is
-a superset of JSON) and a list of binary strings. The advantage of JSON data is
-that it's "annotated" through dictionary keys. It therefore lends itself better
-for backward- and forward-compatibility. They're also easy to print and make
-sense of. However, they're rather heavyweight. This introduces complexity into
-the plugins and may slow down the simulation. This is why a binary string list
-was added in addition. It is up to you which one you use (of course you can
-also use both).
-
 ## JSON-like data
 
 To prevent the API from exploding, DQCsim does not provide any functions to
