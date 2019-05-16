@@ -14,7 +14,7 @@ categories = ["simulation", "science"]
 license = "Apache-2.0"
 
 [badges]
-travis-ci = { repository = "mbrobbel/dqcsim-rs" }
+# travis-ci = { repository = "mbrobbel/dqcsim-rs" }
 codecov = { repository = "mbrobbel/dqcsim-rs" }
 
 [lib]
