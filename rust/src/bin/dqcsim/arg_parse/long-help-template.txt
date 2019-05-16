@@ -67,8 +67,8 @@ PLUGIN SPEC:
        DQCsim's working directory, B) the dqcsim binary directory, and C) the system $PATH;
      - a valid path to a script file with a file extension. In this case, the above rule is run for a plugin named by
        the file extension of the script file. For instance, if "test.py" is specified for the frontend, DQCsim will
-       look for an executable named "dqcsfepy". The script filename is passed to the plugin through its sole command-
-       line argument.
+       look for an executable named "dqcsfepy". The script filename is passed to the plugin through the first
+       command-line argument, moving the simulator endpoint string to the second slot.
 
     When --reproduce[-exactly] is active, defining new plugins or changing the behavior of existing plugins is illegal.
     It is however still allowed to change plugin options related to logging. To specify these options without defining

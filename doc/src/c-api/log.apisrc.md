@@ -7,7 +7,7 @@ stdout/stderr were used directly (these are not thread-safe).
 
 The logging interface is only available from within threads that are hosting a
 plugin (or the main thread of a plugin process) and the thread which started
-the simulation. The logging methods are no-op otherwise.
+the simulation.
 
 ## Log levels
 
@@ -42,7 +42,8 @@ be interpreted as follows:
 The preferred way for C programs to submit log messages is through the
 following macros. These automatically add information such as line number and
 source filename through the C preprocessor. They also fall back to writing to
-`stderr` if logging fails for some reason.
+`stderr` if logging fails for some reason. Their interface is just like
+`printf`, but the final newline is implicit.
 
 @@@c_api_gen ^dqcs_log_(?!raw)(?!format)@@@
 
@@ -58,8 +59,9 @@ languages that don't support calling variadic functions.
 
 @@@c_api_gen ^dqcs_log_raw$@@@
 
-## Receiving log messages
+## stdout and stderr
 
-Log messages are sent to `stderr` by default. However, they can also be
-redirected to files and/or a callback function. This is configured through
-the `scfg` interface, as documented [here](scfg.apigen.html#log-message-sinks).
+By default, DQCsim will capture the stdout and stderr streams of the plugin
+processes it launches. Each received line will simply be turned into a log
+message. This is particularly useful for logging problems related to
+connecting to DQCsim.

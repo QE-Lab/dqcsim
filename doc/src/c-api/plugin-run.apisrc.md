@@ -1,16 +1,15 @@
 # Running a plugin
 
 Once a plugin has been defined, it can be started. Normally, DQCsim will do
-this in one way or another. There are four ways in which DQCsim can do this:
+this in one way or another. There are three ways in which DQCsim can do this:
 
  - by spawning a process;
- - by letting you spawn the process;
  - by spawning a thread within the simulation process;
- - by letting you spawn the thread.
+ - by letting you spawn the plugin.
 
-We'll go into this in greater depths here (TODO). For now, I'll assume either
-the first or second thing has already happened, and the process that was
-launched is the one that you're working on right now.
+We'll go into this in greater depths when we get into simulation construction.
+For now, I'll assume that the first thing has already happened, and the process
+that was launched is the one that you're working on right now.
 
 DQCsim will spawn a plugin process with a single command-line argument (in
 addition to the process name as per convention). This argument identifies a

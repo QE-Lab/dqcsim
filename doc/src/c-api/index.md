@@ -29,5 +29,4 @@ decent understanding of the basic concepts. If you don't, start
  - [Measurements](measurements.apigen.md)
  - [Plugins](plugins.apigen.md)
  - [Simulations](simulations.apigen.md)
- - [Logging](log.apigen.md)
  - [Reference](reference.apigen.md)
