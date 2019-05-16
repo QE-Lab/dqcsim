@@ -1,4 +1,5 @@
-FROM quay.io/pypa/manylinux1_x86_64 as dqcsim-python-base
+ARG MANYLINUX=1
+FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64 as dqcsim-python-base
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
 	curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip && \

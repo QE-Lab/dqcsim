@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script builds manylinux wheels in target/python/dist/
+# This script builds manylinux{1, 2010} wheels in target/python/dist/
 # Usage: ./manylinux_wheels.sh
 
 set -e -x
@@ -14,5 +14,10 @@ project=`eval "cd $dir;pwd;cd - > /dev/null"`
 target="$project/target"
 rm -rf $target
 
-docker build -t dqcsim-py-manylinux -f "$cwd/Dockerfile" "$cwd"
-docker run --rm -v "$project":/io dqcsim-py-manylinux
+docker build -t dqcsim-py-manylinux:1 -f "$cwd/Dockerfile" "$cwd"
+docker run --rm -v "$project":/io dqcsim-py-manylinux:1
+rm -rf $target/release
+
+docker build --build-arg MANYLINUX=2010 -t dqcsim-py-manylinux:2010 -f "$cwd/Dockerfile" "$cwd"
+docker run --rm -v "$project":/io dqcsim-py-manylinux:2010
+rm -rf $target/release
