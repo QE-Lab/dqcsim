@@ -19,6 +19,10 @@ output_dir = target_dir + ("/debug" if debug else "/release")
 build_dir = py_target_dir + "/build"
 dist_dir = py_target_dir + "/dist"
 
+def read(fname):
+    with open(os.path.join(os.path.dirname(__file__), fname)) as f:
+        return f.read()
+
 class clean(_clean):
     def run(self):
         _clean.run(self)
@@ -103,6 +107,9 @@ setup(
         "Documentation": "https://mbrobbel.github.io/dqcsim-rs/",
         "Source Code": "https://github.com/mbrobbel/dqcsim-rs/",
     },
+
+    long_description = read('README.md'),
+    long_description_content_type = 'text/markdown',
 
     classifiers = [
         "License :: OSI Approved :: Apache Software License",
