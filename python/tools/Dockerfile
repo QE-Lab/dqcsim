@@ -16,4 +16,4 @@ ENV PATH=$PATH:/root/.cargo/bin
 FROM dqcsim-python-base
 
 WORKDIR /io
-ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{5,6,7}*/bin/python3; do $PYTHON setup.py bdist_wheel; done"]
+ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{5,6,7}*/bin/python3; do $PYTHON setup.py bdist_wheel; done; rm -rf target/release"]
