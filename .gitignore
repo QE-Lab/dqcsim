@@ -4,6 +4,7 @@ target
 
 # DQCsim
 *.repro
+.tag
 
 # macOS
 *.DS_Store
