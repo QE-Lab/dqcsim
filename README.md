@@ -5,7 +5,7 @@
 [![License](https://badgen.net/badge/license/Apache-2.0/blue)](https://github.com/mbrobbel/dqcsim-rs/blob/master/LICENSE)
 [![Docs](https://badgen.net/badge/docs/%20?color=green)](https://mbrobbel.github.io/dqcsim-rs/)
 [![PyPi](https://img.shields.io/pypi/pyversions/dqcsim.svg)](https://pypi.org/project/dqcsim/)
-[![Crates](https://badgen.net/crates/v/dqcsim)](https://crates.io/dqcsim)
+[![Crates](https://badgen.net/crates/v/dqcsim)](https://crates.io/crates/dqcsim)
 [![Linux build](https://img.shields.io/drone/build/mbrobbel/dqcsim-rs/master.svg?logo=linux&logoColor=white)](https://cloud.drone.io/mbrobbel/dqcsim-rs)
 [![macOS build](https://img.shields.io/travis/com/mbrobbel/dqcsim-rs/master.svg?label=build&logo=apple&logoColor=white)](https://travis-ci.com/mbrobbel/dqcsim-rs)
 [![Codecov](https://badgen.net/codecov/c/github/mbrobbel/dqcsim-rs)](https://codecov.io/gh/mbrobbel/dqcsim-rs)
