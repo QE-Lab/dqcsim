@@ -185,7 +185,7 @@ dependencies = [
 
 [[package]]
 name = "dqcsim"
-version = "0.1.0"
+version = "0.0.1"
 dependencies = [
  "ansi_term 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "cbindgen 0.8.7 (registry+https://github.com/rust-lang/crates.io-index)",
