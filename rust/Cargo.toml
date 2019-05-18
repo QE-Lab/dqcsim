@@ -1,6 +1,6 @@
 [package]
 name = "dqcsim"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Quantum Computer Architectures, Quantum & Computer Engineering, QuTech, Delft University of Technology"]
 edition = '2018'
 build = "tools/build.rs"
@@ -14,7 +14,7 @@ categories = ["simulation", "science"]
 license = "Apache-2.0"
 
 [badges]
-travis-ci = { repository = "mbrobbel/dqcsim-rs" }
+# travis-ci = { repository = "mbrobbel/dqcsim-rs" }
 codecov = { repository = "mbrobbel/dqcsim-rs" }
 
 [lib]

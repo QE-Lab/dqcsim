@@ -2,7 +2,7 @@
 
 use crate::{
     common::{
-        error::{err, oe_log_err, Result},
+        error::{err, Result},
         log::{
             callback::LogCallback,
             deinit, init,
@@ -48,7 +48,8 @@ impl LogThread {
         // Spawn the local channel log thread.
         let handler = thread::spawn(move || {
             let mut t = if stderr_level > LoglevelFilter::Off {
-                Some(stderr().ok_or_else(oe_log_err("Failed to acquire stderr"))?)
+                // This may return None which results in no logging to stderr
+                stderr()
             } else {
                 None
             };
