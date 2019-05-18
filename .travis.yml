@@ -28,7 +28,7 @@ matrix:
         - mdbook --version || cargo install --debug mdbook --vers "0.2.3"
       before_deploy:
         - cargo doc --all-features
-        - cd doc && mdbook build && mdbook test
+        - cd doc && make && mdbook test
         - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/doc/book/doc_
       deploy:
         provider: pages
