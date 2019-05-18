@@ -2,7 +2,7 @@
 
 To use DQCsim from Python, simply import the `dqcsim` module. If you don't have
 it yet, you can install it using `pip3 install dqcsim` (more detailed notes
-[here](https://github.com/mbrobbel/dqcsim-rs/blob/master/README.md)).
+[here](../install/index.html)).
 
 The `dqcsim` module is divided up into four public submodules:
 

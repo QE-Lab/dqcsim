@@ -15,15 +15,21 @@ quantum computer simulators together in a <i>standardized</i> yet
 </tr>
 <tr>
 <td style="border-style: none; background-color: rgba(0.5,0.5,0.5,0.03); text-align: center; vertical-align: top; padding-bottom: 20px; font-size: smaller">
-DQCsim only provides interfaces to tie simulator components together. That is,
-it does not contain any simulation code on its own. DQCsim is all the
-boilerplate code that you don't want to write when you're developing a new way
-to simulate qubits, a microarchitecture simulator, an error model, etc.
+DQCsim only provides <a href="../intro/interfaces.html">interfaces</a>
+to tie simulator components together. That is, it does not contain any
+simulation code on its own. DQCsim is all the boilerplate code that you don't
+want to write when you're developing a new way to
+<a href="../intro/backend.html">simulate qubits</a>, a
+<a href="../intro/frontend.html">microarchitecture simulator</a>, an
+<a href="../intro/operator.html">error model</>, etc.
 </td>
 <td style="border-style: none; background-color: rgba(0.5,0.5,0.5,0.03); text-align: center; vertical-align: top; padding-bottom: 20px; font-size: smaller">
-DQCsim abstracts a quantum computer simulation into four components: hosts,
-frontends, operators, and backends. These components are separate operating
-system processes that each fulfill a well-defined function within the
+DQCsim abstracts a quantum computer simulation into four components:
+<a href="../intro/host.html">hosts</a>,
+<a href="../intro/frontend.html">frontends</a>,
+<a href="../intro/operator.html">operators</a>, and
+<a href="../intro/backend.html">backends</a>. These components are separate
+operating system processes that each fulfill a well-defined function within the
 simulation, thus splitting the simulation up into more manageable parts.
 </td>
 <td style="border-style: none; background-color: rgba(0.5,0.5,0.5,0.03); text-align: center; vertical-align: top; padding-bottom: 20px; font-size: smaller">
@@ -42,8 +48,9 @@ algorithms instead of fighting CPython.
 </tr>
 <tr>
 <td style="border-style: none; background-color: rgba(0.5,0.5,0.5,0.03); text-align: center; vertical-align: top; padding-bottom: 30px; font-size: smaller">
-DQCsim fully specifies a set of core features that each component needs to
-support, as well as the interfaces used to drive them. Therefore, as long as the
+DQCsim fully specifies a set of core features that each component
+<a href="../c-api/pdef.apigen.html#assigning-callback-functions">needs to
+support</a>, as well as the interfaces used to drive them. Therefore, as long as the
 components don't rely on any user-defined extra features in other components,
 they can be swapped out without breaking anything.
 </td>
@@ -55,12 +62,14 @@ DQCsim being written in Rust: you shouldn't need to read or write a single line
 of code in here!
 </td>
 <td style="border-style: none; background-color: rgba(0.5,0.5,0.5,0.03); text-align: center; vertical-align: top; padding-bottom: 30px; font-size: smaller">
-While quantum mechanics are inherently stochastic, simulating it needs not be.
-DQCsim provides a random generator to the components that should be more than
-random enough for simulation purposes, while being reproducible when this is
-desirable, such as while debugging.
+While quantum mechanics are inherently stochastic, simulating it
+<a href="../intro/reproducibility.html">needs not be</a>. DQCsim provides a
+random generator to the components that should be more than random enough for
+simulation purposes, while being reproducible when this is desirable, such as
+while debugging.
 </td>
 </tr>
 </table>
 <h2 style="text-align: center">Interested?</h2>
-<h1 style="text-align: center"><a href="../intro/install.html">Keep reading!</a></h1>
+<h1 style="text-align: center"><a href="../intro/components.html">Keep reading!</a></h1>
+<h3 style="text-align: center">(<a href="../install/index.html">or skip directly to the install notes</a>)</h2>

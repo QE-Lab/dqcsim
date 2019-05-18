@@ -1,18 +1,23 @@
 # Installation
 
-If you're a user or a plugin developer (Python, C, or C++), the recommended way
-to install DQCsim is through Python's package manager:
+Here's how to install DQCsim. If you're on Linux or macOS, it's easy: just
+install Python 3.5+ and follow one of the three installation methods listed
+below. If you're on Windows, you'll unfortunately have to wait, since DQCsim
+has a [dependency that doesn't support Windows](https://github.com/servo/ipc-channel).
+
+## Recommended method (requires superuser access)
+
+The recommended way to install DQCsim is through Python's package manager in
+the usual way:
 
     $ sudo pip3 install dqcsim
 
-This will install just the DQCsim core files and so-called "null" plugins for
-testing. So you'll also want to install plugins in addition. This is currently
-TODO, because there are no supported plugins yet. However, the current idea is
-that these will also be distributed through pip, with a dependency on `dqcsim`.
-For instance, you should be able to install `dqcsim-qx` through pip to get the
-QX simulator with appropriate DQCsim bindings.
+Besides the Python module, this also installs the development headers and
+dynamic libraries needed to develop C/C++ plugins or host programs. On most
+distributions Python installs into `/usr/local`, which should be part of your
+compiler's search paths already.
 
-## Installation without superuser access
+## Installation into your home directory
 
 If you don't have superuser access, you can also install to your home directory
 as follows:
