@@ -49,10 +49,10 @@ pub extern "C" fn dqcs_handle_type(handle: dqcs_handle_t) -> dqcs_handle_type_t 
 }
 
 /// Returns a debug dump of the object associated with the given handle.
-///
-/// On success, this **returns a newly allocated string containing the
-/// description. Free it with `free()` when you're done with it to avoid memory
-/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.
+///>
+///> On success, this **returns a newly allocated string containing the
+///> description. Free it with `free()` when you're done with it to avoid memory
+///> leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.
 #[no_mangle]
 pub extern "C" fn dqcs_handle_dump(handle: dqcs_handle_t) -> *mut c_char {
     api_return_string(|| {
@@ -62,8 +62,8 @@ pub extern "C" fn dqcs_handle_dump(handle: dqcs_handle_t) -> *mut c_char {
 }
 
 /// Destroys the object associated with a handle.
-///
-/// Returns 0 when successful, -1 otherwise.
+///>
+///> Returns 0 when successful, -1 otherwise.
 #[no_mangle]
 pub extern "C" fn dqcs_handle_delete(handle: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
@@ -76,10 +76,10 @@ pub extern "C" fn dqcs_handle_delete(handle: dqcs_handle_t) -> dqcs_return_t {
 }
 
 /// Deletes all handles for the current thread.
-///
-/// This can be used to clean stuff up at the end of `main()` or before an
-/// `abort()` of some kind. If you don't clean up properly, you might get
-/// undefined behavior or errors when DQCsim tries to do it for you.
+///>
+///> This can be used to clean stuff up at the end of `main()` or before an
+///> `abort()` of some kind. If you don't clean up properly, you might get
+///> undefined behavior or errors when DQCsim tries to do it for you.
 #[no_mangle]
 pub extern "C" fn dqcs_handle_delete_all() -> dqcs_return_t {
     API_STATE.with(|state| state.borrow_mut().objects.clear());
@@ -87,10 +87,10 @@ pub extern "C" fn dqcs_handle_delete_all() -> dqcs_return_t {
 }
 
 /// Succeeds only if there are no live handles in the current thread.
-///
-/// This is intended for testing and for finding handle leaks. The error
-/// message returned when handles remain contains dumps of the first 10
-/// remaining handles.
+///>
+///> This is intended for testing and for finding handle leaks. The error
+///> message returned when handles remain contains dumps of the first 10
+///> remaining handles.
 #[no_mangle]
 pub extern "C" fn dqcs_handle_leak_check() -> dqcs_return_t {
     api_return_none(|| {

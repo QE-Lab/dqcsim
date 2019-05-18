@@ -9,7 +9,7 @@ namespace dqcsim {
 /**
  * Sends a log message using the current logger using printf-like formatting.
  *
- * This function is identical to `dqcs_log()`, except instead of a single
+ * This function is identical to `dqcs_log_raw()`, except instead of a single
  * string it takes a printf-like format string and varargs to compose the
  * message.
  */
