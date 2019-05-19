@@ -1102,7 +1102,7 @@ class Operator(GateStreamSource):
 
     def _to_pdef(self):
         """Creates a plugin definition handle for this plugin."""
-        pdef = self._new_pdef(raw.DQCS_PTYPE_BACK)
+        pdef = self._new_pdef(raw.DQCS_PTYPE_OPER)
         with pdef as pd:
             # Install Python callback handlers only when the user actually has
             # handlers defined for them. When they're not installed, events
