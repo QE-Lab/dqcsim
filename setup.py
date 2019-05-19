@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os, platform, shutil, sys, subprocess
 from distutils.command.bdist import bdist as _bdist
 from distutils.command.sdist import sdist as _sdist
