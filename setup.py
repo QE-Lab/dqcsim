@@ -13,6 +13,7 @@ with open('rust/Cargo.toml', 'r') as f:
 debug = 'DQCSIM_DEBUG' in os.environ
 
 target_dir = os.getcwd() + "/target"
+py_bin_dir = os.getcwd() + "/python/bin"
 py_target_dir = target_dir + "/python"
 include_dir = target_dir + "/include"
 output_dir = target_dir + ("/debug" if debug else "/release")
@@ -133,7 +134,10 @@ setup(
             output_dir + '/dqcsim',
             output_dir + '/dqcsfenull',
             output_dir + '/dqcsopnull',
-            output_dir + '/dqcsbenull'
+            output_dir + '/dqcsbenull',
+            py_bin_dir + '/dqcsfepy',
+            py_bin_dir + '/dqcsoppy',
+            py_bin_dir + '/dqcsbepy',
         ]),
         ('include', [
             'target/include/dqcsim.h',
