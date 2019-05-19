@@ -35,7 +35,6 @@ class Tests(unittest.TestCase):
         ).run()
 
     def test_null_processes(self):
-        print(os.environ['PATH'], file=sys.stderr)
         p = os.path.dirname(__file__) + '/'
         Simulator(
             p+'null_frontend.py', p+'null_operator.py', p+'null_backend.py',
