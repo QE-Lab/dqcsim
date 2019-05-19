@@ -304,7 +304,7 @@ class Simulator(object):
             shutdown_timeout = float(kwargs.pop('shutdown_timeout', 5.0))
 
         if kwargs:
-            raise TypeError("unexpected keyword argument {!r}".format(next(kwargs.keys())))
+            raise TypeError("unexpected keyword argument {!r}".format(next(iter(kwargs.keys()))))
 
         # Produce the constructor function.
         if arg_mode == 1 or arg_mode == 2:
@@ -740,14 +740,16 @@ class Simulator(object):
         and version strings. This function only works while a simulation is
         running, since the plugins report their metadata during initialization.
         """
+        if self._sim_handle is None:
+            raise RuntimeError("No simulation is currently running")
         with self._sim_handle as sim:
             if isinstance(target, int):
-                return (
+                return ( #@
                     raw.dqcs_sim_get_name_idx(sim, int(target)),
                     raw.dqcs_sim_get_author_idx(sim, int(target)),
                     raw.dqcs_sim_get_version_idx(sim, int(target)))
             else:
-                return (
+                return ( #@
                     raw.dqcs_sim_get_name(sim, str(target)),
                     raw.dqcs_sim_get_author(sim, str(target)),
                     raw.dqcs_sim_get_version(sim, str(target)))
@@ -762,6 +764,6 @@ class Simulator(object):
         return l
 
     def __repr__(self):
-        return "Simulation()"
+        return "Simulator()"
 
     __str__ = __repr__
