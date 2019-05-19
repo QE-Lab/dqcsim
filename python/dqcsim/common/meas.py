@@ -30,24 +30,24 @@ class Measurement(ArbData):
         self.value = value
 
     @property
-    def qubit(self):
+    def qubit(self): #@
         """The qubit associated with this measurement."""
         return self.__qubit
 
     @qubit.setter
-    def qubit(self, qubit):
+    def qubit(self, qubit): #@
         qubit = int(qubit)
         if qubit < 1:
             raise ValueError('invalid qubit reference: {!r}'.format(qubit))
         self.__qubit = qubit
 
     @property
-    def value(self):
+    def value(self): #@
         """The measurement value; either 0, 1, or None (= undefined)."""
         return self.__value
 
     @value.setter
-    def value(self, value):
+    def value(self, value): #@
         if value is not None:
             value = int(bool(value))
         self.__value = value
@@ -58,7 +58,7 @@ class Measurement(ArbData):
         return False
 
     @classmethod
-    def _from_raw(cls, handle):
+    def _from_raw(cls, handle): #@
         """Constructs a measurement object from a raw API handle."""
         arg = ArbData._from_raw(handle)
         with handle as hndl:

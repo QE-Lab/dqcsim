@@ -38,7 +38,7 @@ automatically generates the metadata getters for you.
             ...
 """
 
-__all__ = [
+__all__ = [ #@
     'Frontend',
     'Operator',
     'Backend',
@@ -47,7 +47,7 @@ __all__ = [
     'JoinHandle',
     'plugin'
 ]
-__pdoc__ = {
+__pdoc__ = { #@
     'JoinHandle.__init__': False
 }
 

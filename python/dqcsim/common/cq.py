@@ -4,7 +4,7 @@ from dqcsim.common.cmd import ArbCmd
 
 class ArbCmdQueue(object):
     @classmethod
-    def _from_raw(cls, handle):
+    def _from_raw(cls, handle): #@
         with handle as hndl:
             cmds = []
             while raw.dqcs_cq_len(hndl):
@@ -13,7 +13,7 @@ class ArbCmdQueue(object):
         return cmds
 
     @classmethod
-    def _to_raw(cls, *cmds):
+    def _to_raw(cls, *cmds): #@
         if len(cmds) == 1 and not isinstance(cmds[0], ArbCmd):
             cmds = cmds[0]
         handle = Handle(raw.dqcs_cq_new())

@@ -12,6 +12,6 @@ kcov                                                                \
     --python-parser=$PYTHON3                                        \
     --include-pattern=/python/dqcsim/                               \
     --exclude-pattern=/tests                                        \
-    --exclude-line=no_kcoverage                                     \
+    --exclude-line='no_kcoverage,#@,assert(False)'                  \
     target/cov                                                      \
     "$@"

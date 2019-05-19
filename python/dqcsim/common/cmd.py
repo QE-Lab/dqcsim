@@ -53,12 +53,12 @@ class ArbCmd(ArbData):
             raise TypeError('Invalid arguments passed to ArbCmd constructor')
 
     @property
-    def iface(self):
+    def iface(self): #@
         """The interface identifier."""
         return self._iface
 
     @property
-    def oper(self):
+    def oper(self): #@
         """The operation identifier."""
         return self._oper
 
@@ -68,7 +68,7 @@ class ArbCmd(ArbData):
         return False
 
     @classmethod
-    def _from_raw(cls, handle):
+    def _from_raw(cls, handle): #@
         """Constructs an ArbCmd object from a raw API handle."""
         arg = ArbData._from_raw(handle)
         with handle as hndl:
