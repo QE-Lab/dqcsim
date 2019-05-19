@@ -10,7 +10,9 @@ has a [dependency that doesn't support Windows](https://github.com/servo/ipc-cha
 The recommended way to install DQCsim is through Python's package manager in
 the usual way:
 
-    $ sudo pip3 install dqcsim
+```bash
+$ sudo pip3 install dqcsim
+```
 
 Besides the Python module, this also installs the development headers and
 dynamic libraries needed to develop C/C++ plugins or host programs. On most
@@ -22,7 +24,9 @@ compiler's search paths already.
 If you don't have superuser access, you can also install to your home directory
 as follows:
 
-    $ pip3 install dqcsim --user
+```bash
+$ pip3 install dqcsim --user
+```
 
 This will normally install the package into `~/.local`. You should probably
 check if `~/.local/bin` is in your `$PATH` environment variable, otherwise the
@@ -37,15 +41,19 @@ You can also install into a
 This is particularly useful if you want to have multiple versions installed at
 the same time. To create a venv and install into it, run the following:
 
-    $ mkdir -p <your-install-directory>
-    $ cd <your-install-directory>
-    $ python3 -m venv <your-install-directory>
-    $ source <your-install-directory>/bin/activate
-    (venv) $ pip3 install dqcsim
+```bash
+$ mkdir -p <your-install-directory>
+$ cd <your-install-directory>
+$ python3 -m venv <your-install-directory>
+$ source <your-install-directory>/bin/activate
+(venv) $ pip3 install dqcsim
+```
 
 To leave the `venv`, run
 
-    (venv) $ deactivate
+```bash
+(venv) $ deactivate
+```
 
 If you're developing in C or C++, you'll also have to add the following to
 `CFLAGS`: `-I <your-install-directory>/include -L <your-install-directory>/lib`.
