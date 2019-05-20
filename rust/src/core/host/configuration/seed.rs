@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 /// Represents a 64-bit random seed. Can be converted to and from a string as
 /// you would expect a seed to be. Also implements std::default::Default,
@@ -9,9 +10,9 @@ pub struct Seed {
     pub value: u64,
 }
 
-impl ToString for Seed {
-    fn to_string(&self) -> String {
-        self.value.to_string()
+impl fmt::Display for Seed {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.value.to_string())
     }
 }
 
