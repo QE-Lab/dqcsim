@@ -311,6 +311,11 @@ mod tests {
     }
 
     #[test]
+    fn not_executable() {
+        assert!(err!(cli!("../LICENSE", "../LICENSE")).contains("Failed to spawn plugin(s)"));
+    }
+
+    #[test]
     fn loglevel() {
         assert!(cli!("-l", "fatal", FRONTEND, BACKEND).is_ok());
         assert!(cli!("-l", "f", FRONTEND, BACKEND).is_ok());
