@@ -7,7 +7,7 @@ steps:
   displayName: Wheel
 
 - script: |
-    sudo pip3 install target/python/dist/*.whl
+    sudo -H pip3 install target/python/dist/*.whl
   displayName: Install wheel
 
 - script: |
