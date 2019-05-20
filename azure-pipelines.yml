@@ -49,3 +49,18 @@ jobs:
       python: $(python)
   - template: templates/ci/install-dependencies.yml
   - template: templates/ci/python.yml
+
+- job:
+  strategy:
+    matrix:
+      cpp_linux:
+        image: ubuntu-latest
+      cpp_macos:
+        image: macos-latest
+  pool:
+    vmImage: $(image)
+  steps:
+  - template: templates/ci/install-rust.yml
+  - template: templates/ci/install-python.yml
+  - template: templates/ci/install-dependencies.yml
+  - template: templates/ci/cpp.yml

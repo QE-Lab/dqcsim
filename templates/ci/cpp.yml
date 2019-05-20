@@ -1,0 +1,25 @@
+steps:
+
+- script: |
+    python setup.py bdist_wheel
+  env:
+    DQCSIM_DEBUG: ''
+  displayName: Wheel
+
+- script: |
+    sudo pip3 setup.py install
+  displayName: Install wheel
+
+- script: |
+    mkdir build
+    cd build
+    cmake ../cpp
+  displayName: CMake
+
+- script: |
+    make -j
+  displayName: Build
+
+- script: |
+    make test
+  displayName: Test
