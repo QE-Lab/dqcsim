@@ -1,0 +1,13 @@
+steps:
+
+- script: |
+    sudo add-apt-repository ppa:timsc/swig-3.0.12
+    sudo apt-get update
+    sudo apt-get install -y swig
+  condition: eq(variables['Agent.OS'], 'Linux')
+  displayName: Install dependencies (Linux)
+
+- script: |
+    brew install swig
+  condition: eq(variables['Agent.OS'], 'Darwin')
+  displayName: Install dependencies (macOS)

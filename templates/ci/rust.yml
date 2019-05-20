@@ -1,0 +1,17 @@
+steps:
+
+- script: |
+    cargo fmt -- --check
+  displayName: Rustfmt
+
+- script: |
+    cargo clippy --all-targets --all-features -- -Dwarnings
+  displayName: Clippy
+
+- script: |
+    cargo build --all-targets --all-features
+  displayName: Build
+
+- script: |
+    cargo test --all-targets
+  displayName: Test
