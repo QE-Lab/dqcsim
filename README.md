@@ -1,15 +1,16 @@
 # DQCsim
 
-[![License](https://badgen.net/badge/license/Apache-2.0/blue)](https://github.com/mbrobbel/dqcsim/blob/master/LICENSE)
-[![Docs](https://badgen.net/badge/docs/%20?color=green)](https://mbrobbel.github.io/dqcsim/)
-[![PyPi](https://img.shields.io/pypi/pyversions/dqcsim.svg)](https://pypi.org/project/dqcsim/)
+[![PyPi](https://badgen.net/pypi/v/dqcsim)](https://pypi.org/project/dqcsim/)
+[![Python version](https://badgen.net/badge/python/3.5,3.6,3.7?list=1)](https://pypi.org/project/dqcsim/)
 [![Crates](https://badgen.net/crates/v/dqcsim)](https://crates.io/crates/dqcsim)
-[![Linux build](https://img.shields.io/drone/build/mbrobbel/dqcsim/master.svg?logo=linux&logoColor=white)](https://cloud.drone.io/mbrobbel/dqcsim)
-[![macOS build](https://img.shields.io/travis/com/mbrobbel/dqcsim/master.svg?label=build&logo=apple&logoColor=white)](https://travis-ci.com/mbrobbel/dqcsim)
-[![Codecov](https://badgen.net/codecov/c/github/mbrobbel/dqcsim)](https://codecov.io/gh/mbrobbel/dqcsim)
-[![Dependencies](https://deps.rs/repo/github/mbrobbel/dqcsim/status.svg)](https://deps.rs/repo/github/mbrobbel/dqcsim)
+[![Rust version](https://badgen.net/badge/rust/stable)](https://rustup.rs)
+[![Platform support](https://badgen.net/badge/platform/linux,macos?list=1)](https://mbrobbel.github.io/dqcsim-rs/install/index.html)
+[![License](https://badgen.net/badge/license/Apache-2.0)](https://github.com/mbrobbel/dqcsim-rs/blob/master/LICENSE)
 
-
+[![Docs](https://badgen.net/github/status/mbrobbel/dqcsim-rs/gh-pages?label=documentation)](https://mbrobbel.github.io/dqcsim-rs/)
+[![Azure Pipelines](https://badgen.net/azure-pipelines/mbrobbel/dqcsim/mbrobbel.dqcsim-rs/azure-pipelines?label=azure-pipelines)](https://dev.azure.com/mbrobbel/dqcsim/_build/latest?definitionId=2&branchName=master)
+[![Travis](https://badgen.net/travis/mbrobbel/dqcsim-rs)](https://travis-ci.com/mbrobbel/dqcsim-rs)
+[![Coverage](https://badgen.net/codecov/c/github/mbrobbel/dqcsim-rs)](https://codecov.io/gh/mbrobbel/dqcsim-rs)
 
 DQCsim, short for Delft Quantum & Classical simulator, is a *framework* that
 can be used to tie *components* of quantum computer simulators together in a
