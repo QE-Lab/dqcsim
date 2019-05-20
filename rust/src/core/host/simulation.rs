@@ -16,7 +16,7 @@ use crate::{
         plugin::Plugin,
         reproduction::{HostCall, Reproduction},
     },
-    trace,
+    info, trace,
 };
 use rand::{RngCore, SeedableRng};
 use rand_chacha::ChaChaRng;
@@ -146,6 +146,7 @@ impl Simulation {
             inv_arg("Simulation must consist of at least a frontend and backend")?
         }
 
+        info!("Starting Simulation with seed: {}", seed);
         // Spawn the plugins.
         let (_, errors): (_, Vec<_>) = pipeline
             .iter_mut()
