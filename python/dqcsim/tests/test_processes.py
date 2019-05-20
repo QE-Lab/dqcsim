@@ -15,7 +15,7 @@ class Tests(unittest.TestCase):
         Simulator(
             p+'null_frontend.py',
             p+'null_operator.py',
-            ('/usr/bin/python3', p+'null_backend.py'),
+            (sys.executable, p+'null_backend.py'),
             repro=None, stderr_verbosity=Loglevel.OFF
         ).run()
 
@@ -23,7 +23,7 @@ class Tests(unittest.TestCase):
         os.environ['x'] = 'x'
         sim = Simulator(
             (p+'null_frontend.py', {'env': {'x': 'y'}}),
-            ('/usr/bin/python3', p+'null_backend.py', {'env': {'x': None}, 'work': os.getcwd() + '/..'}),
+            (sys.executable, p+'null_backend.py', {'env': {'x': None}, 'work': os.getcwd() + '/..'}),
             repro=None, stderr_verbosity=Loglevel.OFF
         )
         sim.simulate()
