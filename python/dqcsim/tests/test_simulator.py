@@ -21,7 +21,11 @@ class NullFrontend(Frontend):
         self.warn('warn')
         self.error('error')
         self.fatal('fatal')
-        self.log(Loglevel.INFO, 'log')
+        self.log(Loglevel.INFO, 'log {x} {0}', 'test', x='33')
+        try:
+            self.log(33, 'oops')
+        except TypeError as e:
+            self.log(Loglevel.ERROR, str(e))
         self.info('__end__')
 
     def handle_host_x_y(self, *args, **kwargs):
@@ -125,7 +129,7 @@ class Tests(unittest.TestCase):
         sim.simulate()
         sim.arb('front', 'log', 'test')
         sim.stop()
-        self.assertEqual(len(msgs), 8)
+        self.assertEqual(len(msgs), 9)
         self.assertEqual(msgs[0], (
             'trace', 'front', Loglevel.TRACE,
             'dqcsim.tests.test_simulator', __file__, 17))
@@ -148,8 +152,11 @@ class Tests(unittest.TestCase):
             'fatal', 'front', Loglevel.FATAL,
             'dqcsim.tests.test_simulator', __file__, 23))
         self.assertEqual(msgs[7], (
-            'log', 'front', Loglevel.INFO,
+            'log 33 test', 'front', Loglevel.INFO,
             'dqcsim.tests.test_simulator', __file__, 24))
+        self.assertEqual(msgs[8], (
+            'level must be a Loglevel', 'front', Loglevel.ERROR,
+            'dqcsim.tests.test_simulator', __file__, 28))
 
     def test_log_capture_logging(self):
         class Handler(logging.Handler):
@@ -179,20 +186,29 @@ class Tests(unittest.TestCase):
         sim.simulate()
         sim.arb('front', 'log', 'test')
         sim.stop()
-        self.assertEqual(len(handler.msgs), 8)
-        self.assertEqual(handler.msgs[0], ('trace', 'front',  5, 'TRACE',    __file__, 17))
-        self.assertEqual(handler.msgs[1], ('debug', 'front', 10, 'DEBUG',    __file__, 18))
-        self.assertEqual(handler.msgs[2], ('info',  'front', 20, 'INFO',     __file__, 19))
-        self.assertEqual(handler.msgs[3], ('note',  'front', 25, 'NOTE',     __file__, 20))
-        self.assertEqual(handler.msgs[4], ('warn',  'front', 30, 'WARNING',  __file__, 21))
-        self.assertEqual(handler.msgs[5], ('error', 'front', 40, 'ERROR',    __file__, 22))
-        self.assertEqual(handler.msgs[6], ('fatal', 'front', 50, 'CRITICAL', __file__, 23))
-        self.assertEqual(handler.msgs[7], ('log',   'front', 20, 'INFO',     __file__, 24))
+        self.assertEqual(len(handler.msgs), 9)
+        self.assertEqual(handler.msgs[0], ('trace',                    'front',  5, 'TRACE',    __file__, 17))
+        self.assertEqual(handler.msgs[1], ('debug',                    'front', 10, 'DEBUG',    __file__, 18))
+        self.assertEqual(handler.msgs[2], ('info',                     'front', 20, 'INFO',     __file__, 19))
+        self.assertEqual(handler.msgs[3], ('note',                     'front', 25, 'NOTE',     __file__, 20))
+        self.assertEqual(handler.msgs[4], ('warn',                     'front', 30, 'WARNING',  __file__, 21))
+        self.assertEqual(handler.msgs[5], ('error',                    'front', 40, 'ERROR',    __file__, 22))
+        self.assertEqual(handler.msgs[6], ('fatal',                    'front', 50, 'CRITICAL', __file__, 23))
+        self.assertEqual(handler.msgs[7], ('log 33 test',              'front', 20, 'INFO',     __file__, 24))
+        self.assertEqual(handler.msgs[8], ('level must be a Loglevel', 'front', 40, 'ERROR',    __file__, 28))
 
     def test_manual_spawn(self):
+        trace_fn = sys.gettrace()
+        def run_frontend(sim):
+            if trace_fn is not None:
+                sys.settrace(trace_fn)
+            NullFrontend().run(sim)
+        def start_backend(sim):
+            if trace_fn is not None:
+                sys.settrace(trace_fn)
+            NullBackend().start(sim).wait()
         sim = Simulator(
-            lambda sim: NullFrontend().run(sim),
-            lambda sim: NullBackend().run(sim),
+            run_frontend, start_backend,
             repro=None, stderr_verbosity=Loglevel.OFF
         )
         sim.simulate()

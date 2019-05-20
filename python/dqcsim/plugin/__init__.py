@@ -61,14 +61,14 @@ class JoinHandle(object):
     """Returned by `Plugin.start()` to allow waiting for completion."""
     def __init__(self, handle):
         super().__init__()
-        if raw.dqcs_handle_type(handle) != raw.DQCS_HTYPE_PLUGIN_JOIN:
+        if raw.dqcs_handle_type(int(handle)) != raw.DQCS_HTYPE_PLUGIN_JOIN:
             raise TypeError("Specified handle is not a JoinHandle")
         self._handle = handle
 
     def wait(self):
         """Waits for the associated plugin to finish executing."""
         if self._handle:
-            raw.dqcs_plugin_wait(self._handle)
+            raw.dqcs_plugin_wait(int(self._handle))
             self._handle.take()
 
 class plugin(object):
@@ -158,20 +158,26 @@ class Plugin(object):
                         "cannot auto-detect interface and operation ID for arb "
                         "handler {}(), please pass the '{}_arb_ifaces' argument "
                         "to __init__() to specify the supported interfaces manually"
-                        "".format(mem, source)
-                    )
+                        "".format(mem, source))
                 elif len(s) < 4:
                     continue
                 ifaces.add(s[2])
             self._arb_interfaces[source] = ifaces
 
-    def _parse_argv(self):
-        """Parses argv to get the simulator address."""
-        if len(sys.argv) != 2:
-            print("Usage: [python3] <script> <simulator-address>", file=sys.stderr)
-            print("Note: you should be calling this Python script with DQCsim!", file=sys.stderr)
-            sys.exit(1)
-        return sys.argv[1]
+    def _check_run(self, simulator):
+        """Checks that the plugin is ready to be started and figures out the
+        simulator address."""
+        if not hasattr(self, '_state_handle'):
+            raise RuntimeError("It looks like you've overridden __init__ and forgot to call super().__init__(). Please fix!")
+        if self._started:
+            raise RuntimeError("Plugin has been started before. Make a new instance!")
+        if simulator is None:
+            if len(sys.argv) != 2:
+                print("Usage: [python3] <script> <simulator-address>", file=sys.stderr)
+                print("Note: you should be calling this Python script with DQCsim!", file=sys.stderr)
+                sys.exit(1)
+            simulator = sys.argv[1]
+        return simulator
 
     def run(self, simulator=None):
         """Instantiates and runs the plugin.
@@ -180,15 +186,10 @@ class Plugin(object):
         when initializing. It is usually passed as the first argument to the
         plugin process; therefore, if it is not specified, it is taken directly
         from sys.argv."""
-        if not hasattr(self, '_state_handle'):
-            raise RuntimeError("It looks like you've overwritten __init__ and forgot to call super().__init__(). Please fix!")
-        if self._started:
-            raise RuntimeError("Plugin has been started before. Make a new instance!")
-        if simulator is None:
-            simulator = self._parse_argv()
+        simulator = self._check_run(simulator)
         with self._to_pdef() as pdef:
+            self._started = True
             raw.dqcs_plugin_run(pdef, simulator)
-        self._started = True
 
     def start(self, simulator=None):
         """Instantiates and starts the plugin.
@@ -202,12 +203,7 @@ class Plugin(object):
 
         Note that the JoinHandle can NOT be transferred to a different
         thread!"""
-        if not hasattr(self, '_state_handle'):
-            raise RuntimeError("It looks like you've overwritten __init__ and forgot to call super().__init__(). Please fix!")
-        if self._started:
-            raise RuntimeError("Plugin has been started before. Make a new instance!")
-        if simulator is None:
-            simulator = self._parse_argv()
+        simulator = self._check_run(simulator)
         with self._to_pdef() as pdef:
             handle = Handle(raw.dqcs_plugin_start(pdef, simulator))
         self._started = True
@@ -292,21 +288,16 @@ class Plugin(object):
         """Convenience function for logging warning messages. See `log()`."""
         self._log(Loglevel.WARN, msg, *args, **kwargs)
 
-    def warning(self, msg, *args, **kwargs):
-        """Convenience function for logging warning messages. See `log()`."""
-        self._log(Loglevel.WARN, msg, *args, **kwargs)
-
     def error(self, msg, *args, **kwargs):
         """Convenience function for logging error messages. See `log()`."""
         self._log(Loglevel.ERROR, msg, *args, **kwargs)
 
-    def critical(self, msg, *args, **kwargs):
-        """Convenience function for logging fatal messages. See `log()`."""
-        self._log(Loglevel.FATAL, msg, *args, **kwargs)
-
     def fatal(self, msg, *args, **kwargs):
         """Convenience function for logging fatal messages. See `log()`."""
         self._log(Loglevel.FATAL, msg, *args, **kwargs)
+
+    warning = warn
+    critical = fatal
 
     #==========================================================================
     # Callback helpers
@@ -326,7 +317,7 @@ class Plugin(object):
                 sys.settrace(self._trace_fn) # no_kcoverage
                 return router_fn(*args, **kwargs) # no_kcoverage
             return traced_router_fn
-        return router_fn
+        return router_fn # no_kcoverage
 
     def _cb(self, state_handle, name, *args, **kwargs):
         """This function is used to call into the Python callbacks specified by
@@ -385,7 +376,7 @@ class Plugin(object):
             result = self._cb(state_handle,
                 'handle_{}_{}_{}'.format(source, cmd.iface, cmd.oper),
                 *cmd._args, **cmd._json
-            )
+            ) #@
             if result is None:
                 result = ArbData()
             elif not isinstance(result, ArbData):
@@ -415,7 +406,7 @@ class Plugin(object):
             self._cb(None, 'get_name'),
             self._cb(None, 'get_author'),
             self._cb(None, 'get_version')
-        ))
+        )) #@
         with pdef as pd:
             raw.dqcs_pdef_set_initialize_cb_pyfun(pd, self._cbent('initialize'))
             raw.dqcs_pdef_set_drop_cb_pyfun(pd, self._cbent('drop'))
