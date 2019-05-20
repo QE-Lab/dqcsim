@@ -68,6 +68,7 @@ humantime = "1.2"
 rand = "0.6"
 rand_chacha = "0.1"
 num-complex = "0.2"
+is_executable = "0.1"
 structopt = { version = "0.2", optional = true }
 ansi_term = { version = "0.11", optional = true }
 clap = { version = "2.33", optional = true }

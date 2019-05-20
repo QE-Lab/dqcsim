@@ -4,7 +4,7 @@
 use crate::{
     common::{
         channel::SimulatorChannel,
-        error::{err, ErrorKind, Result},
+        error::{err, inv_op, ErrorKind, Result},
         log::{stdio::proxy_stdio, thread::LogThread},
         protocol::{PluginToSimulator, SimulatorToPlugin},
         types::{ArbCmd, PluginType},
@@ -18,6 +18,7 @@ use crate::{
     info, trace, warn,
 };
 use ipc_channel::ipc;
+use is_executable::IsExecutable;
 use std::{process, sync, thread, time};
 
 /// A Plugin running in a child process.
@@ -60,6 +61,20 @@ impl Plugin for PluginProcess {
     fn spawn(&mut self, logger: &LogThread) -> Result<()> {
         // Setup connection channel
         let (server, server_name) = ipc::IpcOneShotServer::new()?;
+
+        // Test if plugin is executable
+        if !self
+            .configuration
+            .specification
+            .executable
+            .as_path()
+            .is_executable()
+        {
+            return inv_op(format!(
+                "{} is not exectuable",
+                self.configuration.specification.executable.display()
+            ));
+        }
 
         // Construct the child process
         let mut command = process::Command::new(&self.configuration.specification.executable);
@@ -184,67 +199,73 @@ impl Drop for PluginProcess {
     fn drop(&mut self) {
         trace!("Dropping PluginProcess");
 
-        if self
-            .child
-            .as_mut()
-            .expect("Child process")
-            .try_wait()
-            .expect("PluginProcess failed")
-            .is_none()
-        {
-            trace!(
-                "Aborting PluginProcess (timeout: {:?})",
-                self.configuration.nonfunctional.shutdown_timeout
-            );
-            self.channel
-                .as_ref()
-                .unwrap()
-                .0
-                .send(SimulatorToPlugin::Abort)
-                .expect("Failed to abort PluginProcess");
+        if self.child.is_none() {
+            trace!("PluginProcess has no child process handle");
+        } else {
+            if self
+                .child
+                .as_mut()
+                .expect("Child process")
+                .try_wait()
+                .expect("PluginProcess failed")
+                .is_none()
+            {
+                trace!(
+                    "Aborting PluginProcess (timeout: {:?})",
+                    self.configuration.nonfunctional.shutdown_timeout
+                );
+                self.channel
+                    .as_ref()
+                    .unwrap()
+                    .0
+                    .send(SimulatorToPlugin::Abort)
+                    .expect("Failed to abort PluginProcess");
 
-            if let Timeout::Duration(duration) = self.configuration.nonfunctional.shutdown_timeout {
-                let now = time::Instant::now();
-                loop {
-                    if now.elapsed() < duration {
-                        match self.channel.as_ref().unwrap().1.try_recv() {
-                            Ok(PluginToSimulator::Success) => break,
-                            Ok(_) | Err(_) => {
-                                std::thread::sleep(std::time::Duration::from_millis(10));
+                if let Timeout::Duration(duration) =
+                    self.configuration.nonfunctional.shutdown_timeout
+                {
+                    let now = time::Instant::now();
+                    loop {
+                        if now.elapsed() < duration {
+                            match self.channel.as_ref().unwrap().1.try_recv() {
+                                Ok(PluginToSimulator::Success) => break,
+                                Ok(_) | Err(_) => {
+                                    std::thread::sleep(std::time::Duration::from_millis(10));
+                                }
                             }
+                        } else {
+                            // At this point we're going to kill.
+                            trace!("Killing PluginProcess");
+                            self.child
+                                .as_mut()
+                                .unwrap()
+                                .kill()
+                                .expect("Failed to kill PluginProcess");
+                            break;
                         }
-                    } else {
-                        // At this point we're going to kill.
-                        trace!("Killing PluginProcess");
-                        self.child
-                            .as_mut()
-                            .unwrap()
-                            .kill()
-                            .expect("Failed to kill PluginProcess");
-                        break;
                     }
                 }
             }
-        }
 
-        // At this point the process should be shutting down or already down.
-        let status = self
-            .child
-            .as_mut()
-            .unwrap()
-            .wait()
-            .expect("Failed to get exit status");
+            // At this point the process should be shutting down or already down.
+            let status = self
+                .child
+                .as_mut()
+                .unwrap()
+                .wait()
+                .expect("Failed to get exit status");
 
-        match status.code() {
-            Some(code) => {
-                let msg = format!("PluginProcess exited with status code: {}", code);
-                if code > 0 {
-                    warn!("{}", msg)
-                } else {
-                    info!("{}", msg)
+            match status.code() {
+                Some(code) => {
+                    let msg = format!("PluginProcess exited with status code: {}", code);
+                    if code > 0 {
+                        warn!("{}", msg)
+                    } else {
+                        info!("{}", msg)
+                    }
                 }
+                None => warn!("PluginProcess terminated by signal"),
             }
-            None => warn!("PluginProcess terminated by signal"),
         }
     }
 }

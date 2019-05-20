@@ -9,7 +9,7 @@ use crate::{
         protocol::{FrontendRunRequest, PluginToSimulator},
         types::{ArbCmd, ArbData, PluginMetadata},
     },
-    debug, error,
+    debug, error, fatal,
     host::{
         accelerator::Accelerator,
         configuration::Seed,
@@ -147,11 +147,14 @@ impl Simulation {
         }
 
         // Spawn the plugins.
-        let (_, errors): (_, Vec<_>) = pipeline
+        let (_, errors): (_, Vec<Result<()>>) = pipeline
             .iter_mut()
             .map(|plugin| plugin.spawn(logger))
             .partition(Result::is_ok);
         if !errors.is_empty() {
+            for error in errors {
+                fatal!("{}", error.as_ref().unwrap_err());
+            }
             err("Failed to spawn plugin(s)")?
         }
 
