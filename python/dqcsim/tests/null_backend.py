@@ -4,6 +4,9 @@ import os
 
 @plugin("Null backend plugin", "Test", "0.1")
 class NullBackend(Backend):
+    def handle_drop(self):
+        self.trace('null backend dropped!')
+
     def handle_unitary_gate(self, targets, matrix):
         pass
 

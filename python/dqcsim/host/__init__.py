@@ -5,6 +5,7 @@ from dqcsim.common import *
 from dqcsim.plugin import *
 import sys
 import os
+import zlib
 
 class Simulator(object):
     """Represents a DQCsim simulator managed by Python.
@@ -189,7 +190,7 @@ class Simulator(object):
                 raise TypeError("tee file value must be a Loglevel")
 
         if kwargs:
-            raise TypeError("unexpected keyword argument {!r}".format(next(kwargs.keys())))
+            raise TypeError("unexpected keyword argument {!r}".format(next(iter(kwargs.keys()))))
 
         # Add the plugins.
         if args:
@@ -322,7 +323,7 @@ class Simulator(object):
                     for cmd in init:
                         cmd = cmd._to_raw()
                         with cmd as c:
-                            dqcs_pcfg_init_cmd(p, c)
+                            raw.dqcs_pcfg_init_cmd(p, c)
 
                     # Logging.
                     raw.dqcs_pcfg_verbosity_set(p, int(verbosity))
@@ -371,7 +372,7 @@ class Simulator(object):
                     for cmd in init:
                         cmd = cmd._to_raw()
                         with cmd as c:
-                            dqcs_tcfg_init_cmd(t, c)
+                            raw.dqcs_tcfg_init_cmd(t, c)
 
                     # Logging.
                     raw.dqcs_tcfg_verbosity_set(t, int(verbosity))
@@ -570,11 +571,11 @@ class Simulator(object):
 
         `seed` optionally specifies the random seed used for the simulation.
         An `int` argument between `0` and `2^64-1` inclusive specifies the
-        seed directly. For other types `hash()` is used to get a number, which
-        is then cast to a 64-bit unsigned integer by modulo. If `None` is
-        specified or the argument is omitted, DQCsim will randomize the seed
-        based on the most accurate timestamp the operating system is capable
-        of providing.
+        seed directly. For other types `zlib.adler32(str(...).encode('utf-8'))`
+        is applied to get a number, which is then cast to a 32-bit unsigned
+        number. If `None` is specified or the argument is omitted, DQCsim will
+        randomize the seed based on the highest resolution timestamp the
+        operating system is capable of providing.
         """
         if self._sim_handle is not None:
             raise RuntimeError("Cannot run multiple simulations at once")
@@ -590,9 +591,9 @@ class Simulator(object):
             # Configure the seed.
             if seed is not None:
                 if isinstance(seed, int) and seed >= 0 and seed <= 0xFFFFFFFFFFFFFFFF:
-                    raw.dqcs_scfg_seed_set(seed)
+                    raw.dqcs_scfg_seed_set(scfg, seed)
                 else:
-                    raw.dqcs_scfg_seed_set(scfg, hash(seed) % 0x10000000000000000)
+                    raw.dqcs_scfg_seed_set(scfg, zlib.adler32(str(seed).encode('utf-8')) & 0xFFFFFFFF)
 
             # Configure reproduction file logging.
             if self._repro is None:

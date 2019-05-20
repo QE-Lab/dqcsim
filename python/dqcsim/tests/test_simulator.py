@@ -1,12 +1,14 @@
-import unittest
+import unittest, logging, os, sys, tempfile
 from dqcsim.common import *
 from dqcsim.host import *
 from dqcsim.plugin import *
-import logging
-import os, sys
 
 @plugin("Null frontend plugin", "Test", "0.1")
 class NullFrontend(Frontend):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.arbs_received = []
+
     def handle_run(self, *args, **kwargs):
         self.send(self.recv())
 
@@ -21,6 +23,15 @@ class NullFrontend(Frontend):
         self.fatal('fatal')
         self.log(Loglevel.INFO, 'log')
         self.info('__end__')
+
+    def handle_host_x_y(self, *args, **kwargs):
+        self.arbs_received.append({'iface': 'x', 'oper': 'y', 'args': args, 'kwargs': kwargs})
+
+    def handle_host_y_z(self, *args, **kwargs):
+        self.arbs_received.append({'iface': 'y', 'oper': 'z', 'args': args, 'kwargs': kwargs})
+
+    def handle_host_get_arbs(self):
+        return ArbData(data=self.arbs_received)
 
 @plugin("Null operator plugin", "Test", "0.1")
 class NullOperator(Operator):
@@ -117,28 +128,28 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(msgs), 8)
         self.assertEqual(msgs[0], (
             'trace', 'front', Loglevel.TRACE,
-            'dqcsim.tests.test_simulator', __file__, 15))
+            'dqcsim.tests.test_simulator', __file__, 17))
         self.assertEqual(msgs[1], (
             'debug', 'front', Loglevel.DEBUG,
-            'dqcsim.tests.test_simulator', __file__, 16))
+            'dqcsim.tests.test_simulator', __file__, 18))
         self.assertEqual(msgs[2], (
             'info', 'front', Loglevel.INFO,
-            'dqcsim.tests.test_simulator', __file__, 17))
+            'dqcsim.tests.test_simulator', __file__, 19))
         self.assertEqual(msgs[3], (
             'note', 'front', Loglevel.NOTE,
-            'dqcsim.tests.test_simulator', __file__, 18))
+            'dqcsim.tests.test_simulator', __file__, 20))
         self.assertEqual(msgs[4], (
             'warn', 'front', Loglevel.WARN,
-            'dqcsim.tests.test_simulator', __file__, 19))
+            'dqcsim.tests.test_simulator', __file__, 21))
         self.assertEqual(msgs[5], (
             'error', 'front', Loglevel.ERROR,
-            'dqcsim.tests.test_simulator', __file__, 20))
+            'dqcsim.tests.test_simulator', __file__, 22))
         self.assertEqual(msgs[6], (
             'fatal', 'front', Loglevel.FATAL,
-            'dqcsim.tests.test_simulator', __file__, 21))
+            'dqcsim.tests.test_simulator', __file__, 23))
         self.assertEqual(msgs[7], (
             'log', 'front', Loglevel.INFO,
-            'dqcsim.tests.test_simulator', __file__, 22))
+            'dqcsim.tests.test_simulator', __file__, 24))
 
     def test_log_capture_logging(self):
         class Handler(logging.Handler):
@@ -169,14 +180,14 @@ class Tests(unittest.TestCase):
         sim.arb('front', 'log', 'test')
         sim.stop()
         self.assertEqual(len(handler.msgs), 8)
-        self.assertEqual(handler.msgs[0], ('trace', 'front',  5, 'TRACE',    __file__, 15))
-        self.assertEqual(handler.msgs[1], ('debug', 'front', 10, 'DEBUG',    __file__, 16))
-        self.assertEqual(handler.msgs[2], ('info',  'front', 20, 'INFO',     __file__, 17))
-        self.assertEqual(handler.msgs[3], ('note',  'front', 25, 'NOTE',     __file__, 18))
-        self.assertEqual(handler.msgs[4], ('warn',  'front', 30, 'WARNING',  __file__, 19))
-        self.assertEqual(handler.msgs[5], ('error', 'front', 40, 'ERROR',    __file__, 20))
-        self.assertEqual(handler.msgs[6], ('fatal', 'front', 50, 'CRITICAL', __file__, 21))
-        self.assertEqual(handler.msgs[7], ('log',   'front', 20, 'INFO',     __file__, 22))
+        self.assertEqual(handler.msgs[0], ('trace', 'front',  5, 'TRACE',    __file__, 17))
+        self.assertEqual(handler.msgs[1], ('debug', 'front', 10, 'DEBUG',    __file__, 18))
+        self.assertEqual(handler.msgs[2], ('info',  'front', 20, 'INFO',     __file__, 19))
+        self.assertEqual(handler.msgs[3], ('note',  'front', 25, 'NOTE',     __file__, 20))
+        self.assertEqual(handler.msgs[4], ('warn',  'front', 30, 'WARNING',  __file__, 21))
+        self.assertEqual(handler.msgs[5], ('error', 'front', 40, 'ERROR',    __file__, 22))
+        self.assertEqual(handler.msgs[6], ('fatal', 'front', 50, 'CRITICAL', __file__, 23))
+        self.assertEqual(handler.msgs[7], ('log',   'front', 20, 'INFO',     __file__, 24))
 
     def test_manual_spawn(self):
         sim = Simulator(
@@ -190,6 +201,157 @@ class Tests(unittest.TestCase):
         sim.wait()
         sim.recv()
         sim.stop()
+
+    def test_late_specification(self):
+        sim = Simulator(repro=None, stderr_verbosity=Loglevel.OFF)
+        with self.assertRaisesRegex(RuntimeError, "Frontend plugin was never specified"):
+            sim.simulate()
+
+        sim.with_frontend(NullFrontend())
+        sim.with_backend(NullBackend())
+        sim.simulate()
+        sim.stop()
+
+        sim.with_operator(NullOperator())
+        sim.simulate()
+
+        with self.assertRaisesRegex(RuntimeError, 'Cannot reconfigure simulation while it is running'):
+            sim.with_operator(NullOperator())
+        sim.stop()
+
+        with self.assertRaises(TypeError):
+            sim.with_operator(NullFrontend())
+
+    def test_init_arbs(self):
+        sim = Simulator(
+            (NullFrontend(), {'init': ArbCmd('x', 'y')}), NullOperator(), NullBackend(),
+            repro=None, stderr_verbosity=Loglevel.OFF
+        )
+        sim.simulate()
+        self.assertEqual(sim.arb('front', 'get', 'arbs')['data'], [
+            {'iface': 'x', 'oper': 'y', 'args': [], 'kwargs': {}},
+        ])
+        sim.stop()
+
+        sim = Simulator(
+            (NullFrontend(), {'init': [
+                ArbCmd('x', 'y', b'a'), ArbCmd('y', 'z', b'b')
+            ]}), NullOperator(), NullBackend(),
+            repro=None, stderr_verbosity=Loglevel.OFF
+        )
+        sim.simulate()
+        self.assertEqual(sim.arb('front', 'get', 'arbs')['data'], [
+            {'iface': 'x', 'oper': 'y', 'args': [b'a'], 'kwargs': {}},
+            {'iface': 'y', 'oper': 'z', 'args': [b'b'], 'kwargs': {}},
+        ])
+        sim.stop()
+
+    def test_tee(self):
+        with tempfile.TemporaryDirectory() as base:
+            sim = Simulator(
+                (NullFrontend(), {'tee': {
+                    base+'/front.log': Loglevel.TRACE,
+                }}),
+                (NullBackend(), {'tee': {
+                    base+'/back.log': Loglevel.TRACE,
+                }}),
+                tee={base+'/sim.log': Loglevel.TRACE},
+                repro=None, stderr_verbosity=Loglevel.OFF
+            )
+            sim.simulate()
+            sim.stop()
+
+            with open(base+'/front.log', 'r') as f:
+                f = f.read()
+                self.assertTrue('Trace' in f)
+
+            with open(base+'/back.log', 'r') as f:
+                f = f.read()
+                self.assertTrue('Trace' in f)
+
+            with open(base+'/sim.log', 'r') as f:
+                f = f.read()
+                self.assertTrue('Trace' in f)
+
+    def test_seed(self):
+        with tempfile.TemporaryDirectory() as base:
+            sim = Simulator(
+                NullFrontend(), NullBackend(),
+                tee={base+'/sim.log': Loglevel.INFO},
+                repro=None, stderr_verbosity=Loglevel.OFF
+            )
+            sim.simulate(33)
+            sim.stop()
+            with open(base+'/sim.log', 'r') as f:
+                f = f.read()
+                self.assertTrue('seed: 33\n' in f)
+
+        with tempfile.TemporaryDirectory() as base:
+            sim = Simulator(
+                NullFrontend(), NullBackend(),
+                tee={base+'/sim.log': Loglevel.INFO},
+                repro=None, stderr_verbosity=Loglevel.OFF
+            )
+            sim.simulate(123456789012345678901234567890)
+            sim.stop()
+            with open(base+'/sim.log', 'r') as f:
+                f = f.read()
+                self.assertTrue('seed: 1594492456\n' in f)
+
+        with tempfile.TemporaryDirectory() as base:
+            sim = Simulator(
+                NullFrontend(), NullBackend(),
+                tee={base+'/sim.log': Loglevel.INFO},
+                repro=None, stderr_verbosity=Loglevel.OFF
+            )
+            sim.simulate('test')
+            sim.stop()
+            with open(base+'/sim.log', 'r') as f:
+                f = f.read()
+                self.assertTrue('seed: 73204161\n' in f)
+
+    def test_usage_errors(self):
+        with self.assertRaisesRegex(TypeError, "repro must be 'keep', 'absolute', 'relative', or None"):
+            Simulator(repro='invalid')
+        with self.assertRaisesRegex(TypeError, "dqcsim_verbosity must be a Loglevel"):
+            Simulator(dqcsim_verbosity='invalid')
+        with self.assertRaisesRegex(TypeError, "stderr_verbosity must be a Loglevel"):
+            Simulator(stderr_verbosity='invalid')
+        with self.assertRaisesRegex(TypeError, "log_capture must be callable or a string identifying a logger from the logging library"):
+            Simulator(log_capture=33)
+        with self.assertRaisesRegex(TypeError, "log_capture_verbosity must be a Loglevel"):
+            Simulator(log_capture_verbosity='invalid')
+        with self.assertRaises(ValueError):
+            Simulator(tee='invalid')
+        with self.assertRaisesRegex(TypeError, "tee file key must be a string"):
+            Simulator(tee={3: Loglevel.TRACE})
+        with self.assertRaisesRegex(TypeError, "tee file value must be a Loglevel"):
+            Simulator(tee={'string': 3})
+        with self.assertRaisesRegex(TypeError, "unexpected keyword argument 'invalid'"):
+            Simulator(invalid=3)
+        with self.assertRaisesRegex(TypeError, "init must be a single ArbCmd or a list/tuple of ArbCmds"):
+            Simulator((Frontend(), {'init': 'invalid'}))
+        with self.assertRaisesRegex(TypeError, "verbosity must be a Loglevel"):
+            Simulator((Frontend(), {'verbosity': 'invalid'}))
+        with self.assertRaises(ValueError):
+            Simulator((Frontend(), {'tee': 'invalid'}))
+        with self.assertRaisesRegex(TypeError, "tee file key must be a string"):
+            Simulator((Frontend(), {'tee': {3: Loglevel.TRACE}}))
+        with self.assertRaisesRegex(TypeError, "tee file value must be a Loglevel"):
+            Simulator((Frontend(), {'tee': {'string': 3}}))
+        with self.assertRaises(ValueError):
+            Simulator(('null', {'env': 'invalid'}))
+        with self.assertRaisesRegex(TypeError, "environment variable key must be a string"):
+            Simulator(('null', {'env': {3: None}}))
+        with self.assertRaisesRegex(TypeError, "environment variable value must be a string or None"):
+            Simulator(('null', {'env': {'test': 3}}))
+        with self.assertRaisesRegex(TypeError, "stderr must be a Loglevel or None"):
+            Simulator(('null', {'stderr': 3}))
+        with self.assertRaisesRegex(TypeError, "stdout must be a Loglevel or None"):
+            Simulator(('null', {'stdout': 3}))
+        with self.assertRaisesRegex(TypeError, "unexpected keyword argument 'invalid'"):
+            Simulator(('null', {'invalid': 3}))
+
 
 if __name__ == '__main__':
     unittest.main()
