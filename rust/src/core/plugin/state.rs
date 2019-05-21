@@ -639,6 +639,13 @@ impl<'a> PluginState<'a> {
                             }
                         }
                     });
+
+                    // Before we return control back to the host, make sure
+                    // that the gatestream is synchronized (#90). If we don't
+                    // do this, ArbCmds sent to downstream plugins by the host
+                    // may not be properly synchronized.
+                    self.synchronize_downstream()?;
+
                     self.connection.send(response)?;
                 }
                 IncomingMessage::Upstream(GatestreamDown::Pipelined(sequence, message)) => {
@@ -846,8 +853,14 @@ impl<'a> PluginState<'a> {
             inv_op("recv() can only be called from inside the run() callback")?;
         }
         while self.host_to_frontend_data.is_empty() {
-            // We need to yield to the host! Send the RunResponse message now.
-            // Don't forget to drain the messages queued up by send().
+            // We need to yield to the host! Before we do that though, make
+            // sure that the gatestream is synchronized (#90). If we don't,
+            // ArbCmds sent to downstream plugins by the host may not be
+            // properly synchronized.
+            self.synchronize_downstream()?;
+
+            // Send the RunResponse message now. Don't forget to drain the
+            // messages queued up by send().
             self.connection
                 .send(OutgoingMessage::Simulator(PluginToSimulator::RunResponse(
                     FrontendRunResponse {
