@@ -1,20 +1,6 @@
 steps:
 
-- script: |
-    python setup.py bdist_wheel
-  env:
-    DQCSIM_DEBUG: ''
-  displayName: Wheel
-
-- script: |
-    sudo -H pip install target/python/dist/*.whl
-  displayName: Install wheel
-
-- script: |
-    mkdir build
-    cd build
-    cmake ../cpp
-  displayName: CMake
+- task: CMake@1
 
 - script: |
     make -j
