@@ -514,7 +514,7 @@ class GateStreamSource(Plugin):
             0.0, 0.0, 1.0, 0.0,
             0.0, 1.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 1.0,
-        ])
+        ]) #@
 
     def sqswap_gate(self, a, b):
         """Instructs the downstream plugin to execute a square-root-of-swap
@@ -526,7 +526,7 @@ class GateStreamSource(Plugin):
             0.0, 0.5+0.5j, 0.5-0.5j, 0.0,
             0.0, 0.5-0.5j, 0.5+0.5j, 0.0,
             0.0, 0.0,      0.0,      1.0,
-        ])
+        ]) #@
 
     def x_gate(self, target):
         """Instructs the downstream plugin to execute an X gate.
@@ -610,38 +610,26 @@ class GateStreamSource(Plugin):
 
     def cnot_gate(self, control, target):
         """Instructs the downstream plugin to execute a CNOT gate."""
-        self.unitary([control, target], [
-            1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 1.0,
-            0.0, 0.0, 1.0, 0.0,
-        ])
+        self.unitary([target], [
+            0.0, 1.0,
+            1.0, 0.0,
+        ], controls=[control]) #@
 
     def toffoli_gate(self, c1, c2, target):
         """Instructs the downstream plugin to execute a Toffoli gate."""
-        self.unitary([c1, c2, target], [
-            1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
-        ])
+        self.unitary([target], [
+            0.0, 1.0,
+            1.0, 0.0,
+        ], controls=[c1, c2]) #@
 
     def fredkin_gate(self, control, a, b):
         """Instructs the downstream plugin to execute a Fredkin gate."""
-        self.unitary([control, a, b], [
-            1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
-        ])
+        self.unitary([a, b], [
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ], controls=[control]) #@
 
     def measure(self, *qubits):
         """Instructs the downstream plugin to measure the given qubits in the
@@ -1276,6 +1264,7 @@ class Backend(Plugin):
                 if controls:
                     try:
                         self._cb(state_handle, 'handle_controlled_gate', targets, controls, matrix)
+                        return MeasurementSet._to_raw([]).take()
                     except NotImplementedError:
                         pass
 

@@ -547,7 +547,7 @@ impl<'a> PluginState<'a> {
                 error!("Error from downstream plugin: {}", message);
                 debug!("The sequence number was {}", sequence);
                 fatal!("Desynchronized with downstream plugin due to downstream error, cannot continue!");
-                err("simulation failed due to downstream error")?;
+                err(format!("simulation failed due to downstream error: {}", message))?;
             }
             GatestreamUp::Measured(measurement) => {
                 trace!(
