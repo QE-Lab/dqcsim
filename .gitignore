@@ -16,3 +16,6 @@ MANIFEST
 *.pyc
 *.so
 cover/
+
+# Tools
+release.sh
