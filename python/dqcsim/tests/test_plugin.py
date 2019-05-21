@@ -103,9 +103,11 @@ class Tests(unittest.TestCase):
             def handle_run(self, *args, **kwargs):
                 pass
             def handle_host_test_random(self):
+                def check_u64(x):
+                    return type(x) == int and x >= 0 and x <= 0xFFFFFFFFFFFFFFFF
                 return ArbData(
                     f64=[self.random_float() for _ in range(100)],
-                    u64=[self.random_long() for _ in range(100)])
+                    u64=list(map(check_u64, (self.random_long() for _ in range(100)))))
         fe = TestFrontend()
         with self.assertRaisesRegex(RuntimeError, "Cannot call plugin operator outside of a callback"):
             fe.random_float()
@@ -124,10 +126,7 @@ class Tests(unittest.TestCase):
             self.assertTrue(f64 >= 0.0)
             self.assertTrue(f64 < 1.0)
         for u64 in x['u64']:
-            print(u64, file=sys.stderr)
-            self.assertEqual(type(u64), int)
-            self.assertTrue(u64 >= 0)
-            self.assertTrue(u64 <= 0xFFFFFFFFFFFFFFFF)
+            self.assertTrue(u64)
 
 
 if __name__ == '__main__':
