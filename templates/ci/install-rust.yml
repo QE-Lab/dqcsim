@@ -1,0 +1,16 @@
+parameters:
+  rust: stable
+  components: False
+
+steps:
+
+- script: |
+    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${{ parameters.rust }}
+    echo "##vso[task.prependpath]$HOME/.cargo/bin"
+  displayName: Use Rust ${{ parameters.rust }}
+
+- script: |
+    rustup component add clippy rustfmt --toolchain=${{ parameters.rust }}
+  condition: eq(${{ parameters.components }}, True)
+  displayName: Add Rust components
+

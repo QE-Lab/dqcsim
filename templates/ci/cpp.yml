@@ -1,0 +1,13 @@
+steps:
+
+- script: |
+    cmake .
+  displayName: CMake
+
+- script: |
+    make -j
+  displayName: Build
+
+- script: |
+    make test
+  displayName: Test

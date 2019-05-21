@@ -1,12 +1,11 @@
 sudo: false
 
 matrix:
-  fast_finish: true
-  allow_failures:
-    - rust: nightly
   include:
-    - &rust-job
+    - name: Docs
       os: linux
+      dist: xenial
+      sudo: true
       language: rust
       rust: stable
       cache:
@@ -14,72 +13,16 @@ matrix:
           - $HOME/.cargo
       before_cache:
         - rm -rf $HOME/.cargo/registry
-      install:
-        - rustup component add clippy --toolchain="$TRAVIS_RUST_VERSION" || cargo install --git https://github.com/rust-lang/rust-clippy/ --force clippy
-        - rustup component add rustfmt
-      script:
-        - cargo fmt -- --check
-        - cargo clippy --all-targets --all-features -- -Dwarnings
-        - cargo build --all-targets --all-features
-        - cargo test --all-targets
-    - <<: *rust-job
-      os: osx
-    - <<: *rust-job
-      rust: nightly
-    - <<: *rust-job
-      os: osx
-      rust: nightly
-  
-    - &python-job
-      os: linux
-      dist: xenial
-      language: python
-      python: "3.5"
-      sudo: true
-      cache: pip
-      env:
-        - DQCSIM_DEBUG=""
-      install:
-        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && source $HOME/.cargo/env
-        - curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
-        - unzip -qq swig.zip
-        - cd swig-rel-3.0.12
-        - ./autogen.sh
-        - ./configure --without-pcre
-        - make
-        - sudo make install
-        - cd ..
-      script:
-        - python setup.py build test bdist_wheel
-    - <<: *python-job
-      python: "3.6"
-    - <<: *python-job
-      python: "3.7"
-
-    - <<: *rust-job
-      name: "Docs"
-      dist: xenial
-      sudo: true
       addons:
         apt:
           packages:
             - python3-pip
-            # swig
-            - autogen
-            - automake
-            - autoconf
-            - byacc
       env:
         - DQCSIM_DEBUG=""
       install:
-        - curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
-        - unzip -qq swig.zip
-        - cd swig-rel-3.0.12
-        - ./autogen.sh
-        - ./configure --without-pcre
-        - make
-        - sudo make install
-        - cd ..
+        - sudo add-apt-repository -y ppa:timsc/swig-3.0.12
+        - sudo apt-get update
+        - sudo apt-get install -y swig
         - mdbook --version || cargo install --debug mdbook --vers "0.2.3"
         - pip3 install setuptools wheel
         - pip3 install pdoc3
@@ -88,7 +31,7 @@ matrix:
         - python3 setup.py bdist_wheel
         - sudo pip3 install target/python/dist/*.whl
       before_deploy:
-        - cd doc && make && mdbook test
+        - cd doc && mdbook build && mdbook test
         - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/doc/book/rust_
         - pdoc3 --html --output-dir $TRAVIS_BUILD_DIR/doc/book/py_ dqcsim
       deploy:
@@ -100,11 +43,13 @@ matrix:
         on:
           branch: master
 
-    - <<: *rust-job
-      name: "Coverage"
+    - &coverage
+      name: Coverage Rust
       os: linux
       dist: xenial
       sudo: true
+      language: rust
+      rust: stable
       cache:
         directories:
           - $HOME/.cargo
@@ -126,12 +71,7 @@ matrix:
             - gcc
             - binutils-dev
             - libiberty-dev
-            # swig
-            - autogen
-            - automake
-            - autoconf
-            - byacc
-      install:
+      before_install:
         - |
           ( kcov --version ||
             (
@@ -145,20 +85,6 @@ matrix:
               cd ..
             )
           ) || echo "Skipping kcov install"
-        - |
-          ( swig --version ||
-            (
-              curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip
-              unzip -qq swig.zip
-              cd swig-rel-3.0.12
-              ./autogen.sh
-              ./configure --without-pcre
-              make -j
-              sudo make install
-              cd ..
-            )
-          ) || echo "Skipping swig install"
-        - pip3 install setuptools wheel
       script:
         - cargo test --all-targets
         - |
@@ -167,28 +93,49 @@ matrix:
             mkdir -p "target/cov/$(basename $file)"; 
             kcov --exclude-pattern=/.cargo,/usr/lib,/tests/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
           done
-        # Python coverage
+      after_success:
+        # Upload to codecov
+        - bash <(curl -s https://codecov.io/bash)
+
+    - <<: *coverage
+      name: Coverage Python
+      install: &python-install
+        - sudo add-apt-repository -y ppa:timsc/swig-3.0.12
+        - sudo apt-get update
+        - sudo apt-get install -y swig
+        - pip3 install setuptools wheel
+      script:
         - python3 setup.py build
         - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-pattern=/tests --exclude-line=no_kcoverage target/cov setup.py test
-        # C++ coverage
-        - python3 setup.py bdist_wheel
-        - sudo pip3 install target/python/dist/*.whl
+
+    - <<: *coverage
+      name: "Coverage C++"
+      script:
         - |
           mkdir build &&
           cd build &&
-          cmake ../cpp &&
+          cmake .. &&
           make -j &&
           cd .. &&
-          for file in `find build/test_* -executable -and -type f`; 
+          for file in `find build/cpp/test_* -executable -and -type f`; 
             do [ -x "${file}" ] || continue;
             mkdir -p "target/cov/$(basename $file)";
             LD_LIBRARY_PATH=target/debug/ kcov --exclude-pattern=/.cargo,/usr,/cpp --verify "target/cov/$(basename $file)" "$file";
           done
-        # Upload to codecov
-        - bash <(curl -s https://codecov.io/bash)
 
-    - name: "Manylinux wheels"
+    - &manylinux-wheels
+      name: Manylinux1 wheels
       language: generic
       os: linux
+      env:
+        MANYLINUX_VERSION: "1"
       script:
-        - ./python/tools/manylinux_wheels.sh
+        - cd python/tools
+        - docker build --build-arg MANYLINUX=$MANYLINUX_VERSION -t dqcsim-py-manylinux -f Dockerfile .
+        - cd ../..
+        - docker run --rm -e DQCSIM_DEBUG= -v `pwd`:/io dqcsim-py-manylinux
+    
+    - <<: *manylinux-wheels
+      name: Manylinux2010 wheels
+      env:
+        MANYLINUX_VERSION: "2010"
