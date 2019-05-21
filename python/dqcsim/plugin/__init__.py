@@ -1086,6 +1086,12 @@ class Operator(GateStreamSource):
         """Routes the measurement callback to user code."""
         measurement = Measurement._from_raw(Handle(measurement_handle))
         measurements = self._cb(state_handle, 'handle_measurement', measurement)
+        if measurements is None:
+            measurements = []
+        elif isinstance(measurements, Measurement):
+            measurements = [measurements]
+        else:
+            measurements = list(measurements)
         return MeasurementSet._to_raw(measurements).take()
 
     def _route_advance(self, state_handle, cycles):
@@ -1116,7 +1122,7 @@ class Operator(GateStreamSource):
             if any(map(lambda name: name.endswith('_gate'), handlers)):
                 raw.dqcs_pdef_set_gate_cb_pyfun(pd, self._cbent('gate'))
             if 'handle_measurement' in handlers:
-                raw.dqcs_pdef_set_measurement_cb_pyfun(pd, self._cbent('measurement'))
+                raw.dqcs_pdef_set_modify_measurement_cb_pyfun(pd, self._cbent('measurement'))
             if 'handle_advance' in handlers:
                 raw.dqcs_pdef_set_advance_cb_pyfun(pd, self._cbent('advance'))
             if any(map(lambda name: name.startswith('handle_upstream_'), handlers)):
