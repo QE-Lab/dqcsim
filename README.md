@@ -4,13 +4,13 @@
 [![Python version](https://badgen.net/badge/python/3.5,3.6,3.7?list=1)](https://pypi.org/project/dqcsim/)
 [![Crates](https://badgen.net/crates/v/dqcsim)](https://crates.io/crates/dqcsim)
 [![Rust version](https://badgen.net/badge/rust/stable)](https://rustup.rs)
-[![Platform support](https://badgen.net/badge/platform/linux,macos?list=1)](https://mbrobbel.github.io/dqcsim-rs/install/index.html)
-[![License](https://badgen.net/badge/license/Apache-2.0)](https://github.com/mbrobbel/dqcsim-rs/blob/master/LICENSE)
+[![Platform support](https://badgen.net/badge/platform/linux,macos?list=1)](https://mbrobbel.github.io/dqcsim/install/index.html)
+[![License](https://badgen.net/badge/license/Apache-2.0)](https://github.com/mbrobbel/dqcsim/blob/master/LICENSE)
 
-[![Docs](https://badgen.net/github/status/mbrobbel/dqcsim-rs/gh-pages?label=documentation)](https://mbrobbel.github.io/dqcsim-rs/)
-[![Azure Pipelines](https://badgen.net/azure-pipelines/mbrobbel/dqcsim/mbrobbel.dqcsim-rs/master?label=azure-pipelines)](https://dev.azure.com/mbrobbel/dqcsim/_build/latest?definitionId=2&branchName=master)
-[![Travis](https://badgen.net/travis/mbrobbel/dqcsim-rs)](https://travis-ci.com/mbrobbel/dqcsim-rs)
-[![Coverage](https://badgen.net/codecov/c/github/mbrobbel/dqcsim-rs)](https://codecov.io/gh/mbrobbel/dqcsim-rs)
+[![Docs](https://badgen.net/github/status/mbrobbel/dqcsim/gh-pages?label=documentation)](https://mbrobbel.github.io/dqcsim/)
+[![Azure Pipelines](https://badgen.net/azure-pipelines/mbrobbel/dqcsim/mbrobbel.dqcsim/master?label=azure-pipelines)](https://dev.azure.com/mbrobbel/dqcsim/_build/latest?definitionId=3&branchName=master)
+[![Travis](https://badgen.net/travis/mbrobbel/dqcsim)](https://travis-ci.com/mbrobbel/dqcsim)
+[![Coverage](https://badgen.net/codecov/c/github/mbrobbel/dqcsim)](https://codecov.io/gh/mbrobbel/dqcsim)
 
 DQCsim, short for Delft Quantum & Classical simulator, is a *framework* that
 can be used to tie *components* of quantum computer simulators together in a
