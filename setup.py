@@ -102,11 +102,11 @@ setup(
     author_email = '',
     description = 'Python bindings for DQCsim',
     license = "Apache-2.0",
-    url = "https://github.com/mbrobbel/dqcsim-rs",
+    url = "https://github.com/mbrobbel/dqcsim",
     project_urls = {
-        "Bug Tracker": "https://github.com/mbrobbel/dqcsim-rs/issues",
-        "Documentation": "https://mbrobbel.github.io/dqcsim-rs/",
-        "Source Code": "https://github.com/mbrobbel/dqcsim-rs/",
+        "Bug Tracker": "https://github.com/mbrobbel/dqcsim/issues",
+        "Documentation": "https://mbrobbel.github.io/dqcsim/",
+        "Source Code": "https://github.com/mbrobbel/dqcsim/",
     },
 
     long_description = read('README.md'),

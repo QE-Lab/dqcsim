@@ -1,20 +1,20 @@
 # DQCsim
 
-[![License](https://badgen.net/badge/license/Apache-2.0/blue)](https://github.com/mbrobbel/dqcsim-rs/blob/master/LICENSE)
-[![Docs](https://badgen.net/badge/docs/%20?color=green)](https://mbrobbel.github.io/dqcsim-rs/)
+[![License](https://badgen.net/badge/license/Apache-2.0/blue)](https://github.com/mbrobbel/dqcsim/blob/master/LICENSE)
+[![Docs](https://badgen.net/badge/docs/%20?color=green)](https://mbrobbel.github.io/dqcsim/)
 [![PyPi](https://img.shields.io/pypi/pyversions/dqcsim.svg)](https://pypi.org/project/dqcsim/)
 [![Crates](https://badgen.net/crates/v/dqcsim)](https://crates.io/crates/dqcsim)
-[![Linux build](https://img.shields.io/drone/build/mbrobbel/dqcsim-rs/master.svg?logo=linux&logoColor=white)](https://cloud.drone.io/mbrobbel/dqcsim-rs)
-[![macOS build](https://img.shields.io/travis/com/mbrobbel/dqcsim-rs/master.svg?label=build&logo=apple&logoColor=white)](https://travis-ci.com/mbrobbel/dqcsim-rs)
-[![Codecov](https://badgen.net/codecov/c/github/mbrobbel/dqcsim-rs)](https://codecov.io/gh/mbrobbel/dqcsim-rs)
-[![Dependencies](https://deps.rs/repo/github/mbrobbel/dqcsim-rs/status.svg)](https://deps.rs/repo/github/mbrobbel/dqcsim-rs)
+[![Linux build](https://img.shields.io/drone/build/mbrobbel/dqcsim/master.svg?logo=linux&logoColor=white)](https://cloud.drone.io/mbrobbel/dqcsim)
+[![macOS build](https://img.shields.io/travis/com/mbrobbel/dqcsim/master.svg?label=build&logo=apple&logoColor=white)](https://travis-ci.com/mbrobbel/dqcsim)
+[![Codecov](https://badgen.net/codecov/c/github/mbrobbel/dqcsim)](https://codecov.io/gh/mbrobbel/dqcsim)
+[![Dependencies](https://deps.rs/repo/github/mbrobbel/dqcsim/status.svg)](https://deps.rs/repo/github/mbrobbel/dqcsim)
 
 
 
 DQCsim, short for Delft Quantum & Classical simulator, is a *framework* that
 can be used to tie *components* of quantum computer simulators together in a
 *standardized* yet *flexible*, *developer-friendly*, and *reproducible* way.
-Click [here](https://mbrobbel.github.io/dqcsim-rs/) for more information!
+Click [here](https://mbrobbel.github.io/dqcsim/) for more information!
 
 ## Installation
 
@@ -31,16 +31,16 @@ that these will also be distributed through pip, with a dependency on
 to get the QX simulator with appropriate DQCsim bindings.
 
 You can find more information
-[here](https://mbrobbel.github.io/dqcsim-rs/install/).
+[here](https://mbrobbel.github.io/dqcsim/install/).
 
 ## Getting started
 
-Read the [documentation](https://mbrobbel.github.io/dqcsim-rs/)!
+Read the [documentation](https://mbrobbel.github.io/dqcsim/)!
 
 ## Reporting bugs
 
 We use github's issue tracker. Click
-[here](https://github.com/mbrobbel/dqcsim-rs/issues/new) to open a new issue.
+[here](https://github.com/mbrobbel/dqcsim/issues/new) to open a new issue.
 
 ## Contributing to DQCsim
 
@@ -49,7 +49,7 @@ contributing is probably more trouble than it's worth.
 
 ### What to contribute?
 
-Check github's [issue tracker](https://github.com/mbrobbel/dqcsim-rs/issues) to
+Check github's [issue tracker](https://github.com/mbrobbel/dqcsim/issues) to
 see what we're working on and what needs to be done.
 
 ### Code style
