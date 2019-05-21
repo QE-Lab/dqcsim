@@ -1290,3 +1290,35 @@ fn host_arb_sync_with_gatestream() {
     println!("after yield: {} ?= 10", gates_executed);
     assert_eq!(gates_executed, 10);
 }
+
+#[test]
+fn plugin_thread_panic() {
+    let (mut frontend, _, backend) = fe_op_be();
+
+    frontend.run = Box::new(|_, _| {
+        panic!("boom");
+    });
+
+    let ptc = |definition| {
+        PluginThreadConfiguration::new(
+            definition,
+            PluginLogConfiguration::new("", LoglevelFilter::Off),
+        )
+    };
+
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(ptc(frontend))
+        .with_plugin(ptc(backend));
+
+    let simulator = Simulator::new(configuration);
+    assert!(simulator.is_ok());
+    let mut simulator = simulator.unwrap();
+
+    let start = simulator.simulation.start(ArbData::default());
+    assert!(start.is_ok());
+
+    let wait = simulator.simulation.wait();
+    assert!(wait.is_err());
+}
