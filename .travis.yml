@@ -110,17 +110,14 @@ matrix:
 
     - <<: *coverage
       name: "Coverage C++"
-      install: *python-install
       script:
-        - python3 setup.py bdist_wheel
-        - sudo pip3 install target/python/dist/*.whl
         - |
           mkdir build &&
           cd build &&
-          cmake ../cpp &&
+          cmake .. &&
           make -j &&
           cd .. &&
-          for file in `find build/test_* -executable -and -type f`; 
+          for file in `find build/cpp/test_* -executable -and -type f`; 
             do [ -x "${file}" ] || continue;
             mkdir -p "target/cov/$(basename $file)";
             LD_LIBRARY_PATH=target/debug/ kcov --exclude-pattern=/.cargo,/usr,/cpp --verify "target/cov/$(basename $file)" "$file";
