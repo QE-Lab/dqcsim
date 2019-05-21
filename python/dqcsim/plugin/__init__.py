@@ -56,6 +56,7 @@ from dqcsim.common import *
 import sys
 import inspect
 import traceback
+import math, cmath
 
 class JoinHandle(object):
     """Returned by `Plugin.start()` to allow waiting for completion."""
@@ -430,12 +431,12 @@ class GateStreamSource(Plugin):
 
         Optionally, you can pass (a list of) ArbCmd objects to associate with
         the qubits."""
-        with ArbCmdQueue._to_raw(cmds) as cmds:
+        with ArbCmdQueue._to_raw(*cmds) as cmds:
             qubits = QubitSet._from_raw(Handle(self._pc(
                 raw.dqcs_plugin_allocate,
                 1 if num_qubits is None else num_qubits,
                 cmds
-            )))
+            ))) #@
         if num_qubits is None:
             return qubits[0]
         else:
@@ -443,7 +444,7 @@ class GateStreamSource(Plugin):
 
     def free(self, *qubits):
         """Instructs the downstream plugin to free the given qubits."""
-        with QubitSet._to_raw(qubits) as qubits:
+        with QubitSet._to_raw(*qubits) as qubits:
             self._pc(raw.dqcs_plugin_free, qubits)
 
     def unitary(self, targets, matrix, controls=[]):
@@ -464,175 +465,185 @@ class GateStreamSource(Plugin):
                 with Handle(raw.dqcs_gate_new_unitary(targets, controls, matrix)) as gate:
                     self._pc(raw.dqcs_plugin_gate, gate)
 
-    def i_gate(self, target, controls=[]):
+    def i_gate(self, target):
         """Instructs the downstream plugin to execute an I gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.unitary(target, [1.0, 0.0, 0.0, 1.0], controls)
+        `target` is the targetted qubit."""
+        self.unitary(target, [1.0, 0.0, 0.0, 1.0])
 
-    def rx_gate(self, qubit, theta, controls=[]):
+    def rx_gate(self, target, theta):
         """Instructs the downstream plugin to perform an arbitrary X rotation.
 
-        `target` is the targetted qubit. `theta` is the angle in radians.
-        `controls` optionally allows control qubits to be added."""
+        `target` is the targetted qubit. `theta` is the angle in radians."""
         a = math.cos(0.5 * theta)
         b = -1.0j * math.sin(0.5 * theta)
-        self.unitary(target, [a, b, b, a], controls)
+        self.unitary(target, [a, b, b, a])
 
-    def ry_gate(self, qubit, theta, controls=[]):
+    def ry_gate(self, target, theta):
         """Instructs the downstream plugin to perform an arbitrary Y rotation.
 
-        `target` is the targetted qubit. `theta` is the angle in radians.
-        `controls` optionally allows control qubits to be added."""
+        `target` is the targetted qubit. `theta` is the angle in radians."""
         a = math.cos(0.5 * theta)
         b = math.sin(0.5 * theta)
-        self.unitary(target, [a, -b, b, a], controls)
+        self.unitary(target, [a, -b, b, a])
 
-    def rz_gate(self, qubit, theta, controls=[]):
+    def rz_gate(self, target, theta):
         """Instructs the downstream plugin to perform an arbitrary Z rotation.
 
-        `target` is the targetted qubit. `theta` is the angle in radians.
-        `controls` optionally allows control qubits to be added."""
+        `target` is the targetted qubit. `theta` is the angle in radians."""
         a = cmath.exp(-0.5j * theta)
         b = cmath.exp(0.5j * theta)
-        self.unitary(target, [a, 0.0, 0.0, b], controls)
+        self.unitary(target, [a, 0.0, 0.0, b])
 
-    def r_gate(self, qubit, theta, phi, gamma, controls=[]):
+    def r_gate(self, target, theta, phi, gamma):
         """Instructs the downstream plugin to perform a number of rotations at
         once.
 
         `target` is the targetted qubit. `theta`, `phi`, and `gamma` are the
-        angles in radians. `controls` optionally allows control qubits to be
-        added."""
+        angles in radians."""
         a = cmath.exp(-0.5j * theta)
         b = cmath.exp(0.5j * theta)
-        self.unitary(target, [a, 0.0, 0.0, b], controls)
+        self.unitary(target, [a, 0.0, 0.0, b])
 
-    def swap_gate(self, a, b, controls=[]):
+    def swap_gate(self, a, b):
         """Instructs the downstream plugin to execute a swap gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
+        `a` and `b` are the targetted qubits."""
         self.unitary([a, b], [
             1.0, 0.0, 0.0, 0.0,
             0.0, 0.0, 1.0, 0.0,
             0.0, 1.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 1.0,
-        ], controls)
+        ])
 
-    def sqswap_gate(self, a, b, controls=[]):
+    def sqswap_gate(self, a, b):
         """Instructs the downstream plugin to execute a square-root-of-swap
         gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
+        `a` and `b` are the targetted qubits."""
         self.unitary([a, b], [
             1.0, 0.0,      0.0,      0.0,
             0.0, 0.5+0.5j, 0.5-0.5j, 0.0,
             0.0, 0.5-0.5j, 0.5+0.5j, 0.0,
             0.0, 0.0,      0.0,      1.0,
-        ], controls)
+        ])
 
-    def x_gate(self, target, controls=[]):
+    def x_gate(self, target):
         """Instructs the downstream plugin to execute an X gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.rx_gate(target, math.pi, controls)
+        `target` is the targetted qubit."""
+        self.rx_gate(target, math.pi)
 
-    def x90_gate(self, target, controls=[]):
+    def x90_gate(self, target):
         """Instructs the downstream plugin to execute a 90-degree X gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.rx_gate(target, 0.5 * math.pi, controls)
+        `target` is the targetted qubit."""
+        self.rx_gate(target, 0.5 * math.pi)
 
-    def mx90_gate(self, target, controls=[]):
+    def mx90_gate(self, target):
         """Instructs the downstream plugin to execute a negative 90-degree X
         gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.rx_gate(target, -0.5 * math.pi, controls)
+        `target` is the targetted qubit."""
+        self.rx_gate(target, -0.5 * math.pi)
 
-    def y_gate(self, target, controls=[]):
+    def y_gate(self, target):
         """Instructs the downstream plugin to execute a Y gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.ry_gate(target, math.pi, controls)
+        `target` is the targetted qubit."""
+        self.ry_gate(target, math.pi)
 
-    def y90_gate(self, target, controls=[]):
+    def y90_gate(self, target):
         """Instructs the downstream plugin to execute a 90-degree Y gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.ry_gate(target, 0.5 * math.pi, controls)
+        `target` is the targetted qubit."""
+        self.ry_gate(target, 0.5 * math.pi)
 
-    def my90_gate(self, target, controls=[]):
+    def my90_gate(self, target):
         """Instructs the downstream plugin to execute a negative 90-degree Y
         gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.ry_gate(target, -0.5 * math.pi, controls)
+        `target` is the targetted qubit."""
+        self.ry_gate(target, -0.5 * math.pi)
 
-    def z_gate(self, target, controls=[]):
+    def z_gate(self, target):
         """Instructs the downstream plugin to execute a Z gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.ry_gate(target, math.pi, controls)
+        `target` is the targetted qubit."""
+        self.rz_gate(target, math.pi)
 
-    def s_gate(self, target, controls=[]):
-        """Instructs the downstream plugin to execute an S gate.
+    def z90_gate(self, target):
+        """Instructs the downstream plugin to execute a 90-degree Z gate, also
+        known as an S gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.ry_gate(target, 0.5 * math.pi, controls)
+        `target` is the targetted qubit."""
+        self.rz_gate(target, 0.5 * math.pi)
 
-    def sdag_gate(self, target, controls=[]):
-        """Instructs the downstream plugin to execute an S-dagger gate.
+    def mz90_gate(self, target):
+        """Instructs the downstream plugin to execute a negative 90-degree Z
+        gate, also known as an S-dagger gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.ry_gate(target, -0.5 * math.pi, controls)
+        `target` is the targetted qubit."""
+        self.rz_gate(target, -0.5 * math.pi)
 
-    def t_gate(self, target, controls=[]):
+    s_gate = z90_gate
+    sdag_gate = mz90_gate
+
+    def t_gate(self, target):
         """Instructs the downstream plugin to execute a T gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.ry_gate(target, 0.25 * math.pi, controls)
+        `target` is the targetted qubit."""
+        self.rz_gate(target, 0.25 * math.pi)
 
-    def tdag_gate(self, target, controls=[]):
+    def tdag_gate(self, target):
         """Instructs the downstream plugin to execute a T-dagger gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.ry_gate(target, -0.25 * math.pi, controls)
+        `target` is the targetted qubit."""
+        self.rz_gate(target, -0.25 * math.pi)
 
-    def h_gate(self, target, controls=[]):
+    def h_gate(self, target):
         """Instructs the downstream plugin to execute a Hadamard gate.
 
-        `target` is the targetted qubit. `controls` optionally allows control
-        qubits to be added."""
-        self.r_gate(target, 0.5 * math.pi, 0.0, math.pi, controls)
+        `target` is the targetted qubit."""
+        x = 1 / math.sqrt(2.0)
+        self.unitary([target], [x, x, x, -x])
 
     def cnot_gate(self, control, target):
         """Instructs the downstream plugin to execute a CNOT gate."""
-        self.x_gate(target, controls=control)
+        self.unitary([control, target], [
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+            0.0, 0.0, 1.0, 0.0,
+        ])
 
     def toffoli_gate(self, c1, c2, target):
         """Instructs the downstream plugin to execute a Toffoli gate."""
-        self.x_gate(target, controls=[c1, c2])
+        self.unitary([c1, c2, target], [
+            1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+        ])
 
     def fredkin_gate(self, control, a, b):
         """Instructs the downstream plugin to execute a Fredkin gate."""
-        self.swap_gate(a, b, controls=control)
+        self.unitary([control, a, b], [
+            1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+        ])
 
-    def measure(self, qubits):
+    def measure(self, *qubits):
         """Instructs the downstream plugin to measure the given qubits in the
         Z basis.
 
@@ -642,11 +653,13 @@ class GateStreamSource(Plugin):
         appropriate rotations before (and, if necessary, after) the
         measurement.
         """
+        if len(qubits) == 1 and not isinstance(qubits[0], int):
+            qubits = list(qubits[0])
         with QubitSet._to_raw(qubits) as qubits:
             with Handle(raw.dqcs_gate_new_measurement(qubits)) as gate:
                 self._pc(raw.dqcs_plugin_gate, gate)
 
-    def measure_x(self, qubits):
+    def measure_x(self, *qubits):
         """Instructs the downstream plugin to measure the given qubits in the
         X basis.
 
@@ -657,15 +670,15 @@ class GateStreamSource(Plugin):
             measure(qubit)
             h_gate(qubit)
         """
-        if isinstance(qubits, int):
-            qubits = [qubits]
+        if len(qubits) == 1 and not isinstance(qubits[0], int):
+            qubits = list(qubits[0])
         for qubit in qubits:
             self.h_gate(qubit)
         self.measure(qubits)
         for qubit in qubits:
             self.h_gate(qubit)
 
-    def measure_y(self, qubits):
+    def measure_y(self, *qubits):
         """Instructs the downstream plugin to measure the given qubits in the
         Y basis.
 
@@ -677,8 +690,8 @@ class GateStreamSource(Plugin):
             measure(qubit)
             s_gate(qubit)
         """
-        if isinstance(qubits, int):
-            qubits = [qubits]
+        if len(qubits) == 1 and not isinstance(qubits[0], int):
+            qubits = list(qubits[0])
         for qubit in qubits:
             self.s_gate(qubit)
             self.z_gate(qubit)
@@ -704,6 +717,8 @@ class GateStreamSource(Plugin):
         for `ArbData`; the resulting `ArbData` object is passed along with the
         gate for custom data.
         """
+        if matrix is None:
+            matrix = []
         with QubitSet._to_raw(targets) as targets:
             with QubitSet._to_raw(controls) as controls:
                 with QubitSet._to_raw(measures) as measures:

@@ -43,7 +43,7 @@ reserved for marking invalid qubits and the end of a qubit list in the C API.
 
 ## Sending gates
 
-DQCsim represents gates using the following pieces of data:
+DQCsim internally represents gates using the following pieces of data:
 
  - an optional name;
  - a list of target qubits;
@@ -54,34 +54,33 @@ DQCsim represents gates using the following pieces of data:
  - an `ArbData` object that may contain classical arguments and/or additional
    information specifying the behavior of the gate.
 
-The `gate()` function simply takes all of the above as arguments, which DQCsim
-then passes on to the arguments of the `gate()` callback. The `gate()` function
-does not return anything, but the `gate()` callback may return measurements.
+It is not currently possible to send all the gates allowed by the above
+representation through the C, C++, or Python APIs. Specifically, only the
+following classes of gates can be constructed:
 
-DQCsim only standardizes the behavior of a gate if:
+ - unitary gates, which consist of one or more target qubits, a Pauli matrix,
+   and zero or more control qubits;
+ - z-basis measurement gates, which consist of one or more measured qubits and
+   nothing else;
+ - custom gates, which have a name (required), zero or more target qubits, zero
+   or more control qubits, zero or more measured qubits, an optional Pauli
+   matrix, and `ArbData` information.
 
- - it has no name;
- - its `ArbData` object is empty.
+A backend *must* process gates according to the following algorithm.
 
-This standardized behavior is as follows:
+On the receiving end, the behavior is standardized as follows.
 
- - if there is a Pauli matrix:
-    - turn the matrix into a controlled matrix with the appropriate number of
-      control qubits (which may be zero), and
-    - apply the matrix to the concatenation of the control and target qubits;
- - measure every qubit in the `measures` list in the Z basis.
-
-If both a Pauli matrix and measured qubits are provided, the gate must be
-applied before the measurement. However, at the time of writing, it is
-impossible for an upstream plugin to produce such a gate outside of native
-Rust plugins.
-
-The behavior of named (a.k.a. custom) gates recognized by the backend is
-completely up to the implementation of the backend, as long as the backend
-returns exactly one measurement result for every qubit in the `measures` list.
-However, backends should return an error if they don't recognize the gate.
-Conversely, gates with `ArbData` attached to them should be executed per the
-default behavior if the backend does not recognize it.
+ - If the gate does not have a name:
+    - if there is a Pauli matrix:
+       - turn the matrix into a controlled matrix with the appropriate number
+         of control qubits (which may be zero), and
+       - apply the matrix to the concatenation of the control and target
+         qubits;
+    - measure every qubit in the `measures` list in the Z basis. Note that this
+      should be supported *in addition* to the application of a Pauli gate.
+ - Otherwise, if the gate has a name recognized by the backend implementation,
+   the behavior is up to the backend implementation.
+ - Otherwise, the backend should return an error.
 
 ## Measurement results
 
