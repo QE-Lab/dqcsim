@@ -8,7 +8,7 @@
 [![License](https://badgen.net/badge/license/Apache-2.0)](https://github.com/mbrobbel/dqcsim/blob/master/LICENSE)
 
 [![Docs](https://badgen.net/github/status/mbrobbel/dqcsim/gh-pages?label=documentation)](https://mbrobbel.github.io/dqcsim/)
-[![Azure Pipelines](https://badgen.net/azure-pipelines/mbrobbel/dqcsim/mbrobbel.dqcsim/master?label=azure-pipelines)](https://dev.azure.com/mbrobbel/dqcsim/_build/latest?definitionId=3&branchName=master)
+[![Azure Pipelines](https://badgen.net/azure-pipelines/mbrobbel/dqcsim/mbrobbel.dqcsim?label=azure-pipelines)](https://dev.azure.com/mbrobbel/dqcsim/_build/latest?definitionId=3&branchName=master)
 [![Travis](https://badgen.net/travis/mbrobbel/dqcsim)](https://travis-ci.com/mbrobbel/dqcsim)
 [![Coverage](https://badgen.net/codecov/c/github/mbrobbel/dqcsim)](https://codecov.io/gh/mbrobbel/dqcsim)
 
