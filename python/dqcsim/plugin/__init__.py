@@ -1030,7 +1030,7 @@ class Operator(GateStreamSource):
             if raw.dqcs_gate_has_controls(gate_handle):
                 fast_forward = not hasattr(self, 'handle_controlled_gate')
             elif raw.dqcs_gate_has_targets(gate_handle):
-                fast_forward = (
+                fast_forward = ( #@
                     not hasattr(self, 'handle_unitary_gate')
                     and not hasattr(self, 'handle_controlled_gate'))
             else:
@@ -1041,7 +1041,7 @@ class Operator(GateStreamSource):
             fast_forward = not hasattr(self, 'handle_{}_gate'.format(name))
         if fast_forward:
             raw.dqcs_plugin_gate(state_handle, gate_handle)
-            return
+            return MeasurementSet._to_raw([]).take()
 
         # Convert from Rust domain to Python domain.
         targets = QubitSet._from_raw(Handle(raw.dqcs_gate_targets(gate_handle)))
@@ -1078,6 +1078,8 @@ class Operator(GateStreamSource):
             measurements = self._cb(state_handle,
                 cb_name, targets, controls, measures, matrix, *data._args, **data._json)
 
+        if measurements is None:
+            measurements = []
         return MeasurementSet._to_raw(measurements).take()
 
     def _route_measurement(self, state_handle, measurement_handle):
@@ -1300,11 +1302,12 @@ class Backend(Plugin):
             try:
                 measurements = self._cb(state_handle,
                     'handle_{}_gate'.format(name),
-                    targets, controls, measures, matrix, *data._args, **data._json
-                )
+                    targets, controls, measures, matrix, *data._args, **data._json)
             except NotImplementedError:
                 raise NotImplementedError("{} gate is not implemented by this plugin".format(name))
 
+        if measurements is None:
+            measurements = []
         return MeasurementSet._to_raw(measurements).take()
 
     def _route_advance(self, state_handle, cycles):
