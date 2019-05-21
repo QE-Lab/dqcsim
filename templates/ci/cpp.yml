@@ -1,6 +1,8 @@
 steps:
 
-- task: CMake@1
+- script: |
+    cmake .
+  displayName: CMake
 
 - script: |
     make -j
