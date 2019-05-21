@@ -1189,3 +1189,53 @@ fn quantum_minimal() {
     assert!(res.is_ok());
     backend_data.as_ref();
 }
+
+#[test]
+// This tests whether host arbs are properly synchronized with the gatestream
+fn host_arb_sync_with_gatestream() {
+    let (mut frontend, _, mut backend) = fe_op_be();
+
+    frontend.run = Box::new(|state, _| {
+        assert!(state.send(ArbData::default()).is_ok());
+        let res = state.recv();
+        assert!(res.is_ok());
+        assert_eq!(res.unwrap(), ArbData::default());
+        Ok(ArbData::default())
+    });
+
+    let gates_executed = Arc::new(Mutex::new(Box::new(0u8)));
+
+    let ge_gate = Arc::clone(&gates_executed);
+    backend.gate = Box::new(move |_, _| {
+        let ge: &mut u8 = &mut ge_gate.lock().unwrap();
+        *ge += 1;
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        Ok(vec![])
+    });
+
+    let ge_arb = Arc::clone(&gates_executed);
+    backend.host_arb = Box::new(move |_, _| {
+        let ge: &u8 = &ge_arb.lock().unwrap();
+        Ok(ArbData::from_args(vec![vec![*ge]]))
+    });
+
+    let ptc = |definition| {
+        PluginThreadConfiguration::new(
+            definition,
+            PluginLogConfiguration::new("", LoglevelFilter::Off),
+        )
+    };
+
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(ptc(frontend))
+        .with_plugin(ptc(backend));
+
+    let simulator = Simulator::new(configuration);
+    assert!(simulator.is_ok());
+
+    let mut simulator = simulator.unwrap();
+    simulator.simulation.start(ArbData::default()).unwrap();
+    simulator.simulation.wait().unwrap();
+}
