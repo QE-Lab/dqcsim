@@ -171,6 +171,8 @@ class Tests(unittest.TestCase):
         self.assertEqualMatrix(data['matrix'], matrix)
 
     def assert_gates(self, log, controlled, u=0, c=0, m=0, a=0, b=0):
+        self.maxDiff = None
+
         # unitary
         self.assert_unitary(log.pop(0), [1+u], [
             0.000+0.000j, 1.000+0.000j,
@@ -386,23 +388,25 @@ class Tests(unittest.TestCase):
             ])
 
         # custom_gate('a', [1], [2], [3], None, b'33', a='b')
-        self.assertEqual(log.pop(0), {
+        x = log.pop(0)
+        self.assertEqual(pickle.loads(x.pop('matrix')), None)
+        self.assertEqual(x, {
             'cmd': 'a',
             'targets': [1+a],
             'controls': [2+a],
             'measures': [3+a],
-            'matrix': pickle.dumps(None),
             'args': [b'33'],
             'kwargs': {'a': 'b'},
         })
 
         # custom_gate('b', [1], [2], [3], [1.0, 0.0, 0.0, 1.0], b'33', a='b')
-        self.assertEqual(log.pop(0), {
+        x = log.pop(0)
+        self.assertEqual(pickle.loads(x.pop('matrix')), [1.0+0.0j, 0.0+0.0j, 0.0+0.0j, 1.0+0.0j])
+        self.assertEqual(x, {
             'cmd': 'b',
             'targets': [1+b],
             'controls': [2+b],
             'measures': [3+b],
-            'matrix': pickle.dumps([1.0+0.0j, 0.0+0.0j, 0.0+0.0j, 1.0+0.0j]),
             'args': [b'33'],
             'kwargs': {'a': 'b'},
         })
