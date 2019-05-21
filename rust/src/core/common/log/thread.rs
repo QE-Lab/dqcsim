@@ -60,8 +60,8 @@ impl LogThread {
                     .unwrap()
                     .supports_attr(term::Attr::ForegroundColor(9));
 
-            let trace = stderr_level >= LoglevelFilter::Trace;
-            let debug = stderr_level >= LoglevelFilter::Debug;
+            let trace = t.is_some() && stderr_level >= LoglevelFilter::Trace;
+            let debug = t.is_some() && stderr_level >= LoglevelFilter::Debug;
 
             let tee_files: Vec<TeeFile> = tee_files
                 .into_iter()
@@ -84,7 +84,7 @@ impl LogThread {
                     .for_each(|tf| tf.log(&record));
 
                 // Standard Error
-                if level <= stderr_level {
+                if t.is_some() && level <= stderr_level {
                     let t = t.as_mut().unwrap();
                     let color: term::color::Color = record.level().into();
 
