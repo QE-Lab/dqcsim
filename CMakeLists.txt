@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(ExternalProject)
 
 #------------------------------------------------------------------------------
-# DCQcsi build
+# DQCsim build
 #------------------------------------------------------------------------------
 ExternalProject_Add(
     dqcsim
