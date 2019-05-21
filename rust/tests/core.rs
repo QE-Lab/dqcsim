@@ -1189,3 +1189,104 @@ fn quantum_minimal() {
     assert!(res.is_ok());
     backend_data.as_ref();
 }
+
+#[test]
+// This tests whether host arbs are properly synchronized with the gatestream
+fn host_arb_sync_with_gatestream() {
+    let (mut frontend, _, mut backend) = fe_op_be();
+
+    frontend.run = Box::new(|state, _| {
+        state.allocate(1, vec![]).unwrap();
+
+        let gate = Gate::new_unitary(
+            vec![QubitRef::from_foreign(1).unwrap()],
+            vec![],
+            vec![
+                Complex64::new(1.0, 0.0),
+                Complex64::new(0.0, 0.0),
+                Complex64::new(0.0, 0.0),
+                Complex64::new(1.0, 0.0),
+            ],
+        )
+        .unwrap();
+
+        state.gate(gate.clone()).unwrap();
+        state.gate(gate.clone()).unwrap();
+        state.gate(gate.clone()).unwrap();
+        state.gate(gate.clone()).unwrap();
+        state.gate(gate.clone()).unwrap();
+
+        // To work around issue #90;
+        //state.arb(ArbCmd::new("a", "b", ArbData::default())).unwrap();
+
+        state.recv().unwrap();
+
+        state.gate(gate.clone()).unwrap();
+        state.gate(gate.clone()).unwrap();
+        state.gate(gate.clone()).unwrap();
+        state.gate(gate.clone()).unwrap();
+        state.gate(gate.clone()).unwrap();
+
+        // To work around issue #90;
+        //state.arb(ArbCmd::new("a", "b", ArbData::default())).unwrap();
+
+        Ok(ArbData::default())
+    });
+
+    let gates_executed = Arc::new(Mutex::new(Box::new(0u8)));
+
+    let ge_gate = Arc::clone(&gates_executed);
+    backend.gate = Box::new(move |_, _| {
+        let ge: &mut u8 = &mut ge_gate.lock().unwrap();
+        *ge += 1;
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        Ok(vec![])
+    });
+
+    let ge_arb = Arc::clone(&gates_executed);
+    backend.host_arb = Box::new(move |_, _| {
+        let ge: &u8 = &ge_arb.lock().unwrap();
+        Ok(ArbData::from_args(vec![vec![*ge]]))
+    });
+
+    let ptc = |definition| {
+        PluginThreadConfiguration::new(
+            definition,
+            PluginLogConfiguration::new("", LoglevelFilter::Off),
+        )
+    };
+
+    let configuration = SimulatorConfiguration::default()
+        .without_reproduction()
+        .without_logging()
+        .with_plugin(ptc(frontend))
+        .with_plugin(ptc(backend));
+
+    let simulator = Simulator::new(configuration);
+    assert!(simulator.is_ok());
+
+    let mut simulator = simulator.unwrap();
+    simulator.simulation.start(ArbData::default()).unwrap();
+    simulator.simulation.yield_to_accelerator().unwrap();
+
+    // Should have processed the first batch of the gates here (5).
+    let gates_executed = simulator
+        .simulation
+        .arb_idx(1, ArbCmd::new("a", "b", ArbData::default()))
+        .unwrap()
+        .get_args()[0][0];
+    println!("after yield: {} ?= 5", gates_executed);
+    assert_eq!(gates_executed, 5);
+
+    simulator.simulation.send(ArbData::default()).unwrap();
+    simulator.simulation.wait().unwrap();
+
+    // Should have processed all the gates here (10).
+    let gates_executed = simulator
+        .simulation
+        .arb_idx(1, ArbCmd::new("a", "b", ArbData::default()))
+        .unwrap()
+        .get_args()[0][0];
+    println!("after yield: {} ?= 10", gates_executed);
+    assert_eq!(gates_executed, 10);
+}
