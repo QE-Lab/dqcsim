@@ -1,13 +1,9 @@
 """Contains a class wrapper for `ArbData` objects."""
 
-try:
-    import cbor
-except ImportError:
-    raise Exception("Failed to load DQCsim: missing cbor library")
-
+import copy
 import dqcsim._dqcsim as raw
 from dqcsim.common.handle import Handle
-import copy
+import cbor
 
 def _check_json(ob):
     try:
@@ -150,7 +146,7 @@ class ArbData(object):
         return False
 
     @classmethod
-    def _from_raw(cls, handle):
+    def _from_raw(cls, handle): #@
         """Constructs an ArbData object from a raw API handle."""
         # Load CBOR.
         with handle as hndl:

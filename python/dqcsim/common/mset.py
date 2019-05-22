@@ -4,7 +4,7 @@ from dqcsim.common.meas import Measurement
 
 class MeasurementSet(object):
     @classmethod
-    def _from_raw(cls, handle):
+    def _from_raw(cls, handle): #@
         with handle as hndl:
             measurements = []
             while raw.dqcs_mset_len(hndl) > 0:
@@ -13,7 +13,7 @@ class MeasurementSet(object):
         return measurements
 
     @classmethod
-    def _to_raw(cls, *measurements):
+    def _to_raw(cls, *measurements): #@
         if len(measurements) == 1 and not isinstance(measurements[0], Measurement):
             measurements = measurements[0]
         handle = Handle(raw.dqcs_mset_new())

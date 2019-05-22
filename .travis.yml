@@ -105,8 +105,7 @@ matrix:
         - sudo apt-get install -y swig
         - pip3 install setuptools wheel
       script:
-        - python3 setup.py build
-        - kcov --python-parser=python3 --include-pattern=/python/dqcsim/ --exclude-pattern=/tests --exclude-line=no_kcoverage target/cov setup.py test
+        - python3 setup.py build kcov
 
     - <<: *coverage
       name: "Coverage C++"

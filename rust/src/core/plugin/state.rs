@@ -547,7 +547,10 @@ impl<'a> PluginState<'a> {
                 error!("Error from downstream plugin: {}", message);
                 debug!("The sequence number was {}", sequence);
                 fatal!("Desynchronized with downstream plugin due to downstream error, cannot continue!");
-                err("simulation failed due to downstream error")?;
+                err(format!(
+                    "simulation failed due to downstream error: {}",
+                    message
+                ))?;
             }
             GatestreamUp::Measured(measurement) => {
                 trace!(
@@ -722,6 +725,11 @@ impl<'a> PluginState<'a> {
                     self.check_completed_up_to()?;
                 }
                 IncomingMessage::Upstream(GatestreamDown::ArbRequest(cmd)) => {
+                    if let Some(ref mut rng) = self.rng {
+                        rng.select(1)
+                    }
+                    self.synchronized_to_rpcs = true;
+
                     let response = match (self.definition.upstream_arb)(self, cmd) {
                         Ok(r) => GatestreamUp::ArbSuccess(r),
                         Err(e) => GatestreamUp::ArbFailure(e.to_string()),

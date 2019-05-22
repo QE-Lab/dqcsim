@@ -1,6 +1,6 @@
 """Contains wrappers for various DQCsim API handles."""
 
-__all__ = [
+__all__ = [ #@
     'ArbData',
     'ArbCmd',
     'ArbCmdQueue',
@@ -11,7 +11,7 @@ __all__ = [
     'Loglevel',
 ]
 
-__pdoc__ = {
+__pdoc__ = { #@
     # Don't output documentation for objects that the user shouldn't need.
     'cq': False,
     'ArbCmdQueue': False,

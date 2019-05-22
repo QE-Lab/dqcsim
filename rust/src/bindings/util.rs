@@ -89,7 +89,7 @@ pub fn receive_matrix(
     } else if num_qubits == 0 {
         inv_arg("cannot read matrix for 0 qubits")
     } else {
-        let num_entries = 4 << (num_qubits - 1);
+        let num_entries = 2usize.pow(2 * num_qubits as u32);
         if matrix_len != num_entries {
             inv_arg("matrix has the wrong number of entries")
         } else if ptr.is_null() {

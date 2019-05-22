@@ -87,5 +87,8 @@ class Tests(unittest.TestCase):
         with self.assertRaises(TypeError):
             a = ArbCmdQueue._to_raw(33)
 
+        with self.assertRaises(TypeError):
+            a = ArbCmdQueue._to_raw(33, 33)
+
 if __name__ == '__main__':
     unittest.main()

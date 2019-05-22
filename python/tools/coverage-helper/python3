@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Remove the coverage-helper directory from the system path temporarily to look
+# for the system's python3 executable.
+KCOV_PATH=$PATH
+PATH=`echo $PATH | sed -E 's/(:|^)[^:]*coverage-helper[^:]*(:|$)/\1/' | sed -E 's/:$//'`
+PYTHON3=`which python3`
+PATH=$KCOV_PATH
+
+# Chain to kcov.
+kcov                                                                \
+    --python-parser=$PYTHON3                                        \
+    --include-pattern=/python/dqcsim/                               \
+    --exclude-pattern=/tests                                        \
+    --exclude-line='no_kcoverage,#@,assert(False)'                  \
+    target/cov                                                      \
+    "$@"

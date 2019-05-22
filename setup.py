@@ -1,9 +1,13 @@
-import os, platform, shutil, sys
+#!/usr/bin/env python3
+
+import os, platform, shutil, sys, subprocess
 from distutils.command.bdist import bdist as _bdist
 from distutils.command.sdist import sdist as _sdist
 from distutils.command.build import build as _build
 from distutils.command.clean import clean as _clean
 from setuptools.command.egg_info import egg_info as _egg_info
+import distutils.cmd
+import distutils.log
 from setuptools import setup, Extension, find_packages
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
@@ -19,6 +23,10 @@ include_dir = target_dir + "/include"
 output_dir = target_dir + ("/debug" if debug else "/release")
 build_dir = py_target_dir + "/build"
 dist_dir = py_target_dir + "/dist"
+
+# To make sure that DQCsim can find the dqcsfepy and friends during tests.
+if py_bin_dir not in os.environ['PATH']:
+    os.environ['PATH'] = os.environ['PATH'] + ':' + py_bin_dir
 
 def read(fname):
     with open(os.path.join(os.path.dirname(__file__), fname)) as f:
@@ -94,6 +102,30 @@ class egg_info(_egg_info):
         _egg_info.initialize_options(self)
         self.egg_base = py_target_dir
 
+
+class KCovCommand(distutils.cmd.Command):
+    """A custom command to nose tests with kcov."""
+
+    description = 'run nose tests with kcov'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        helper_path = os.getcwd() + '/python/tools/coverage-helper'
+        kcov_env = os.environ.copy()
+        kcov_env['PATH'] = helper_path + ':' + kcov_env['PATH']
+        command = [helper_path + '/python3', 'setup.py', 'test']
+        self.announce(
+            'Running command: %s' % ' '.join(command),
+            level=distutils.log.INFO)
+        subprocess.check_call(command, env=kcov_env)
+
+
 setup(
     name = 'dqcsim',
     version = version,
@@ -160,6 +192,7 @@ setup(
         'clean': clean,
         'egg_info': egg_info,
         'sdist': sdist,
+        'kcov': KCovCommand,
     },
 
     ext_modules = [
@@ -182,7 +215,7 @@ setup(
     install_requires = [
         'cbor',
     ],
-    
+
     tests_require = [
         'nose'
     ],
