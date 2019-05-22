@@ -63,9 +63,13 @@ impl Plugin for PluginThread {
         // Spawn the thread.
         self.handle = Some(thread::spawn(move || {
             // Set a custom panic hook which generates a fatal log record for
-            // panics.
+            // panics including a stack trace.
             std::panic::set_hook(Box::new(|info| {
-                for line in format!("{}", info).split('\n') {
+                let backtrace = backtrace::Backtrace::new();
+                for line in format!("{}", info)
+                    .split('\n')
+                    .chain(format!("{:?}", backtrace).split('\n'))
+                {
                     fatal!("{}", line);
                 }
             }));
@@ -99,6 +103,25 @@ impl Plugin for PluginThread {
     }
 }
 
+fn join_thread(handle: thread::JoinHandle<()>, name: impl fmt::Display) {
+    match handle.join() {
+        Ok(_) => trace!("Thread joined"),
+        Err(e) => {
+            let msg = if let Some(e) = e.downcast_ref::<&'static str>() {
+                e
+            } else if let Some(e) = e.downcast_ref::<String>() {
+                e
+            } else {
+                "unknown"
+            };
+            fatal!("Thread {} panicked:", name);
+            for line in msg.split('\n') {
+                fatal!("{}", line);
+            }
+        }
+    }
+}
+
 impl Drop for PluginThread {
     fn drop(&mut self) {
         trace!("Dropping PluginThread");
@@ -107,13 +130,7 @@ impl Drop for PluginThread {
         if self.handle.is_some() && self.channel.is_some() {
             match self.rpc(SimulatorToPlugin::Abort) {
                 Ok(PluginToSimulator::Success) => {
-                    let handle = self.handle.take();
-
-                    // Wait for thread to join.
-                    handle
-                        .unwrap()
-                        .join()
-                        .unwrap_or_else(|_| panic!("Thread {} panicked", Plugin::name(self)));
+                    join_thread(self.handle.take().unwrap(), Plugin::name(self));
                 }
                 Ok(PluginToSimulator::Failure(error)) => {
                     error!("Thread {} failed to abort: {}", Plugin::name(self), error);
@@ -123,6 +140,7 @@ impl Drop for PluginThread {
                 }
                 Err(error) => {
                     error!("Failed to send Abort to {}: {}", Plugin::name(self), error);
+                    join_thread(self.handle.take().unwrap(), Plugin::name(self));
                 }
             }
         } else if self.handle.is_none() {
