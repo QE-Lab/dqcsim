@@ -4,4 +4,5 @@ from dqcsim.plugin import *
 class NullOperator(Operator):
     pass
 
-NullOperator().run()
+if __name__ == '__main__':
+    NullOperator().run()

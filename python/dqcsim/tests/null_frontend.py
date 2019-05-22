@@ -27,4 +27,5 @@ class NullFrontend(Frontend):
     def handle_host_get_arbs(self):
         return ArbData(data=self.arbs_received)
 
-NullFrontend().run()
+if __name__ == '__main__':
+    NullFrontend().run()

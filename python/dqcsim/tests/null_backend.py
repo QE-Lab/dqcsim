@@ -16,4 +16,5 @@ class NullBackend(Backend):
     def handle_host_work_env(self):
         return ArbData(work=os.getcwd(), env=dict(os.environ))
 
-NullBackend().run()
+if __name__ == '__main__':
+    NullBackend().run()
