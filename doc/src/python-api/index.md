@@ -7,18 +7,19 @@ into a Pythonic interface.
 
 ## How to read this chapter
 
-This chapter serves as a short introduction to DQCsim's Python API to get
-you coding quickly. However, it doesn't document every single feature. If
-you're looking for an API reference, check out the documentation
-[here](https://mbrobbel.github.io/dqcsim/py_/dqcsim/).
+This chapter reads like a tutorial to DQCsim's Python API to get you coding
+quickly. However, it doesn't even get close to documenting every single
+feature. If you're looking for something more complete, check out the
+generated API documentation [here](https://mbrobbel.github.io/dqcsim/py_/dqcsim/).
 
-The documentation assumes that you already know what DQCsim is, and have a
-decent understanding of the basic concepts. If you don't, start
-[here](../index.md).
+The tutorial assumes that you already know what DQCsim is, and have a decent
+understanding of the basic concepts. If you don't, start [here](../index.md).
 
 ## Contents
 
- - [Concepts](concepts.md)
- - [Creating plugins](plugins.md)
+ - [Hello, world!](hello-world.md)
+ - [Debugging](debugging.md)
+ - [Sending some gates](sending-gates.md)
  - [Controlling simulations](simulations.md)
+ - [Inserting an operator](operator.md)
  - [Reference](reference.md)
