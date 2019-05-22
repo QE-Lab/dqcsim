@@ -42,6 +42,7 @@ class TestFrontend(Frontend):
         self.measure_x([1, 2, 3])
         self.measure_y([1, 2, 3])
         self.measure_z(1, 2)
+        self.prepare(1, 2)
         self.free(1, 2, 3)
 
 @plugin("Test backend plugin", "Test", "0.1")
@@ -62,7 +63,7 @@ class TestBackendUnitary(Backend):
             'cmd': 'measurement',
             'measures': measures,
         })
-        return [Measurement(qubit, False) for qubit in measures]
+        return [Measurement(qubit, qubit % 2) for qubit in measures]
 
     def handle_a_gate(self, targets, controls, measures, matrix, *args, **kwargs):
         self.call_log.append({
@@ -527,7 +528,17 @@ class Tests(unittest.TestCase):
             'measures': [1+m, 2+m],
         })
 
-        self.assertEqual(log, [])
+        # prepare(1, 2)
+        if not m:
+            self.assertEqual(log.pop(0), {
+                'cmd': 'measurement',
+                'measures': [1+m, 2+m],
+            })
+            self.assert_unitary(log.pop(0), [1+u], [
+                0.000+0.000j, 1.000+0.000j,
+                1.000+0.000j, 0.000+0.000j,
+            ])
+            self.assertEqual(log, [])
 
     def check_with_operator(self, operator_cls, *args, **kwargs):
         sim = Simulator(

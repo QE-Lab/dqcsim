@@ -635,11 +635,8 @@ class GateStreamSource(Plugin):
         """Instructs the downstream plugin to measure the given qubits in the
         Z basis.
 
-        `qubits` must be an iterable of qubits or a single qubit, representing
-        the qubit(s) that are to be measured. If you need to perform a
-        measurement in a different basis, either use custom gates or apply the
-        appropriate rotations before (and, if necessary, after) the
-        measurement.
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only argument.
         """
         if len(qubits) == 1 and not isinstance(qubits[0], int):
             qubits = list(qubits[0])
@@ -657,6 +654,9 @@ class GateStreamSource(Plugin):
             h_gate(qubit)
             measure(qubit)
             h_gate(qubit)
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only argument.
         """
         if len(qubits) == 1 and not isinstance(qubits[0], int):
             qubits = list(qubits[0])
@@ -677,6 +677,9 @@ class GateStreamSource(Plugin):
             z_gate(qubit)
             measure(qubit)
             s_gate(qubit)
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only argument.
         """
         if len(qubits) == 1 and not isinstance(qubits[0], int):
             qubits = list(qubits[0])
@@ -688,6 +691,27 @@ class GateStreamSource(Plugin):
             self.s_gate(qubit)
 
     measure_z = measure
+
+    def prepare(self, *qubits):
+        """Instructs the downstream plugin to force the given qubits into the
+        |0> state.
+
+        This actually sends the following gates to the downstream plugin for
+        each qubit:
+
+            measure(qubit)
+            if get_measurement(qubit).value:
+                x_gate(qubit)
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only argument.
+        """
+        if len(qubits) == 1 and not isinstance(qubits[0], int):
+            qubits = list(qubits[0])
+        self.measure(qubits)
+        for qubit in qubits:
+            if self.get_measurement(qubit).value:
+                self.x_gate(qubit)
 
     def custom_gate(self, name, targets=[], controls=[], measures=[], matrix=None, *args, **kwargs):
         """Instructs the downstream plugin to execute a custom gate.
