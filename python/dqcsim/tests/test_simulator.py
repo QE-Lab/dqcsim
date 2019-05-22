@@ -119,8 +119,8 @@ class Tests(unittest.TestCase):
                 capture[0] = True
             elif msg == '__end__':
                 capture[0] = False
-            elif capture[0]:
-                msgs.append((msg, source, level, mod, fname, line))
+            elif capture[0] and source == 'front':
+                msgs.append((msg, level, mod, fname, line))
         sim = Simulator(
             NullFrontend(), NullBackend(),
             repro=None, stderr_verbosity=Loglevel.OFF,
@@ -131,31 +131,31 @@ class Tests(unittest.TestCase):
         sim.stop()
         self.assertEqual(len(msgs), 9)
         self.assertEqual(msgs[0], (
-            'trace', 'front', Loglevel.TRACE,
+            'trace', Loglevel.TRACE,
             'dqcsim.tests.test_simulator', __file__, 17))
         self.assertEqual(msgs[1], (
-            'debug', 'front', Loglevel.DEBUG,
+            'debug', Loglevel.DEBUG,
             'dqcsim.tests.test_simulator', __file__, 18))
         self.assertEqual(msgs[2], (
-            'info', 'front', Loglevel.INFO,
+            'info', Loglevel.INFO,
             'dqcsim.tests.test_simulator', __file__, 19))
         self.assertEqual(msgs[3], (
-            'note', 'front', Loglevel.NOTE,
+            'note', Loglevel.NOTE,
             'dqcsim.tests.test_simulator', __file__, 20))
         self.assertEqual(msgs[4], (
-            'warn', 'front', Loglevel.WARN,
+            'warn', Loglevel.WARN,
             'dqcsim.tests.test_simulator', __file__, 21))
         self.assertEqual(msgs[5], (
-            'error', 'front', Loglevel.ERROR,
+            'error', Loglevel.ERROR,
             'dqcsim.tests.test_simulator', __file__, 22))
         self.assertEqual(msgs[6], (
-            'fatal', 'front', Loglevel.FATAL,
+            'fatal', Loglevel.FATAL,
             'dqcsim.tests.test_simulator', __file__, 23))
         self.assertEqual(msgs[7], (
-            'log 33 test', 'front', Loglevel.INFO,
+            'log 33 test', Loglevel.INFO,
             'dqcsim.tests.test_simulator', __file__, 24))
         self.assertEqual(msgs[8], (
-            'level must be a Loglevel', 'front', Loglevel.ERROR,
+            'level must be a Loglevel', Loglevel.ERROR,
             'dqcsim.tests.test_simulator', __file__, 28))
 
     def test_log_capture_logging(self):
@@ -170,9 +170,9 @@ class Tests(unittest.TestCase):
                     self.capture = True
                 elif record.msg == '__end__':
                     self.capture = False
-                elif self.capture:
+                elif self.capture and record.name == 'front':
                     self.msgs.append((
-                        record.msg, record.name,
+                        record.msg,
                         record.levelno, record.levelname,
                         record.pathname, record.lineno))
         handler = Handler()
@@ -187,15 +187,15 @@ class Tests(unittest.TestCase):
         sim.arb('front', 'log', 'test')
         sim.stop()
         self.assertEqual(len(handler.msgs), 9)
-        self.assertEqual(handler.msgs[0], ('trace',                    'front',  5, 'TRACE',    __file__, 17))
-        self.assertEqual(handler.msgs[1], ('debug',                    'front', 10, 'DEBUG',    __file__, 18))
-        self.assertEqual(handler.msgs[2], ('info',                     'front', 20, 'INFO',     __file__, 19))
-        self.assertEqual(handler.msgs[3], ('note',                     'front', 25, 'NOTE',     __file__, 20))
-        self.assertEqual(handler.msgs[4], ('warn',                     'front', 30, 'WARNING',  __file__, 21))
-        self.assertEqual(handler.msgs[5], ('error',                    'front', 40, 'ERROR',    __file__, 22))
-        self.assertEqual(handler.msgs[6], ('fatal',                    'front', 50, 'CRITICAL', __file__, 23))
-        self.assertEqual(handler.msgs[7], ('log 33 test',              'front', 20, 'INFO',     __file__, 24))
-        self.assertEqual(handler.msgs[8], ('level must be a Loglevel', 'front', 40, 'ERROR',    __file__, 28))
+        self.assertEqual(handler.msgs[0], ('trace',                     5, 'TRACE',    __file__, 17))
+        self.assertEqual(handler.msgs[1], ('debug',                    10, 'DEBUG',    __file__, 18))
+        self.assertEqual(handler.msgs[2], ('info',                     20, 'INFO',     __file__, 19))
+        self.assertEqual(handler.msgs[3], ('note',                     25, 'NOTE',     __file__, 20))
+        self.assertEqual(handler.msgs[4], ('warn',                     30, 'WARNING',  __file__, 21))
+        self.assertEqual(handler.msgs[5], ('error',                    40, 'ERROR',    __file__, 22))
+        self.assertEqual(handler.msgs[6], ('fatal',                    50, 'CRITICAL', __file__, 23))
+        self.assertEqual(handler.msgs[7], ('log 33 test',              20, 'INFO',     __file__, 24))
+        self.assertEqual(handler.msgs[8], ('level must be a Loglevel', 40, 'ERROR',    __file__, 28))
 
     def test_manual_spawn(self):
         trace_fn = sys.gettrace()
