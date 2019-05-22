@@ -31,7 +31,7 @@ matrix:
         - python3 setup.py bdist_wheel
         - sudo pip3 install target/python/dist/*.whl
       before_deploy:
-        - cd doc && mdbook build && mdbook test
+        - cd doc && make && mdbook test
         - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/doc/book/rust_
         - pdoc3 --html --output-dir $TRAVIS_BUILD_DIR/doc/book/py_ dqcsim
       deploy:
