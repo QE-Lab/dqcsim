@@ -3,7 +3,8 @@ from dqcsim.common import *
 from dqcsim.host import *
 from dqcsim.plugin import *
 
-os.environ['PYTHONPATH'] = ':'.join([os.getcwd() + '/python'] + os.environ['PYTHONPATH'].split(':'))
+os.environ['PYTHONPATH'] = ':'.join([os.getcwd() + '/python'] + os.environ.get('PYTHONPATH', '').split(':'))
+os.environ['PATH'] = ':'.join([os.getcwd() + '/python/bin'] + os.environ.get('PATH', '').split(':'))
 
 p = os.path.dirname(__file__) + '/'
 
@@ -14,7 +15,7 @@ class Tests(unittest.TestCase):
             p+'null_frontend.py',
             p+'null_operator.py',
             (sys.executable, p+'null_backend.py'),
-            repro=None, stderr_verbosity=Loglevel.OFF
+            repro=None, stderr_verbosity=Loglevel.ERROR
         ).run()
 
     def test_env(self):
@@ -22,7 +23,7 @@ class Tests(unittest.TestCase):
         sim = Simulator(
             (p+'null_frontend.py', {'env': {'x': 'y'}}),
             (sys.executable, p+'null_backend.py', {'env': {'x': None}, 'work': os.getcwd() + '/..'}),
-            repro=None, stderr_verbosity=Loglevel.OFF
+            repro=None, stderr_verbosity=Loglevel.ERROR
         )
         sim.simulate()
         front = sim.arb('front', 'work', 'env')
@@ -37,7 +38,7 @@ class Tests(unittest.TestCase):
         sim = Simulator(
             (p+'null_frontend.py', {'init': ArbCmd('x', 'y')}),
             p+'null_backend.py',
-            repro=None, stderr_verbosity=Loglevel.OFF
+            repro=None, stderr_verbosity=Loglevel.ERROR
         )
         sim.simulate()
         self.assertEqual(sim.arb('front', 'get', 'arbs')['data'], [
@@ -50,7 +51,7 @@ class Tests(unittest.TestCase):
                 ArbCmd('x', 'y', b'a'), ArbCmd('y', 'z', b'b')
             ]}),
             p+'null_backend.py',
-            repro=None, stderr_verbosity=Loglevel.OFF
+            repro=None, stderr_verbosity=Loglevel.ERROR
         )
         sim.simulate()
         self.assertEqual(sim.arb('front', 'get', 'arbs')['data'], [
@@ -69,7 +70,7 @@ class Tests(unittest.TestCase):
                 (p+'null_backend.py', {'tee': {
                     base+'/back_trace.log': Loglevel.TRACE,
                 }}),
-                repro=None, stderr_verbosity=Loglevel.OFF
+                repro=None, stderr_verbosity=Loglevel.ERROR
             )
             sim.simulate()
             sim.stop()
@@ -97,7 +98,7 @@ class Tests(unittest.TestCase):
         sim = Simulator(
             (p+'null_frontend.py', {'stdout': None}),
             (p+'null_backend.py', {'stderr': None}),
-            repro=None, stderr_verbosity=Loglevel.OFF
+            repro=None, stderr_verbosity=Loglevel.ERROR
         )
         # This just checks that the following doesn't raise any errors. We
         # don't actually ensure that stdout/stderr is passed through.
@@ -108,7 +109,7 @@ class Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as base:
             sim = Simulator(
                 p+'null_frontend.py', p+'null_backend.py',
-                stderr_verbosity=Loglevel.OFF
+                stderr_verbosity=Loglevel.ERROR
             )
             # This just checks that a reproduction file is generated. It
             # doesn't check the contents.
@@ -120,7 +121,7 @@ class Tests(unittest.TestCase):
     def test_default_backend(self):
         sim = Simulator(
             p+'null_frontend.py',
-            repro=None, stderr_verbosity=Loglevel.OFF
+            repro=None, stderr_verbosity=Loglevel.ERROR
         )
         try:
             sim.simulate()
