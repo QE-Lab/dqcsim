@@ -14,7 +14,7 @@ you're looking for an API reference, check out the documentation
 
 The documentation assumes that you already know what DQCsim is, and have a
 decent understanding of the basic concepts. If you don't, start
-[here](../intro/index.md).
+[here](../index.md).
 
 ## Contents
 
