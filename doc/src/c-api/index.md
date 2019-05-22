@@ -18,7 +18,7 @@ case you're just looking for a searchable list.
 
 The documentation assumes that you already know what DQCsim is, and have a
 decent understanding of the basic concepts. If you don't, start
-[here](../intro/index.md).
+[here](../index.md).
 
 ## Contents
 
