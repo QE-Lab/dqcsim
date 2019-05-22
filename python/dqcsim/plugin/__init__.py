@@ -371,7 +371,7 @@ class Plugin(object):
         `ArbCmd` object (instead of being passed as a handle)."""
         if cmd.iface not in self._arb_interfaces.get(source, {}):
             if forward_fn is not None:
-                return forward_fn(cmd)
+                return self._cb(state_handle, forward_fn, cmd)
             return ArbData()
         try:
             result = self._cb(state_handle,
@@ -1098,9 +1098,14 @@ class Operator(GateStreamSource):
         """Routes the advance callback to user code."""
         self._cb(state_handle, 'handle_advance', cycles)
 
+    def _forward_upstream_arb(self, cmd):
+        """Forwards an `ArbCmd` that originates from the upstream plugin
+        further downstream."""
+        return self.arb(cmd)
+
     def _route_upstream_arb(self, state_handle, cmd_handle):
         """Routes an `ArbCmd` that originates from the upstream plugin."""
-        return self._route_arb(state_handle, 'upstream', cmd_handle, self.arb)
+        return self._route_arb(state_handle, 'upstream', cmd_handle, '_forward_upstream_arb')
 
     def _to_pdef(self):
         """Creates a plugin definition handle for this plugin."""

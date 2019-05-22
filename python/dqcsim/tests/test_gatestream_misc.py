@@ -20,6 +20,9 @@ class TestFrontend(Frontend):
     def handle_host_cmd_advance(self, cycles=0):
         self.advance(cycles)
 
+    def handle_host_cmd_arb(self, iface='', op=''):
+        return ArbData(pickle.dumps(catch_errors(self.arb, iface, op)))
+
     def handle_host_cmd_stats(self, qubit=1):
         return ArbData(pickle.dumps((
             catch_errors(self.get_measurement, qubit),
@@ -51,16 +54,25 @@ class TestOperator1(NullOperator):
     def handle_advance(self, cycles):
         self.advance(cycles*2)
 
+    def handle_upstream_b_b(self):
+        return ArbData(b'oper')
+
 @plugin("Test operator 2", "Test", "0.1")
 class TestOperator2(NullOperator):
     def handle_measurement(self, measurement):
         measurement.value = True
         return [measurement]
 
+    def handle_upstream_a_a(self):
+        return ArbData(b'oper')
+
 @plugin("Test operator 3", "Test", "0.1")
 class TestOperator3(NullOperator):
     def handle_measurement(self, measurement):
         pass
+
+    def handle_upstream_a_b(self):
+        return ArbData(b'oper')
 
 @plugin("Null backend plugin", "Test", "0.1")
 class NullBackend(Backend):
@@ -69,6 +81,9 @@ class NullBackend(Backend):
 
     def handle_measurement_gate(self, measures):
         return [Measurement(qubit, False) for qubit in measures]
+
+    def handle_upstream_a_b(self):
+        return ArbData(b'back')
 
 class Tests(unittest.TestCase):
     def test_null_operator(self):
@@ -104,6 +119,16 @@ class Tests(unittest.TestCase):
             10,
             10,
         ))
+
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='a', op='b')[0]),
+            ArbData(b'back'))
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='a', op='a')[0]),
+            'Invalid operation ID a for interface ID a')
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='b', op='b')[0]),
+            ArbData())
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='b', op='a')[0]),
+            ArbData())
+
         sim.stop()
 
     def test_operator1(self):
@@ -163,6 +188,16 @@ class Tests(unittest.TestCase):
             20,
             20,
         ))
+
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='a', op='b')[0]),
+            ArbData(b'back'))
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='a', op='a')[0]),
+            'Invalid operation ID a for interface ID a')
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='b', op='b')[0]),
+            ArbData(b'oper'))
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='b', op='a')[0]),
+            'Invalid operation ID a for interface ID b')
+
         sim.stop()
 
     def test_operator2(self):
@@ -198,6 +233,16 @@ class Tests(unittest.TestCase):
             10,
             10,
         ))
+
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='a', op='b')[0]),
+            'Invalid operation ID b for interface ID a')
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='a', op='a')[0]),
+            ArbData(b'oper'))
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='b', op='b')[0]),
+            ArbData())
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='b', op='a')[0]),
+            ArbData())
+
         sim.stop()
 
     def test_operator3(self):
@@ -233,6 +278,16 @@ class Tests(unittest.TestCase):
             10,
             10,
         ))
+
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='a', op='b')[0]),
+            ArbData(b'oper'))
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='a', op='a')[0]),
+            'Invalid operation ID a for interface ID a')
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='b', op='b')[0]),
+            ArbData())
+        self.assertEqual(pickle.loads(sim.arb('front', 'cmd', 'arb', iface='b', op='a')[0]),
+            ArbData())
+
         sim.stop()
 
 
