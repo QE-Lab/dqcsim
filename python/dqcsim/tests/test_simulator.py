@@ -238,6 +238,17 @@ class Tests(unittest.TestCase):
         with self.assertRaises(TypeError):
             sim.with_operator(NullFrontend())
 
+    def test_with_syntax(self):
+        with Simulator(NullFrontend(), NullBackend(), repro=None, stderr_verbosity=Loglevel.OFF) as sim:
+            sim.send()
+            sim.start()
+            sim.wait()
+            sim.recv()
+
+            sim.send()
+            sim.run()
+            sim.recv()
+
     def test_init_arbs(self):
         sim = Simulator(
             (NullFrontend(), {'init': ArbCmd('x', 'y')}), NullOperator(), NullBackend(),

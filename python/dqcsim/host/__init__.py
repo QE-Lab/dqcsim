@@ -559,11 +559,18 @@ class Simulator(object):
             ret = sim.wait()
             sim.stop()
             return ret
+
+        If a simulation was already running, the `simulate()` and `stop()`
+        calls are omitted.
         """
-        self.simulate()
-        self.start(*args, **kwargs)
-        ret = self.wait()
-        self.stop()
+        if self._sim_handle is None:
+            self.simulate()
+            self.start(*args, **kwargs)
+            ret = self.wait()
+            self.stop()
+        else:
+            self.start(*args, **kwargs)
+            ret = self.wait()
         return ret
 
     def simulate(self, seed=None):
@@ -643,6 +650,19 @@ class Simulator(object):
         # Delete the simulation handle.
         raw.dqcs_handle_delete(self._sim_handle.take())
         self._sim_handle = None
+
+    def __enter__(self):
+        """Allows you to use a `Simulator` object with the `with` syntax.
+        `simulate()` is called at the start of the `with` block; `stop()` is
+        called at the end of it."""
+        self.simulate()
+        return self
+
+    def __exit__(self, *_):
+        """Allows you to use a `Simulator` object with the `with` syntax.
+        `simulate()` is called at the start of the `with` block; `stop()` is
+        called at the end of it."""
+        self.stop()
 
     def start(self, *args, **kwargs):
         """Sends the `start` command to the simulated accelerator.
