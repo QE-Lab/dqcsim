@@ -1,6 +1,6 @@
 # Summary
 
-- [Introduction to DQCsim](./intro/index.md)
+- [Introduction to DQCsim](./index.md)
   - [The components of a simulation](./intro/components.md)
     - [Frontend use cases](./intro/frontend.md)
     - [Backend use cases](./intro/backend.md)
