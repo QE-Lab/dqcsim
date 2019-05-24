@@ -11,7 +11,7 @@ TEST(cq, sanity) {
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_ARB_CMD_QUEUE);
-  EXPECT_STREQ(dqcs_handle_dump(a), "ArbCmdQueue(\n    []\n)");
+  EXPECT_STREQ(dqcs_handle_dump(a), "ArbCmdQueue(\n    [],\n)");
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);

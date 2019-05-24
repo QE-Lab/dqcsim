@@ -143,39 +143,40 @@ class Operations(unittest.TestCase):
 
     def test_handles(self):
         a = ArbData(b'a', b'b', b'c', b=3, c=4, d=5)._to_raw()
+        self.maxDiff = None
         self.assertEqual(str(a), """ArbData(
     ArbData {
         json: Object(
             {
                 String(
-                    "b"
+                    "b",
                 ): U64(
-                    3
+                    3,
                 ),
                 String(
-                    "c"
+                    "c",
                 ): U64(
-                    4
+                    4,
                 ),
                 String(
-                    "d"
+                    "d",
                 ): U64(
-                    5
-                )
-            }
+                    5,
+                ),
+            },
         ),
         args: [
             [
-                97
+                97,
             ],
             [
-                98
+                98,
             ],
             [
-                99
-            ]
-        ]
-    }
+                99,
+            ],
+        ],
+    },
 )""")
 
         ArbData(b'c', b'd', b'e', b=6, c=7, d=8)._to_raw(a)
@@ -184,34 +185,34 @@ class Operations(unittest.TestCase):
         json: Object(
             {
                 String(
-                    "b"
+                    "b",
                 ): U64(
-                    6
+                    6,
                 ),
                 String(
-                    "c"
+                    "c",
                 ): U64(
-                    7
+                    7,
                 ),
                 String(
-                    "d"
+                    "d",
                 ): U64(
-                    8
-                )
-            }
+                    8,
+                ),
+            },
         ),
         args: [
             [
-                99
+                99,
             ],
             [
-                100
+                100,
             ],
             [
-                101
-            ]
-        ]
-    }
+                101,
+            ],
+        ],
+    },
 )""")
 
         self.assertEqual(ArbData._from_raw(a), ArbData(b'c', b'd', b'e', b=6, c=7, d=8))

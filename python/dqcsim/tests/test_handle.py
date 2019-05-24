@@ -14,10 +14,10 @@ class Tests(unittest.TestCase):
         self.assertEqual(str(h), """ArbData(
     ArbData {
         json: Object(
-            {}
+            {},
         ),
-        args: []
-    }
+        args: [],
+    },
 )""")
         self.assertEqual(repr(h), """Handle({})""".format(xh))
         self.assertEqual(h.get_type(), raw.DQCS_HTYPE_ARB_DATA)
@@ -41,10 +41,10 @@ class Tests(unittest.TestCase):
         self.assertEqual(str(h), """ArbData(
     ArbData {
         json: Object(
-            {}
+            {},
         ),
-        args: []
-    }
+        args: [],
+    },
 )""")
         self.assertEqual(repr(h), """Handle({})""".format(xh))
         self.assertEqual(h.get_type(), raw.DQCS_HTYPE_ARB_DATA)

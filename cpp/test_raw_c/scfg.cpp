@@ -183,7 +183,7 @@ TEST(scfg, tee) {
 
   // Check that the tee file configurations were added.
   s = dqcs_handle_dump(a);
-  EXPECT_STREQ(extract_array_from_dump("tee_files:", s), "tee_files: [ TeeFileConfiguration { filter: Warn, file: \"warnings\" }, TeeFileConfiguration { filter: Trace, file: \"trace\" }]");
+  EXPECT_STREQ(extract_array_from_dump("tee_files:", s), "tee_files: [ TeeFileConfiguration { filter: Warn, file: \"warnings\", }, TeeFileConfiguration { filter: Trace, file: \"trace\", },]");
   if (s) free(s);
 
   // Check that we can't do silly things.

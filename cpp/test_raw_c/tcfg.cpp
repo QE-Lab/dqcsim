@@ -120,7 +120,7 @@ TEST(tcfg, init) {
   ASSERT_NE(b, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_tcfg_init_cmd(a, b), dqcs_return_t::DQCS_SUCCESS);
   s = dqcs_handle_dump(a);
-  EXPECT_STREQ(extract_array_from_dump("init_cmds:", s), "init_cmds: [ ArbCmd { interface_identifier: \"a\", operation_identifier: \"b\", data: ArbData { json: Object( {} ), args: [] } }]");
+  EXPECT_STREQ(extract_array_from_dump("init_cmds:", s), "init_cmds: [ ArbCmd { interface_identifier: \"a\", operation_identifier: \"b\", data: ArbData { json: Object( {}, ), args: [], }, },]");
   if (s) free(s);
 
   // Some errors.
@@ -163,7 +163,7 @@ TEST(tcfg, tee) {
 
   // Check that the tee file configurations were added.
   s = dqcs_handle_dump(a);
-  EXPECT_STREQ(extract_array_from_dump("tee_files:", s), "tee_files: [ TeeFileConfiguration { filter: Warn, file: \"warnings\" }, TeeFileConfiguration { filter: Trace, file: \"trace\" }]");
+  EXPECT_STREQ(extract_array_from_dump("tee_files:", s), "tee_files: [ TeeFileConfiguration { filter: Warn, file: \"warnings\", }, TeeFileConfiguration { filter: Trace, file: \"trace\", },]");
   if (s) free(s);
 
   // Check that we can't do silly things.

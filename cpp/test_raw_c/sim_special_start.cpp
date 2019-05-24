@@ -99,7 +99,7 @@ TEST(sim_special_start, start_wait_front) {
   SIM_FOOTER;
 
   EXPECT_EQ(cfg.join_handle_type, dqcs_handle_type_t::DQCS_HTYPE_PLUGIN_JOIN);
-  EXPECT_EQ(cfg.join_handle_dump, "PluginJoinHandle(\n    JoinHandle { .. }\n)");
+  EXPECT_EQ(cfg.join_handle_dump, "PluginJoinHandle(\n    JoinHandle { .. },\n)");
   EXPECT_EQ(cfg.retval, dqcs_return_t::DQCS_SUCCESS);
 }
 
@@ -137,7 +137,7 @@ TEST(sim_special_start, start_front) {
   SIM_FOOTER;
 
   EXPECT_EQ(cfg.join_handle_type, dqcs_handle_type_t::DQCS_HTYPE_PLUGIN_JOIN);
-  EXPECT_EQ(cfg.join_handle_dump, "PluginJoinHandle(\n    JoinHandle { .. }\n)");
+  EXPECT_EQ(cfg.join_handle_dump, "PluginJoinHandle(\n    JoinHandle { .. },\n)");
 }
 
 // Test starting the wrong type of plugin.

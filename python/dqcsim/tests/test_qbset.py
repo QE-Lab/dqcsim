@@ -8,7 +8,7 @@ class Tests(unittest.TestCase):
     def test_all(self):
         a = QubitSet._to_raw()
         self.assertEqual(str(a), """QubitReferenceSet(
-    []
+    [],
 )""")
         self.assertEqual(QubitSet._from_raw(a), [])
 
@@ -16,9 +16,9 @@ class Tests(unittest.TestCase):
         self.assertEqual(str(a), """QubitReferenceSet(
     [
         QubitRef(
-            1
-        )
-    ]
+            1,
+        ),
+    ],
 )""")
         self.assertEqual(QubitSet._from_raw(a), [1])
 
@@ -26,15 +26,15 @@ class Tests(unittest.TestCase):
         self.assertEqual(str(a), """QubitReferenceSet(
     [
         QubitRef(
-            1
+            1,
         ),
         QubitRef(
-            2
+            2,
         ),
         QubitRef(
-            3
-        )
-    ]
+            3,
+        ),
+    ],
 )""")
         self.assertEqual(QubitSet._from_raw(a), [1, 2, 3])
 
@@ -42,15 +42,15 @@ class Tests(unittest.TestCase):
         self.assertEqual(str(a), """QubitReferenceSet(
     [
         QubitRef(
-            1
+            1,
         ),
         QubitRef(
-            2
+            2,
         ),
         QubitRef(
-            3
-        )
-    ]
+            3,
+        ),
+    ],
 )""")
         self.assertEqual(QubitSet._from_raw(a), [1, 2, 3])
 
