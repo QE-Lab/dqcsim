@@ -11,7 +11,7 @@ class Tests(unittest.TestCase):
 
         a = MeasurementSet._to_raw()
         self.assertEqual(str(a), """QubitMeasurementResultSet(
-    {}
+    {},
 )""")
         self.assertEqual(MeasurementSet._from_raw(a), [])
 
@@ -19,20 +19,20 @@ class Tests(unittest.TestCase):
         self.assertEqual(str(a), """QubitMeasurementResultSet(
     {
         QubitRef(
-            1
+            1,
         ): QubitMeasurementResult {
             qubit: QubitRef(
-                1
+                1,
             ),
             value: Zero,
             data: ArbData {
                 json: Object(
-                    {}
+                    {},
                 ),
-                args: []
-            }
-        }
-    }
+                args: [],
+            },
+        },
+    },
 )""")
         self.assertEqual(MeasurementSet._from_raw(a), [Measurement(1, 0)])
 

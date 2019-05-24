@@ -9,7 +9,7 @@ class Tests(unittest.TestCase):
     def test_all(self):
         a = ArbCmdQueue._to_raw()
         self.assertEqual(str(a), """ArbCmdQueue(
-    []
+    [],
 )""")
         self.assertEqual(ArbCmdQueue._from_raw(a), [])
 
@@ -21,12 +21,12 @@ class Tests(unittest.TestCase):
             operation_identifier: "b",
             data: ArbData {
                 json: Object(
-                    {}
+                    {},
                 ),
-                args: []
-            }
-        }
-    ]
+                args: [],
+            },
+        },
+    ],
 )""")
         self.assertEqual(ArbCmdQueue._from_raw(a), [ArbCmd('a', 'b')])
 
@@ -38,22 +38,22 @@ class Tests(unittest.TestCase):
             operation_identifier: "b",
             data: ArbData {
                 json: Object(
-                    {}
+                    {},
                 ),
-                args: []
-            }
+                args: [],
+            },
         },
         ArbCmd {
             interface_identifier: "c",
             operation_identifier: "d",
             data: ArbData {
                 json: Object(
-                    {}
+                    {},
                 ),
-                args: []
-            }
-        }
-    ]
+                args: [],
+            },
+        },
+    ],
 )""")
         self.assertEqual(ArbCmdQueue._from_raw(a), [ArbCmd('a', 'b'), ArbCmd('c', 'd')])
 
@@ -65,22 +65,22 @@ class Tests(unittest.TestCase):
             operation_identifier: "b",
             data: ArbData {
                 json: Object(
-                    {}
+                    {},
                 ),
-                args: []
-            }
+                args: [],
+            },
         },
         ArbCmd {
             interface_identifier: "c",
             operation_identifier: "d",
             data: ArbData {
                 json: Object(
-                    {}
+                    {},
                 ),
-                args: []
-            }
-        }
-    ]
+                args: [],
+            },
+        },
+    ],
 )""")
         self.assertEqual(ArbCmdQueue._from_raw(a), [ArbCmd('a', 'b'), ArbCmd('c', 'd')])
 

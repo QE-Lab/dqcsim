@@ -11,7 +11,7 @@ TEST(qbset, sanity) {
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_QUBIT_SET);
-  EXPECT_STREQ(dqcs_handle_dump(a), "QubitReferenceSet(\n    []\n)");
+  EXPECT_STREQ(dqcs_handle_dump(a), "QubitReferenceSet(\n    [],\n)");
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
@@ -69,7 +69,7 @@ TEST(qbset, test) {
   EXPECT_EQ(dqcs_handle_delete(it), dqcs_return_t::DQCS_SUCCESS);
 
   // The original set should still be intact.
-  EXPECT_STREQ(dqcs_handle_dump(a), "QubitReferenceSet(\n    [\n        QubitRef(\n            4\n        ),\n        QubitRef(\n            42\n        ),\n        QubitRef(\n            16\n        ),\n        QubitRef(\n            15\n        ),\n        QubitRef(\n            8\n        ),\n        QubitRef(\n            23\n        )\n    ]\n)");
+  EXPECT_STREQ(dqcs_handle_dump(a), "QubitReferenceSet(\n    [\n        QubitRef(\n            4,\n        ),\n        QubitRef(\n            42,\n        ),\n        QubitRef(\n            16,\n        ),\n        QubitRef(\n            15,\n        ),\n        QubitRef(\n            8,\n        ),\n        QubitRef(\n            23,\n        ),\n    ],\n)");
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);

@@ -11,7 +11,7 @@ TEST(meas, sanity) {
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_MEAS);
-  EXPECT_STREQ(dqcs_handle_dump(a), "QubitMeasurementResult(\n    QubitMeasurementResult {\n        qubit: QubitRef(\n            1\n        ),\n        value: One,\n        data: ArbData {\n            json: Object(\n                {}\n            ),\n            args: []\n        }\n    }\n)");
+  EXPECT_STREQ(dqcs_handle_dump(a), "QubitMeasurementResult(\n    QubitMeasurementResult {\n        qubit: QubitRef(\n            1,\n        ),\n        value: One,\n        data: ArbData {\n            json: Object(\n                {},\n            ),\n            args: [],\n        },\n    },\n)");
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);

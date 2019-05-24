@@ -51,35 +51,35 @@ class Tests(unittest.TestCase):
             json: Object(
                 {
                     String(
-                        "b"
+                        "b",
                     ): U64(
-                        3
+                        3,
                     ),
                     String(
-                        "c"
+                        "c",
                     ): U64(
-                        4
+                        4,
                     ),
                     String(
-                        "d"
+                        "d",
                     ): U64(
-                        5
-                    )
-                }
+                        5,
+                    ),
+                },
             ),
             args: [
                 [
-                    97
+                    97,
                 ],
                 [
-                    98
+                    98,
                 ],
                 [
-                    99
-                ]
-            ]
-        }
-    }
+                    99,
+                ],
+            ],
+        },
+    },
 )""")
 
         self.assertEqual(ArbCmd._from_raw(a_handle), a)
