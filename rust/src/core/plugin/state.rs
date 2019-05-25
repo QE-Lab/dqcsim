@@ -878,32 +878,42 @@ impl<'a> PluginState<'a> {
                 )))
                 .unwrap();
 
-            // Fetch the next message.
-            let request = self
-                .connection
-                .next_request()?
-                .ok_or_else(oe_err("Simulation aborted"))?;
+            // Inner message loop for non-RunRequest messages. RunRequest
+            // messages break out of it so the response is sent by the above
+            // code.
+            while self.host_to_frontend_data.is_empty() {
+                // Fetch the next message.
+                let request = self
+                    .connection
+                    .next_request()?
+                    .ok_or_else(oe_err("Simulation aborted"))?;
 
-            // If the message is a RunRequest, we need to handle it locally.
-            // All other messages are handled the usual way using
-            // `handle_incoming_message()`.
-            if let IncomingMessage::Simulator(SimulatorToPlugin::RunRequest(request)) = request {
-                // Make sure to select the right RNG.
-                if let Some(ref mut rng) = self.rng {
-                    rng.select(0)
+                // If the message is a RunRequest, we need to handle it
+                // locally. All other messages are handled the usual way using
+                // `handle_incoming_message()`.
+                if let IncomingMessage::Simulator(SimulatorToPlugin::RunRequest(request)) = request
+                {
+                    // Make sure to select the right RNG.
+                    if let Some(ref mut rng) = self.rng {
+                        rng.select(0)
+                    }
+                    self.synchronized_to_rpcs = true;
+
+                    // Store the incoming messages for recv().
+                    self.host_to_frontend_data.extend(request.messages);
+
+                    // start should not be set; can't run multiple programs in
+                    // parallel.
+                    if request.start.is_some() {
+                        return err("Protocol error: cannot start accelerator while accelerator is already running");
+                    }
+
+                    // Break out of the inner loop so the RunResponse will be
+                    // sent.
+                    break;
+                } else if self.handle_incoming_message(request)? {
+                    return err("Simulation aborted");
                 }
-                self.synchronized_to_rpcs = true;
-
-                // Store the incoming messages for recv().
-                self.host_to_frontend_data.extend(request.messages);
-
-                // If start is set, call the run() callback.
-                if request.start.is_some() {
-                    return err("Protocol error: cannot start accelerator while accelerator is already running");
-                }
-                continue;
-            } else if self.handle_incoming_message(request)? {
-                return err("Simulation aborted");
             }
         }
         Ok(self.host_to_frontend_data.pop_front().unwrap())
