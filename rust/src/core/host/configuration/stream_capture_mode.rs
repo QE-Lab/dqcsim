@@ -1,11 +1,13 @@
-use crate::common::{error::Error, log::Loglevel};
+use crate::common::{error::Error, log::Loglevel, util::friendly_enum_parse};
+use named_type::NamedType;
+use named_type_derive::*;
 use serde::{Deserialize, Serialize};
 use std::process::Stdio;
 use strum_macros::{Display, EnumIter, EnumString};
 
 /// All loglevel options plus pass and null, used to specify how a
 /// stdout/stderr stream should be captured.
-#[derive(Display, EnumIter, EnumString, Debug, Copy, Clone, PartialEq)]
+#[derive(Display, EnumIter, EnumString, NamedType, Debug, Copy, Clone, PartialEq)]
 enum StreamCaptureOption {
     Pass,
     Null,
@@ -39,7 +41,8 @@ pub enum StreamCaptureMode {
 impl ::std::str::FromStr for StreamCaptureMode {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(match StreamCaptureOption::from_str(s)? {
+        let opt: StreamCaptureOption = friendly_enum_parse(s)?;
+        Ok(match opt {
             StreamCaptureOption::Pass => StreamCaptureMode::Pass,
             StreamCaptureOption::Null => StreamCaptureMode::Null,
             StreamCaptureOption::Fatal => StreamCaptureMode::Capture(Loglevel::Fatal),
