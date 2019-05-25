@@ -62,14 +62,11 @@ impl Plugin for PluginProcess {
         // Setup connection channel
         let (server, server_name) = ipc::IpcOneShotServer::new()?;
 
+        // Get an absolute path to the plugin executable
+        let exe_path = self.configuration.specification.executable.canonicalize()?;
+
         // Test if plugin is executable
-        if !self
-            .configuration
-            .specification
-            .executable
-            .as_path()
-            .is_executable()
-        {
+        if !exe_path.is_executable() {
             return inv_op(format!(
                 "{} is not exectuable",
                 self.configuration.specification.executable.display()
@@ -77,7 +74,7 @@ impl Plugin for PluginProcess {
         }
 
         // Construct the child process
-        let mut command = process::Command::new(&self.configuration.specification.executable);
+        let mut command = process::Command::new(exe_path);
 
         // Script
         if let Some(script) = &self.configuration.specification.script {
