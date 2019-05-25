@@ -154,16 +154,18 @@ pub struct PluginState<'a> {
     upstream_issued_up_to: SequenceNumber,
 
     /// Stores mappings from downstream sequence numbers (.0) to upstream
-    /// sequence numbers (.1) to memorize postponed measurement results in
-    /// operator plugins.
+    /// sequence numbers (.1) and measurement results to memorize when
+    /// forwarded gatestream requests finish downstream.
     ///
-    /// When a measurement gate is performed that does not immediately return
-    /// all measurement results, an entry is made here using the current
-    /// downstream TX sequence number and the current upstream sequence number.
-    /// We're only allowed to acknowledge the upstream sequence number with
-    /// `CompletedUpTo` when the downstream sequence number is acknowledged.
-    /// At that point the entry is removed from this deque.
-    upstream_postponed: VecDeque<(SequenceNumber, SequenceNumber)>,
+    /// Whenever any pipelined request is performed by an operator, an entry is
+    /// made here using the current downstream TX sequence number and the
+    /// current upstream sequence number. If the pipelined request was a gate
+    /// that also returned some measurements immediately, these are stored as
+    /// well. We're only allowed to send those measurements and acknowledge the
+    /// upstream sequence number with `CompletedUpTo` when the downstream
+    /// sequence number is acknowledged. At that point the entry is removed
+    /// from this deque.
+    upstream_postponed: VecDeque<(SequenceNumber, SequenceNumber, Vec<QubitMeasurementResult>)>,
 
     /// The latest upstream sequence number for which we've sent the
     /// `CompletedUpTo` message.
@@ -487,12 +489,18 @@ impl<'a> PluginState<'a> {
         let mut updates = false;
         while !self.upstream_postponed.is_empty() {
             let mut acknowledged = false;
-            if let Some((downstream, _)) = self.upstream_postponed.front() {
+            if let Some((downstream, _, _)) = self.upstream_postponed.front() {
                 acknowledged = self.downstream_sequence_rx.acknowledges(*downstream);
             }
             if acknowledged {
                 updates = true;
-                self.upstream_postponed.pop_front();
+                let (_, _, postponed_measurements) = self.upstream_postponed.pop_front().unwrap();
+                for postponed_measurement in postponed_measurements {
+                    self.connection
+                        .send(OutgoingMessage::Upstream(GatestreamUp::Measured(
+                            postponed_measurement,
+                        )))?;
+                }
             } else {
                 break;
             }
@@ -513,7 +521,7 @@ impl<'a> PluginState<'a> {
         // still has postponed results that have not been received from
         // downstream yet. In that case, we can only indicate completion up to
         // the sequence number immediately before that one.
-        if let Some((_, upstream)) = self.upstream_postponed.front() {
+        if let Some((_, upstream, _)) = self.upstream_postponed.front() {
             if completed_up_to.after(upstream.preceding()) {
                 completed_up_to = upstream.preceding();
             }
@@ -585,6 +593,8 @@ impl<'a> PluginState<'a> {
                     }
                     self.synchronized_to_rpcs = true;
 
+                    trace!("Received a request from the host");
+
                     let response = OutgoingMessage::Simulator(match message {
                         SimulatorToPlugin::Initialize(req) => match self.handle_init(*req) {
                             Ok(x) => PluginToSimulator::Initialized(x),
@@ -649,6 +659,8 @@ impl<'a> PluginState<'a> {
                     // may not be properly synchronized.
                     self.synchronize_downstream()?;
 
+                    trace!("Returning control to the host");
+
                     self.connection.send(response)?;
                 }
                 IncomingMessage::Upstream(GatestreamDown::Pipelined(sequence, message)) => {
@@ -656,6 +668,10 @@ impl<'a> PluginState<'a> {
                         rng.select(1)
                     }
                     self.synchronized_to_rpcs = true;
+
+                    trace!("Received request {} from upstream", sequence);
+
+                    let mut queued_measurements = vec![];
 
                     let response = match message {
                         PipelinedGatestreamDown::Allocate(num_qubits, commands) => {
@@ -672,8 +688,7 @@ impl<'a> PluginState<'a> {
                             (self.definition.gate)(self, gate).and_then(|measurements| {
                             for measurement in measurements {
                                 if measures.remove(&measurement.qubit) {
-                                    self.connection
-                                        .send(OutgoingMessage::Upstream(GatestreamUp::Measured(measurement)))?;
+                                    queued_measurements.push(measurement);
                                 } else {
                                     err(format!(
                                         "user-defined gate() function returned multiple measurements for qubit {}",
@@ -725,12 +740,22 @@ impl<'a> PluginState<'a> {
                     // acknowledgement upstream.
                     if self.definition.get_type() == PluginType::Operator {
                         let back_sequence = self.downstream_sequence_tx.get_previous();
-                        self.upstream_postponed.push_back((back_sequence, sequence));
+                        self.upstream_postponed.push_back((
+                            back_sequence,
+                            sequence,
+                            queued_measurements,
+                        ));
                         trace!(
                             "Downstream needs to complete up to {} to ack {}",
                             back_sequence,
                             sequence
                         );
+                    } else {
+                        for measurement in queued_measurements {
+                            self.connection.send(OutgoingMessage::Upstream(
+                                GatestreamUp::Measured(measurement),
+                            ))?;
+                        }
                     }
 
                     // Changing upstream_issued_up_to and/or upstream_postponed
@@ -786,7 +811,9 @@ impl<'a> PluginState<'a> {
             .as_ref()
             .map(RandomNumberGenerator::get_selected)
             .unwrap_or(0);
+        trace!("Syncing up to {}", num);
         let result = self._synchronize_downstream_up_to(num);
+        trace!("Synced up to {}", num);
         if let Some(ref mut rng) = self.rng {
             rng.select(rng_index);
         }
