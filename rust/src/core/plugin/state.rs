@@ -686,8 +686,8 @@ impl<'a> PluginState<'a> {
                                     // These measurement results are postponed
                                     // until we receive (and maybe modify) them
                                     // from downstream.
-                                    trace!("Postponing measurement results for {} until downstream {}", sequence, self.downstream_sequence_tx.get_previous());
-                                    self.upstream_postponed.push_back((self.downstream_sequence_tx.get_previous(), sequence));
+                                    trace!("Postponing measurement results for {} until downstream {}",
+                                        sequence, self.downstream_sequence_tx.get_previous());
                                 } else {
                                     // Backends cannot postpone.
                                     err(format!(
@@ -720,8 +720,22 @@ impl<'a> PluginState<'a> {
                     self.upstream_issued_up_to = sequence;
                     trace!("We've just finished issuing {}", sequence);
 
-                    // Changing upstream_issued_up_to means we may have to send
-                    // the next CompletedUpTo message (probably, actually).
+                    // Operators need to wait for any downstream requests made
+                    // by user code to be acknowledged before forwarding the
+                    // acknowledgement upstream.
+                    if self.definition.get_type() == PluginType::Operator {
+                        let back_sequence = self.downstream_sequence_tx.get_previous();
+                        self.upstream_postponed.push_back((back_sequence, sequence));
+                        trace!(
+                            "Downstream needs to complete up to {} to ack {}",
+                            back_sequence,
+                            sequence
+                        );
+                    }
+
+                    // Changing upstream_issued_up_to and/or upstream_postponed
+                    // means we may be ready to send the next CompletedUpTo
+                    // message.
                     self.check_completed_up_to()?;
                 }
                 IncomingMessage::Upstream(GatestreamDown::ArbRequest(cmd)) => {
