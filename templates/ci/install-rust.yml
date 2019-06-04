@@ -5,12 +5,17 @@ parameters:
 steps:
 
 - script: |
+    rustup update ${{ parameters.rust }}
+  condition: eq(variables['Agent.OS'], 'Linux')
+  displayName: Use Rust ${{ parameters.rust }} (Linux)
+
+- script: |
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain ${{ parameters.rust }}
     echo "##vso[task.prependpath]$HOME/.cargo/bin"
-  displayName: Use Rust ${{ parameters.rust }}
+  condition: eq(variables['Agent.OS'], 'Darwin')
+  displayName: Use Rust ${{ parameters.rust }} (macOS)
 
 - script: |
     rustup component add clippy rustfmt --toolchain=${{ parameters.rust }}
-  condition: eq(${{ parameters.components }}, True)
-  displayName: Add Rust components
-
+  condition: and(eq(variables['Agent.OS'], 'Darwin'), eq(${{ parameters.components }}, True))
+  displayName: Add Rust components (macOS)
