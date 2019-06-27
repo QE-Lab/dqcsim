@@ -18,8 +18,10 @@ use crate::{
     },
     info, trace,
 };
-use rand::{RngCore, SeedableRng};
-use rand_chacha::ChaChaRng;
+use rand_chacha::{
+    rand_core::{RngCore, SeedableRng},
+    ChaChaRng,
+};
 use std::collections::VecDeque;
 use std::path::Path;
 
