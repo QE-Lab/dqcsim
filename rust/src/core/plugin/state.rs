@@ -23,9 +23,11 @@ use crate::{
     },
     trace, warn,
 };
-use rand::distributions::Standard;
-use rand::prelude::*;
-use rand_chacha::ChaChaRng;
+use rand::{distributions::Standard, Rng};
+use rand_chacha::{
+    rand_core::{RngCore, SeedableRng},
+    ChaChaRng,
+};
 use std::collections::{HashMap, HashSet, VecDeque};
 
 /// Deterministic random number generator used for plugins.
