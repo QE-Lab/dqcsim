@@ -49,5 +49,5 @@ fn main() {
         }
     });
 
-    PluginState::run(&definition, env::args().nth(1).unwrap().as_ref()).unwrap();
+    PluginState::run(&definition, env::args().nth(1).unwrap()).unwrap();
 }
