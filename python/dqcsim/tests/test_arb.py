@@ -146,21 +146,21 @@ class Operations(unittest.TestCase):
         self.maxDiff = None
         self.assertEqual(str(a), """ArbData(
     ArbData {
-        json: Object(
+        json: Map(
             {
-                String(
+                Text(
                     "b",
-                ): U64(
+                ): Integer(
                     3,
                 ),
-                String(
+                Text(
                     "c",
-                ): U64(
+                ): Integer(
                     4,
                 ),
-                String(
+                Text(
                     "d",
-                ): U64(
+                ): Integer(
                     5,
                 ),
             },
@@ -182,21 +182,21 @@ class Operations(unittest.TestCase):
         ArbData(b'c', b'd', b'e', b=6, c=7, d=8)._to_raw(a)
         self.assertEqual(str(a), """ArbData(
     ArbData {
-        json: Object(
+        json: Map(
             {
-                String(
+                Text(
                     "b",
-                ): U64(
+                ): Integer(
                     6,
                 ),
-                String(
+                Text(
                     "c",
-                ): U64(
+                ): Integer(
                     7,
                 ),
-                String(
+                Text(
                     "d",
-                ): U64(
+                ): Integer(
                     8,
                 ),
             },

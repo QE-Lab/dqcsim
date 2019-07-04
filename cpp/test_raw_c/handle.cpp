@@ -35,7 +35,7 @@ TEST(handle, test) {
   EXPECT_EQ(a, 1u) << "Unexpected error: " << dqcs_error_get();
 
   EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_FAILURE);
-  EXPECT_STREQ(dqcs_error_get(), "Leak check: 1 handles remain, 1 = ArbData(ArbData { json: Object({}), args: [] })");
+  EXPECT_STREQ(dqcs_error_get(), "Leak check: 1 handles remain, 1 = ArbData(ArbData { json: Map({}), args: [] })");
 
   dqcs_handle_t b = dqcs_qbset_new();
   EXPECT_EQ(b, 2u) << "Unexpected error: " << dqcs_error_get();
@@ -63,7 +63,7 @@ TEST(handle, test) {
     dqcs_arb_new();
   }
   EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_FAILURE);
-  EXPECT_STREQ(dqcs_error_get(), "Leak check: 15 handles remain, 5 = ArbData(ArbData { json: Object({}), args: [] }), 6 = ArbData(ArbData { json: Object({}), args: [] }), 7 = ArbData(ArbData { json: Object({}), args: [] }), 8 = ArbData(ArbData { json: Object({}), args: [] }), 9 = ArbData(ArbData { json: Object({}), args: [] }), 10 = ArbData(ArbData { json: Object({}), args: [] }), 11 = ArbData(ArbData { json: Object({}), args: [] }), 12 = ArbData(ArbData { json: Object({}), args: [] }), 13 = ArbData(ArbData { json: Object({}), args: [] }), 14 = ArbData(ArbData { json: Object({}), args: [] }), and 5 more");
+  EXPECT_STREQ(dqcs_error_get(), "Leak check: 15 handles remain, 5 = ArbData(ArbData { json: Map({}), args: [] }), 6 = ArbData(ArbData { json: Map({}), args: [] }), 7 = ArbData(ArbData { json: Map({}), args: [] }), 8 = ArbData(ArbData { json: Map({}), args: [] }), 9 = ArbData(ArbData { json: Map({}), args: [] }), 10 = ArbData(ArbData { json: Map({}), args: [] }), 11 = ArbData(ArbData { json: Map({}), args: [] }), 12 = ArbData(ArbData { json: Map({}), args: [] }), 13 = ArbData(ArbData { json: Map({}), args: [] }), 14 = ArbData(ArbData { json: Map({}), args: [] }), and 5 more");
 
   // Cleanup.
   EXPECT_EQ(dqcs_handle_delete_all(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();

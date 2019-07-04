@@ -13,7 +13,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(int(h), xh)
         self.assertEqual(str(h), """ArbData(
     ArbData {
-        json: Object(
+        json: Map(
             {},
         ),
         args: [],
@@ -40,7 +40,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(int(h), xh)
         self.assertEqual(str(h), """ArbData(
     ArbData {
-        json: Object(
+        json: Map(
             {},
         ),
         args: [],

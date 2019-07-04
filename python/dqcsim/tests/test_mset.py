@@ -26,7 +26,7 @@ class Tests(unittest.TestCase):
             ),
             value: Zero,
             data: ArbData {
-                json: Object(
+                json: Map(
                     {},
                 ),
                 args: [],

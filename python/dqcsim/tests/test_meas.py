@@ -52,21 +52,21 @@ class Tests(unittest.TestCase):
         ),
         value: One,
         data: ArbData {
-            json: Object(
+            json: Map(
                 {
-                    String(
+                    Text(
                         "b",
-                    ): U64(
+                    ): Integer(
                         3,
                     ),
-                    String(
+                    Text(
                         "c",
-                    ): U64(
+                    ): Integer(
                         4,
                     ),
-                    String(
+                    Text(
                         "d",
-                    ): U64(
+                    ): Integer(
                         5,
                     ),
                 },
@@ -97,7 +97,7 @@ class Tests(unittest.TestCase):
         ),
         value: Zero,
         data: ArbData {
-            json: Object(
+            json: Map(
                 {},
             ),
             args: [],
@@ -116,7 +116,7 @@ class Tests(unittest.TestCase):
         ),
         value: Undefined,
         data: ArbData {
-            json: Object(
+            json: Map(
                 {},
             ),
             args: [],

@@ -20,7 +20,7 @@ class Tests(unittest.TestCase):
             interface_identifier: "a",
             operation_identifier: "b",
             data: ArbData {
-                json: Object(
+                json: Map(
                     {},
                 ),
                 args: [],
@@ -37,7 +37,7 @@ class Tests(unittest.TestCase):
             interface_identifier: "a",
             operation_identifier: "b",
             data: ArbData {
-                json: Object(
+                json: Map(
                     {},
                 ),
                 args: [],
@@ -47,7 +47,7 @@ class Tests(unittest.TestCase):
             interface_identifier: "c",
             operation_identifier: "d",
             data: ArbData {
-                json: Object(
+                json: Map(
                     {},
                 ),
                 args: [],
@@ -64,7 +64,7 @@ class Tests(unittest.TestCase):
             interface_identifier: "a",
             operation_identifier: "b",
             data: ArbData {
-                json: Object(
+                json: Map(
                     {},
                 ),
                 args: [],
@@ -74,7 +74,7 @@ class Tests(unittest.TestCase):
             interface_identifier: "c",
             operation_identifier: "d",
             data: ArbData {
-                json: Object(
+                json: Map(
                     {},
                 ),
                 args: [],
