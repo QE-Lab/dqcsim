@@ -16,7 +16,7 @@ TEST(gate, sanity) {
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_GATE);
-  EXPECT_STREQ(dqcs_handle_dump(a), "Gate(\n    Gate {\n        name: Some(\n            \"NOP\",\n        ),\n        targets: [],\n        controls: [],\n        measures: [],\n        matrix: [],\n        data: ArbData {\n            json: Object(\n                {},\n            ),\n            args: [],\n        },\n    },\n)");
+  EXPECT_STREQ(dqcs_handle_dump(a), "Gate(\n    Gate {\n        name: Some(\n            \"NOP\",\n        ),\n        targets: [],\n        controls: [],\n        measures: [],\n        matrix: [],\n        data: ArbData {\n            json: Map(\n                {},\n            ),\n            args: [],\n        },\n    },\n)");
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);

@@ -568,7 +568,7 @@ mod tests {
         let g = Gate::new_custom(name, targets, controls, measures, matrix, data);
         assert!(g.is_ok());
         let g = g.unwrap();
-        assert_eq!(format!("{:?}", g), "Gate { name: Some(\"I\"), targets: [QubitRef(1)], controls: [QubitRef(2)], measures: [QubitRef(3)], matrix: [InternalComplex64 { re: 1.0, im: 0.0 }, InternalComplex64 { re: 0.0, im: 0.0 }, InternalComplex64 { re: 0.0, im: 0.0 }, InternalComplex64 { re: 1.0, im: 0.0 }], data: ArbData { json: Object({}), args: [] } }");
+        assert_eq!(format!("{:?}", g), "Gate { name: Some(\"I\"), targets: [QubitRef(1)], controls: [QubitRef(2)], measures: [QubitRef(3)], matrix: [InternalComplex64 { re: 1.0, im: 0.0 }, InternalComplex64 { re: 0.0, im: 0.0 }, InternalComplex64 { re: 0.0, im: 0.0 }, InternalComplex64 { re: 1.0, im: 0.0 }], data: ArbData { json: Map({}), args: [] } }");
     }
 
 }

@@ -48,21 +48,21 @@ class Tests(unittest.TestCase):
         interface_identifier: "x",
         operation_identifier: "y",
         data: ArbData {
-            json: Object(
+            json: Map(
                 {
-                    String(
+                    Text(
                         "b",
-                    ): U64(
+                    ): Integer(
                         3,
                     ),
-                    String(
+                    Text(
                         "c",
-                    ): U64(
+                    ): Integer(
                         4,
                     ),
-                    String(
+                    Text(
                         "d",
-                    ): U64(
+                    ): Integer(
                         5,
                     ),
                 },

@@ -11,7 +11,7 @@ TEST(arb, sanity) {
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_ARB_DATA);
-  EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Object(\n            {},\n        ),\n        args: [],\n    },\n)");
+  EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Map(\n            {},\n        ),\n        args: [],\n    },\n)");
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
@@ -48,7 +48,7 @@ TEST(arb, json) {
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: expected value at line 1 column 1");
 
   // Check that the ArbData object is what we expect.
-  EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Object(\n            {\n                String(\n                    \"hello\",\n                ): String(\n                    \"world\",\n                ),\n            },\n        ),\n        args: [],\n    },\n)");
+  EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Map(\n            {\n                Text(\n                    \"hello\",\n                ): Text(\n                    \"world\",\n                ),\n            },\n        ),\n        args: [],\n    },\n)");
   EXPECT_STREQ(dqcs_arb_json_get(a), "{\"hello\":\"world\"}");
   EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 14);
   EXPECT_EQ(memcmp(cbor_buffer, "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF", 14), 0);
@@ -84,7 +84,7 @@ TEST(arb, cbor) {
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: unexpected code at offset 1");
 
   // Check that the ArbData object is what we expect.
-  EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Object(\n            {\n                String(\n                    \"hello\",\n                ): String(\n                    \"world\",\n                ),\n            },\n        ),\n        args: [],\n    },\n)");
+  EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Map(\n            {\n                Text(\n                    \"hello\",\n                ): Text(\n                    \"world\",\n                ),\n            },\n        ),\n        args: [],\n    },\n)");
   EXPECT_STREQ(dqcs_arb_json_get(a), "{\"hello\":\"world\"}");
   EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 14);
   EXPECT_EQ(memcmp(cbor_buffer, "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF", 14), 0);
@@ -148,7 +148,7 @@ TEST(arb, test1) {
   EXPECT_EQ(dqcs_arb_assign(b, a), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
   // Check the (massive) debug string.
-  EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Object(\n            {},\n        ),\n        args: [\n            [\n                70,\n                105,\n                114,\n                115,\n                116,\n                32,\n                97,\n                114,\n                103,\n                117,\n                109,\n                101,\n                110,\n                116,\n            ],\n            [\n                50,\n                110,\n                100,\n                32,\n                97,\n                114,\n                103,\n                117,\n                109,\n                101,\n                110,\n                116,\n            ],\n            [\n                51,\n                114,\n                100,\n                32,\n                97,\n                114,\n                103,\n                117,\n                109,\n                101,\n                110,\n                116,\n            ],\n            [\n                106,\n                5,\n                0,\n                0,\n            ],\n            [],\n        ],\n    },\n)");
+  EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Map(\n            {},\n        ),\n        args: [\n            [\n                70,\n                105,\n                114,\n                115,\n                116,\n                32,\n                97,\n                114,\n                103,\n                117,\n                109,\n                101,\n                110,\n                116,\n            ],\n            [\n                50,\n                110,\n                100,\n                32,\n                97,\n                114,\n                103,\n                117,\n                109,\n                101,\n                110,\n                116,\n            ],\n            [\n                51,\n                114,\n                100,\n                32,\n                97,\n                114,\n                103,\n                117,\n                109,\n                101,\n                110,\n                116,\n            ],\n            [\n                106,\n                5,\n                0,\n                0,\n            ],\n            [],\n        ],\n    },\n)");
 
   // Do some correct pops.
   char buf[9] = {33, 33, 33, 33, 33, 33, 33, 33, 0};
@@ -184,7 +184,7 @@ TEST(arb, test1) {
 
   // Check that the copy was not mutated.
   EXPECT_EQ(dqcs_arb_len(b), 5);
-  EXPECT_STREQ(dqcs_handle_dump(b), "ArbData(\n    ArbData {\n        json: Object(\n            {},\n        ),\n        args: [\n            [\n                70,\n                105,\n                114,\n                115,\n                116,\n                32,\n                97,\n                114,\n                103,\n                117,\n                109,\n                101,\n                110,\n                116,\n            ],\n            [\n                50,\n                110,\n                100,\n                32,\n                97,\n                114,\n                103,\n                117,\n                109,\n                101,\n                110,\n                116,\n            ],\n            [\n                51,\n                114,\n                100,\n                32,\n                97,\n                114,\n                103,\n                117,\n                109,\n                101,\n                110,\n                116,\n            ],\n            [\n                106,\n                5,\n                0,\n                0,\n            ],\n            [],\n        ],\n    },\n)");
+  EXPECT_STREQ(dqcs_handle_dump(b), "ArbData(\n    ArbData {\n        json: Map(\n            {},\n        ),\n        args: [\n            [\n                70,\n                105,\n                114,\n                115,\n                116,\n                32,\n                97,\n                114,\n                103,\n                117,\n                109,\n                101,\n                110,\n                116,\n            ],\n            [\n                50,\n                110,\n                100,\n                32,\n                97,\n                114,\n                103,\n                117,\n                109,\n                101,\n                110,\n                116,\n            ],\n            [\n                51,\n                114,\n                100,\n                32,\n                97,\n                114,\n                103,\n                117,\n                109,\n                101,\n                110,\n                116,\n            ],\n            [\n                106,\n                5,\n                0,\n                0,\n            ],\n            [],\n        ],\n    },\n)");
 
   // Try a no-return pop.
   EXPECT_EQ(dqcs_arb_pop(b), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
