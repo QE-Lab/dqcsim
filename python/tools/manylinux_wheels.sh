@@ -16,6 +16,8 @@ rm -rf $target
 
 docker build -t dqcsim-py-manylinux:1 -f "$cwd/Dockerfile" "$cwd"
 docker run --rm -v "$project":/io dqcsim-py-manylinux:1
+rm -rf $target/release
 
 docker build --build-arg MANYLINUX=2010 -t dqcsim-py-manylinux:2010 -f "$cwd/Dockerfile" "$cwd"
 docker run --rm -v "$project":/io dqcsim-py-manylinux:2010
+rm -rf $target/release
