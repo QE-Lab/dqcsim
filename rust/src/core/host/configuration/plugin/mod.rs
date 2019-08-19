@@ -45,7 +45,7 @@ pub trait PluginConfiguration: Debug {
     fn set_default_name(&mut self, default_name: String);
 }
 
-impl PluginConfiguration {
+impl dyn PluginConfiguration {
     pub fn get_name(&self) -> String {
         self.get_log_configuration().name
     }

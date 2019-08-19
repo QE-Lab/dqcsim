@@ -64,7 +64,7 @@ pub trait Plugin: Debug {
     fn rpc(&mut self, msg: SimulatorToPlugin) -> Result<PluginToSimulator>;
 }
 
-impl Plugin {
+impl dyn Plugin {
     /// Returns the name of this plugin from its logging configuration.
     pub fn name(&self) -> String {
         self.log_configuration().name

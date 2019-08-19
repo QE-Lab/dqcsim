@@ -12,6 +12,7 @@ readme = "../README.md"
 keywords = ["quantum", "simulation", "framework"]
 categories = ["simulation", "science"]
 license = "Apache-2.0"
+default-run = "dqcsim"
 
 [badges]
 # travis-ci = { repository = "mbrobbel/dqcsim" }
