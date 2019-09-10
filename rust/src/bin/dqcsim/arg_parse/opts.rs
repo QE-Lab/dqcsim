@@ -1,6 +1,6 @@
 use crate::arg_parse::plugins::*;
 use dqcsim::{
-    common::{log::tee_file::TeeFileConfiguration, log::*, types::*, util::*},
+    common::{log::tee_file::TeeFileConfiguration, log::*, types::*, util::friendly_enum_parse},
     host::{configuration::*, reproduction::*},
 };
 use std::path::PathBuf;
@@ -38,7 +38,7 @@ pub struct DQCsimStructOpt {
     #[structopt(
         long = "repro-out",
         value_name = "filename",
-        conflicts_with = "no_repro_out",
+        conflicts_with = "no-repro-out",
         parse(from_os_str)
     )]
     pub repro_out: Option<PathBuf>,
@@ -56,7 +56,7 @@ pub struct DQCsimStructOpt {
         value_name = "style",
         default_value = "keep",
         case_insensitive = true,
-        parse(try_from_str = "friendly_enum_parse")
+        parse(try_from_str = friendly_enum_parse)
     )]
     pub repro_path_style: ReproductionPathStyle,
 
@@ -106,7 +106,7 @@ pub struct DQCsimStructOpt {
         value_name = "level",
         default_value = "info",
         case_insensitive = true,
-        parse(try_from_str = "friendly_enum_parse")
+        parse(try_from_str = friendly_enum_parse)
     )]
     pub stderr_level: LoglevelFilter,
 
@@ -126,7 +126,7 @@ pub struct DQCsimStructOpt {
         value_name = "level",
         default_value = "trace",
         case_insensitive = true,
-        parse(try_from_str = "friendly_enum_parse")
+        parse(try_from_str = friendly_enum_parse)
     )]
     pub dqcsim_level: LoglevelFilter,
 
@@ -136,7 +136,7 @@ pub struct DQCsimStructOpt {
         value_name = "level",
         default_value = "trace",
         case_insensitive = true,
-        parse(try_from_str = "friendly_enum_parse")
+        parse(try_from_str = friendly_enum_parse)
     )]
     pub plugin_level: LoglevelFilter,
 
