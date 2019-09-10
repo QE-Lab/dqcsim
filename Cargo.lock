@@ -213,7 +213,7 @@ dependencies = [
 
 [[package]]
 name = "dqcsim"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "ansi_term 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "backtrace 0.3.37 (registry+https://github.com/rust-lang/crates.io-index)",

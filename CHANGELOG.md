@@ -1,3 +1,107 @@
+## [0.0.5] - 2019-09-10
+
+-  cea4d3506 Merge pull request #225 from mbrobbel/dependabot/cargo/structopt-0.3.1
+-  075caa32c Reflect structopt changes
+-  20e23c29a Merge pull request #232 from mbrobbel/dependabot/cargo/humantime-1.3.0
+-  dae2b24c0 Bump humantime from 1.2.0 to 1.3.0
+-  542f6635b Merge pull request #231 from mbrobbel/dependabot/cargo/serde_derive-1.0.100
+-  dda00c699 Merge pull request #230 from mbrobbel/dependabot/cargo/serde-1.0.100
+-  54a64ac19 Bump serde_derive from 1.0.99 to 1.0.100
+-  d00751dbb Bump serde from 1.0.99 to 1.0.100
+-  e87439e78 Merge pull request #229 from mbrobbel/dependabot/cargo/cc-1.0.45
+-  fbdcb6a32 Bump cc from 1.0.41 to 1.0.45
+-  5e3ebf1af Merge pull request #226 from mbrobbel/dependabot/cargo/getrandom-0.1.12
+-  62fa6e8c9 Merge pull request #224 from mbrobbel/dependabot/cargo/blake2b_simd-0.5.8
+-  648dfc56e Merge pull request #222 from mbrobbel/dependabot/cargo/backtrace-0.3.37
+-  cd2e7a3f5 Bump getrandom from 0.1.11 to 0.1.12
+-  0f02c7b1f Bump structopt from 0.2.18 to 0.3.1
+-  19352b0ea Bump blake2b_simd from 0.5.7 to 0.5.8
+-  382b59fbe Bump backtrace from 0.3.35 to 0.3.37
+-  b41fbd305 Merge pull request #220 from mbrobbel/dependabot/cargo/chrono-0.4.9
+-  bc4485c75 Bump chrono from 0.4.8 to 0.4.9
+-  31c6e8632 Merge pull request #219 from mbrobbel/dependabot/cargo/ansi_term-0.12.1
+-  74d5113cc Bump ansi_term from 0.12.0 to 0.12.1
+-  00767cad2 Merge pull request #218 from mbrobbel/dependabot/cargo/chrono-0.4.8
+-  f2b9fb29f Bump chrono from 0.4.7 to 0.4.8
+-  dc6cb8180 Merge pull request #216 from mbrobbel/dependabot/cargo/cc-1.0.41
+-  3447132e4 Bump cc from 1.0.40 to 1.0.41
+-  3c3a3025b Merge pull request #215 from mbrobbel/update-deps
+-  ac68d00f3 Update deps
+-  a5a89434c Merge pull request #209 from mbrobbel/dependabot/cargo/blake2b_simd-0.5.7
+-  f8d548e4c Merge pull request #205 from mbrobbel/dependabot/cargo/backtrace-0.3.35
+-  677373b95 Merge pull request #213 from mbrobbel/dependabot/cargo/lazy_static-1.4.0
+-  5f067f945 Bump lazy_static from 1.3.0 to 1.4.0
+-  1de96eac6 Bump backtrace from 0.3.34 to 0.3.35
+-  d92670c86 Merge pull request #200 from mbrobbel/dependabot/cargo/libc-0.2.62
+-  0913e821d Merge pull request #198 from mbrobbel/dependabot/cargo/toml-0.5.3
+-  47d31bae9 Bump blake2b_simd from 0.5.6 to 0.5.7
+-  1e44d0d42 Bump toml from 0.5.1 to 0.5.3
+-  24b666473 Bump libc from 0.2.60 to 0.2.62
+-  0b8299439 Merge pull request #211 from mbrobbel/dependabot/cargo/cbindgen-0.9.1
+-  061254318 Bump cbindgen from 0.9.0 to 0.9.1
+-  b0b9f304a Merge pull request #195 from mbrobbel/dependabot/cargo/cc-1.0.40
+-  77111825b Bump cc from 1.0.38 to 1.0.40
+-  dd4ca3322 Merge pull request #207 from mbrobbel/rust-1.37
+-  370e3a008 Update to Rust 1.37
+-  9225796ca Merge pull request #192 from mbrobbel/dependabot/cargo/redox_users-0.3.1
+-  8eb7380a3 Merge pull request #191 from mbrobbel/dependabot/cargo/term-0.6.1
+-  594d9599e Bump redox_users from 0.3.0 to 0.3.1
+-  56e5a917c Bump term from 0.6.0 to 0.6.1
+-  7094da4c4 Merge pull request #189 from mbrobbel/dependabot/cargo/backtrace-0.3.34
+-  d6537490f Bump backtrace from 0.3.33 to 0.3.34
+-  61760b00d Merge pull request #186 from mbrobbel/dependabot/cargo/getrandom-0.1.7
+-  8e40bf3c3 Merge pull request #188 from mbrobbel/dependabot/cargo/dirs-2.0.2
+-  0087265d0 Bump dirs from 2.0.1 to 2.0.2
+-  ddf6dbcfd Merge pull request #187 from mbrobbel/dependabot/cargo/dirs-sys-0.3.4
+-  3c24a51de Bump dirs-sys from 0.3.3 to 0.3.4
+-  2c1e72a92 Merge pull request #184 from mbrobbel/dependabot/cargo/serde-1.0.98
+-  c60526d5f Merge pull request #183 from mbrobbel/dependabot/cargo/serde_derive-1.0.98
+-  27727cdea Bump getrandom from 0.1.6 to 0.1.7
+-  5dc05de19 Bump serde from 1.0.97 to 1.0.98
+-  2b2f2f71d Merge pull request #185 from mbrobbel/dependabot/cargo/log-0.4.8
+-  4fa20085b Merge pull request #182 from mbrobbel/dependabot/cargo/term-0.6.0
+-  08ba63680 Bump log from 0.4.7 to 0.4.8
+-  3dc574ccb Bump serde_derive from 1.0.97 to 1.0.98
+-  adf508c95 Bump term from 0.5.2 to 0.6.0
+-  026a0f2bc Merge pull request #181 from mbrobbel/dependabot/cargo/rand_chacha-0.2.1
+-  32ea5f49d Bump rand_chacha from 0.2.0 to 0.2.1
+-  97f6eaa3a Merge pull request #180 from mbrobbel/dependabot/cargo/crossbeam-channel-0.3.9
+-  5da588d4f Bump crossbeam-channel from 0.3.8 to 0.3.9
+-  9bd959bba Merge pull request #179 from mbrobbel/dependabot/cargo/crossbeam-utils-0.6.6
+-  ab72ef7bc Bump crossbeam-utils from 0.6.5 to 0.6.6
+-  5c1ab28c6 Merge pull request #178 from mbrobbel/dependabot/cargo/cc-1.0.38
+-  a444248fd Bump cc from 1.0.37 to 1.0.38
+-  cb8185143 Merge pull request #175 from mbrobbel/dependabot/cargo/serde_derive-1.0.97
+-  dbc9ce35f Merge pull request #176 from mbrobbel/dependabot/cargo/serde-1.0.97
+-  2ebb0e881 Merge pull request #177 from mbrobbel/dependabot/cargo/whoami-0.5.3
+-  52ce84017 Bump whoami from 0.5.2 to 0.5.3
+-  6db4271b7 Merge pull request #172 from mbrobbel/dependabot/cargo/backtrace-sys-0.1.31
+-  051a46ccb Merge branch master into dependabot/cargo/backtrace-sys-0.1.31
+-  d5511a14e Merge pull request #171 from mbrobbel/dependabot/cargo/backtrace-0.3.33
+-  61bc1a6b7 Bump serde from 1.0.94 to 1.0.97
+-  9a99dc3eb Bump serde_derive from 1.0.94 to 1.0.97
+-  f5c2ab907 Bump backtrace-sys from 0.1.30 to 0.1.31
+-  673424462 Bump backtrace from 0.3.32 to 0.3.33
+-  8fea67d88 Merge pull request #168 from mbrobbel/dependabot/cargo/autocfg-0.1.5
+-  c8e886f1c Bump autocfg from 0.1.4 to 0.1.5
+-  a170a5c17 Merge pull request #167 from mbrobbel/dependabot/cargo/atty-0.2.13
+-  d09a11cff Bump atty from 0.2.12 to 0.2.13
+-  34970338e Merge pull request #166 from mbrobbel/dependabot/cargo/libc-0.2.60
+-  a11cfd23f Bump libc from 0.2.59 to 0.2.60
+-  7a72bb092 Merge pull request #165 from mbrobbel/dependabot/cargo/ansi_term-0.12.0
+-  9ba315701 Bump ansi_term from 0.11.0 to 0.12.0
+-  adee6b531 Merge pull request #164 from mbrobbel/dependabot/cargo/atty-0.2.12
+-  07e85f62d Merge pull request #163 from mbrobbel/dependabot/cargo/serde_cbor-0.10.1
+-  e71e339e9 Merge pull request #162 from mbrobbel/dependabot/cargo/log-0.4.7
+-  5cb028900 Bump atty from 0.2.11 to 0.2.12
+-  e2ea71c12 Bump serde_cbor from 0.10.0 to 0.10.1
+-  80a8a30e7 Bump log from 0.4.6 to 0.4.7
+-  7bbcb8abb Merge pull request #161 from mbrobbel/dependabot/cargo/arrayvec-0.4.11
+-  0759da957 Bump arrayvec from 0.4.10 to 0.4.11
+-  5f4c9be93 Merge pull request #160 from mbrobbel/dependabot/cargo/libc-0.2.59
+-  f640eac6e Bump libc from 0.2.58 to 0.2.59
+-  88e100c8b Update python manylinux build tools
+
 ## [0.0.4] - 2019-07-05
 
 -  db43b0402 Merge pull request #157 from mbrobbel/dependabot/cargo/serde_cbor-0.10.0
@@ -122,3 +226,4 @@
 [0.0.2]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.2
 [0.0.3]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.3
 [0.0.4]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.4
+[0.0.5]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.5
