@@ -275,7 +275,7 @@ mod tests {
             FRONTEND,
             BACKEND
         ))
-        .contains("--reproduce-exactly <filename>"));
+        .contains("--reproduce-exactly"));
     }
 
     #[test]
