@@ -78,5 +78,4 @@ mod test {
         assert_eq!(EnvMod::set("a", "b").to_string(), "a=b",);
         assert_eq!(EnvMod::remove("a").to_string(), "~a",);
     }
-
 }

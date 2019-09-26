@@ -137,5 +137,4 @@ mod tests {
         let s: String = qubits[0].into();
         assert_eq!(s, "1".to_string());
     }
-
 }

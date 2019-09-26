@@ -419,5 +419,4 @@ mod tests {
         assert!(err!(cli!(FRONTEND, BACKEND, "@front", "-l", "trace"))
             .contains("Cannot modify plugins unless"));
     }
-
 }
