@@ -229,5 +229,4 @@ mod tests {
         };
         assert_eq!(format!("{:?}", p), "PluginDefinition { name: \"name\", specification: PluginProcessSpecification { executable: \"/bin/echo\", script: None, typ: Operator }, functional: PluginProcessFunctionalConfiguration { init: [], env: [], work: \".\" }, nonfunctional: PluginNonfunctionalOpts { verbosity: None, tee_files: [], stdout_mode: None, stderr_mode: None, accept_timeout: None, shutdown_timeout: None } }");
     }
-
 }

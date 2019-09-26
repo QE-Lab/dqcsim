@@ -191,5 +191,4 @@ mod test {
         assert_eq!(format!("{}", HostCall::Recv), "recv");
         assert_eq!(format!("{}", HostCall::Yield), "yield");
     }
-
 }

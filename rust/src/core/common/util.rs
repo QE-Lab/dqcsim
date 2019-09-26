@@ -294,5 +294,4 @@ mod tests {
             "Invalid argument:  is an ambiguous test enum, it could mean either foo, bar, or baz"
         );
     }
-
 }
