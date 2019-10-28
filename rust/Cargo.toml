@@ -48,7 +48,7 @@ null-plugins = []
 bindings = ["cbindgen", "libc"]
 
 [dependencies]
-strum = "0.15"
+strum = "0.16"
 strum_macros = "0.15"
 named_type = "0.2"
 named_type_derive = "0.2"
