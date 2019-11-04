@@ -6,13 +6,43 @@ use num_complex::Complex64;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
-/// Represents a complex number internally.
-///
-/// Unfortunately we can't use Complex64 because it is not (de)serializable.
-#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
-struct InternalComplex64 {
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "Complex64")]
+struct Complex64Def {
     re: f64,
     im: f64,
+}
+
+/// This mod provides ser/de for Vec<Complex64>
+mod complex_serde {
+    use super::{Complex64, Complex64Def};
+    use serde::{
+        ser::SerializeSeq,
+        {Deserialize, Deserializer, Serialize, Serializer},
+    };
+
+    pub fn serialize<S>(value: &Vec<Complex64>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        #[derive(Serialize)]
+        struct Wrapper<'a>(#[serde(with = "Complex64Def")] &'a Complex64);
+        let mut seq = serializer.serialize_seq(Some(value.len()))?;
+        for c in value.iter().map(Wrapper) {
+            seq.serialize_element(&c)?;
+        }
+        seq.end()
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> std::result::Result<Vec<Complex64>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct Wrapper(#[serde(with = "Complex64Def")] Complex64);
+        let v = Vec::deserialize(deserializer)?;
+        Ok(v.into_iter().map(|Wrapper(c)| c).collect())
+    }
 }
 
 /// Represents a quantum gate.
@@ -104,13 +134,30 @@ pub struct Gate {
     /// the size of the matrix is fixed based on the number of target
     /// qubits. If a differently-sized matrix must be communicated, leave
     /// the matrix field unspecified and use the data object instead.
-    matrix: Vec<InternalComplex64>,
+    #[serde(with = "complex_serde")]
+    matrix: Vec<Complex64>,
 
     /// User-defined classical data to pass along with the gate.
     pub data: ArbData,
 }
 
 impl Gate {
+    /// Internal method to construct a gate.
+    pub(crate) fn unitary(
+        targets: Vec<QubitRef>,
+        controls: Vec<QubitRef>,
+        matrix: Vec<Complex64>,
+    ) -> Gate {
+        Gate {
+            name: None,
+            targets,
+            controls,
+            measures: vec![],
+            matrix,
+            data: ArbData::default(),
+        }
+    }
+
     /// Constructs a new unitary gate.
     pub fn new_unitary(
         targets: impl IntoIterator<Item = QubitRef>,
@@ -119,10 +166,7 @@ impl Gate {
     ) -> Result<Gate> {
         let targets: Vec<QubitRef> = targets.into_iter().collect();
         let controls: Vec<QubitRef> = controls.into_iter().collect();
-        let matrix: Vec<InternalComplex64> = matrix
-            .into_iter()
-            .map(|x| InternalComplex64 { re: x.re, im: x.im })
-            .collect();
+        let matrix: Vec<Complex64> = matrix.into_iter().collect();
 
         // We need at least one target.
         if targets.is_empty() {
@@ -196,11 +240,7 @@ impl Gate {
         let targets: Vec<QubitRef> = targets.into_iter().collect();
         let controls: Vec<QubitRef> = controls.into_iter().collect();
         let measures: Vec<QubitRef> = measures.into_iter().collect();
-        let matrix: Option<Vec<InternalComplex64>> = matrix.map(|x| {
-            x.into_iter()
-                .map(|x| InternalComplex64 { re: x.re, im: x.im })
-                .collect()
-        });
+        let matrix: Option<Vec<Complex64>> = matrix.map(|m| m.into_iter().collect());
         let data: ArbData = data.into();
 
         // Enforce uniqueness of the target/control qubits.
@@ -568,7 +608,6 @@ mod tests {
         let g = Gate::new_custom(name, targets, controls, measures, matrix, data);
         assert!(g.is_ok());
         let g = g.unwrap();
-        assert_eq!(format!("{:?}", g), "Gate { name: Some(\"I\"), targets: [QubitRef(1)], controls: [QubitRef(2)], measures: [QubitRef(3)], matrix: [InternalComplex64 { re: 1.0, im: 0.0 }, InternalComplex64 { re: 0.0, im: 0.0 }, InternalComplex64 { re: 0.0, im: 0.0 }, InternalComplex64 { re: 1.0, im: 0.0 }], data: ArbData { json: Map({}), args: [] } }");
+        assert_eq!(format!("{:?}", g), "Gate { name: Some(\"I\"), targets: [QubitRef(1)], controls: [QubitRef(2)], measures: [QubitRef(3)], matrix: [Complex { re: 1.0, im: 0.0 }, Complex { re: 0.0, im: 0.0 }, Complex { re: 0.0, im: 0.0 }, Complex { re: 1.0, im: 0.0 }], data: ArbData { json: Map({}), args: [] } }");
     }
-
 }
