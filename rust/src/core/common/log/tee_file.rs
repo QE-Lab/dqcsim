@@ -188,5 +188,4 @@ mod test {
         );
         tf.log(&record);
     }
-
 }

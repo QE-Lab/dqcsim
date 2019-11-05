@@ -642,5 +642,4 @@ mod tests {
             "  Trace     1:1  logger                  message"
         );
     }
-
 }

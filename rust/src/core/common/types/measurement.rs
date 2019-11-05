@@ -155,5 +155,4 @@ mod tests {
         let m: QubitMeasurementValue = o.into();
         assert!(m.is_one());
     }
-
 }

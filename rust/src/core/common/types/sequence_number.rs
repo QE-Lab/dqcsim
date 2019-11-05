@@ -134,5 +134,4 @@ mod tests {
     fn display() {
         assert_eq!(SequenceNumber(123).to_string(), "123");
     }
-
 }
