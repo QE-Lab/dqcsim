@@ -48,8 +48,8 @@ null-plugins = []
 bindings = ["cbindgen", "libc"]
 
 [dependencies]
-strum = "0.15"
-strum_macros = "0.15"
+strum = "0.16"
+strum_macros = "0.16"
 named_type = "0.2"
 named_type_derive = "0.2"
 serde = { version = "1.0", features = ["derive"] }
@@ -59,7 +59,7 @@ serde_yaml = "0.8"
 serde-transcode = "1.1"
 crossbeam-channel = "0.3"
 ipc-channel = "0.12"
-whoami = "0.5"
+whoami = "0.6"
 pathdiff = "0.1"
 lazy_static = "1.4"
 ref_thread_local = "0.0"
