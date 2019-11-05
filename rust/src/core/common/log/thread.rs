@@ -163,8 +163,8 @@ impl LogThread {
                 }
                 writeln!(t, "$")?;
             }
-            if t.is_some() {
-                t.unwrap().reset()?;
+            if let Some(mut t) = t {
+                t.reset()?;
             }
             Ok(())
         });

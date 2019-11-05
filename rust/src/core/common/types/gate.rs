@@ -21,7 +21,7 @@ mod complex_serde {
         {Deserialize, Deserializer, Serialize, Serializer},
     };
 
-    pub fn serialize<S>(value: &Vec<Complex64>, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(value: &[Complex64], serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
