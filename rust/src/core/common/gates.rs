@@ -13,6 +13,63 @@ macro_rules! c {
     };
 }
 
+/// Enumeration of predefined quantum gates.
+pub enum Gates {
+    I(QubitRef),
+    RX(QubitRef, f64),
+    RY(QubitRef, f64),
+    RZ(QubitRef, f64),
+    SWAP(QubitRef, QubitRef),
+    SQSWAP(QubitRef, QubitRef),
+    X(QubitRef),
+    X90(QubitRef),
+    MX90(QubitRef),
+    Y(QubitRef),
+    Y90(QubitRef),
+    MY90(QubitRef),
+    Z(QubitRef),
+    Z90(QubitRef),
+    MZ90(QubitRef),
+    S(QubitRef),
+    SDAG(QubitRef),
+    T(QubitRef),
+    TDAG(QubitRef),
+    H(QubitRef),
+    CNOT(QubitRef, QubitRef),
+    TOFFOLI(QubitRef, QubitRef, QubitRef),
+    FREDKIN(QubitRef, QubitRef, QubitRef),
+}
+
+impl Into<Gate> for Gates {
+    fn into(self) -> Gate {
+        match self {
+            Gates::I(q) => i_gate(q),
+            Gates::RX(q, theta) => rx_gate(q, theta),
+            Gates::RY(q, theta) => ry_gate(q, theta),
+            Gates::RZ(q, theta) => rz_gate(q, theta),
+            Gates::SWAP(q1, q2) => swap_gate(q1, q2),
+            Gates::SQSWAP(q1, q2) => sqswap_gate(q1, q2),
+            Gates::X(q) => x_gate(q),
+            Gates::X90(q) => x90_gate(q),
+            Gates::MX90(q) => mx90_gate(q),
+            Gates::Y(q) => y_gate(q),
+            Gates::Y90(q) => y90_gate(q),
+            Gates::MY90(q) => my90_gate(q),
+            Gates::Z(q) => z_gate(q),
+            Gates::Z90(q) => z90_gate(q),
+            Gates::MZ90(q) => mz90_gate(q),
+            Gates::S(q) => s_gate(q),
+            Gates::SDAG(q) => sdag_gate(q),
+            Gates::T(q) => t_gate(q),
+            Gates::TDAG(q) => tdag_gate(q),
+            Gates::H(q) => h_gate(q),
+            Gates::CNOT(c, q) => cnot_gate(c, q),
+            Gates::TOFFOLI(c1, c2, q) => toffoli_gate(c1, c2, q),
+            Gates::FREDKIN(c, q1, q2) => fredkin_gate(c, q1, q2),
+        }
+    }
+}
+
 /// Returns an I gate.
 pub fn i_gate(target: QubitRef) -> Gate {
     Gate::unitary(vec![target], vec![], vec![c!(1.), c!(0.), c!(0.), c!(1.)])
