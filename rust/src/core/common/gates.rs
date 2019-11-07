@@ -322,6 +322,14 @@ mod tests {
         )
         .is_ok());
 
+        let gate: Gate = Gates::SWAP(q1, q2).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
         let gate: Gate = Gates::SQSWAP(q1, q2).into();
         assert!(Gate::new_unitary(
             gate.get_targets().to_vec(),
