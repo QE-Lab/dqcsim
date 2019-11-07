@@ -2,6 +2,7 @@ use crate::common::{
     error::{inv_arg, Result},
     types::{ArbData, QubitRef},
 };
+use float_cmp::approx_eq;
 use num_complex::Complex64;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -189,6 +190,35 @@ impl Gate {
                 expected_size,
                 matrix.len()
             ));
+        }
+
+        // Validate matrix is unitary.
+        let dimension = 2usize.pow(targets.len() as u32);
+
+        // Get the complex conjugate transpose.
+        let mut conjugate_transpose = vec![Complex64::new(0., 0.); matrix.len()];
+        for j in 0..dimension {
+            for i in 0..dimension {
+                conjugate_transpose[j + i * dimension] = matrix[i + j * dimension].conj();
+            }
+        }
+
+        // Check if result of matrix multiplication is identity matrix.
+        for i in 0..dimension {
+            for j in 0..dimension {
+                let element = (0..dimension).fold(Complex64::new(0., 0.), |acc, k| {
+                    acc + (matrix[i * dimension + k] * conjugate_transpose[k * dimension + j])
+                });
+                let value = if i == j {
+                    Complex64::new(1., 0.)
+                } else {
+                    Complex64::new(0., 0.)
+                };
+                if !approx_eq!(f64, element.re, value.re) || !approx_eq!(f64, element.im, value.im)
+                {
+                    return inv_arg("provided matrix is non-unitary");
+                }
+            }
         }
 
         // Construct the Gate structure.
@@ -425,6 +455,15 @@ mod tests {
             Complex64::new(1f64, 1f64),
             Complex64::new(1f64, 1f64),
         ];
+        let g = Gate::new_unitary(targets.clone(), controls.clone(), matrix);
+        assert!(g.is_err());
+
+        let matrix = vec![
+            Complex64::new(1f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(1f64, 0f64),
+        ];
         let g = Gate::new_unitary(targets, controls, matrix);
         assert!(g.is_ok());
         let g = g.unwrap();
@@ -435,10 +474,10 @@ mod tests {
         assert_eq!(
             g.get_matrix(),
             Some(vec![
-                Complex64::new(1f64, 1f64),
-                Complex64::new(1f64, 1f64),
-                Complex64::new(1f64, 1f64),
-                Complex64::new(1f64, 1f64),
+                Complex64::new(1f64, 0f64),
+                Complex64::new(0f64, 0f64),
+                Complex64::new(0f64, 0f64),
+                Complex64::new(1f64, 0f64),
             ])
         );
     }

@@ -2,7 +2,7 @@
 
 use crate::common::types::{Gate, QubitRef};
 use num_complex::Complex64;
-use std::f64::consts::PI;
+use std::f64::consts::{FRAC_1_SQRT_2, PI};
 
 macro_rules! c {
     ($re:expr, $im:expr) => {
@@ -226,7 +226,7 @@ pub fn tdag_gate(target: QubitRef) -> Gate {
 
 /// Returns a Hadamard gate.
 pub fn h_gate(target: QubitRef) -> Gate {
-    let x = c!(1. / 2f64.sqrt());
+    let x = c!(FRAC_1_SQRT_2);
     Gate::unitary(vec![target], vec![], vec![x, x, x, -x])
 }
 
@@ -275,4 +275,195 @@ pub fn fredkin_gate(control: QubitRef, a: QubitRef, b: QubitRef) -> Gate {
             c!(1.),
         ],
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn validate_gates() {
+        let q = QubitRef::from_foreign(1u64).unwrap();
+        let q1 = QubitRef::from_foreign(2u64).unwrap();
+        let q2 = QubitRef::from_foreign(3u64).unwrap();
+        let c = QubitRef::from_foreign(4u64).unwrap();
+        let c1 = QubitRef::from_foreign(5u64).unwrap();
+        let c2 = QubitRef::from_foreign(6u64).unwrap();
+
+        let gate: Gate = Gates::I(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::RX(q, 0.5 * PI).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::RY(q, 0.5 * PI).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::RZ(q, 0.5 * PI).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::SQSWAP(q1, q2).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::X(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::X90(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::MX90(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::Y(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::Y90(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::MY90(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::Z(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::Z90(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::MZ90(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::S(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::SDAG(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::T(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::TDAG(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::H(q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::CNOT(c, q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::TOFFOLI(c1, c2, q).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+
+        let gate: Gate = Gates::FREDKIN(c, q1, q2).into();
+        assert!(Gate::new_unitary(
+            gate.get_targets().to_vec(),
+            gate.get_controls().to_vec(),
+            gate.get_matrix().unwrap()
+        )
+        .is_ok());
+    }
 }
