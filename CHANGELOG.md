@@ -1,3 +1,64 @@
+## [0.0.6] - 2019-11-0
+
+-  f3435061c Add swap gate validation test
+-  60bdeec47 Add some tests and a check in gate constructor to validatem matrix is unitary
+-  dd0862fdb Bump blake2b_simd from 0.5.8 to 0.5.9
+-  f48824f9e Add gates enum
+-  aac63f266 Bump synstructure from 0.12.1 to 0.12.2
+-  201507a36 Clippy
+-  38ac8f92c Rustfmt
+-  9f54d76e8 Add gates module with functions to generate common gates
+-  5f287e304 Bump cc from 1.0.46 to 1.0.47
+-  e0696ab64 Update some gate internals to improve Rust plugin dev
+-  3f9fd8533 Bump proc-macro2 from 1.0.3 to 1.0.6-  8edfc62f6 Bump strum_macros from 0.15.0 to 0.16.0
+-  62a98dc3f Bump toml from 0.5.4 to 0.5.5
+-  15c69a3a0 Bump serde_derive from 1.0.101 to 1.0.102
+-  7cd00ed71 Bump git-testament-derive from 0.1.7 to 0.1.8
+-  adb746163 Bump unicode-segmentation from 1.3.0 to 1.5.0
+-  3d7a72718 Bump wasm-bindgen from 0.2.52 to 0.2.53
+-  5402a2e6e Bump serde from 1.0.101 to 1.0.102
+-  76e0df781 Bump uuid from 0.8.0 to 0.8.1
+-  28a4e8069 Bump toml from 0.5.3 to 0.5.4
+-  ff06894d6 Bump git-testament from 0.1.6 to 0.1.7
+-  b1d199380 Bump strum from 0.15.0 to 0.16.0
+-  1cc67a774 Bump c2-chacha from 0.2.2 to 0.2.3
+-  ff6ed6f25 Bump autocfg from 0.1.6 to 0.1.7
+-  448cd99d5 Bump getrandom from 0.1.12 to 0.1.13
+-  9abee25c3 Bump libc from 0.2.64 to 0.2.65
+-  e2416192b Bump whoami from 0.5.3 to 0.6.0
+-  ecb55961d Bump backtrace from 0.3.38 to 0.3.40
+-  886ed60bf Bump ppv-lite86 from 0.2.5 to 0.2.6
+-  827ff10ad Bump ipc-channel from 0.12.1 to 0.12.2
+-  bf83ba829 Bump backtrace-sys from 0.1.31 to 0.1.32
+-  72652d12c Bump cc from 1.0.45 to 1.0.46
+-  7e71c31f9 Bump ipc-channel from 0.12.0 to 0.12.1
+-  5a95211ac Bump libc from 0.2.62 to 0.2.64
+-  8744cde07 Bump ryu from 1.0.1 to 1.0.2
+-  d2457f478 Bump bitflags from 1.2.0 to 1.2.1
+-  6d70643dd Bump half from 1.3.1 to 1.4.0
+-  1bd220354 Bump failure from 0.1.5 to 0.1.6
+-  21db07397 Bump ryu from 1.0.0 to 1.0.1
+-  e60063a1e Bump failure_derive from 0.1.5 to 0.1.6
+-  d5190c986 Bump structopt from 0.3.2 to 0.3.3
+-  be3922cef Bump iovec from 0.1.2 to 0.1.4
+-  c0ece439d Bump arrayvec from 0.4.11 to 0.4.12
+-  d24a3e625 Bump nodrop from 0.1.13 to 0.1.14
+-  713607063 Bump serde_yaml from 0.8.9 to 0.8.11
+-  184f9c112 Bump half from 1.3.0 to 1.3.1
+-  f0eb1c18e Bump serde_json from 1.0.40 to 1.0.41
+-  964d1a1d5 Bump serde_cbor from 0.10.1 to 0.10.2
+-  c0c453ed5 Update to Rust 1.38
+-  f1fea0fe2 Bump bincode from 1.1.4 to 1.2.0
+-  31d6f00b9 Bump cfg-if from 0.1.9 to 0.1.10
+-  6c255e44d Bump bitflags from 1.1.0 to 1.2.0
+-  f1fa8d126 Bump backtrace from 0.3.37 to 0.3.38
+-  33086e280 Bump structopt from 0.3.1 to 0.3.2
+-  181c6597c Bump rand from 0.7.1 to 0.7.2
+-  5d09135ad Bump serde from 1.0.100 to 1.0.101
+-  9c7c8f879 Bump serde_derive from 1.0.100 to 1.0.101
+-  bdc442b9c Update Cargo.lock
+-  e1e35044d Bump rand from 0.7.0 to 0.7.1
+
 ## [0.0.5] - 2019-09-10
 
 -  cea4d3506 Merge pull request #225 from mbrobbel/dependabot/cargo/structopt-0.3.1
@@ -227,3 +288,4 @@
 [0.0.3]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.3
 [0.0.4]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.4
 [0.0.5]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.5
+[0.0.6]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.6
