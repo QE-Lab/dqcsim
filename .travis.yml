@@ -89,8 +89,8 @@ matrix:
         - cargo test --all-targets
         - |
           for file in target/debug/{dqcsim-*,core-*}; do
-            [ -x "${file}" ] || continue; 
-            mkdir -p "target/cov/$(basename $file)"; 
+            [ -x "${file}" ] || continue;
+            mkdir -p "target/cov/$(basename $file)";
             kcov --exclude-pattern=/.cargo,/usr/lib,/tests/ --exclude-region='#[cfg(test)]' --verify "target/cov/$(basename $file)" "$file";
           done
       after_success:
@@ -116,7 +116,7 @@ matrix:
           cmake .. &&
           make -j &&
           cd .. &&
-          for file in `find build/cpp/test_* -executable -and -type f`; 
+          for file in `find build/cpp/dqcsim_c*_tests_* -executable -and -type f`;
             do [ -x "${file}" ] || continue;
             mkdir -p "target/cov/$(basename $file)";
             LD_LIBRARY_PATH=target/debug/ kcov --exclude-pattern=/.cargo,/usr,/cpp --verify "target/cov/$(basename $file)" "$file";
@@ -133,7 +133,7 @@ matrix:
         - docker build --build-arg MANYLINUX=$MANYLINUX_VERSION -t dqcsim-py-manylinux -f Dockerfile .
         - cd ../..
         - docker run --rm -e DQCSIM_DEBUG= -v `pwd`:/io dqcsim-py-manylinux
-    
+
     - <<: *manylinux-wheels
       name: Manylinux2010 wheels
       env:

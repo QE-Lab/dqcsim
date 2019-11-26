@@ -1,6 +1,5 @@
-
 #include <dqcsim_raw.hpp>
 
-namespace "dqcsim" {
+namespace dqcsim {
 
 }
