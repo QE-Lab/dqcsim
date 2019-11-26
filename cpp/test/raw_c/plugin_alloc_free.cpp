@@ -93,23 +93,28 @@ dqcs_return_t free_cb_back(void *user_data, dqcs_plugin_state_t state, dqcs_hand
   } \
   } while (0)
 
-dqcs_return_t initialize_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
-  ALLOC(2);
-  FREE_FAIL("Invalid argument: qubit 3 is not allocated", 1, 2, 3);
-  ALLOC(3);
-  FREE_OK(3, 2, 1);
-  FREE_OK();
-  ALLOC(0);
-  FREE_FAIL("Invalid argument: qubit 6 is not allocated", 4, 6, 5);
-  FREE_OK(4, 5);
-  return dqcs_return_t::DQCS_SUCCESS;
+namespace alloc_free {
+
+  dqcs_return_t initialize_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
+    ALLOC(2);
+    FREE_FAIL("Invalid argument: qubit 3 is not allocated", 1, 2, 3);
+    ALLOC(3);
+    FREE_OK(3, 2, 1);
+    FREE_OK();
+    ALLOC(0);
+    FREE_FAIL("Invalid argument: qubit 6 is not allocated", 4, 6, 5);
+    FREE_OK(4, 5);
+    return dqcs_return_t::DQCS_SUCCESS;
+  }
+
 }
+
 
 TEST(plugin_alloc_free, test) {
   operations_t ops_front, ops_oper, ops_back;
 
   SIM_HEADER;
-  ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, initialize_cb, NULL, &ops_front), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, alloc_free::initialize_cb, NULL, &ops_front), dqcs_return_t::DQCS_SUCCESS);
   ASSERT_EQ(dqcs_pdef_set_allocate_cb(oper, allocate_cb_oper, NULL, &ops_oper), dqcs_return_t::DQCS_SUCCESS);
   ASSERT_EQ(dqcs_pdef_set_free_cb(oper, free_cb_oper, NULL, &ops_oper), dqcs_return_t::DQCS_SUCCESS);
   ASSERT_EQ(dqcs_pdef_set_allocate_cb(back, allocate_cb_back, NULL, &ops_back), dqcs_return_t::DQCS_SUCCESS);

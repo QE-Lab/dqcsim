@@ -75,9 +75,9 @@ add_compile_unit(
     test/raw_c/sim_host.cpp
     test/raw_c/sim_special_start.cpp
     test/raw_c/plugin_init_drop_log.cpp
-    # test/raw_c/plugin_alloc_free.cpp
+    test/raw_c/plugin_alloc_free.cpp
     test/raw_c/plugin_gates.cpp
-    # test/raw_c/plugin_random.cpp
+    test/raw_c/plugin_random.cpp
   DEPS
     dqcsim
 )

@@ -36,18 +36,22 @@ typedef struct {
   EXPECT_EQ(data.aborts.empty(), true); \
   } while (0)
 
-dqcs_return_t initialize_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
-  dqcs_log_info("!@#$ Initialize: %s", (const char*)user_data);
+namespace init_drop_log {
 
-  dqcs_log_trace("!@#$ Trace");
-  dqcs_log_debug("!@#$ Debug");
-  dqcs_log_info("!@#$ Info");
-  dqcs_log_note("!@#$ Note");
-  dqcs_log_warn("!@#$ Warn");
-  dqcs_log_error("!@#$ Error");
-  dqcs_log_fatal("!@#$ Fatal");
+  dqcs_return_t initialize_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
+    dqcs_log_info("!@#$ Initialize: %s", (const char*)user_data);
 
-  return dqcs_return_t::DQCS_SUCCESS;
+    dqcs_log_trace("!@#$ Trace");
+    dqcs_log_debug("!@#$ Debug");
+    dqcs_log_info("!@#$ Info");
+    dqcs_log_note("!@#$ Note");
+    dqcs_log_warn("!@#$ Warn");
+    dqcs_log_error("!@#$ Error");
+    dqcs_log_fatal("!@#$ Fatal");
+
+    return dqcs_return_t::DQCS_SUCCESS;
+  }
+
 }
 
 dqcs_return_t initialize_cb_simple(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
@@ -105,11 +109,11 @@ TEST(plugin_init_drop_log, normal_flow) {
   data_t data;
   SIM_HEADER;
   dqcs_scfg_log_callback(sim, dqcs_loglevel_t::DQCS_LOG_TRACE, log_cb, NULL, &data);
-  dqcs_pdef_set_initialize_cb(front, initialize_cb, NULL, (void*)"front");
+  dqcs_pdef_set_initialize_cb(front, init_drop_log::initialize_cb, NULL, (void*)"front");
   dqcs_pdef_set_drop_cb(front, drop_cb, NULL, (void*)"front");
-  dqcs_pdef_set_initialize_cb(oper, initialize_cb, NULL, (void*)"oper");
+  dqcs_pdef_set_initialize_cb(oper, init_drop_log::initialize_cb, NULL, (void*)"oper");
   dqcs_pdef_set_drop_cb(oper, drop_cb, NULL, (void*)"oper");
-  dqcs_pdef_set_initialize_cb(back, initialize_cb, NULL, (void*)"back");
+  dqcs_pdef_set_initialize_cb(back, init_drop_log::initialize_cb, NULL, (void*)"back");
   dqcs_pdef_set_drop_cb(back, drop_cb, NULL, (void*)"back");
   SIM_CONSTRUCT;
   SIM_FOOTER;
@@ -155,9 +159,9 @@ TEST(plugin_init_drop_log, error_front) {
   dqcs_scfg_log_callback(sim, dqcs_loglevel_t::DQCS_LOG_TRACE, log_cb, NULL, &data);
   dqcs_pdef_set_initialize_cb(front, initialize_cb_fail, NULL, (void*)"front");
   dqcs_pdef_set_drop_cb(front, drop_cb, NULL, (void*)"front");
-  dqcs_pdef_set_initialize_cb(oper, initialize_cb, NULL, (void*)"oper");
+  dqcs_pdef_set_initialize_cb(oper, init_drop_log::initialize_cb, NULL, (void*)"oper");
   dqcs_pdef_set_drop_cb(oper, drop_cb, NULL, (void*)"oper");
-  dqcs_pdef_set_initialize_cb(back, initialize_cb, NULL, (void*)"back");
+  dqcs_pdef_set_initialize_cb(back, init_drop_log::initialize_cb, NULL, (void*)"back");
   dqcs_pdef_set_drop_cb(back, drop_cb, NULL, (void*)"back");
   SIM_CONSTRUCT_FAIL("Here's an error from front");
 
@@ -193,11 +197,11 @@ TEST(plugin_init_drop_log, error_oper) {
   data_t data;
   SIM_HEADER;
   dqcs_scfg_log_callback(sim, dqcs_loglevel_t::DQCS_LOG_TRACE, log_cb, NULL, &data);
-  dqcs_pdef_set_initialize_cb(front, initialize_cb, NULL, (void*)"front");
+  dqcs_pdef_set_initialize_cb(front, init_drop_log::initialize_cb, NULL, (void*)"front");
   dqcs_pdef_set_drop_cb(front, drop_cb, NULL, (void*)"front");
   dqcs_pdef_set_initialize_cb(oper, initialize_cb_fail, NULL, (void*)"oper");
   dqcs_pdef_set_drop_cb(oper, drop_cb, NULL, (void*)"oper");
-  dqcs_pdef_set_initialize_cb(back, initialize_cb, NULL, (void*)"back");
+  dqcs_pdef_set_initialize_cb(back, init_drop_log::initialize_cb, NULL, (void*)"back");
   dqcs_pdef_set_drop_cb(back, drop_cb, NULL, (void*)"back");
   SIM_CONSTRUCT_FAIL("Here's an error from oper");
 
@@ -224,9 +228,9 @@ TEST(plugin_init_drop_log, error_back) {
   data_t data;
   SIM_HEADER;
   dqcs_scfg_log_callback(sim, dqcs_loglevel_t::DQCS_LOG_TRACE, log_cb, NULL, &data);
-  dqcs_pdef_set_initialize_cb(front, initialize_cb, NULL, (void*)"front");
+  dqcs_pdef_set_initialize_cb(front, init_drop_log::initialize_cb, NULL, (void*)"front");
   dqcs_pdef_set_drop_cb(front, drop_cb, NULL, (void*)"front");
-  dqcs_pdef_set_initialize_cb(oper, initialize_cb, NULL, (void*)"oper");
+  dqcs_pdef_set_initialize_cb(oper, init_drop_log::initialize_cb, NULL, (void*)"oper");
   dqcs_pdef_set_drop_cb(oper, drop_cb, NULL, (void*)"oper");
   dqcs_pdef_set_initialize_cb(back, initialize_cb_fail, NULL, (void*)"back");
   dqcs_pdef_set_drop_cb(back, drop_cb, NULL, (void*)"back");

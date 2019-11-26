@@ -38,18 +38,22 @@ dqcs_return_t initialize_cb_front(void *user_data, dqcs_plugin_state_t state, dq
   return dqcs_return_t::DQCS_SUCCESS;
 }
 
-dqcs_return_t initialize_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
-  dqcs_log_debug("initialize_cb");
-  dqcs_handle_delete(init_cmds);
+namespace random_init {
 
-  samples_t *samples = (samples_t*)user_data;
+  dqcs_return_t initialize_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
+    dqcs_log_debug("initialize_cb");
+    dqcs_handle_delete(init_cmds);
 
-  for (int i = 0; i < 6; i++) {
-    samples->f64s.push(dqcs_plugin_random_f64(state));
-    samples->u64s.push(dqcs_plugin_random_u64(state));
+    samples_t *samples = (samples_t*)user_data;
+
+    for (int i = 0; i < 6; i++) {
+      samples->f64s.push(dqcs_plugin_random_f64(state));
+      samples->u64s.push(dqcs_plugin_random_u64(state));
+    }
+
+    return dqcs_return_t::DQCS_SUCCESS;
   }
 
-  return dqcs_return_t::DQCS_SUCCESS;
 }
 
 dqcs_handle_t modify_measurement_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t meas) {
@@ -83,9 +87,9 @@ TEST(plugin_random, run_consistency) {
   {
     SIM_HEADER;
     seed = dqcs_scfg_seed_get(sim);
-    ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
-    ASSERT_EQ(dqcs_pdef_set_initialize_cb(oper, initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
-    ASSERT_EQ(dqcs_pdef_set_initialize_cb(back, initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
+    ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, random_init::initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
+    ASSERT_EQ(dqcs_pdef_set_initialize_cb(oper, random_init::initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
+    ASSERT_EQ(dqcs_pdef_set_initialize_cb(back, random_init::initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
     ASSERT_EQ(dqcs_pdef_set_gate_cb(back, gate_cb, NULL, NULL), dqcs_return_t::DQCS_SUCCESS);
     SIM_CONSTRUCT;
     SIM_FOOTER;
@@ -94,9 +98,9 @@ TEST(plugin_random, run_consistency) {
   {
     SIM_HEADER;
     ASSERT_EQ(dqcs_scfg_seed_set(sim, seed), dqcs_return_t::DQCS_SUCCESS);
-    ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, initialize_cb, NULL, &b), dqcs_return_t::DQCS_SUCCESS);
-    ASSERT_EQ(dqcs_pdef_set_initialize_cb(oper, initialize_cb, NULL, &b), dqcs_return_t::DQCS_SUCCESS);
-    ASSERT_EQ(dqcs_pdef_set_initialize_cb(back, initialize_cb, NULL, &b), dqcs_return_t::DQCS_SUCCESS);
+    ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, random_init::initialize_cb, NULL, &b), dqcs_return_t::DQCS_SUCCESS);
+    ASSERT_EQ(dqcs_pdef_set_initialize_cb(oper, random_init::initialize_cb, NULL, &b), dqcs_return_t::DQCS_SUCCESS);
+    ASSERT_EQ(dqcs_pdef_set_initialize_cb(back, random_init::initialize_cb, NULL, &b), dqcs_return_t::DQCS_SUCCESS);
     ASSERT_EQ(dqcs_pdef_set_gate_cb(back, gate_cb, NULL, NULL), dqcs_return_t::DQCS_SUCCESS);
     SIM_CONSTRUCT;
     SIM_FOOTER;
@@ -132,9 +136,9 @@ TEST(plugin_random, modify_meas_consistency) {
   {
     SIM_HEADER;
     ASSERT_EQ(dqcs_scfg_seed_set(sim, 33), dqcs_return_t::DQCS_SUCCESS);
-    ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
-    ASSERT_EQ(dqcs_pdef_set_initialize_cb(oper, initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
-    ASSERT_EQ(dqcs_pdef_set_initialize_cb(back, initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
+    ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, random_init::initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
+    ASSERT_EQ(dqcs_pdef_set_initialize_cb(oper, random_init::initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
+    ASSERT_EQ(dqcs_pdef_set_initialize_cb(back, random_init::initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
     ASSERT_EQ(dqcs_pdef_set_gate_cb(back, gate_cb, NULL, NULL), dqcs_return_t::DQCS_SUCCESS);
     SIM_CONSTRUCT;
     SIM_FOOTER;
@@ -144,9 +148,9 @@ TEST(plugin_random, modify_meas_consistency) {
     SIM_HEADER;
     ASSERT_EQ(dqcs_scfg_seed_set(sim, 33), dqcs_return_t::DQCS_SUCCESS);
     ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, initialize_cb_front, NULL, &b), dqcs_return_t::DQCS_SUCCESS);
-    ASSERT_EQ(dqcs_pdef_set_initialize_cb(oper, initialize_cb, NULL, &b), dqcs_return_t::DQCS_SUCCESS);
+    ASSERT_EQ(dqcs_pdef_set_initialize_cb(oper, random_init::initialize_cb, NULL, &b), dqcs_return_t::DQCS_SUCCESS);
     ASSERT_EQ(dqcs_pdef_set_modify_measurement_cb(oper, modify_measurement_cb, NULL, &c), dqcs_return_t::DQCS_SUCCESS);
-    ASSERT_EQ(dqcs_pdef_set_initialize_cb(back, initialize_cb, NULL, &b), dqcs_return_t::DQCS_SUCCESS);
+    ASSERT_EQ(dqcs_pdef_set_initialize_cb(back, random_init::initialize_cb, NULL, &b), dqcs_return_t::DQCS_SUCCESS);
     ASSERT_EQ(dqcs_pdef_set_gate_cb(back, gate_cb, NULL, NULL), dqcs_return_t::DQCS_SUCCESS);
     SIM_CONSTRUCT;
     SIM_FOOTER;
@@ -189,9 +193,9 @@ TEST(plugin_random, system_consistency) {
   SIM_HEADER;
   ASSERT_EQ(dqcs_scfg_seed_set(sim, 33), dqcs_return_t::DQCS_SUCCESS);
   ASSERT_EQ(dqcs_pdef_set_initialize_cb(front, initialize_cb_front, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
-  ASSERT_EQ(dqcs_pdef_set_initialize_cb(oper, initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_initialize_cb(oper, random_init::initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
   ASSERT_EQ(dqcs_pdef_set_modify_measurement_cb(oper, modify_measurement_cb, NULL, &b), dqcs_return_t::DQCS_SUCCESS);
-  ASSERT_EQ(dqcs_pdef_set_initialize_cb(back, initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
+  ASSERT_EQ(dqcs_pdef_set_initialize_cb(back, random_init::initialize_cb, NULL, &a), dqcs_return_t::DQCS_SUCCESS);
   ASSERT_EQ(dqcs_pdef_set_gate_cb(back, gate_cb, NULL, NULL), dqcs_return_t::DQCS_SUCCESS);
   SIM_CONSTRUCT;
   SIM_FOOTER;

@@ -99,8 +99,12 @@ void free_cb(void *user_data) {
   (*((int*)user_data))++;
 }
 
-dqcs_return_t initialize_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
-  return dqcs_return_t::DQCS_FAILURE;
+namespace pdef {
+
+  dqcs_return_t initialize_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
+    return dqcs_return_t::DQCS_FAILURE;
+  }
+
 }
 
 dqcs_return_t drop_cb(void *user_data, dqcs_plugin_state_t state) {
@@ -148,7 +152,7 @@ TEST(pdef, frontend_cb) {
   ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Try setting all the supported callbacks.
-  EXPECT_EQ(dqcs_pdef_set_initialize_cb(a, initialize_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
+  EXPECT_EQ(dqcs_pdef_set_initialize_cb(a, pdef::initialize_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_pdef_set_drop_cb(a, drop_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_pdef_set_run_cb(a, run_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_pdef_set_host_arb_cb(a, host_arb_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
@@ -186,7 +190,7 @@ TEST(pdef, operator_cb) {
   ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Try setting all the supported callbacks.
-  EXPECT_EQ(dqcs_pdef_set_initialize_cb(a, initialize_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
+  EXPECT_EQ(dqcs_pdef_set_initialize_cb(a, pdef::initialize_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_pdef_set_drop_cb(a, drop_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_pdef_set_allocate_cb(a, allocate_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_pdef_set_free_cb(a, free_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
@@ -219,7 +223,7 @@ TEST(pdef, backend_cb) {
   ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Try setting all the supported callbacks.
-  EXPECT_EQ(dqcs_pdef_set_initialize_cb(a, initialize_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
+  EXPECT_EQ(dqcs_pdef_set_initialize_cb(a, pdef::initialize_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_pdef_set_drop_cb(a, drop_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_pdef_set_allocate_cb(a, allocate_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_pdef_set_free_cb(a, free_cb, free_cb, &user), dqcs_return_t::DQCS_SUCCESS);
