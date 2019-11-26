@@ -12,7 +12,7 @@ ExternalProject_Add(
     DOWNLOAD_COMMAND ""
     CONFIGURE_COMMAND ""
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/rust"
-    BUILD_IN_SOURCE ON
+    BINARY_DIR "${CMAKE_SOURCE_DIR}/target/include"
     BUILD_ALWAYS ON
     BUILD_COMMAND cargo build --release --all-features
     INSTALL_COMMAND ""
