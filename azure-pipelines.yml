@@ -61,4 +61,5 @@ jobs:
     vmImage: $(image)
   steps:
   - template: templates/ci/install-rust.yml
+  - template: templates/ci/install-cmake.yml
   - template: templates/ci/cpp.yml

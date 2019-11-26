@@ -1,0 +1,12 @@
+parameters:
+  version: 3.14.5
+
+steps:
+
+- script: |
+    curl -L https://github.com/Kitware/CMake/releases/download/v${{ parameters.version }}/cmake-${{ parameters.version }}-$AGENT_OS-x86_64.tar.gz | tar xz -C $HOME
+  displayName: Download CMake (${{ parameters.version }})
+
+- script: |
+    echo "##vso[task.prependpath]$HOME/cmake-${{ parameters.version }}-$AGENT_OS-x86_64/bin"
+  displayName: Use CMake (${{ parameters.version }})
