@@ -173,7 +173,8 @@ setup(
         ]),
         ('include', [
             'target/include/dqcsim.h',
-            'target/include/dqcsim_raw.hpp'
+            'target/include/dqcsim_raw.hpp',
+            'cpp/include/dqcsim.hpp',
         ]),
         ('lib', [
             output_dir + '/libdqcsim.' + ('so' if platform.system() == "Linux" else 'dylib')
