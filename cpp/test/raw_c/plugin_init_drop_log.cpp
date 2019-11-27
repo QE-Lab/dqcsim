@@ -1,10 +1,8 @@
-#include <dqcsim_raw.hpp>
+#include <dqcsim.h>
 #include <queue>
 #include <string>
 #include "gtest/gtest.h"
 #include "util.h"
-
-using namespace dqcsim;
 
 typedef struct {
   std::string message;

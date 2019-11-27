@@ -1,7 +1,7 @@
-#include "dqcsim.hpp"
+#include <dqcsim>
 #include "gtest/gtest.h"
 
-using namespace dqcsim;
+using namespace dqcsim::raw;
 
 dqcs_handle_t cb_run(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t args) {
   printf("User data: 0x%016llX\n", (long long)user_data);

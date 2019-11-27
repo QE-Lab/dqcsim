@@ -1,7 +1,5 @@
-#include <dqcsim_raw.hpp>
+#include <dqcsim.h>
 #include "gtest/gtest.h"
-
-using namespace dqcsim;
 
 // Test the handle API.
 TEST(handle, test) {

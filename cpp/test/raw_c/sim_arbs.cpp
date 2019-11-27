@@ -1,8 +1,6 @@
-#include <dqcsim_raw.hpp>
+#include <dqcsim.h>
 #include "gtest/gtest.h"
 #include "util.h"
-
-using namespace dqcsim;
 
 // Sanity-check.
 TEST(sim_arbs, sanity) {

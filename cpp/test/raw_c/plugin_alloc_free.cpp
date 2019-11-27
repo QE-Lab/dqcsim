@@ -1,10 +1,8 @@
-#include <dqcsim_raw.hpp>
+#include <dqcsim.h>
 #include "gtest/gtest.h"
 #include "util.h"
 #include <queue>
 #include <vector>
-
-using namespace dqcsim;
 
 typedef struct {
   bool alloc;

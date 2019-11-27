@@ -16,11 +16,15 @@ fn cbindgen() {
     );
 
     let trailer = include_str!("../src/bindings/trailer.inc");
+    let header_c = include_str!("../src/bindings/header_c.inc");
+    let header_cpp = include_str!("../src/bindings/header_cpp.inc");
 
     // Generate C headers.
     cbindgen::Builder::new()
         .with_crate(crate_dir.clone())
         .with_language(cbindgen::Language::C)
+        .with_no_includes()
+        .with_header(header_c)
         .with_trailer(trailer)
         .generate()
         .expect("Unable to generate bindings")
@@ -30,13 +34,13 @@ fn cbindgen() {
     cbindgen::Builder::new()
         .with_crate(crate_dir.clone())
         .with_language(cbindgen::Language::Cxx)
-        .with_include("unistd.h")
-        .with_include("stdio.h")
-        .with_namespace("dqcsim")
+        .with_no_includes()
+        .with_header(header_cpp)
+        .with_namespaces(&["dqcsim", "raw"])
         .with_trailer(trailer)
         .generate()
         .expect("Unable to generate bindings")
-        .write_to_file(format!("{}/dqcsim_raw.hpp", out_dir));
+        .write_to_file(format!("{}/cdqcsim", out_dir));
 
     // Generate SWIG header.
     cbindgen::Builder::new()

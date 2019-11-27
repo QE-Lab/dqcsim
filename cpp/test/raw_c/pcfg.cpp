@@ -1,10 +1,8 @@
-#include <dqcsim_raw.hpp>
+#include <dqcsim.h>
 #include "gtest/gtest.h"
 #include <fcntl.h>
 #include <math.h>
 #include "util.h"
-
-using namespace dqcsim;
 
 // Sanity check the plugin configuration API.
 TEST(pcfg, sanity) {

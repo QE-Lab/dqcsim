@@ -1,7 +1,5 @@
-#include <dqcsim_raw.hpp>
+#include <dqcsim.h>
 #include "gtest/gtest.h"
-
-using namespace dqcsim;
 
 const double X_MATRIX[] = {
   0.0, 0.0,   1.0, 0.0,

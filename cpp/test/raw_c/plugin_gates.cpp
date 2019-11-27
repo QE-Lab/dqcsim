@@ -1,10 +1,8 @@
-#include <dqcsim_raw.hpp>
+#include <dqcsim.h>
 #include "gtest/gtest.h"
 #include "util.h"
 #include <vector>
 #include <queue>
-
-using namespace dqcsim;
 
 // Because the C preprocessor is retarded and doesn't understand {}:
 #define QUBITS(...) __VA_ARGS__

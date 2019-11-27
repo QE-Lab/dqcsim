@@ -1,7 +1,5 @@
-#include <dqcsim_raw.hpp>
+#include <dqcsim.h>
 #include "gtest/gtest.h"
-
-using namespace dqcsim;
 
 // Sanity check the qubit set API.
 TEST(qbset, sanity) {

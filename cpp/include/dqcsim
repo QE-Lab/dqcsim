@@ -1,0 +1,13 @@
+// <dqcsim> -*- C++ -*-
+
+#ifndef _DQCSIM_INCLUDED_
+#define _DQCSIM_INCLUDED_
+
+#include <cdqcsim>
+
+namespace dqcsim {
+
+} // namespace dqcsim
+
+#endif
+

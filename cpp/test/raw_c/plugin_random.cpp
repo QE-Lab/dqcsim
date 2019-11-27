@@ -1,9 +1,7 @@
-#include <dqcsim_raw.hpp>
+#include <dqcsim.h>
 #include "gtest/gtest.h"
 #include "util.h"
 #include <queue>
-
-using namespace dqcsim;
 
 typedef struct {
   std::queue<double> f64s;
