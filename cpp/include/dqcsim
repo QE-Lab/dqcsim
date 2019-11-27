@@ -162,7 +162,7 @@ namespace wrap {
     /**
      * Delete the handle and its wrapper.
      */
-    ~Handle() noexcept {
+    virtual ~Handle() noexcept {
       if (handle) {
         raw::dqcs_handle_delete(handle);
       }
@@ -240,27 +240,13 @@ namespace wrap {
   /**
    * Class wrapper for handles that support the `arb` interface.
    */
-  class Arb : public Handle {
+  class Arb : virtual public Handle {
   public:
 
     /**
-     * Constructs an empty `ArbData` object.
+     * Wrap the given `arb` handle.
      */
-    Arb() : Handle(check(raw::dqcs_arb_new())) {
-    }
-
-    /**
-     * Copy-constructs an `ArbData` object.
-     */
-    Arb(const Arb &src) : Handle(check(raw::dqcs_arb_new())) {
-      check(raw::dqcs_arb_assign(handle, src.get()));
-    }
-
-    /**
-     * Copy assignment operator for `ArbData` objects.
-     */
-    void operator=(const Arb &src) {
-      check(raw::dqcs_arb_assign(handle, src.get()));
+    Arb(raw::dqcs_handle_t handle) : Handle(handle) {
     }
 
     /**
@@ -368,6 +354,33 @@ namespace wrap {
 
   };
 
+  /**
+   * Class wrapper for `ArbData` handles.
+   */
+  class ArbData : public Arb {
+  public:
+
+    /**
+     * Constructs an empty `ArbData` object.
+     */
+    ArbData() : Handle(check(raw::dqcs_arb_new())), Arb(/*unused*/0) {
+    }
+
+    /**
+     * Copy-constructs an `ArbData` object.
+     */
+    ArbData(const ArbData &src) : Handle(check(raw::dqcs_arb_new())), Arb(/*unused*/0) {
+      check(raw::dqcs_arb_assign(handle, src.get()));
+    }
+
+    /**
+     * Copy assignment operator for `ArbData` objects.
+     */
+    void operator=(const ArbData &src) {
+      check(raw::dqcs_arb_assign(handle, src.get()));
+    }
+
+  };
 
 } // namespace wrap
 
