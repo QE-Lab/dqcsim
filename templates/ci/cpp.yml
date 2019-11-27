@@ -1,7 +1,7 @@
 steps:
 
 - script: |
-    cmake . -DBUILD_TESTS=ON
+    cmake . -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
   displayName: CMake
 
 - script: |
