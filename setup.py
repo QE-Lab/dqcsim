@@ -125,6 +125,10 @@ class KCovCommand(distutils.cmd.Command):
             level=distutils.log.INFO)
         subprocess.check_call(command, env=kcov_env)
 
+include_files = {}
+for root, _, files in os.walk('cpp/include'):
+    assert root.startswith('cpp/')
+    include_files[root[4:]] = list(map(lambda name: os.path.join(root, name), files))
 
 setup(
     name = 'dqcsim',
@@ -174,12 +178,11 @@ setup(
         ('include', [
             'target/include/dqcsim.h',
             'target/include/cdqcsim',
-            'cpp/include/dqcsim',
-        ]),
+        ] + include_files.pop('include', [])),
         ('lib', [
             output_dir + '/libdqcsim.' + ('so' if platform.system() == "Linux" else 'dylib')
         ])
-    ],
+    ] + list(include_files.items()),
 
     packages = find_packages('python'),
     package_dir = {
