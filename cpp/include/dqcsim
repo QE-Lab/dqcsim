@@ -63,6 +63,17 @@ namespace wrap {
   }
 
   /**
+   * Checks a size return value; if failure, throws a runtime error
+   * with DQCsim's error message.
+   */
+  inline size_t check(ssize_t size) {
+    if (size < 0) {
+      throw std::runtime_error(raw::dqcs_error_get());
+    }
+    return static_cast<size_t>(size);
+  }
+
+  /**
    * Checks a `dqcs_handle_type_t` return value; if failure, throws a runtime
    * error with DQCsim's error message.
    */
@@ -133,7 +144,7 @@ namespace wrap {
    * Base class for wrapping any handle.
    */
   class Handle {
-  private:
+  protected:
 
     /**
      * The wrapped handle.
@@ -225,6 +236,138 @@ namespace wrap {
     }
 
   };
+
+  /**
+   * Class wrapper for handles that support the `arb` interface.
+   */
+  class Arb : public Handle {
+  public:
+
+    /**
+     * Constructs an empty `ArbData` object.
+     */
+    Arb() : Handle(check(raw::dqcs_arb_new())) {
+    }
+
+    /**
+     * Copy-constructs an `ArbData` object.
+     */
+    Arb(const Arb &src) : Handle(check(raw::dqcs_arb_new())) {
+      check(raw::dqcs_arb_assign(handle, src.get()));
+    }
+
+    /**
+     * Copy assignment operator for `ArbData` objects.
+     */
+    void operator=(const Arb &src) {
+      check(raw::dqcs_arb_assign(handle, src.get()));
+    }
+
+    /**
+     * Returns the current JSON data as a serialized JSON string.
+     */
+    std::string get_json() const {
+      char *json_c = check(raw::dqcs_arb_json_get(handle));
+      std::string json(json_c);
+      std::free(json_c);
+      return json;
+    }
+
+    /**
+     * Sets the JSON data to the given serialized JSON string.
+     */
+    void set_json(const std::string &json) {
+      check(raw::dqcs_arb_json_set(handle, json.c_str()));
+    }
+
+    /**
+     * Returns the current JSON data as a serialized CBOR string.
+     */
+    std::string get_cbor() const {
+      size_t size = check(raw::dqcs_arb_cbor_get(handle, nullptr, 0));
+      std::string cbor;
+      cbor.resize(size);
+      check(raw::dqcs_arb_cbor_get(handle, &cbor.front(), size));
+      return cbor;
+    }
+
+    /**
+     * Sets the JSON data to the given serialized CBOR string.
+     */
+    void set_cbor(const std::string &cbor) {
+      check(raw::dqcs_arb_cbor_set(handle, cbor.data(), cbor.size()));
+    }
+
+    /**
+     * Returns the unstructured binary string at the given index. Negative
+     * indices are relative to the back of the list, as in Python.
+     */
+    std::string get_string(ssize_t index) const {
+      size_t size = check(raw::dqcs_arb_get_size(handle, index));
+      std::string data;
+      data.resize(size);
+      check(raw::dqcs_arb_get_raw(handle, index, &data.front(), size));
+      return data;
+    }
+
+    /**
+     * Sets the unstructured binary string at the given index. Negative indices
+     * are relative to the back of the list, as in Python.
+     */
+    void set_string(ssize_t index, const std::string &data) {
+      check(raw::dqcs_arb_set_raw(handle, index, data.data(), data.size()));
+    }
+
+    /**
+     * Pushes to the back of the unstructured binary string list.
+     */
+    void push_string(const std::string &data) {
+      check(raw::dqcs_arb_push_raw(handle, data.data(), data.size()));
+    }
+
+    /**
+     * Pops from the back of the unstructured binary string list.
+     */
+    std::string pop_string() {
+      size_t size = check(raw::dqcs_arb_get_size(handle, -1));
+      std::string data;
+      data.resize(size);
+      check(raw::dqcs_arb_pop_raw(handle, &data.front(), size));
+      return data;
+    }
+
+    /**
+     * Inserts an unstructured binary string at the given index. Negative
+     * indices are relative to the back of the list, as in Python.
+     */
+    void insert_string(ssize_t index, const std::string &data) {
+      check(raw::dqcs_arb_insert_raw(handle, index, data.data(), data.size()));
+    }
+
+    /**
+     * Removes the unstructured binary string at the given index. Negative
+     * indices are relative to the back of the list, as in Python.
+     */
+    void remove_string(ssize_t index) {
+      check(raw::dqcs_arb_remove(handle, index));
+    }
+
+    /**
+     * Returns the number of unstructured binary strings.
+     */
+    size_t get_string_count() const {
+      return check(raw::dqcs_arb_len(handle));
+    }
+
+    /**
+     * Clears the unstructured binary string list.
+     */
+    void clear_strings() {
+      check(raw::dqcs_arb_clear(handle));
+    }
+
+  };
+
 
 } // namespace wrap
 
