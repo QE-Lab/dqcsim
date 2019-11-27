@@ -117,7 +117,7 @@ matrix:
           cd build &&
           cmake .. -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug &&
           make -j &&
-          for file in `find dqcsim_c*_tests_* -executable -and -type f`;
+          for file in `find dqcsim_tests_* -executable -and -type f`;
             do [ -x "${file}" ] || continue;
             mkdir -p "../target/cov/$(basename $file)";
             LD_LIBRARY_PATH=../target/debug/ kcov --exclude-pattern=/.cargo,/usr,/cpp --verify "../target/cov/$(basename $file)" "$file";
