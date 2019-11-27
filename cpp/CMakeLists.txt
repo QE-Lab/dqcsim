@@ -63,7 +63,6 @@ add_compile_unit(
     dqcsim
 )
 
-#TODO(mb): fix tests
 add_compile_unit(
   NAME dqcsim::c::tests::integration
   TYPE TESTS

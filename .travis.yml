@@ -117,11 +117,10 @@ matrix:
           cd build &&
           cmake .. -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug &&
           make -j &&
-          cd .. &&
-          for file in `find build/dqcsim_c*_tests_* -executable -and -type f`;
+          for file in `find dqcsim_c*_tests_* -executable -and -type f`;
             do [ -x "${file}" ] || continue;
-            mkdir -p "target/cov/$(basename $file)";
-            LD_LIBRARY_PATH=target/debug/ kcov --exclude-pattern=/.cargo,/usr,/cpp --verify "target/cov/$(basename $file)" "$file";
+            mkdir -p "../target/cov/$(basename $file)";
+            LD_LIBRARY_PATH=../target/debug/ kcov --exclude-pattern=/.cargo,/usr,/cpp --verify "../target/cov/$(basename $file)" "$file";
           done
 
     - &manylinux-wheels
