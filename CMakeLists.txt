@@ -1,59 +1,45 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.14.0 FATAL_ERROR)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cpp/cmake/")
-
-project(dqcsim_cpp_test
+project(dqcsim
     VERSION 0.0.1
-    DESCRIPTION "Tests the C++ bindings for the Delft Quantum & Classical Simulator"
+    DESCRIPTION "C++ bindings for the Delft Quantum & Classical Simulator"
     LANGUAGES CXX
 )
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_DIR)
+if (BUILD_DIR MATCHES  "release")
+    set(CARGO_BUILD_TYPE "--release")
+endif()
+get_filename_component(TARGET_DIR ${CMAKE_SOURCE_DIR}/target/ ABSOLUTE)
 
 include(ExternalProject)
-
-#------------------------------------------------------------------------------
-# DQCsim build
-#------------------------------------------------------------------------------
 ExternalProject_Add(
-    dqcsim
+    dqcsim_crate
     DOWNLOAD_COMMAND ""
     CONFIGURE_COMMAND ""
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/rust"
-    BUILD_IN_SOURCE ON
+    BINARY_DIR "${TARGET_DIR}/include"
     BUILD_ALWAYS ON
-    BUILD_COMMAND cargo build --all-features
+    BUILD_COMMAND cargo build ${CARGO_BUILD_TYPE} --all-features
     INSTALL_COMMAND ""
 )
+add_library(dqcsim SHARED IMPORTED)
+add_dependencies(dqcsim dqcsim_crate)
+target_include_directories(dqcsim INTERFACE ${TARGET_DIR}/include)
+set_target_properties(dqcsim PROPERTIES IMPORTED_LOCATION ${TARGET_DIR}/${BUILD_DIR}/${CMAKE_SHARED_MODULE_PREFIX}dqcsim${CMAKE_SHARED_LIBRARY_SUFFIX})
 
-if(APPLE)
-    set(SHARED_LIB_SUFFIX ".dylib")
-else()
-    set(SHARED_LIB_SUFFIX ".so")
-endif()
-set(LIBDQCSIM "${CMAKE_SOURCE_DIR}/target/debug/libdqcsim${SHARED_LIB_SUFFIX}")
-set(LIBDQCSIM_INCLUDE "${CMAKE_SOURCE_DIR}/target/include/")
-
-#------------------------------------------------------------------------------
-# CMake options
-#------------------------------------------------------------------------------
-option(TEST_CPP         "Test the C++ library"                           ON)
-option(TEST_RAW_C       "Test the raw C API"                             ON)
-
-#------------------------------------------------------------------------------
-# GoogleTest inclusion
-#------------------------------------------------------------------------------
 include(FetchContent)
-
-FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        release-1.8.0
+FetchContent_Declare(cmake-modules
+  GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
+  GIT_TAG         master
 )
+FetchContent_MakeAvailable(cmake-modules)
 
-FetchContent_MakeAvailable(googletest)
-enable_testing()
-add_custom_target(test+verbose COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure)
+include(CompileUnits)
 
 add_subdirectory(cpp)
+
+compile_units()

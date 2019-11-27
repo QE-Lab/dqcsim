@@ -1,4 +1,4 @@
-#include <dqcsim_raw.hpp>
+#include "dqcsim.hpp"
 #include "gtest/gtest.h"
 
 using namespace dqcsim;
