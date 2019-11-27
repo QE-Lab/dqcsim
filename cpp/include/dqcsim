@@ -382,6 +382,70 @@ namespace wrap {
 
   };
 
+  /**
+   * Class wrapper for handles that support the `cmd` interface.
+   */
+  class Cmd : virtual public Arb {
+  public:
+
+    /**
+     * Wrap the given `cmd` handle.
+     */
+    Cmd(raw::dqcs_handle_t handle) : Handle(handle), Arb(/*unused*/0) {
+    }
+
+    /**
+     * Returns the interface identifier of this command.
+     */
+    std::string get_iface() {
+      char *iface_c = check(raw::dqcs_cmd_iface_get(handle));
+      std::string iface(iface_c);
+      std::free(iface_c);
+      return iface;
+    }
+
+    /**
+     * Returns whether this command has the given interface identifier.
+     */
+    bool is_iface(const std::string &iface) const {
+      return check(raw::dqcs_cmd_iface_cmp(handle, iface.c_str()));
+    }
+
+    /**
+     * Returns the operation identifier of this command.
+     */
+    std::string get_oper() {
+      char *oper_c = check(raw::dqcs_cmd_oper_get(handle));
+      std::string oper(oper_c);
+      std::free(oper_c);
+      return oper;
+    }
+
+    /**
+     * Returns whether this command has the given operation identifier.
+     */
+    bool is_oper(const std::string &oper) const {
+      return check(raw::dqcs_cmd_oper_cmp(handle, oper.c_str()));
+    }
+
+  };
+
+  /**
+   * Class wrapper for `ArbCmd` handles.
+   */
+  class ArbCmd : public Cmd {
+  public:
+
+    /**
+     * Constructs an `ArbCmd` object.
+     */
+    ArbCmd(const std::string &iface, const std::string &oper) : Handle(check(raw::dqcs_cmd_new(
+      iface.c_str(), oper.c_str()
+    ))), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    }
+
+  };
+
 } // namespace wrap
 
 } // namespace dqcsim
