@@ -131,7 +131,7 @@ matrix:
         MANYLINUX_VERSION: "1"
       script:
         - cd python/tools
-        - docker build --build-arg MANYLINUX=$MANYLINUX_VERSION -t dqcsim-py-manylinux -f Dockerfile .
+        - docker build --pull --build-arg MANYLINUX=$MANYLINUX_VERSION -t dqcsim-py-manylinux -f Dockerfile .
         - cd ../..
         - docker run --rm -e DQCSIM_DEBUG= -v `pwd`:/io dqcsim-py-manylinux
 
@@ -139,3 +139,8 @@ matrix:
       name: Manylinux2010 wheels
       env:
         MANYLINUX_VERSION: "2010"
+
+    - <<: *manylinux-wheels
+      name: Manylinux2014 wheels
+      env:
+        MANYLINUX_VERSION: "2014"

@@ -31,6 +31,9 @@ jobs:
       python_37_linux:
         python: '3.7'
         image: ubuntu-latest
+      python_38_linux:
+        python: '3.8'
+        image: ubuntu-latest
       python_35_macos:
         python: '3.5'
         image: macos-latest
@@ -39,6 +42,9 @@ jobs:
         image: macos-latest
       python_37_macos:
         python: '3.7'
+        image: macos-latest
+      python_38_macos:
+        python: '3.8'
         image: macos-latest
   pool:
     vmImage: $(image)

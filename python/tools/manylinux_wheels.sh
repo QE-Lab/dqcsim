@@ -14,10 +14,8 @@ project=`eval "cd $dir;pwd;cd - > /dev/null"`
 target="$project/target"
 rm -rf $target
 
-docker build -t dqcsim-py-manylinux:1 -f "$cwd/Dockerfile" "$cwd"
-docker run --rm -v "$project":/io dqcsim-py-manylinux:1
-rm -rf $target/release
-
-docker build --build-arg MANYLINUX=2010 -t dqcsim-py-manylinux:2010 -f "$cwd/Dockerfile" "$cwd"
-docker run --rm -v "$project":/io dqcsim-py-manylinux:2010
-rm -rf $target/release
+for manylinux in 1 2010 2014; do
+  docker build --pull --build-arg MANYLINUX=$manylinux -t dqcsim-py-manylinux:$manylinux -f "$cwd/Dockerfile" "$cwd"
+  docker run --rm -v "$project":/io dqcsim-py-manylinux:$manylinux
+  rm -rf $target/release
+done

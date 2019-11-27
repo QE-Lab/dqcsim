@@ -9,11 +9,11 @@ RUN curl -sSf https://sh.rustup.rs | sh -s -- -y && \
 	./configure --without-pcre && \
 	make && \
 	make install && \
-	for PIP in /opt/python/cp3{5,6,7}*/bin/pip3; do $PIP install auditwheel; done
+	for PIP in /opt/python/cp3{5,6,7,8}*/bin/pip3; do $PIP install -U pip auditwheel==3.0.0.0rc1; done
 
 ENV PATH=$PATH:/root/.cargo/bin
 
 FROM dqcsim-python-base
 
 WORKDIR /io
-ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{5,6,7}*/bin/python3; do $PYTHON setup.py bdist_wheel; done;"]
+ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{5,6,7,8}*/bin/python3; do $PYTHON setup.py bdist_wheel; done;"]
