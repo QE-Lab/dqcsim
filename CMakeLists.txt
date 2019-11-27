@@ -6,6 +6,14 @@ project(dqcsim
     LANGUAGES CXX
 )
 
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_DIR)
+if (BUILD_DIR MATCHES  "release")
+    set(CARGO_BUILD_TYPE "--release")
+endif()
+
 include(ExternalProject)
 ExternalProject_Add(
     dqcsim_crate
@@ -14,13 +22,13 @@ ExternalProject_Add(
     SOURCE_DIR "${CMAKE_SOURCE_DIR}/rust"
     BINARY_DIR "${CMAKE_SOURCE_DIR}/target/include"
     BUILD_ALWAYS ON
-    BUILD_COMMAND cargo build --release --all-features
+    BUILD_COMMAND cargo build ${CARGO_BUILD_TYPE} --all-features
     INSTALL_COMMAND ""
 )
 add_library(dqcsim SHARED IMPORTED)
 add_dependencies(dqcsim dqcsim_crate)
 target_include_directories(dqcsim INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/target/include)
-set_target_properties(dqcsim PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/target/release/${CMAKE_SHARED_MODULE_PREFIX}dqcsim${CMAKE_SHARED_LIBRARY_SUFFIX})
+set_target_properties(dqcsim PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/target/${BUILD_DIR}/${CMAKE_SHARED_MODULE_PREFIX}dqcsim${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 include(FetchContent)
 FetchContent_Declare(cmake-modules
