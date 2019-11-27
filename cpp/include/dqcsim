@@ -174,15 +174,22 @@ namespace wrap {
     }
 
     /**
+     * Returns the raw handle without relinquishing ownership.
+     */
+    raw::dqcs_handle_t get() const noexcept {
+      return handle;
+    }
+
+    /**
      * Unwrap the raw handle; that is, without deleting it. By moving the
      * wrapper into the static function (in conjunction with the lack of a copy
      * constructor) the compiler can statically check that the wrapper object
      * is not reused.
      */
-    static raw::dqcs_handle_t take(Handle &&wrapper) noexcept {
-      raw::dqcs_handle_t handle = wrapper.handle;
-      wrapper.handle = 0;
-      return handle;
+    raw::dqcs_handle_t take() noexcept {
+      raw::dqcs_handle_t h = handle;
+      handle = 0;
+      return h;
     }
 
     // Handles cannot usually be copied, so delete the copy constructor and
