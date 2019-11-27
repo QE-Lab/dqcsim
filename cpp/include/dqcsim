@@ -3,9 +3,223 @@
 #ifndef _DQCSIM_INCLUDED_
 #define _DQCSIM_INCLUDED_
 
+#include <stdexcept>
+#include <string>
+#include <cstring>
 #include <cdqcsim>
 
 namespace dqcsim {
+
+/**
+ * Namespace containing thin wrapper objects around the handles exposed by
+ * the raw C interface.
+ */
+namespace wrap {
+
+  /**
+   * Checks a `dqcs_return_t` return value; if failure, throws a runtime error
+   * with DQCsim's error message.
+   */
+  inline void check(raw::dqcs_return_t code) {
+    if (code == raw::dqcs_return_t::DQCS_FAILURE) {
+      throw std::runtime_error(raw::dqcs_error_get());
+    }
+  }
+
+  /**
+   * Checks a `dqcs_bool_return_t` return value; if failure, throws a runtime
+   * error with DQCsim's error message.
+   */
+  inline bool check(raw::dqcs_bool_return_t code) {
+    if (code == raw::dqcs_bool_return_t::DQCS_BOOL_FAILURE) {
+      throw std::runtime_error(raw::dqcs_error_get());
+    } else if (code == raw::dqcs_bool_return_t::DQCS_TRUE) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Checks a `dqcs_handle_t` or `dqcs_qubit_t` return value; if failure,
+   * throws a runtime error with DQCsim's error message.
+   */
+  inline unsigned long long check(unsigned long long handle) {
+    if (handle == 0) {
+      throw std::runtime_error(raw::dqcs_error_get());
+    }
+    return handle;
+  }
+
+  /**
+   * Checks a `dqcs_cycle_t` return value; if failure, throws a runtime error
+   * with DQCsim's error message.
+   */
+  inline raw::dqcs_cycle_t check(raw::dqcs_cycle_t cycle) {
+    if (cycle == -1) {
+      throw std::runtime_error(raw::dqcs_error_get());
+    }
+    return cycle;
+  }
+
+  /**
+   * Checks a `dqcs_handle_type_t` return value; if failure, throws a runtime
+   * error with DQCsim's error message.
+   */
+  inline raw::dqcs_handle_type_t check(raw::dqcs_handle_type_t type) {
+    if (type == raw::dqcs_handle_type_t::DQCS_HTYPE_INVALID) {
+      throw std::runtime_error(raw::dqcs_error_get());
+    }
+    return type;
+  }
+
+  /**
+   * Checks a `dqcs_loglevel_t` return value; if failure, throws a runtime
+   * error with DQCsim's error message.
+   */
+  inline raw::dqcs_loglevel_t check(raw::dqcs_loglevel_t level) {
+    if (level == raw::dqcs_loglevel_t::DQCS_LOG_INVALID) {
+      throw std::runtime_error(raw::dqcs_error_get());
+    }
+    return level;
+  }
+
+  /**
+   * Checks a `dqcs_measurement_t` return value; if failure, throws a runtime
+   * error with DQCsim's error message.
+   */
+  inline raw::dqcs_measurement_t check(raw::dqcs_measurement_t measurement) {
+    if (measurement == raw::dqcs_measurement_t::DQCS_MEAS_INVALID) {
+      throw std::runtime_error(raw::dqcs_error_get());
+    }
+    return measurement;
+  }
+
+  /**
+   * Checks a `dqcs_path_style_t` return value; if failure, throws a runtime
+   * error with DQCsim's error message.
+   */
+  inline raw::dqcs_path_style_t check(raw::dqcs_path_style_t style) {
+    if (style == raw::dqcs_path_style_t::DQCS_PATH_STYLE_INVALID) {
+      throw std::runtime_error(raw::dqcs_error_get());
+    }
+    return style;
+  }
+
+  /**
+   * Checks a `dqcs_plugin_type_t` return value; if failure, throws a runtime
+   * error with DQCsim's error message.
+   */
+  inline raw::dqcs_plugin_type_t check(raw::dqcs_plugin_type_t type) {
+    if (type == raw::dqcs_plugin_type_t::DQCS_PTYPE_INVALID) {
+      throw std::runtime_error(raw::dqcs_error_get());
+    }
+    return type;
+  }
+
+  /**
+   * Checks a pointer return value; if failure, throws a runtime error with
+   * DQCsim's error message.
+   */
+  template <typename T>
+  inline T *check(T *pointer) {
+    if (pointer == nullptr) {
+      throw std::runtime_error(raw::dqcs_error_get());
+    }
+    return pointer;
+  }
+
+  /**
+   * Base class for wrapping any handle.
+   */
+  class Handle {
+  private:
+
+    /**
+     * The wrapped handle.
+     */
+    raw::dqcs_handle_t handle;
+
+  public:
+
+    /**
+     * Wrap the given raw handle.
+     */
+    Handle(raw::dqcs_handle_t handle) : handle(handle) {
+    }
+
+    /**
+     * Delete the handle and its wrapper.
+     */
+    ~Handle() noexcept {
+      if (handle) {
+        raw::dqcs_handle_delete(handle);
+      }
+    }
+
+    /**
+     * Explicitly delete the handle, allowing errors to be caught.
+     */
+    void free() {
+      check(raw::dqcs_handle_delete(handle));
+      handle = 0;
+    }
+
+    /**
+     * Returns whether this wrapper (still) contains a valid handle.
+     */
+    bool is_valid() const noexcept {
+      return raw::dqcs_handle_type(handle)
+        != raw::dqcs_handle_type_t::DQCS_HTYPE_INVALID;
+    }
+
+    /**
+     * Unwrap the raw handle; that is, without deleting it. By moving the
+     * wrapper into the static function (in conjunction with the lack of a copy
+     * constructor) the compiler can statically check that the wrapper object
+     * is not reused.
+     */
+    static raw::dqcs_handle_t take(Handle &&wrapper) noexcept {
+      raw::dqcs_handle_t handle = wrapper.handle;
+      wrapper.handle = 0;
+      return handle;
+    }
+
+    // Handles cannot usually be copied, so delete the copy constructor and
+    // copy assignment operator. Moving is fine, though.
+    Handle(const Handle&) = delete;
+    void operator=(const Handle&) = delete;
+    Handle(Handle &&handle) = default;
+    Handle &operator=(Handle&&) = default;
+
+    /**
+     * Returns a string containing a debug dump of the handle.
+     */
+    std::string dump() const {
+      char *dump_c = check(raw::dqcs_handle_dump(handle));
+      std::string dump(dump_c);
+      std::free(dump_c);
+      return dump;
+    }
+
+    /**
+     * Write the debug dump string of the handle to the given output stream.
+     */
+    friend std::ostream& operator << (std::ostream &out, const Handle &handle) {
+      out << handle.dump();
+      return out;
+    }
+
+    /**
+     * Return the raw handle type for the given handle.
+     */
+    raw::dqcs_handle_type_t type() const {
+      return check(raw::dqcs_handle_type(handle));
+    }
+
+  };
+
+} // namespace wrap
 
 } // namespace dqcsim
 

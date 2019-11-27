@@ -5,7 +5,9 @@ add_compile_unit(
 
 file(GLOB_RECURSE TESTS test/**.cpp)
 foreach(TEST ${TESTS})
-  get_filename_component(TEST_NAME ${TEST} NAME_WE)
+  file(RELATIVE_PATH TEST_NAME ${CMAKE_CURRENT_SOURCE_DIR}/test ${TEST})
+  string(REPLACE / :: TEST_NAME ${TEST_NAME})
+  get_filename_component(TEST_NAME ${TEST_NAME} NAME_WE)
   add_compile_unit(
     NAME dqcsim::tests::${TEST_NAME}
     TYPE TESTS
