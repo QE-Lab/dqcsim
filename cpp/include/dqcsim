@@ -742,6 +742,155 @@ namespace wrap {
 
   };
 
+  /**
+   * Wrapper around the qubit reference typedef in the raw C bindings. This
+   * prevents mutation and mathematical operations that don't make sense.
+   */
+  class QubitRef {
+  private:
+
+    /**
+     * The raw qubit index wrapped by this reference.
+     */
+    raw::dqcs_qubit_t index;
+
+  public:
+
+    /**
+     * Wraps a raw reference.
+     */
+    QubitRef(raw::dqcs_qubit_t index) : index(index) {
+      if (index == 0) {
+        throw std::runtime_error("Qubit indices cannot be zero in DQCsim");
+      }
+    }
+
+    // The default assignment, copy, and move operators are fine and need not
+    // be restricted.
+    QubitRef(const QubitRef&) = default;
+    QubitRef &operator=(const QubitRef&) = default;
+    QubitRef(QubitRef &&handle) = default;
+    QubitRef &operator=(QubitRef&&) = default;
+
+    /**
+     * Qubit reference equality operator.
+     */
+    bool operator==(const QubitRef &other) const {
+      return index == other.index;
+    }
+
+    /**
+     * Qubit reference inequality operator.
+     */
+    bool operator!=(const QubitRef &other) const {
+      return index != other.index;
+    }
+
+    /**
+     * Allow qubit references to be printed.
+     */
+    friend std::ostream& operator<<(std::ostream &out, const QubitRef &qubit) {
+      out << 'q' << qubit.index;
+      return out;
+    }
+
+    /**
+     * Returns the raw qubit index.
+     */
+    raw::dqcs_qubit_t get_index() const {
+      return index;
+    }
+
+  };
+
+  /**
+   * Wrapper around qubit set handles.
+   */
+  class QubitSet : public Handle {
+  public:
+
+    /**
+     * Constructs an empty qubit set.
+     */
+    QubitSet() : Handle(check(raw::dqcs_qbset_new())) {
+    }
+
+    /**
+     * Constructs a qubit set object from an iterable of qubit references.
+     */
+    template <class T>
+    QubitSet(const T &qubits) : Handle(check(raw::dqcs_qbset_new())) {
+      for (const QubitRef &qubit : qubits) {
+        push(qubit);
+      }
+    }
+
+    /**
+     * Copy-constructs a qubit set.
+     */
+    QubitSet(const QubitSet &src) : Handle(check(raw::dqcs_qbset_copy(src.handle))) {
+    }
+
+    /**
+     * Copy assignment operator for qubit sets.
+     */
+    void operator=(const QubitSet &src) {
+      QubitSet copy(src);
+      free();
+      handle = copy.take();
+    }
+
+    /**
+     * Pushes a qubit into the set. Note that qubit sets are ordered. An
+     * exception is thrown if the qubit is already in the set.
+     */
+    void push(const QubitRef &qubit) {
+      check(raw::dqcs_qbset_push(handle, qubit.get_index()));
+    }
+
+    /**
+     * Pops a qubit from the set. Qubits are popped in the same order in which
+     * they are pushed (like a FIFO).
+     */
+    QubitRef pop() {
+      return QubitRef(check(raw::dqcs_qbset_pop(handle)));
+    }
+
+    /**
+     * Returns the number of qubits in the set.
+     */
+    size_t size() const {
+      return check(raw::dqcs_qbset_len(handle));
+    }
+
+    /**
+     * Returns whether the given qubit is contained in the set.
+     */
+    bool contains(const QubitRef &qubit) const {
+      return check(raw::dqcs_qbset_contains(handle, qubit.get_index()));
+    }
+
+    /**
+     * Drains the qubit set into a vector.
+     */
+    std::vector<QubitRef> drain_into_vector() {
+      std::vector<QubitRef> qubits;
+      while (size()) {
+        qubits.emplace_back(pop());
+      }
+      return qubits;
+    }
+
+    /**
+     * Copies the qubit set into a vector.
+     */
+    std::vector<QubitRef> copy_into_vector() const {
+      QubitSet copy(*this);
+      return copy.drain_into_vector();
+    }
+
+  };
+
 } // namespace wrap
 
 } // namespace dqcsim
