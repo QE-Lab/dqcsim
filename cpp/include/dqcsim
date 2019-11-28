@@ -314,7 +314,7 @@ namespace wrap {
      * this function.
      */
     template <class JSON>
-    void set_arb_json(const JSON &&json) {
+    void set_arb_json(const JSON &json) {
       std::vector<uint8_t> cbor = JSON::to_cbor(json);
       check(raw::dqcs_arb_cbor_set(handle, cbor.data(), cbor.size()));
     }
