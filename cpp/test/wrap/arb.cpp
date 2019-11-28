@@ -35,13 +35,12 @@ TEST(arb, nlohmann_json) {
   EXPECT_EQ(data.get_arb_json_string(), "{\"hello\":\"world\"}");
 }
 
-// Tests the unstructured string list accessors, as well as the copy assignment
-// operator and copy constructor.
-TEST(arb, unstructured) {
+// Tests the arbitrary argument list string accessors, as well as the copy
+// assignment operator and copy constructor.
+TEST(arb, arg_string) {
   wrap::ArbData data;
   EXPECT_ERROR(data.get_arb_arg_string(0), "Invalid argument: index out of range: 0");
-  data.push_arb_arg_string("hello");
-  data.push_arb_arg_string("world");
+  data.set_arb_arg_strings(std::vector<std::string>({"hello", "world"}));
   EXPECT_EQ(data.get_arb_arg_string(0), "hello");
   EXPECT_EQ(data.get_arb_arg_string(-1), "world");
   EXPECT_EQ(data.pop_arb_arg_string(), "world");
@@ -66,4 +65,29 @@ TEST(arb, unstructured) {
   data2.push_arb_arg_string("E");
   EXPECT_EQ(data.get_arb_arg_string(3), "D");
   EXPECT_EQ(data2.get_arb_arg_string(3), "E");
+}
+
+struct Numbers {
+  int x[6];
+};
+
+// Tests the arbitrary argument list value accessors.
+TEST(arb, arg_value) {
+  wrap::ArbData data;
+  EXPECT_ERROR(data.get_arb_arg_as<int>(0), "Invalid argument: index out of range: 0");
+  data.push_arb_arg(33);
+  data.push_arb_arg(42.0f);
+  data.push_arb_arg(3.14159265);
+  EXPECT_EQ(data.get_arb_arg_as<int>(0), 33);
+  EXPECT_EQ(data.get_arb_arg_as<float>(1), 42.0f);
+  EXPECT_EQ(data.get_arb_arg_as<double>(2), 3.14159265);
+  EXPECT_ERROR(data.get_arb_arg_as<float>(2), "Arbitrary argument has incorrect size: found 8 bytes, expected 4 bytes");
+  EXPECT_ERROR(data.pop_arb_arg_as<float>(), "Arbitrary argument has incorrect size: found 8 bytes, expected 4 bytes");
+  data.set_arb_arg(2, 3.14159265f);
+  const Numbers numbers = {{4, 8, 15, 16, 23, 42}};
+  data.insert_arb_arg(1, numbers);
+  EXPECT_EQ(data.pop_arb_arg_as<float>(), 3.14159265f);
+  EXPECT_EQ(data.pop_arb_arg_as<float>(), 42.0f);
+  EXPECT_EQ(data.pop_arb_arg_as<Numbers>().x[5], numbers.x[5]);
+  EXPECT_EQ(data.pop_arb_arg_as<int>(), 33);
 }

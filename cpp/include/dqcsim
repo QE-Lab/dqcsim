@@ -332,6 +332,42 @@ namespace wrap {
     }
 
     /**
+     * Returns the arbitrary argument at the given index as the given type.
+     * Negative indices are relative to the back of the list, as in Python.
+     *
+     * WARNING: type `T` must be a primitive value (like an `int`) or a struct
+     * thereof, without pointers or any other "complicated" constructs. DQCsim
+     * just copies the bytes over. It is up to you to ensure that that's what
+     * you want to happen; unfortunately C++11 does not provide a way to
+     * statically ensure that this is the case.
+     */
+    template <typename T>
+    T get_arb_arg_as(ssize_t index) const {
+      size_t size = check(raw::dqcs_arb_get_size(handle, index));
+      if (size != sizeof(T)) {
+        throw std::runtime_error(
+          "Arbitrary argument has incorrect size: "
+          "found " + std::to_string(size) + " bytes, "
+          "expected " + std::to_string(sizeof(T)) + " bytes");
+      }
+      T data;
+      check(raw::dqcs_arb_get_raw(handle, index, &data, sizeof(data)));
+      return data;
+    }
+
+    /**
+     * Sets the arbitrary argument list to the given iterable of
+     * `std::string`s.
+     */
+    template <typename T>
+    void set_arb_arg_strings(const T &strings) {
+      clear_arb_args();
+      for (const std::string &string : strings) {
+        push_arb_arg_string(string);
+      }
+    }
+
+    /**
      * Sets the arbitrary argument at the given index to a (binary) string.
      * Negative indices are relative to the back of the list, as in Python.
      */
@@ -340,10 +376,39 @@ namespace wrap {
     }
 
     /**
+     * Sets the arbitrary argument at the given index to a value of type `T`.
+     * Negative indices are relative to the back of the list, as in Python.
+     *
+     * WARNING: type `T` must be a primitive value (like an `int`) or a struct
+     * thereof, without pointers or any other "complicated" constructs. DQCsim
+     * just copies the bytes over. It is up to you to ensure that that's what
+     * you want to happen; unfortunately C++11 does not provide a way to
+     * statically ensure that this is the case.
+     */
+    template <typename T>
+    void set_arb_arg(ssize_t index, const T &data) {
+      check(raw::dqcs_arb_set_raw(handle, index, &data, sizeof(data)));
+    }
+
+    /**
      * Pushes a (binary) string to the back of the arbitrary argument list.
      */
     void push_arb_arg_string(const std::string &data) {
       check(raw::dqcs_arb_push_raw(handle, data.data(), data.size()));
+    }
+
+    /**
+     * Pushes a value of type `T` to the back of the arbitrary argument list.
+     *
+     * WARNING: type `T` must be a primitive value (like an `int`) or a struct
+     * thereof, without pointers or any other "complicated" constructs. DQCsim
+     * just copies the bytes over. It is up to you to ensure that that's what
+     * you want to happen; unfortunately C++11 does not provide a way to
+     * statically ensure that this is the case.
+     */
+    template <typename T>
+    void push_arb_arg(const T &data) {
+      check(raw::dqcs_arb_push_raw(handle, &data, sizeof(data)));
     }
 
     /**
@@ -358,12 +423,52 @@ namespace wrap {
     }
 
     /**
+     * Pops from the back of the arbitrary argument list as a value of type
+     * `T`.
+     *
+     * WARNING: type `T` must be a primitive value (like an `int`) or a struct
+     * thereof, without pointers or any other "complicated" constructs. DQCsim
+     * just copies the bytes over. It is up to you to ensure that that's what
+     * you want to happen; unfortunately C++11 does not provide a way to
+     * statically ensure that this is the case.
+     */
+    template <typename T>
+    T pop_arb_arg_as() const {
+      size_t size = check(raw::dqcs_arb_get_size(handle, -1));
+      if (size != sizeof(T)) {
+        throw std::runtime_error(
+          "Arbitrary argument has incorrect size: "
+          "found " + std::to_string(size) + " bytes, "
+          "expected " + std::to_string(sizeof(T)) + " bytes");
+      }
+      T data;
+      check(raw::dqcs_arb_pop_raw(handle, &data, sizeof(data)));
+      return data;
+    }
+
+    /**
      * Inserts an arbitrary argument at the given index using a (binary)
      * string. Negative indices are relative to the back of the list, as in
      * Python.
      */
     void insert_arb_arg_string(ssize_t index, const std::string &data) {
       check(raw::dqcs_arb_insert_raw(handle, index, data.data(), data.size()));
+    }
+
+    /**
+     * Inserts an arbitrary argument at the given index using a value of type
+     * `T`. Negative indices are relative to the back of the list, as in
+     * Python.
+     *
+     * WARNING: type `T` must be a primitive value (like an `int`) or a struct
+     * thereof, without pointers or any other "complicated" constructs. DQCsim
+     * just copies the bytes over. It is up to you to ensure that that's what
+     * you want to happen; unfortunately C++11 does not provide a way to
+     * statically ensure that this is the case.
+     */
+    template <typename T>
+    void insert_arb_arg(ssize_t index, const T &data) {
+      check(raw::dqcs_arb_insert_raw(handle, index, &data, sizeof(data)));
     }
 
     /**
