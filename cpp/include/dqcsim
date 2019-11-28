@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <vector>
 #include <cstring>
 #include <cdqcsim>
 
@@ -250,9 +251,9 @@ namespace wrap {
     }
 
     /**
-     * Returns the current JSON data as a serialized JSON string.
+     * Returns the current arbitrary JSON data as a serialized JSON string.
      */
-    std::string get_json() const {
+    std::string get_arb_json_string() const {
       char *json_c = check(raw::dqcs_arb_json_get(handle));
       std::string json(json_c);
       std::free(json_c);
@@ -260,16 +261,16 @@ namespace wrap {
     }
 
     /**
-     * Sets the JSON data to the given serialized JSON string.
+     * Sets the arbitrary JSON data to the given serialized JSON string.
      */
-    void set_json(const std::string &json) {
+    void set_arb_json_string(const std::string &json) {
       check(raw::dqcs_arb_json_set(handle, json.c_str()));
     }
 
     /**
-     * Returns the current JSON data as a serialized CBOR string.
+     * Returns the current arbitrary JSON data as a serialized CBOR string.
      */
-    std::string get_cbor() const {
+    std::string get_arb_cbor_string() const {
       size_t size = check(raw::dqcs_arb_cbor_get(handle, nullptr, 0));
       std::string cbor;
       cbor.resize(size);
@@ -278,17 +279,51 @@ namespace wrap {
     }
 
     /**
-     * Sets the JSON data to the given serialized CBOR string.
+     * Sets the arbitrary JSON data to the given serialized CBOR string.
      */
-    void set_cbor(const std::string &cbor) {
+    void set_arb_cbor_string(const std::string &cbor) {
       check(raw::dqcs_arb_cbor_set(handle, cbor.data(), cbor.size()));
     }
 
     /**
-     * Returns the unstructured binary string at the given index. Negative
-     * indices are relative to the back of the list, as in Python.
+     * Returns the current arbitrary JSON data as a JSON object from
+     * `nlohmann::json`. Since that is a header-only library that isn't usually
+     * installed system-wide and be using a specific version in your project
+     * already, you need to specify the `nlohmann::json` type as a generic to
+     * this function.
+     *
+     * WARNING: this function returns a *copy* of the JSON data embedded in the
+     * `ArbData`. Therefore, modifying the returned JSON object does *not*
+     * modify the original `ArbData`. To modify, you need to pass the modified
+     * JSON object to `set_arb_json()`.
      */
-    std::string get_string(ssize_t index) const {
+    template <class JSON>
+    JSON get_arb_json() const {
+      size_t size = check(raw::dqcs_arb_cbor_get(handle, nullptr, 0));
+      std::vector<uint8_t> cbor;
+      cbor.resize(size);
+      check(raw::dqcs_arb_cbor_get(handle, &cbor.front(), size));
+      return JSON::from_cbor(cbor);
+    }
+
+    /**
+     * Sets the arbitrary JSON data to the given JSON object from
+     * `nlohmann::json`. Since that is a header-only library that isn't usually
+     * installed system-wide and be using a specific version in your project
+     * already, you need to specify the `nlohmann::json` type as a generic to
+     * this function.
+     */
+    template <class JSON>
+    void set_arb_json(const JSON &&json) {
+      std::vector<uint8_t> cbor = JSON::to_cbor(json);
+      check(raw::dqcs_arb_cbor_set(handle, cbor.data(), cbor.size()));
+    }
+
+    /**
+     * Returns the arbitrary argument at the given index as a (binary) string.
+     * Negative indices are relative to the back of the list, as in Python.
+     */
+    std::string get_arb_arg_string(ssize_t index) const {
       size_t size = check(raw::dqcs_arb_get_size(handle, index));
       std::string data;
       data.resize(size);
@@ -297,24 +332,24 @@ namespace wrap {
     }
 
     /**
-     * Sets the unstructured binary string at the given index. Negative indices
-     * are relative to the back of the list, as in Python.
+     * Sets the arbitrary argument at the given index to a (binary) string.
+     * Negative indices are relative to the back of the list, as in Python.
      */
-    void set_string(ssize_t index, const std::string &data) {
+    void set_arb_arg_string(ssize_t index, const std::string &data) {
       check(raw::dqcs_arb_set_raw(handle, index, data.data(), data.size()));
     }
 
     /**
-     * Pushes to the back of the unstructured binary string list.
+     * Pushes a (binary) string to the back of the arbitrary argument list.
      */
-    void push_string(const std::string &data) {
+    void push_arb_arg_string(const std::string &data) {
       check(raw::dqcs_arb_push_raw(handle, data.data(), data.size()));
     }
 
     /**
-     * Pops from the back of the unstructured binary string list.
+     * Pops from the back of the arbitrary argument list as a (binary) string.
      */
-    std::string pop_string() {
+    std::string pop_arb_arg_string() {
       size_t size = check(raw::dqcs_arb_get_size(handle, -1));
       std::string data;
       data.resize(size);
@@ -323,32 +358,33 @@ namespace wrap {
     }
 
     /**
-     * Inserts an unstructured binary string at the given index. Negative
-     * indices are relative to the back of the list, as in Python.
+     * Inserts an arbitrary argument at the given index using a (binary)
+     * string. Negative indices are relative to the back of the list, as in
+     * Python.
      */
-    void insert_string(ssize_t index, const std::string &data) {
+    void insert_arb_arg_string(ssize_t index, const std::string &data) {
       check(raw::dqcs_arb_insert_raw(handle, index, data.data(), data.size()));
     }
 
     /**
-     * Removes the unstructured binary string at the given index. Negative
-     * indices are relative to the back of the list, as in Python.
+     * Removes the arbitrary argument at the given index. Negative indices are
+     * relative to the back of the list, as in Python.
      */
-    void remove_string(ssize_t index) {
+    void remove_arb_arg(ssize_t index) {
       check(raw::dqcs_arb_remove(handle, index));
     }
 
     /**
-     * Returns the number of unstructured binary strings.
+     * Returns the number of arbitrary arguments.
      */
-    size_t get_string_count() const {
+    size_t get_arb_arg_count() const {
       return check(raw::dqcs_arb_len(handle));
     }
 
     /**
-     * Clears the unstructured binary string list.
+     * Clears the arbitrary argument list.
      */
-    void clear_strings() {
+    void clear_arb_args() {
       check(raw::dqcs_arb_clear(handle));
     }
 
