@@ -508,7 +508,15 @@ namespace wrap {
     }
 
     /**
-     * Copy-constructs an `ArbData` object.
+     * Copy-constructs an `ArbData` object from any object supporting the `Arb`
+     * interface.
+     */
+    ArbData(const Arb &src) : Handle(check(raw::dqcs_arb_new())), Arb(/*unused*/0) {
+      check(raw::dqcs_arb_assign(handle, src.get()));
+    }
+
+    /**
+     * Copy-constructs an `ArbData` object from another `ArbData` object.
      */
     ArbData(const ArbData &src) : Handle(check(raw::dqcs_arb_new())), Arb(/*unused*/0) {
       check(raw::dqcs_arb_assign(handle, src.get()));
@@ -538,7 +546,7 @@ namespace wrap {
     /**
      * Returns the interface identifier of this command.
      */
-    std::string get_iface() {
+    std::string get_iface() const {
       char *iface_c = check(raw::dqcs_cmd_iface_get(handle));
       std::string iface(iface_c);
       std::free(iface_c);
@@ -555,7 +563,7 @@ namespace wrap {
     /**
      * Returns the operation identifier of this command.
      */
-    std::string get_oper() {
+    std::string get_oper() const {
       char *oper_c = check(raw::dqcs_cmd_oper_get(handle));
       std::string oper(oper_c);
       std::free(oper_c);
@@ -583,6 +591,152 @@ namespace wrap {
     ArbCmd(const std::string &iface, const std::string &oper) : Handle(check(raw::dqcs_cmd_new(
       iface.c_str(), oper.c_str()
     ))), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    }
+
+    /**
+     * Copy-constructs an `ArbCmd` object from any object supporting the `Cmd`
+     * interface.
+     */
+    ArbCmd(const Cmd &src) : Handle(check(raw::dqcs_cmd_new(
+      src.get_iface().c_str(), src.get_oper().c_str()
+    ))), Cmd(/*unused*/0), Arb(/*unused*/0) {
+      check(raw::dqcs_arb_assign(handle, src.get()));
+    }
+
+    /**
+     * Copy-constructs an `ArbCmd` object from another `ArbCmd` object.
+     */
+    ArbCmd(const ArbCmd &src) : Handle(check(raw::dqcs_cmd_new(
+      src.get_iface().c_str(), src.get_oper().c_str()
+    ))), Cmd(/*unused*/0), Arb(/*unused*/0) {
+      check(raw::dqcs_arb_assign(handle, src.get()));
+    }
+
+    /**
+     * Copy assignment operator for `ArbCmd` objects.
+     */
+    void operator=(const ArbCmd &src) {
+      // The C API doesn't allow `ArbCmd`s to be copied natively, so we need to
+      // make a new one and drop the old handle. We make the copy before
+      // exchanging the handles to avoid changing our state if the copy
+      // operation throws an error for some reason.
+      ArbCmd copy(src);
+      free();
+      handle = copy.take();
+    }
+
+  };
+
+  /**
+   * Class wrapper for `ArbCmd` queue handles.
+   *
+   * To construct an `ArbCmd` queue iteratively, create a new queue using the
+   * default constructor and push `ArbCmd`s into it using `push()`. Note that
+   * there is an rvalue reference `push()` operation that entirely avoids
+   * copying the `ArbCmd`. You can also construct the queue from an iterable of
+   * `ArbCmd`s directly; again, including a zero-copy function using an rvalue
+   * reference.
+   *
+   * To iterate over an existing `ArbCmd` queue (destructively!) in the most
+   * efficient way, use the following code:
+   *
+   * ```
+   * for (; queue.size() > 0; queue.next()) {
+   *   // queue can be used as the current cmd/arb without any copies now
+   * }
+   * ```
+   *
+   * You can also drain it into a `std::vector` of `ArbCmd`s, or (if you must)
+   * copy it into one.
+   */
+  class ArbCmdQueue : public Cmd {
+  public:
+
+    /**
+     * Constructs an empty `ArbCmd` queue object.
+     */
+    ArbCmdQueue() : Handle(check(raw::dqcs_cq_new())), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    }
+
+    /**
+     * Constructs an `ArbCmd` queue object from an iterable of `ArbCmd`s by
+     * copying.
+     */
+    template <class T>
+    ArbCmdQueue(const T &cmds) : Handle(check(raw::dqcs_cq_new())), Cmd(/*unused*/0), Arb(/*unused*/0) {
+      for (const Cmd &cmd : cmds) {
+        push(cmd);
+      }
+    }
+
+    /**
+     * Constructs an `ArbCmd` queue object from an iterable of `ArbCmd`s by
+     * moving.
+     */
+    template <class T>
+    ArbCmdQueue(T &&cmds) : Handle(check(raw::dqcs_cq_new())), Cmd(/*unused*/0), Arb(/*unused*/0) {
+      for (const Cmd &cmd : cmds) {
+        push(std::move(cmd));
+      }
+    }
+
+    /**
+     * Pushes an `ArbCmd` into the queue by copying.
+     */
+    void push(const Cmd &cmd) {
+      ArbCmd copy(cmd);
+      check(raw::dqcs_cq_push(handle, copy.take()));
+    }
+
+    /**
+     * Pushes an `ArbCmd` into the queue by moving.
+     */
+    void push(ArbCmd &&cmd) {
+      check(raw::dqcs_cq_push(handle, cmd.take()));
+    }
+
+    /**
+     * Pops the first `ArbCmd` from the queue, allowing the next one to be
+     * accessed.
+     */
+    void next() {
+      check(raw::dqcs_cq_next(handle));
+    }
+
+    /**
+     * Returns the number of `ArbCmd`s in the queue.
+     */
+    size_t size() const {
+      return check(raw::dqcs_cq_len(handle));
+    }
+
+    /**
+     * Drains the queue into a vector of `ArbCmd`s. This is less performant
+     * than iterating over the queue manually, because it requires copies.
+     */
+    std::vector<ArbCmd> drain_into_vector() {
+      std::vector<ArbCmd> cmds;
+      for (; size() > 0; next()) {
+        cmds.emplace_back(*this);
+      }
+      return cmds;
+    }
+
+    /**
+     * Copies the queue into a vector of `ArbCmd`s. This is less performant
+     * than iterating over the queue manually or using `drain_into_vector()`,
+     * because it requires (additional) copies.
+     *
+     * NOTE: this function is not `const`, because exceptions during the copy
+     * operation can change its value, and the underlying handle is changed.
+     * However, under normal conditions, the contents appear to be unchanged.
+     */
+    std::vector<ArbCmd> copy_into_vector() {
+      std::vector<ArbCmd> cmds = drain_into_vector();
+      free();
+      ArbCmdQueue copy(cmds);
+      handle = copy.take();
+      return cmds;
     }
 
   };
