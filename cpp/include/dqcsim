@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <cstring>
+#include <iostream>
 #include <cdqcsim>
 
 namespace dqcsim {
@@ -224,7 +225,7 @@ namespace wrap {
     /**
      * Write the debug dump string of the handle to the given output stream.
      */
-    friend std::ostream& operator << (std::ostream &out, const Handle &handle) {
+    friend std::ostream& operator<<(std::ostream &out, const Handle &handle) {
       out << handle.dump();
       return out;
     }

@@ -1,4 +1,5 @@
 #include <dqcsim>
+#include <sstream>
 #include "util.hpp"
 #include "gtest/gtest.h"
 
@@ -31,6 +32,17 @@ TEST(handle, test) {
     EXPECT_EQ(handle.is_valid(), true);
     EXPECT_EQ(handle.type(), raw::dqcs_handle_type_t::DQCS_HTYPE_ARB_DATA);
     EXPECT_EQ(handle.dump(),
+      "ArbData(\n"
+      "    ArbData {\n"
+      "        json: Map(\n"
+      "            {},\n"
+      "        ),\n"
+      "        args: [],\n"
+      "    },\n"
+      ")");
+    std::stringstream ss;
+    ss << handle;
+    EXPECT_EQ(ss.str(),
       "ArbData(\n"
       "    ArbData {\n"
       "        json: Map(\n"
