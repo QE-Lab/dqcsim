@@ -8,6 +8,7 @@
 #include <vector>
 #include <cstring>
 #include <iostream>
+#include <complex>
 #include <cdqcsim>
 
 namespace dqcsim {
@@ -887,6 +888,144 @@ namespace wrap {
     std::vector<QubitRef> copy_into_vector() const {
       QubitSet copy(*this);
       return copy.drain_into_vector();
+    }
+
+  };
+
+  /**
+   * Convenience class for the square complex matrices used to express the
+   * qubit gates.
+   */
+  class Matrix {
+  private:
+
+    /**
+     * Row-major data storage.
+     */
+    std::vector<std::complex<double>> d;
+
+    /**
+     * Number of rows == number of columns. So we don't have to compute the
+     * sqrt of the vector size all the time.
+     */
+    const size_t n;
+
+  public:
+
+    /**
+     * Delete the default constructor, as it's nonsensical with no size
+     * parameter.
+     */
+    Matrix() = delete;
+
+    /**
+     * Constructs an identity matrix of the given size.
+     */
+    Matrix(size_t size) : d(size * size, std::complex<double>(0.0, 0.0)), n(size) {
+      for (size_t i = 0; i < n; i++) {
+        (*this)(i, i) = std::complex<double>(1.0, 0.0);
+      }
+    }
+
+    /**
+     * Constructs a matrix from a row-major flattened array of `size` x `size`
+     * `std::complex<double>`s.
+     */
+    Matrix(size_t size, const std::complex<double> *data) : d(size*size), n(size) {
+      std::memcpy(d.data(), data, d.size() * sizeof(std::complex<double>));
+    }
+
+    /**
+     * Constructs a matrix from a row-major, real-first flattened array of
+     * 2 x `size` x `size` `double`s.
+     */
+    Matrix(size_t size, const double *data) : d(size*size), n(size) {
+      std::memcpy(d.data(), data, d.size() * sizeof(std::complex<double>));
+    }
+
+    /**
+     * Mutable matrix element accessor.
+     */
+    std::complex<double>& operator()(size_t row, size_t column) {
+      if (row >= n || column >= n) {
+        throw std::invalid_argument("matrix subscript out of bounds");
+      }
+      return d[n*row + column];
+    }
+
+    /**
+     * Const matrix element accessor.
+     */
+    const std::complex<double>& operator()(size_t row, size_t column) const {
+      if (row >= n || column >= n) {
+        throw std::invalid_argument("matrix subscript out of bounds");
+      }
+      return d[n*row + column];
+    }
+
+    /**
+     * Mutable matrix flattened data accessor.
+     */
+    std::complex<double> *data() {
+      return d.data();
+    }
+
+    /**
+     * Const matrix flattened data accessor.
+     */
+    const std::complex<double> *data() const {
+      return d.data();
+    }
+
+    /**
+     * Returns the size of the matrix (number of rows = number of columns).
+     */
+    size_t size() const {
+      return n;
+    }
+
+    /**
+     * Allow matrices to be printed.
+     */
+    friend std::ostream& operator<<(std::ostream &out, const Matrix &matrix) {
+      out << '{';
+      for (size_t row = 0; row < matrix.size(); row++) {
+        if (row) out << ", ";
+        out << '[';
+        for (size_t col = 0; col < matrix.size(); col++) {
+          if (col) out << ", ";
+          auto e = matrix(row, col);
+          if (e.real() != 0.0) {
+            out << e.real();
+            if (e.imag() < 0.0) {
+              out << '-' << -e.imag() << 'i';
+            } else if (e.imag() > 0.0) {
+              out << '+' << e.imag() << 'i';
+            }
+          } else if (e.imag()) {
+            out << e.imag() << 'i';
+          } else {
+            out << '0';
+          }
+        }
+        out << ']';
+      }
+      out << '}';
+      return out;
+    }
+
+    /**
+     * Matrix equality operator.
+     */
+    bool operator==(const Matrix &other) const {
+      return d == other.d;
+    }
+
+    /**
+     * Matrix inequality operator.
+     */
+    bool operator!=(const Matrix &other) const {
+      return d != other.d;
     }
 
   };
