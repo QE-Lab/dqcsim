@@ -1154,6 +1154,134 @@ namespace wrap {
 
   };
 
+  /**
+   * Wrapper around measurement set handles.
+   */
+  class MeasurementSet : public Handle {
+  public:
+
+    /**
+     * Wrap the given measurement set handle.
+     */
+    MeasurementSet(raw::dqcs_handle_t handle) : Handle(handle) {
+    }
+
+    /**
+     * Constructs an empty measurement set.
+     */
+    MeasurementSet() : Handle(check(raw::dqcs_mset_new())) {
+    }
+
+    /**
+     * Constructs a measurement set object from an iterable of measurements.
+     */
+    template <class T>
+    MeasurementSet(const T &measurements) : Handle(check(raw::dqcs_mset_new())) {
+      for (const Measurement &measurement : measurements) {
+        set(measurement);
+      }
+    }
+
+    /**
+     * Copies the given measurement object into the set. If the set already
+     * contained measurement data for the qubit associated with the measurement
+     * object, the previous measurement data is overwritten.
+     */
+    void set(const Measurement &measurement) {
+      Measurement copy = measurement;
+      check(raw::dqcs_mset_set(handle, copy.take_handle()));
+    }
+
+    /**
+     * Moves the given measurement object into the set. If the set already
+     * contained measurement data for the qubit associated with the measurement
+     * object, the previous measurement data is overwritten.
+     */
+    void set(Measurement &&measurement) {
+      check(raw::dqcs_mset_set(handle, measurement.take_handle()));
+    }
+
+    /**
+     * Returns a copy of the measurement object for the given qubit. An
+     * exception is thrown if no data is available for this qubit.
+     */
+    Measurement get(const QubitRef &qubit) const {
+      return Measurement(check(raw::dqcs_mset_get(handle, qubit.get_index())));
+    }
+
+    /**
+     * Moves the measurement object for the given qubit out of the set. An
+     * exception is thrown if no data is available for this qubit.
+     */
+    Measurement take(const QubitRef &qubit) {
+      return Measurement(check(raw::dqcs_mset_take(handle, qubit.get_index())));
+    }
+
+    /**
+     * Moves any measurement object out of the set. An exception is thrown if
+     * the set is empty.
+     */
+    Measurement take_any() {
+      return Measurement(check(raw::dqcs_mset_take_any(handle)));
+    }
+
+    /**
+     * Removes the measurement object for the given qubit from the set.
+     */
+    void remove(const QubitRef &qubit) {
+      check(raw::dqcs_mset_remove(handle, qubit.get_index()));
+    }
+
+    /**
+     * Returns the number of measurements in the set.
+     */
+    size_t size() const {
+      return check(raw::dqcs_mset_len(handle));
+    }
+
+    /**
+     * Returns whether the set contains measurement data for the given qubit.
+     */
+    bool contains(const QubitRef &qubit) const {
+      return check(raw::dqcs_mset_contains(handle, qubit.get_index()));
+    }
+
+    /**
+     * Drains the measurement set into a vector.
+     */
+    std::vector<Measurement> drain_into_vector() {
+      std::vector<Measurement> measurements;
+      while (size()) {
+        measurements.emplace_back(take_any());
+      }
+      return measurements;
+    }
+
+    /**
+     * Copies the qubit set into a vector. This requires destructive iteration,
+     * so the function is not const; if an exception occurs, the state of the
+     * measurement set may be changed.
+     */
+    std::vector<Measurement> copy_into_vector() {
+      std::vector<Measurement> vector = drain_into_vector();
+      MeasurementSet copy(vector);
+      free();
+      handle = copy.take_handle();
+      return vector;
+    }
+
+    /**
+     * Copy-constructs a measurement set object. This requires destructive
+     * iteration of the source object, so it isn't not const; if an exception
+     * occurs, the state of the source object may be changed.
+     */
+    MeasurementSet(MeasurementSet &src) : Handle(0) {
+      MeasurementSet copy(src.copy_into_vector());
+      handle = copy.take_handle();
+    }
+
+  };
+
 } // namespace wrap
 
 } // namespace dqcsim
