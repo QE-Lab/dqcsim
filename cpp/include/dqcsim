@@ -231,11 +231,25 @@ namespace wrap {
     }
 
     // Handles cannot usually be copied, so delete the copy constructor and
-    // copy assignment operator. Moving is fine, though.
+    // copy assignment operator.
     Handle(const Handle&) = delete;
     void operator=(const Handle&) = delete;
-    Handle(Handle &&handle) = default;
-    Handle &operator=(Handle&&) = default;
+
+    /**
+     * Move constructor; simply move ownership of the handle.
+     */
+    Handle(Handle &&src) : handle(src.handle) {
+      src.handle = 0;
+    }
+
+    /**
+     * Move assignment; simply move ownership of the handle.
+     */
+    Handle &operator=(Handle &&src) {
+      handle = src.handle;
+      src.handle = 0;
+      return *this;
+    }
 
     /**
      * Returns a string containing a debug dump of the handle.
@@ -267,7 +281,7 @@ namespace wrap {
   /**
    * Class wrapper for handles that support the `arb` interface.
    */
-  class Arb : virtual public Handle {
+  class Arb : public Handle {
   public:
 
     /**
@@ -535,23 +549,29 @@ namespace wrap {
   public:
 
     /**
+     * Wrap the given `ArbData` handle.
+     */
+    ArbData(raw::dqcs_handle_t handle) : Arb(handle) {
+    }
+
+    /**
      * Constructs an empty `ArbData` object.
      */
-    ArbData() : Handle(check(raw::dqcs_arb_new())), Arb(/*unused*/0) {
+    ArbData() : Arb(check(raw::dqcs_arb_new())) {
     }
 
     /**
      * Copy-constructs an `ArbData` object from any object supporting the `Arb`
      * interface.
      */
-    ArbData(const Arb &src) : Handle(check(raw::dqcs_arb_new())), Arb(/*unused*/0) {
+    ArbData(const Arb &src) : Arb(check(raw::dqcs_arb_new())) {
       set_arb(src);
     }
 
     /**
      * Copy-constructs an `ArbData` object from another `ArbData` object.
      */
-    ArbData(const ArbData &src) : Handle(check(raw::dqcs_arb_new())), Arb(/*unused*/0) {
+    ArbData(const ArbData &src) : Arb(check(raw::dqcs_arb_new())) {
       set_arb(src);
     }
 
@@ -567,13 +587,13 @@ namespace wrap {
   /**
    * Class wrapper for handles that support the `cmd` interface.
    */
-  class Cmd : virtual public Arb {
+  class Cmd : public Arb {
   public:
 
     /**
      * Wrap the given `cmd` handle.
      */
-    Cmd(raw::dqcs_handle_t handle) : Handle(handle), Arb(/*unused*/0) {
+    Cmd(raw::dqcs_handle_t handle) : Arb(handle) {
     }
 
     /**
@@ -621,33 +641,33 @@ namespace wrap {
     /**
      * Wrap the given `ArbCmd` handle.
      */
-    ArbCmd(raw::dqcs_handle_t handle) : Handle(handle), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    ArbCmd(raw::dqcs_handle_t handle) : Cmd(handle) {
     }
 
     /**
      * Constructs an `ArbCmd` object.
      */
-    ArbCmd(const std::string &iface, const std::string &oper) : Handle(check(raw::dqcs_cmd_new(
+    ArbCmd(const std::string &iface, const std::string &oper) : Cmd(check(raw::dqcs_cmd_new(
       iface.c_str(), oper.c_str()
-    ))), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    ))) {
     }
 
     /**
      * Copy-constructs an `ArbCmd` object from any object supporting the `Cmd`
      * interface.
      */
-    ArbCmd(const Cmd &src) : Handle(check(raw::dqcs_cmd_new(
+    ArbCmd(const Cmd &src) : Cmd(check(raw::dqcs_cmd_new(
       src.get_iface().c_str(), src.get_oper().c_str()
-    ))), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    ))) {
       set_arb(src);
     }
 
     /**
      * Copy-constructs an `ArbCmd` object from another `ArbCmd` object.
      */
-    ArbCmd(const ArbCmd &src) : Handle(check(raw::dqcs_cmd_new(
+    ArbCmd(const ArbCmd &src) : Cmd(check(raw::dqcs_cmd_new(
       src.get_iface().c_str(), src.get_oper().c_str()
-    ))), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    ))) {
       set_arb(src);
     }
 
@@ -694,13 +714,13 @@ namespace wrap {
     /**
      * Wrap the given `ArbCmd` handle.
      */
-    ArbCmdQueue(raw::dqcs_handle_t handle) : Handle(handle), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    ArbCmdQueue(raw::dqcs_handle_t handle) : Cmd(handle) {
     }
 
     /**
      * Constructs an empty `ArbCmd` queue object.
      */
-    ArbCmdQueue() : Handle(check(raw::dqcs_cq_new())), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    ArbCmdQueue() : Cmd(check(raw::dqcs_cq_new())) {
     }
 
     /**
@@ -708,7 +728,7 @@ namespace wrap {
      * copying.
      */
     template <class T>
-    ArbCmdQueue(const T &cmds) : Handle(check(raw::dqcs_cq_new())), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    ArbCmdQueue(const T &cmds) : Cmd(check(raw::dqcs_cq_new())) {
       for (const Cmd &cmd : cmds) {
         push(cmd);
       }
@@ -719,7 +739,7 @@ namespace wrap {
      * moving.
      */
     template <class T>
-    ArbCmdQueue(T &&cmds) : Handle(check(raw::dqcs_cq_new())), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    ArbCmdQueue(T &&cmds) : Cmd(check(raw::dqcs_cq_new())) {
       for (const Cmd &cmd : cmds) {
         push(std::move(cmd));
       }
@@ -1095,23 +1115,23 @@ namespace wrap {
     /**
      * Wrap the given measurement handle.
      */
-    Measurement(raw::dqcs_handle_t handle) : Handle(handle), Arb(/*unused*/0) {
+    Measurement(raw::dqcs_handle_t handle) : Arb(handle) {
     }
 
     /**
      * Constructs a measurement object.
      */
-    Measurement(const QubitRef &qubit, MeasurementValue value) : Handle(check(
+    Measurement(const QubitRef &qubit, MeasurementValue value) : Arb(check(
       raw::dqcs_meas_new(qubit.get_index(), measurement_value_to_raw(value))
-    )), Arb(/*unused*/0) {
+    )) {
     }
 
     /**
      * Copy-constructs a `Measurement` object.
      */
-    Measurement(const Measurement &src) : Handle(check(
+    Measurement(const Measurement &src) : Arb(check(
       raw::dqcs_meas_new(src.get_qubit().get_index(), measurement_value_to_raw(src.get_value()))
-    )), Arb(/*unused*/0) {
+    )) {
       set_arb(src);
     }
 
