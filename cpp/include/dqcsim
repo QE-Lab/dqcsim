@@ -99,14 +99,38 @@ namespace wrap {
   }
 
   /**
-   * Checks a `dqcs_measurement_t` return value; if failure, throws a runtime
-   * error with DQCsim's error message.
+   * More C++-like wrapper for `raw::dqcs_measurement_t`, not including the
+   * `invalid` option (since we use exceptions to communicate failure).
    */
-  inline raw::dqcs_measurement_t check(raw::dqcs_measurement_t measurement) {
-    if (measurement == raw::dqcs_measurement_t::DQCS_MEAS_INVALID) {
-      throw std::runtime_error(raw::dqcs_error_get());
+  enum class MeasurementValue {
+    Zero = 0,
+    One = 1,
+    Undefined = 2
+  };
+
+  /**
+   * Converts a `MeasurementValue` to its raw C enum.
+   */
+  inline raw::dqcs_measurement_t measurement_value_to_raw(MeasurementValue measurement) {
+    switch (measurement) {
+      case MeasurementValue::Zero:      return raw::dqcs_measurement_t::DQCS_MEAS_ZERO;
+      case MeasurementValue::One:       return raw::dqcs_measurement_t::DQCS_MEAS_ONE;
+      case MeasurementValue::Undefined: return raw::dqcs_measurement_t::DQCS_MEAS_UNDEFINED;
     }
-    return measurement;
+  }
+
+  /**
+   * Checks a `dqcs_measurement_t` return value and converts it to its C++
+   * enum representation; if failure, throws a runtime error with DQCsim's
+   * error message.
+   */
+  inline MeasurementValue check(raw::dqcs_measurement_t measurement) {
+    switch (measurement) {
+      case raw::dqcs_measurement_t::DQCS_MEAS_ZERO:      return MeasurementValue::Zero;
+      case raw::dqcs_measurement_t::DQCS_MEAS_ONE:       return MeasurementValue::One;
+      case raw::dqcs_measurement_t::DQCS_MEAS_UNDEFINED: return MeasurementValue::Undefined;
+    }
+    throw std::runtime_error(raw::dqcs_error_get());
   }
 
   /**
@@ -495,6 +519,13 @@ namespace wrap {
       check(raw::dqcs_arb_clear(handle));
     }
 
+    /**
+     * Assigns all arb data from the given arb to this one.
+     */
+    void set_arb(const Arb &src) {
+      check(raw::dqcs_arb_assign(handle, src.get()));
+    }
+
   };
 
   /**
@@ -514,21 +545,21 @@ namespace wrap {
      * interface.
      */
     ArbData(const Arb &src) : Handle(check(raw::dqcs_arb_new())), Arb(/*unused*/0) {
-      check(raw::dqcs_arb_assign(handle, src.get()));
+      set_arb(src);
     }
 
     /**
      * Copy-constructs an `ArbData` object from another `ArbData` object.
      */
     ArbData(const ArbData &src) : Handle(check(raw::dqcs_arb_new())), Arb(/*unused*/0) {
-      check(raw::dqcs_arb_assign(handle, src.get()));
+      set_arb(src);
     }
 
     /**
      * Copy assignment operator for `ArbData` objects.
      */
     void operator=(const ArbData &src) {
-      check(raw::dqcs_arb_assign(handle, src.get()));
+      set_arb(src);
     }
 
   };
@@ -602,7 +633,7 @@ namespace wrap {
     ArbCmd(const Cmd &src) : Handle(check(raw::dqcs_cmd_new(
       src.get_iface().c_str(), src.get_oper().c_str()
     ))), Cmd(/*unused*/0), Arb(/*unused*/0) {
-      check(raw::dqcs_arb_assign(handle, src.get()));
+      set_arb(src);
     }
 
     /**
@@ -611,7 +642,7 @@ namespace wrap {
     ArbCmd(const ArbCmd &src) : Handle(check(raw::dqcs_cmd_new(
       src.get_iface().c_str(), src.get_oper().c_str()
     ))), Cmd(/*unused*/0), Arb(/*unused*/0) {
-      check(raw::dqcs_arb_assign(handle, src.get()));
+      set_arb(src);
     }
 
     /**
@@ -803,6 +834,13 @@ namespace wrap {
     }
 
   };
+
+  /**
+   * Literal operator for qubits, so for instance `15_q` returns qubit 15.
+   */
+  inline QubitRef operator "" _q(unsigned long long int qubit) {
+    return QubitRef(qubit);
+  }
 
   /**
    * Wrapper around qubit set handles.
@@ -1026,6 +1064,68 @@ namespace wrap {
      */
     bool operator!=(const Matrix &other) const {
       return d != other.d;
+    }
+
+  };
+
+  /**
+   * Class wrapper for measurement handles.
+   */
+  class Measurement : public Arb {
+  public:
+
+    /**
+     * Constructs a measurement object.
+     */
+    Measurement(const QubitRef &qubit, MeasurementValue value) : Handle(check(
+      raw::dqcs_meas_new(qubit.get_index(), measurement_value_to_raw(value))
+    )), Arb(/*unused*/0) {
+    }
+
+    /**
+     * Copy-constructs a `Measurement` object.
+     */
+    Measurement(const Measurement &src) : Handle(check(
+      raw::dqcs_meas_new(src.get_qubit().get_index(), measurement_value_to_raw(src.get_value()))
+    )), Arb(/*unused*/0) {
+      set_arb(src);
+    }
+
+    /**
+     * Copy assignment operator for `Measurement` objects.
+     */
+    void operator=(const Measurement &src) {
+      set_qubit(src.get_qubit());
+      set_value(src.get_value());
+      set_arb(src);
+    }
+
+    /**
+     * Returns the measurement value.
+     */
+    MeasurementValue get_value() const {
+      return check(raw::dqcs_meas_value_get(handle));
+    }
+
+    /**
+     * Sets the measurement value.
+     */
+    void set_value(MeasurementValue value) const {
+      check(raw::dqcs_meas_value_set(handle, measurement_value_to_raw(value)));
+    }
+
+    /**
+     * Returns the qubit reference associated with this measurement.
+     */
+    QubitRef get_qubit() const {
+      return QubitRef(check(raw::dqcs_meas_qubit_get(handle)));
+    }
+
+    /**
+     * Sets the qubit reference associated with this measurement.
+     */
+    void set_qubit(QubitRef qubit) const {
+      check(raw::dqcs_meas_qubit_set(handle, qubit.get_index()));
     }
 
   };
