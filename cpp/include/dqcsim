@@ -214,7 +214,7 @@ namespace wrap {
     /**
      * Returns the raw handle without relinquishing ownership.
      */
-    raw::dqcs_handle_t get() const noexcept {
+    raw::dqcs_handle_t get_handle() const noexcept {
       return handle;
     }
 
@@ -224,7 +224,7 @@ namespace wrap {
      * constructor) the compiler can statically check that the wrapper object
      * is not reused.
      */
-    raw::dqcs_handle_t take() noexcept {
+    raw::dqcs_handle_t take_handle() noexcept {
       raw::dqcs_handle_t h = handle;
       handle = 0;
       return h;
@@ -523,7 +523,7 @@ namespace wrap {
      * Assigns all arb data from the given arb to this one.
      */
     void set_arb(const Arb &src) {
-      check(raw::dqcs_arb_assign(handle, src.get()));
+      check(raw::dqcs_arb_assign(handle, src.get_handle()));
     }
 
   };
@@ -619,6 +619,12 @@ namespace wrap {
   public:
 
     /**
+     * Wrap the given `ArbCmd` handle.
+     */
+    ArbCmd(raw::dqcs_handle_t handle) : Handle(handle), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    }
+
+    /**
      * Constructs an `ArbCmd` object.
      */
     ArbCmd(const std::string &iface, const std::string &oper) : Handle(check(raw::dqcs_cmd_new(
@@ -655,7 +661,7 @@ namespace wrap {
       // operation throws an error for some reason.
       ArbCmd copy(src);
       free();
-      handle = copy.take();
+      handle = copy.take_handle();
     }
 
   };
@@ -684,6 +690,12 @@ namespace wrap {
    */
   class ArbCmdQueue : public Cmd {
   public:
+
+    /**
+     * Wrap the given `ArbCmd` handle.
+     */
+    ArbCmdQueue(raw::dqcs_handle_t handle) : Handle(handle), Cmd(/*unused*/0), Arb(/*unused*/0) {
+    }
 
     /**
      * Constructs an empty `ArbCmd` queue object.
@@ -718,14 +730,14 @@ namespace wrap {
      */
     void push(const Cmd &cmd) {
       ArbCmd copy(cmd);
-      check(raw::dqcs_cq_push(handle, copy.take()));
+      check(raw::dqcs_cq_push(handle, copy.take_handle()));
     }
 
     /**
      * Pushes an `ArbCmd` into the queue by moving.
      */
     void push(ArbCmd &&cmd) {
-      check(raw::dqcs_cq_push(handle, cmd.take()));
+      check(raw::dqcs_cq_push(handle, cmd.take_handle()));
     }
 
     /**
@@ -768,7 +780,7 @@ namespace wrap {
       std::vector<ArbCmd> cmds = drain_into_vector();
       free();
       ArbCmdQueue copy(cmds);
-      handle = copy.take();
+      handle = copy.take_handle();
       return cmds;
     }
 
@@ -849,6 +861,12 @@ namespace wrap {
   public:
 
     /**
+     * Wrap the given qubit set handle.
+     */
+    QubitSet(raw::dqcs_handle_t handle) : Handle(handle) {
+    }
+
+    /**
      * Constructs an empty qubit set.
      */
     QubitSet() : Handle(check(raw::dqcs_qbset_new())) {
@@ -876,7 +894,7 @@ namespace wrap {
     void operator=(const QubitSet &src) {
       QubitSet copy(src);
       free();
-      handle = copy.take();
+      handle = copy.take_handle();
     }
 
     /**
@@ -1075,6 +1093,12 @@ namespace wrap {
   public:
 
     /**
+     * Wrap the given measurement handle.
+     */
+    Measurement(raw::dqcs_handle_t handle) : Handle(handle), Arb(/*unused*/0) {
+    }
+
+    /**
      * Constructs a measurement object.
      */
     Measurement(const QubitRef &qubit, MeasurementValue value) : Handle(check(
@@ -1110,7 +1134,7 @@ namespace wrap {
     /**
      * Sets the measurement value.
      */
-    void set_value(MeasurementValue value) const {
+    void set_value(MeasurementValue value) {
       check(raw::dqcs_meas_value_set(handle, measurement_value_to_raw(value)));
     }
 
@@ -1124,7 +1148,7 @@ namespace wrap {
     /**
      * Sets the qubit reference associated with this measurement.
      */
-    void set_qubit(QubitRef qubit) const {
+    void set_qubit(QubitRef qubit) {
       check(raw::dqcs_meas_qubit_set(handle, qubit.get_index()));
     }
 

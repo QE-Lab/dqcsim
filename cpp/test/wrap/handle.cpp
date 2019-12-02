@@ -63,10 +63,10 @@ TEST(handle, test) {
     raw::dqcs_handle_t raw_handle;
     {
       wrap::Handle handle(raw::dqcs_arb_new());
-      raw::dqcs_handle_t raw_handle_get = handle.get();
-      raw_handle = handle.take();
+      raw::dqcs_handle_t raw_handle_get = handle.get_handle();
+      raw_handle = handle.take_handle();
       EXPECT_EQ(raw_handle_get, raw_handle);
-      EXPECT_EQ(handle.get(), 0);
+      EXPECT_EQ(handle.get_handle(), 0);
       EXPECT_EQ(handle.is_valid(), false);
     }
     {
