@@ -1107,6 +1107,247 @@ namespace wrap {
   };
 
   /**
+   * Class wrapper for `Gate` handles.
+   */
+  class Gate : public Arb {
+  private:
+
+    /**
+     * Integer square root.
+     */
+    template <typename T>
+    static T isqrt(T n) {
+      T c = (T)1 << (sizeof(T) * 4 - 1);
+      if (c < 0) {
+        c = (T)1 << (sizeof(T) * 4 - 2);
+      }
+      T g = c;
+      while (true) {
+        if (g*g > n) {
+          g ^= c;
+        }
+        c >>= 1;
+        if (c == 0) {
+          return g;
+        }
+        g |= c;
+      }
+    }
+
+  public:
+
+    /**
+     * Wrap the given `Gate` handle.
+     */
+    Gate(raw::dqcs_handle_t handle) : Arb(handle) {
+    }
+
+    /**
+     * Constructs a new unitary gate with no control qubits.
+     */
+    static Gate new_unitary(QubitSet &&targets, const Matrix &matrix) {
+      return Gate(check(raw::dqcs_gate_new_unitary(
+        targets.take_handle(),
+        0,
+        reinterpret_cast<const double*>(matrix.data()),
+        matrix.size() * matrix.size()
+      )));
+    }
+
+    /**
+     * Constructs a new unitary gate with no control qubits.
+     */
+    static Gate new_unitary(const QubitSet &targets, const Matrix &matrix) {
+      QubitSet targets_copy(targets);
+      return new_unitary(std::move(targets_copy), matrix);
+    }
+
+    /**
+     * Constructs a new unitary gate with control qubits.
+     */
+    static Gate new_unitary(QubitSet &&targets, QubitSet &&controls, const Matrix &matrix) {
+      return Gate(check(raw::dqcs_gate_new_unitary(
+        targets.take_handle(),
+        controls.take_handle(),
+        reinterpret_cast<const double*>(matrix.data()),
+        matrix.size() * matrix.size()
+      )));
+    }
+
+    /**
+     * Constructs a new unitary gate with control qubits.
+     */
+    static Gate new_unitary(const QubitSet &targets, const QubitSet &controls, const Matrix &matrix) {
+      QubitSet targets_copy(targets);
+      QubitSet controls_copy(controls);
+      return new_unitary(std::move(targets_copy), std::move(controls_copy), matrix);
+    }
+
+    /**
+     * Constructs a new Z-axis measurement gate.
+     */
+    static Gate new_measure(QubitSet &&measures) {
+      return Gate(check(raw::dqcs_gate_new_measurement(measures.take_handle())));
+    }
+
+    /**
+     * Constructs a new Z-axis measurement gate.
+     */
+    static Gate new_measure(const QubitSet &measures) {
+      QubitSet measures_copy(measures);
+      return new_measure(std::move(measures_copy));
+    }
+
+    /**
+     * Constructs a new custom gate with a matrix.
+     */
+    static Gate new_custom(
+      const std::string &name,
+      QubitSet &&targets,
+      QubitSet &&controls,
+      QubitSet &&measures,
+      const Matrix &matrix
+    ) {
+      return Gate(check(raw::dqcs_gate_new_custom(
+        name.c_str(),
+        targets.take_handle(),
+        controls.take_handle(),
+        measures.take_handle(),
+        reinterpret_cast<const double*>(matrix.data()),
+        matrix.size() * matrix.size()
+      )));
+    }
+
+    /**
+     * Constructs a new custom gate with a matrix.
+     */
+    static Gate new_custom(
+      const std::string &name,
+      const QubitSet &targets,
+      const QubitSet &controls,
+      const QubitSet &measures,
+      const Matrix &matrix
+    ) {
+      QubitSet targets_copy(targets);
+      QubitSet controls_copy(controls);
+      QubitSet measures_copy(measures);
+      return new_custom(name, std::move(targets_copy), std::move(controls_copy), std::move(measures_copy), matrix);
+    }
+
+    /**
+     * Constructs a new custom gate without a matrix.
+     */
+    static Gate new_custom(
+      const std::string &name,
+      QubitSet &&targets,
+      QubitSet &&controls,
+      QubitSet &&measures
+    ) {
+      return Gate(check(raw::dqcs_gate_new_custom(
+        name.c_str(),
+        targets.take_handle(),
+        controls.take_handle(),
+        measures.take_handle(),
+        nullptr,
+        0
+      )));
+    }
+
+    /**
+     * Constructs a new custom gate without a matrix.
+     */
+    static Gate new_custom(
+      const std::string &name,
+      const QubitSet &targets,
+      const QubitSet &controls,
+      const QubitSet &measures
+    ) {
+      QubitSet targets_copy(targets);
+      QubitSet controls_copy(controls);
+      QubitSet measures_copy(measures);
+      return new_custom(name, std::move(targets_copy), std::move(controls_copy), std::move(measures_copy));
+    }
+
+    /**
+     * Returns a new qubit reference set with the target qubits for this gate.
+     */
+    QubitSet get_targets() const {
+      return QubitSet(check(raw::dqcs_gate_targets(handle)));
+    }
+
+    /**
+     * Returns whether this gate has target qubits.
+     */
+    bool has_targets() const {
+      return check(raw::dqcs_gate_has_targets(handle));
+    }
+
+    /**
+     * Returns a new qubit reference set with the control qubits for this gate.
+     */
+    QubitSet get_controls() const {
+      return QubitSet(check(raw::dqcs_gate_controls(handle)));
+    }
+
+    /**
+     * Returns whether this gate has control qubits.
+     */
+    bool has_controls() const {
+      return check(raw::dqcs_gate_has_controls(handle));
+    }
+
+    /**
+     * Returns a new qubit reference set with the measurement qubits for this
+     * gate.
+     */
+    QubitSet get_measures() const {
+      return QubitSet(check(raw::dqcs_gate_measures(handle)));
+    }
+
+    /**
+     * Returns whether this gate has measurement qubits.
+     */
+    bool has_measures() const {
+      return check(raw::dqcs_gate_has_measures(handle));
+    }
+
+    /**
+     * Returns the matrix that belongs to this gate.
+     */
+    Matrix get_matrix() const {
+      double *data = check(raw::dqcs_gate_matrix(handle));
+      Matrix matrix(isqrt(check(raw::dqcs_gate_matrix_len(handle))), data);
+      std::free(data);
+      return matrix;
+    }
+
+    /**
+     * Returns whether this gate has a matrix.
+     */
+    bool has_matrix() const {
+      return check(raw::dqcs_gate_has_matrix(handle));
+    }
+
+    /**
+     * Returns the name of a custom gate.
+     */
+    std::string get_name() const {
+      char *data = check(raw::dqcs_gate_name(handle));
+      std::string name(data);
+      std::free(data);
+      return name;
+    }
+
+    /**
+     * Returns whether this gate is a custom gate.
+     */
+    bool is_custom() const {
+      return check(raw::dqcs_gate_is_custom(handle));
+    }
+
+  };
+
+  /**
    * Class wrapper for measurement handles.
    */
   class Measurement : public Arb {
