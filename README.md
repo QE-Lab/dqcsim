@@ -1,7 +1,7 @@
 # DQCsim
 
 [![PyPi](https://badgen.net/pypi/v/dqcsim)](https://pypi.org/project/dqcsim/)
-[![Python version](https://badgen.net/badge/python/3.5,3.6,3.7?list=1)](https://pypi.org/project/dqcsim/)
+[![Python version](https://badgen.net/badge/python/3.5,3.6,3.7,3.8?list=1)](https://pypi.org/project/dqcsim/)
 [![Crates](https://badgen.net/crates/v/dqcsim)](https://crates.io/crates/dqcsim)
 [![Rust version](https://badgen.net/badge/rust/stable)](https://rustup.rs)
 [![Platform support](https://badgen.net/badge/platform/linux,macos?list=1)](https://mbrobbel.github.io/dqcsim/install/index.html)
