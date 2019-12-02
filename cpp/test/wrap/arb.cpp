@@ -1,7 +1,7 @@
 #include <dqcsim>
 #include "util.hpp"
 #include "gtest/gtest.h"
-#include "../json.hpp"
+#include <nlohmann/json.hpp>
 
 using namespace dqcsim;
 using json = nlohmann::json;
