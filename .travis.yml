@@ -120,7 +120,7 @@ matrix:
           for file in `find dqcsim_tests_* -executable -and -type f`;
             do [ -x "${file}" ] || continue;
             mkdir -p "../target/cov/$(basename $file)";
-            LD_LIBRARY_PATH=../target/debug/ kcov --exclude-pattern=/.cargo,/usr,/cpp --verify "../target/cov/$(basename $file)" "$file";
+            LD_LIBRARY_PATH=../target/debug/ kcov --exclude-pattern=/.cargo,/usr,/test --verify "../target/cov/$(basename $file)" "$file";
           done
 
     - &manylinux-wheels
