@@ -36,7 +36,7 @@ TEST(qubit, ref) {
 TEST(qubit, set) {
   wrap::QubitSet qs;
   EXPECT_EQ(qs.size(), 0);
-  qs = wrap::QubitSet(std::vector<wrap::QubitRef>({3, 1, 4, 15, 9, 2, 6, 5}));
+  qs = wrap::QubitSet::from_iter(std::vector<wrap::QubitRef>({3, 1, 4, 15, 9, 2, 6, 5}));
   EXPECT_EQ(qs.size(), 8);
   EXPECT_TRUE(qs.contains(wrap::QubitRef(1)));
   EXPECT_TRUE(qs.contains(wrap::QubitRef(2)));

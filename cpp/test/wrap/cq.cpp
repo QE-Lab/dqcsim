@@ -15,7 +15,7 @@ TEST(cq, basic) {
     vec_in.back().set_arb_json_string("{\"another\": \"value\"}");
     std::string c_d = vec_in.back().dump();
 
-    wrap::ArbCmdQueue cq(std::move(vec_in));
+    wrap::ArbCmdQueue cq = wrap::ArbCmdQueue::from_iter(std::move(vec_in));
     std::string cq_dump = cq.dump();
 
     {
