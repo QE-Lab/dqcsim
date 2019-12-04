@@ -939,15 +939,30 @@ namespace wrap {
      * Pushes an `ArbCmd` into the queue by copying.
      */
     void push(const Cmd &cmd) {
-      ArbCmd copy(cmd);
-      check(raw::dqcs_cq_push(handle, copy.take_handle()));
+      push(std::move(ArbCmd(cmd)));
     }
 
     /**
      * Pushes an `ArbCmd` into the queue by moving.
      */
     void push(ArbCmd &&cmd) {
-      check(raw::dqcs_cq_push(handle, cmd.take_handle()));
+      check(raw::dqcs_cq_push(handle, cmd.get_handle()));
+    }
+
+    /**
+     * Pushes an `ArbCmd` into the queue by copying (builder pattern).
+     */
+    ArbCmdQueue &with(const Cmd &cmd) {
+      push(cmd);
+      return *this;
+    }
+
+    /**
+     * Pushes an `ArbCmd` into the queue by moving (builder pattern).
+     */
+    ArbCmdQueue &with(ArbCmd &&cmd) {
+      push(std::move(cmd));
+      return *this;
     }
 
     /**
@@ -1141,6 +1156,15 @@ namespace wrap {
      */
     void push(const QubitRef &qubit) {
       check(raw::dqcs_qbset_push(handle, qubit.get_index()));
+    }
+
+    /**
+     * Pushes a qubit into the set (builder pattern). Note that qubit sets are
+     * ordered. An exception is thrown if the qubit is already in the set.
+     */
+    QubitSet &with(const QubitRef &qubit) {
+      push(qubit);
+      return *this;
     }
 
     /**
@@ -1379,7 +1403,7 @@ namespace wrap {
      */
     static Gate new_unitary(QubitSet &&targets, const Matrix &matrix) {
       return Gate(check(raw::dqcs_gate_new_unitary(
-        targets.take_handle(),
+        targets.get_handle(),
         0,
         reinterpret_cast<const double*>(matrix.data()),
         matrix.size() * matrix.size()
@@ -1390,8 +1414,7 @@ namespace wrap {
      * Constructs a new unitary gate with no control qubits.
      */
     static Gate new_unitary(const QubitSet &targets, const Matrix &matrix) {
-      QubitSet targets_copy(targets);
-      return new_unitary(std::move(targets_copy), matrix);
+      return new_unitary(std::move(QubitSet(targets)), matrix);
     }
 
     /**
@@ -1399,8 +1422,8 @@ namespace wrap {
      */
     static Gate new_unitary(QubitSet &&targets, QubitSet &&controls, const Matrix &matrix) {
       return Gate(check(raw::dqcs_gate_new_unitary(
-        targets.take_handle(),
-        controls.take_handle(),
+        targets.get_handle(),
+        controls.get_handle(),
         reinterpret_cast<const double*>(matrix.data()),
         matrix.size() * matrix.size()
       )));
@@ -1410,24 +1433,21 @@ namespace wrap {
      * Constructs a new unitary gate with control qubits.
      */
     static Gate new_unitary(const QubitSet &targets, const QubitSet &controls, const Matrix &matrix) {
-      QubitSet targets_copy(targets);
-      QubitSet controls_copy(controls);
-      return new_unitary(std::move(targets_copy), std::move(controls_copy), matrix);
+      return new_unitary(std::move(QubitSet(targets)), std::move(QubitSet(controls)), matrix);
     }
 
     /**
      * Constructs a new Z-axis measurement gate.
      */
     static Gate new_measure(QubitSet &&measures) {
-      return Gate(check(raw::dqcs_gate_new_measurement(measures.take_handle())));
+      return Gate(check(raw::dqcs_gate_new_measurement(measures.get_handle())));
     }
 
     /**
      * Constructs a new Z-axis measurement gate.
      */
     static Gate new_measure(const QubitSet &measures) {
-      QubitSet measures_copy(measures);
-      return new_measure(std::move(measures_copy));
+      return new_measure(std::move(QubitSet(measures)));
     }
 
     /**
@@ -1442,9 +1462,9 @@ namespace wrap {
     ) {
       return Gate(check(raw::dqcs_gate_new_custom(
         name.c_str(),
-        targets.take_handle(),
-        controls.take_handle(),
-        measures.take_handle(),
+        targets.get_handle(),
+        controls.get_handle(),
+        measures.get_handle(),
         reinterpret_cast<const double*>(matrix.data()),
         matrix.size() * matrix.size()
       )));
@@ -1460,10 +1480,13 @@ namespace wrap {
       const QubitSet &measures,
       const Matrix &matrix
     ) {
-      QubitSet targets_copy(targets);
-      QubitSet controls_copy(controls);
-      QubitSet measures_copy(measures);
-      return new_custom(name, std::move(targets_copy), std::move(controls_copy), std::move(measures_copy), matrix);
+      return new_custom(
+        name,
+        std::move(QubitSet(targets)),
+        std::move(QubitSet(controls)),
+        std::move(QubitSet(measures)),
+        matrix
+      );
     }
 
     /**
@@ -1477,9 +1500,9 @@ namespace wrap {
     ) {
       return Gate(check(raw::dqcs_gate_new_custom(
         name.c_str(),
-        targets.take_handle(),
-        controls.take_handle(),
-        measures.take_handle(),
+        targets.get_handle(),
+        controls.get_handle(),
+        measures.get_handle(),
         nullptr,
         0
       )));
@@ -1494,10 +1517,12 @@ namespace wrap {
       const QubitSet &controls,
       const QubitSet &measures
     ) {
-      QubitSet targets_copy(targets);
-      QubitSet controls_copy(controls);
-      QubitSet measures_copy(measures);
-      return new_custom(name, std::move(targets_copy), std::move(controls_copy), std::move(measures_copy));
+      return new_custom(
+        name,
+        std::move(QubitSet(targets)),
+        std::move(QubitSet(controls)),
+        std::move(QubitSet(measures))
+      );
     }
 
     /**
@@ -1688,7 +1713,7 @@ namespace wrap {
      */
     void set(const Measurement &measurement) {
       Measurement copy = measurement;
-      check(raw::dqcs_mset_set(handle, copy.take_handle()));
+      check(raw::dqcs_mset_set(handle, copy.get_handle()));
     }
 
     /**
@@ -1697,7 +1722,25 @@ namespace wrap {
      * object, the previous measurement data is overwritten.
      */
     void set(Measurement &&measurement) {
-      check(raw::dqcs_mset_set(handle, measurement.take_handle()));
+      check(raw::dqcs_mset_set(handle, measurement.get_handle()));
+    }
+
+    /**
+     * Copies the given measurement object into the set (builder pattern). If
+     * the set already contained measurement data for the qubit associated with
+     * the measurement object, the previous measurement data is overwritten.
+     */
+    MeasurementSet &with(const Measurement &measurement) {
+      set(measurement);
+    }
+
+    /**
+     * Moves the given measurement object into the set (builder pattern). If
+     * the set already contained measurement data for the qubit associated with
+     * the measurement object, the previous measurement data is overwritten.
+     */
+    MeasurementSet &with(Measurement &&measurement) {
+      set(std::move(measurement));
     }
 
     /**
