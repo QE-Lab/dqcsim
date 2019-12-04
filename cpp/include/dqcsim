@@ -1526,6 +1526,140 @@ namespace wrap {
     }
 
     /**
+     * Constructs a new custom gate with target qubits, control qubits,
+     * and a matrix.
+     */
+    static Gate new_custom(
+      const std::string &name,
+      QubitSet &&targets,
+      QubitSet &&controls,
+      const Matrix &matrix
+    ) {
+      return Gate(check(raw::dqcs_gate_new_custom(
+        name.c_str(),
+        targets.get_handle(),
+        controls.get_handle(),
+        0,
+        reinterpret_cast<const double*>(matrix.data()),
+        matrix.size() * matrix.size()
+      )));
+    }
+
+    /**
+     * Constructs a new custom gate with target qubits, control qubits,
+     * and a matrix.
+     */
+    static Gate new_custom(
+      const std::string &name,
+      const QubitSet &targets,
+      const QubitSet &controls,
+      const Matrix &matrix
+    ) {
+      return new_custom(
+        name,
+        std::move(QubitSet(targets)),
+        std::move(QubitSet(controls)),
+        matrix
+      );
+    }
+
+    /**
+     * Constructs a new custom gate with target qubits and control qubits.
+     */
+    static Gate new_custom(
+      const std::string &name,
+      QubitSet &&targets,
+      QubitSet &&controls
+    ) {
+      return Gate(check(raw::dqcs_gate_new_custom(
+        name.c_str(),
+        targets.get_handle(),
+        controls.get_handle(),
+        0,
+        nullptr,
+        0
+      )));
+    }
+
+    /**
+     * Constructs a new custom gate with target qubits and control qubits.
+     */
+    static Gate new_custom(
+      const std::string &name,
+      const QubitSet &targets,
+      const QubitSet &controls
+    ) {
+      return new_custom(
+        name,
+        std::move(QubitSet(targets)),
+        std::move(QubitSet(controls))
+      );
+    }
+
+    /**
+     * Constructs a new custom gate with target qubits and a matrix.
+     */
+    static Gate new_custom(
+      const std::string &name,
+      QubitSet &&targets,
+      const Matrix &matrix
+    ) {
+      return Gate(check(raw::dqcs_gate_new_custom(
+        name.c_str(),
+        targets.get_handle(),
+        0,
+        0,
+        reinterpret_cast<const double*>(matrix.data()),
+        matrix.size() * matrix.size()
+      )));
+    }
+
+    /**
+     * Constructs a new custom gate with target qubits and a matrix.
+     */
+    static Gate new_custom(
+      const std::string &name,
+      const QubitSet &targets,
+      const Matrix &matrix
+    ) {
+      return new_custom(
+        name,
+        std::move(QubitSet(targets)),
+        matrix
+      );
+    }
+
+    /**
+     * Constructs a new custom gate with only target qubits.
+     */
+    static Gate new_custom(
+      const std::string &name,
+      QubitSet &&targets
+    ) {
+      return Gate(check(raw::dqcs_gate_new_custom(
+        name.c_str(),
+        targets.get_handle(),
+        0,
+        0,
+        nullptr,
+        0
+      )));
+    }
+
+    /**
+     * Constructs a new custom gate with only target qubits.
+     */
+    static Gate new_custom(
+      const std::string &name,
+      const QubitSet &targets
+    ) {
+      return new_custom(
+        name,
+        std::move(QubitSet(targets))
+      );
+    }
+
+    /**
      * Returns a new qubit reference set with the target qubits for this gate.
      */
     QubitSet get_targets() const {
@@ -1928,8 +2062,36 @@ namespace callback {
     UpstreamPluginState(UpstreamPluginState&&) = delete;
     UpstreamPluginState &operator=(UpstreamPluginState&&) = delete;
 
-    // TODO: all functions operating on the plugin state that can be called
-    // from modify_measurement.
+    /**
+     * Generates a random floating point number using the simulator random
+     * seed. The generated numbers are uniformly distributed between 0
+     * (inclusive) and 1 (exclusive).
+     */
+    double random_f64() {
+      return raw::dqcs_plugin_random_f64(state);
+    }
+
+    /**
+     * Generates a random integer using the simulator random seed.
+     */
+    unsigned long long random_u64() {
+      return raw::dqcs_plugin_random_u64(state);
+    }
+
+    /**
+     * Generates a random value using the simulator random seed. All bits are
+     * randomized with a 50/50 probability.
+     */
+    template <typename T>
+    T random() {
+      unsigned long long data[(sizeof(T) + 7) / 8];
+      for (size_t i = 0; i < (sizeof(T) + 7) / 8; i++) {
+        data = random_u64();
+      }
+      T retval;
+      std::memcpy(&retval, data, sizeof(T));
+      return retval;
+    }
 
   };
 
@@ -1959,8 +2121,158 @@ namespace callback {
     PluginState(PluginState&&) = delete;
     PluginState &operator=(PluginState&&) = delete;
 
-    // TODO: all functions operating on the plugin state that cannot be called
-    // from modify_measurement
+    /**
+     * Allocates a number of downstream qubits, moving in the given command
+     * queue as arbitrary additional data for the qubits.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    wrap::QubitSet allocate(size_t num_qubits, wrap::ArbCmdQueue &queue) {
+      return allocate(num_qubits, std::move(wrap::ArbCmdQueue(queue)));
+    }
+
+    /**
+     * Allocates a number of downstream qubits, copying in the given command
+     * queue as arbitrary additional data for the qubits.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    wrap::QubitSet allocate(size_t num_qubits, wrap::ArbCmdQueue &&queue) {
+      return wrap::QubitSet(wrap::check(raw::dqcs_plugin_allocate(state, num_qubits, queue.get_handle())));
+    }
+
+    /**
+     * Allocates a number of default downstream qubits.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    wrap::QubitSet allocate(size_t num_qubits) {
+      return wrap::QubitSet(wrap::check(raw::dqcs_plugin_allocate(state, num_qubits, 0)));
+    }
+
+    /**
+     * Allocates a single downstream qubit, moving in the given command queue
+     * as arbitrary additional data for the qubits.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    wrap::QubitRef allocate(wrap::ArbCmdQueue &queue) {
+      return allocate(std::move(wrap::ArbCmdQueue(queue)));
+    }
+
+    /**
+     * Allocates a single downstream qubit, copying in the given command queue
+     * as arbitrary additional data for the qubits.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    wrap::QubitRef allocate(wrap::ArbCmdQueue &&queue) {
+      return allocate(1, std::move(queue)).pop();
+    }
+
+    /**
+     * Allocates a single downstream qubit.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    wrap::QubitRef allocate() {
+      return allocate(1).pop();
+    }
+
+    /**
+     * Frees the given downstream qubits.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void free(const wrap::QubitSet &qubits) {
+      free(std::move(wrap::QubitSet(qubits)));
+    }
+
+    /**
+     * Frees the given downstream qubits.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void free(wrap::QubitSet &&qubits) {
+      wrap::check(raw::dqcs_plugin_free(state, qubits.get_handle()));
+    }
+
+    /**
+     * Frees the given downstream qubit.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void free(const wrap::QubitRef &qubit) {
+      free(std::move(wrap::QubitRef(qubit)));
+    }
+
+    /**
+     * Frees the given downstream qubit.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void free(wrap::QubitRef &&qubit) {
+      free(std::move(wrap::QubitSet().with(std::move(qubit))));
+    }
+
+  };
+
+  /**
+   * Wrapper for the `dqcs_plugin_state_t` type for downstream-synchronous
+   * callbacks. Cannot be moved or copied, as it must stay in scope of the
+   * plugin callbacks. Can also not be constructed except for by the callback
+   * wrapper classes.
+   */
+  class RunningPluginState : public PluginState {
+  protected:
+
+    /**
+     * Hidden constructor, only to be used by the callback wrappers.
+     */
+    RunningPluginState(raw::dqcs_plugin_state_t state) : PluginState(state) {
+    }
+
+    // Allow the C-style callbacks to construct the plugin state wrapper.
+    DQCSIM_CALLBACK_FRIENDS
+
+  public:
+
+    // Delete the copy and move constructors and assignments.
+    RunningPluginState(const RunningPluginState&) = delete;
+    void operator=(const RunningPluginState&) = delete;
+    RunningPluginState(RunningPluginState&&) = delete;
+    RunningPluginState &operator=(RunningPluginState&&) = delete;
+
+    /**
+     * Sends a message to the host.
+     */
+    void send(const wrap::ArbData &message) {
+      send(std::move(wrap::ArbData(message)));
+    }
+
+    /**
+     * Sends a message to the host.
+     */
+    void send(wrap::ArbData &&message) {
+      wrap::check(raw::dqcs_plugin_send(state, message.get_handle()));
+    }
+
+    /**
+     * Receives a message from the host.
+     */
+    wrap::ArbData receive() {
+      return wrap::ArbData(wrap::check(raw::dqcs_plugin_recv(state)));
+    }
 
   };
 
@@ -2159,7 +2471,7 @@ namespace callback {
   /**
    * Callback wrapper specialized for the `run` callback.
    */
-  typedef Callback<wrap::ArbData, PluginState&, wrap::ArbData&&> Run;
+  typedef Callback<wrap::ArbData, RunningPluginState&, wrap::ArbData&&> Run;
 
   /**
    * Entry point for the `run` callback.
@@ -2172,7 +2484,7 @@ namespace callback {
 
     // Wrap inputs.
     Run *cb_wrapper = reinterpret_cast<Run*>(user_data);
-    PluginState state_wrapper(state);
+    RunningPluginState state_wrapper(state);
     wrap::ArbData args_wrapper(args);
 
     // Catch exceptions thrown in the user function to convert them to
