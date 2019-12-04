@@ -2421,21 +2421,53 @@ namespace wrap {
   using PluginState = callback::PluginState;
 
   /**
-   * Class wrapper for plugin definition handles.
+   * Class wrapper for plugin join handles.
    */
-  class PluginDefinition : public Handle {
+  class PluginJoinHandle : public Handle {
   public:
 
     /**
      * Wrap the given plugin definition handle.
      */
-    PluginDefinition(HandleIndex handle) : Handle(handle) {
+    PluginJoinHandle(HandleIndex handle) : Handle(handle) {
+    }
+
+    // Delete copy construct/assign.
+    PluginJoinHandle(const PluginJoinHandle&) = delete;
+    void operator=(const PluginJoinHandle&) = delete;
+
+    // Default move construct/assign.
+    PluginJoinHandle(PluginJoinHandle&&) = default;
+    PluginJoinHandle &operator=(PluginJoinHandle&&) = default;
+
+    /**
+     * Waits for the plugin to terminate.
+     */
+    void wait() {
+      if (handle) {
+        check(raw::dqcs_plugin_wait(handle));
+        take_handle();
+      }
+    }
+
+  };
+
+  /**
+   * Class wrapper for plugin definition handles.
+   */
+  class Plugin : public Handle {
+  public:
+
+    /**
+     * Wrap the given plugin definition handle.
+     */
+    Plugin(HandleIndex handle) : Handle(handle) {
     }
 
     /**
-     * Construct a new plugin definition object.
+     * Constructs a new plugin object.
      */
-    PluginDefinition(
+    Plugin(
       PluginType type,
       const std::string &name,
       const std::string &author,
@@ -2446,12 +2478,12 @@ namespace wrap {
     }
 
     // Delete copy construct/assign.
-    PluginDefinition(const PluginDefinition&) = delete;
-    void operator=(const PluginDefinition&) = delete;
+    Plugin(const Plugin&) = delete;
+    void operator=(const Plugin&) = delete;
 
     // Default move construct/assign.
-    PluginDefinition(PluginDefinition&&) = default;
-    PluginDefinition &operator=(PluginDefinition&&) = default;
+    Plugin(Plugin&&) = default;
+    Plugin &operator=(Plugin&&) = default;
 
     /**
      * Returns the plugin type described by this object.
@@ -2484,34 +2516,34 @@ namespace wrap {
     /**
      * Constructs a new frontend.
      */
-    static PluginDefinition front(
+    static Plugin front(
       const std::string &name,
       const std::string &author,
       const std::string &version
     ) {
-      return PluginDefinition(PluginType::Frontend, name, author, version);
+      return Plugin(PluginType::Frontend, name, author, version);
     }
 
     /**
      * Constructs a new operator.
      */
-    static PluginDefinition oper(
+    static Plugin oper(
       const std::string &name,
       const std::string &author,
       const std::string &version
     ) {
-      return PluginDefinition(PluginType::Operator, name, author, version);
+      return Plugin(PluginType::Operator, name, author, version);
     }
 
     /**
      * Constructs a new backend.
      */
-    static PluginDefinition back(
+    static Plugin back(
       const std::string &name,
       const std::string &author,
       const std::string &version
     ) {
-      return PluginDefinition(PluginType::Backend, name, author, version);
+      return Plugin(PluginType::Backend, name, author, version);
     }
 
     // Code below is generated using the following Python script:
@@ -2547,7 +2579,7 @@ namespace wrap {
     //      * Assigns the {0[0]} callback function from a pre-existing
     //      * `{0[2]}` object by copy.
     //      */
-    //     PluginDefinition &with_{0[1]}(const {0[2]} &data) {{
+    //     Plugin &with_{0[1]}(const {0[2]} &data) {{
     //       set_{0[1]}(new {0[2]}(data));
     //       return *this;
     //     }}
@@ -2556,7 +2588,7 @@ namespace wrap {
     //      * Assigns the {0[0]} callback function from a pre-existing
     //      * `{0[2]}` object by move.
     //      */
-    //     PluginDefinition &with_{0[1]}({0[2]} &&data) {{
+    //     Plugin &with_{0[1]}({0[2]} &&data) {{
     //       set_{0[1]}(new {0[2]}(std::move(data)));
     //       return *this;
     //     }}
@@ -2566,7 +2598,7 @@ namespace wrap {
     //      * callback object implicitly.
     //      */
     //     template<typename... Args>
-    //     PluginDefinition &with_{0[1]}(Args... args) {{
+    //     Plugin &with_{0[1]}(Args... args) {{
     //       set_{0[1]}(new {0[2]}(args...));
     //       return *this;
     //     }}
@@ -2613,7 +2645,7 @@ namespace wrap {
      * Assigns the initialize callback function from a pre-existing
      * `callback::Initialize` object by copy.
      */
-    PluginDefinition &with_initialize(const callback::Initialize &data) {
+    Plugin &with_initialize(const callback::Initialize &data) {
       set_initialize(new callback::Initialize(data));
       return *this;
     }
@@ -2622,7 +2654,7 @@ namespace wrap {
      * Assigns the initialize callback function from a pre-existing
      * `callback::Initialize` object by move.
      */
-    PluginDefinition &with_initialize(callback::Initialize &&data) {
+    Plugin &with_initialize(callback::Initialize &&data) {
       set_initialize(new callback::Initialize(std::move(data)));
       return *this;
     }
@@ -2632,7 +2664,7 @@ namespace wrap {
      * callback object implicitly.
      */
     template<typename... Args>
-    PluginDefinition &with_initialize(Args... args) {
+    Plugin &with_initialize(Args... args) {
       set_initialize(new callback::Initialize(args...));
       return *this;
     }
@@ -2663,7 +2695,7 @@ namespace wrap {
      * Assigns the drop callback function from a pre-existing
      * `callback::Drop` object by copy.
      */
-    PluginDefinition &with_drop(const callback::Drop &data) {
+    Plugin &with_drop(const callback::Drop &data) {
       set_drop(new callback::Drop(data));
       return *this;
     }
@@ -2672,7 +2704,7 @@ namespace wrap {
      * Assigns the drop callback function from a pre-existing
      * `callback::Drop` object by move.
      */
-    PluginDefinition &with_drop(callback::Drop &&data) {
+    Plugin &with_drop(callback::Drop &&data) {
       set_drop(new callback::Drop(std::move(data)));
       return *this;
     }
@@ -2682,7 +2714,7 @@ namespace wrap {
      * callback object implicitly.
      */
     template<typename... Args>
-    PluginDefinition &with_drop(Args... args) {
+    Plugin &with_drop(Args... args) {
       set_drop(new callback::Drop(args...));
       return *this;
     }
@@ -2713,7 +2745,7 @@ namespace wrap {
      * Assigns the run callback function from a pre-existing
      * `callback::Run` object by copy.
      */
-    PluginDefinition &with_run(const callback::Run &data) {
+    Plugin &with_run(const callback::Run &data) {
       set_run(new callback::Run(data));
       return *this;
     }
@@ -2722,7 +2754,7 @@ namespace wrap {
      * Assigns the run callback function from a pre-existing
      * `callback::Run` object by move.
      */
-    PluginDefinition &with_run(callback::Run &&data) {
+    Plugin &with_run(callback::Run &&data) {
       set_run(new callback::Run(std::move(data)));
       return *this;
     }
@@ -2732,7 +2764,7 @@ namespace wrap {
      * callback object implicitly.
      */
     template<typename... Args>
-    PluginDefinition &with_run(Args... args) {
+    Plugin &with_run(Args... args) {
       set_run(new callback::Run(args...));
       return *this;
     }
@@ -2763,7 +2795,7 @@ namespace wrap {
      * Assigns the allocate callback function from a pre-existing
      * `callback::Allocate` object by copy.
      */
-    PluginDefinition &with_allocate(const callback::Allocate &data) {
+    Plugin &with_allocate(const callback::Allocate &data) {
       set_allocate(new callback::Allocate(data));
       return *this;
     }
@@ -2772,7 +2804,7 @@ namespace wrap {
      * Assigns the allocate callback function from a pre-existing
      * `callback::Allocate` object by move.
      */
-    PluginDefinition &with_allocate(callback::Allocate &&data) {
+    Plugin &with_allocate(callback::Allocate &&data) {
       set_allocate(new callback::Allocate(std::move(data)));
       return *this;
     }
@@ -2782,7 +2814,7 @@ namespace wrap {
      * callback object implicitly.
      */
     template<typename... Args>
-    PluginDefinition &with_allocate(Args... args) {
+    Plugin &with_allocate(Args... args) {
       set_allocate(new callback::Allocate(args...));
       return *this;
     }
@@ -2813,7 +2845,7 @@ namespace wrap {
      * Assigns the free callback function from a pre-existing
      * `callback::Free` object by copy.
      */
-    PluginDefinition &with_free(const callback::Free &data) {
+    Plugin &with_free(const callback::Free &data) {
       set_free(new callback::Free(data));
       return *this;
     }
@@ -2822,7 +2854,7 @@ namespace wrap {
      * Assigns the free callback function from a pre-existing
      * `callback::Free` object by move.
      */
-    PluginDefinition &with_free(callback::Free &&data) {
+    Plugin &with_free(callback::Free &&data) {
       set_free(new callback::Free(std::move(data)));
       return *this;
     }
@@ -2832,7 +2864,7 @@ namespace wrap {
      * callback object implicitly.
      */
     template<typename... Args>
-    PluginDefinition &with_free(Args... args) {
+    Plugin &with_free(Args... args) {
       set_free(new callback::Free(args...));
       return *this;
     }
@@ -2863,7 +2895,7 @@ namespace wrap {
      * Assigns the gate callback function from a pre-existing
      * `callback::Gate` object by copy.
      */
-    PluginDefinition &with_gate(const callback::Gate &data) {
+    Plugin &with_gate(const callback::Gate &data) {
       set_gate(new callback::Gate(data));
       return *this;
     }
@@ -2872,7 +2904,7 @@ namespace wrap {
      * Assigns the gate callback function from a pre-existing
      * `callback::Gate` object by move.
      */
-    PluginDefinition &with_gate(callback::Gate &&data) {
+    Plugin &with_gate(callback::Gate &&data) {
       set_gate(new callback::Gate(std::move(data)));
       return *this;
     }
@@ -2882,7 +2914,7 @@ namespace wrap {
      * callback object implicitly.
      */
     template<typename... Args>
-    PluginDefinition &with_gate(Args... args) {
+    Plugin &with_gate(Args... args) {
       set_gate(new callback::Gate(args...));
       return *this;
     }
@@ -2913,7 +2945,7 @@ namespace wrap {
      * Assigns the modify-measurement callback function from a pre-existing
      * `callback::ModifyMeasurement` object by copy.
      */
-    PluginDefinition &with_modify_measurement(const callback::ModifyMeasurement &data) {
+    Plugin &with_modify_measurement(const callback::ModifyMeasurement &data) {
       set_modify_measurement(new callback::ModifyMeasurement(data));
       return *this;
     }
@@ -2922,7 +2954,7 @@ namespace wrap {
      * Assigns the modify-measurement callback function from a pre-existing
      * `callback::ModifyMeasurement` object by move.
      */
-    PluginDefinition &with_modify_measurement(callback::ModifyMeasurement &&data) {
+    Plugin &with_modify_measurement(callback::ModifyMeasurement &&data) {
       set_modify_measurement(new callback::ModifyMeasurement(std::move(data)));
       return *this;
     }
@@ -2932,7 +2964,7 @@ namespace wrap {
      * callback object implicitly.
      */
     template<typename... Args>
-    PluginDefinition &with_modify_measurement(Args... args) {
+    Plugin &with_modify_measurement(Args... args) {
       set_modify_measurement(new callback::ModifyMeasurement(args...));
       return *this;
     }
@@ -2963,7 +2995,7 @@ namespace wrap {
      * Assigns the advance callback function from a pre-existing
      * `callback::Advance` object by copy.
      */
-    PluginDefinition &with_advance(const callback::Advance &data) {
+    Plugin &with_advance(const callback::Advance &data) {
       set_advance(new callback::Advance(data));
       return *this;
     }
@@ -2972,7 +3004,7 @@ namespace wrap {
      * Assigns the advance callback function from a pre-existing
      * `callback::Advance` object by move.
      */
-    PluginDefinition &with_advance(callback::Advance &&data) {
+    Plugin &with_advance(callback::Advance &&data) {
       set_advance(new callback::Advance(std::move(data)));
       return *this;
     }
@@ -2982,7 +3014,7 @@ namespace wrap {
      * callback object implicitly.
      */
     template<typename... Args>
-    PluginDefinition &with_advance(Args... args) {
+    Plugin &with_advance(Args... args) {
       set_advance(new callback::Advance(args...));
       return *this;
     }
@@ -3013,7 +3045,7 @@ namespace wrap {
      * Assigns the upstream-arb callback function from a pre-existing
      * `callback::Arb` object by copy.
      */
-    PluginDefinition &with_upstream_arb(const callback::Arb &data) {
+    Plugin &with_upstream_arb(const callback::Arb &data) {
       set_upstream_arb(new callback::Arb(data));
       return *this;
     }
@@ -3022,7 +3054,7 @@ namespace wrap {
      * Assigns the upstream-arb callback function from a pre-existing
      * `callback::Arb` object by move.
      */
-    PluginDefinition &with_upstream_arb(callback::Arb &&data) {
+    Plugin &with_upstream_arb(callback::Arb &&data) {
       set_upstream_arb(new callback::Arb(std::move(data)));
       return *this;
     }
@@ -3032,7 +3064,7 @@ namespace wrap {
      * callback object implicitly.
      */
     template<typename... Args>
-    PluginDefinition &with_upstream_arb(Args... args) {
+    Plugin &with_upstream_arb(Args... args) {
       set_upstream_arb(new callback::Arb(args...));
       return *this;
     }
@@ -3063,7 +3095,7 @@ namespace wrap {
      * Assigns the host-arb callback function from a pre-existing
      * `callback::Arb` object by copy.
      */
-    PluginDefinition &with_host_arb(const callback::Arb &data) {
+    Plugin &with_host_arb(const callback::Arb &data) {
       set_host_arb(new callback::Arb(data));
       return *this;
     }
@@ -3072,7 +3104,7 @@ namespace wrap {
      * Assigns the host-arb callback function from a pre-existing
      * `callback::Arb` object by move.
      */
-    PluginDefinition &with_host_arb(callback::Arb &&data) {
+    Plugin &with_host_arb(callback::Arb &&data) {
       set_host_arb(new callback::Arb(std::move(data)));
       return *this;
     }
@@ -3082,12 +3114,41 @@ namespace wrap {
      * callback object implicitly.
      */
     template<typename... Args>
-    PluginDefinition &with_host_arb(Args... args) {
+    Plugin &with_host_arb(Args... args) {
       set_host_arb(new callback::Arb(args...));
       return *this;
     }
 
     // End of generated code.
+
+    /**
+     * Runs the defined plugin in the current thread. Throws an exception on
+     * failure. This is normally the last statement executed in a plugin
+     * executable.
+     *
+     * The `simulator` argument should come from the first (for normal plugins)
+     * or second (for script-interpreting plugins) command line argument. In
+     * the latter case, the first argument is the script filename.
+     */
+    void run(const char *simulator) {
+      check(raw::dqcs_plugin_run(handle, simulator));
+      take_handle();
+    }
+
+    /**
+     * Starts the defined plugin in the current thread. Throws an exception on
+     * failure. Returns a `PluginJoinHandle` object that allows the plugin to
+     * be waited on.
+     *
+     * The `simulator` argument should come from the first (for normal plugins)
+     * or second (for script-interpreting plugins) command line argument. In
+     * the latter case, the first argument is the script filename.
+     */
+    PluginJoinHandle start(const char *simulator) {
+      PluginJoinHandle join_handle(check(raw::dqcs_plugin_start(handle, simulator)));
+      take_handle();
+      return join_handle;
+    }
 
   };
 
