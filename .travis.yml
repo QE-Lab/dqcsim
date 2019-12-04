@@ -16,6 +16,7 @@ matrix:
       addons:
         apt:
           packages:
+            - doxygen
             - python3-pip
       env:
         - DQCSIM_DEBUG=""
@@ -34,6 +35,7 @@ matrix:
         - cd doc && make && mdbook test
         - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/doc/book/rust_
         - pdoc3 --html --output-dir $TRAVIS_BUILD_DIR/doc/book/py_ dqcsim
+        - doxygen
       deploy:
         provider: pages
         skip-cleanup: true
