@@ -2348,7 +2348,7 @@ namespace callback {
    * Entry point for freeing callback data structures.
    */
   template <class T>
-  raw::dqcs_return_t cb_entry_user_free(void *user_data) {
+  void cb_entry_user_free(void *user_data) {
     T *cb_wrapper = reinterpret_cast<T*>(user_data);
     delete cb_wrapper;
   }
@@ -2376,6 +2376,677 @@ namespace wrap {
    * `friend` semantics to work right.
    */
   using PluginState = callback::PluginState;
+
+  /**
+   * Class wrapper for plugin definition handles.
+   */
+  class PluginDefinition : public Handle {
+  public:
+
+    /**
+     * Wrap the given plugin definition handle.
+     */
+    PluginDefinition(HandleIndex handle) : Handle(handle) {
+    }
+
+    /**
+     * Construct a new plugin definition object.
+     */
+    PluginDefinition(
+      PluginType type,
+      const std::string &name,
+      const std::string &author,
+      const std::string &version
+    ) : Handle(raw::dqcs_pdef_new(
+      to_raw(type), name.c_str(), author.c_str(), version.c_str()
+    )) {
+    }
+
+    // Delete copy construct/assign.
+    PluginDefinition(const PluginDefinition&) = delete;
+    void operator=(const PluginDefinition&) = delete;
+
+    // Default move construct/assign.
+    PluginDefinition(PluginDefinition&&) = default;
+    PluginDefinition &operator=(PluginDefinition&&) = default;
+
+    /**
+     * Returns the plugin type described by this object.
+     */
+    PluginType get_type() const {
+      return check(raw::dqcs_pdef_type(handle));
+    }
+
+    /**
+     * Returns the name of the described plugin.
+     */
+    std::string get_name() const {
+      return std::string(check(raw::dqcs_pdef_name(handle)));
+    }
+
+    /**
+     * Returns the author of the described plugin.
+     */
+    std::string get_author() const {
+      return std::string(check(raw::dqcs_pdef_author(handle)));
+    }
+
+    /**
+     * Returns the version of the described plugin.
+     */
+    std::string get_version() const {
+      return std::string(check(raw::dqcs_pdef_version(handle)));
+    }
+
+    /**
+     * Constructs a new frontend.
+     */
+    static PluginDefinition front(
+      const std::string &name,
+      const std::string &author,
+      const std::string &version
+    ) {
+      return PluginDefinition(PluginType::Frontend, name, author, version);
+    }
+
+    /**
+     * Constructs a new operator.
+     */
+    static PluginDefinition oper(
+      const std::string &name,
+      const std::string &author,
+      const std::string &version
+    ) {
+      return PluginDefinition(PluginType::Operator, name, author, version);
+    }
+
+    /**
+     * Constructs a new backend.
+     */
+    static PluginDefinition back(
+      const std::string &name,
+      const std::string &author,
+      const std::string &version
+    ) {
+      return PluginDefinition(PluginType::Backend, name, author, version);
+    }
+
+    // Code below is generated using the following Python script:
+    //
+    // print('    // Code below is generated using the following Python script:')
+    // with open(__file__, 'r') as f:
+    //     print(''.join(map(lambda x: '    // ' + x, f.readlines())), end='')
+    //
+    // template = """
+    //   private:
+    //
+    //     /**
+    //      * Assigns the {0[0]} callback function from a `new`-initialized
+    //      * raw pointer to a `{0[2]}` object. Callee will ensure that
+    //      * `delete` is called.
+    //      */
+    //     void set_{0[1]}({0[2]} *data) {{
+    //       try {{
+    //         check(raw::dqcs_pdef_set_{0[1]}_cb(
+    //           handle,
+    //           callback::cb_entry_{0[1]},
+    //           callback::cb_entry_user_free<{0[2]}>,
+    //           data));
+    //       }} catch (...) {{
+    //         delete data;
+    //         throw;
+    //       }}
+    //     }}
+    //
+    //   public:
+    //
+    //     /**
+    //      * Assigns the {0[0]} callback function from a pre-existing
+    //      * `{0[2]}` object by copy.
+    //      */
+    //     PluginDefinition &with_{0[1]}(const {0[2]} &data) {{
+    //       set_{0[1]}(new {0[2]}(data));
+    //       return *this;
+    //     }}
+    //
+    //     /**
+    //      * Assigns the {0[0]} callback function from a pre-existing
+    //      * `{0[2]}` object by move.
+    //      */
+    //     PluginDefinition &with_{0[1]}({0[2]} &&data) {{
+    //       set_{0[1]}(new {0[2]}(std::move(data)));
+    //       return *this;
+    //     }}
+    //
+    //     /**
+    //      * Assigns the {0[0]} callback function by constructing the
+    //      * callback object implicitly.
+    //      */
+    //     template<typename... Args>
+    //     PluginDefinition &with_{0[1]}(Args... args) {{
+    //       set_{0[1]}(new {0[2]}(args...));
+    //       return *this;
+    //     }}
+    // """
+    //
+    // print(''.join(map(template.format, [
+    //     ('initialize',          'initialize',           'callback::Initialize'),
+    //     ('drop',                'drop',                 'callback::Drop'),
+    //     ('run',                 'run',                  'callback::Run'),
+    //     ('allocate',            'allocate',             'callback::Allocate'),
+    //     ('free',                'free',                 'callback::Free'),
+    //     ('gate',                'gate',                 'callback::Gate'),
+    //     ('modify-measurement',  'modify_measurement',   'callback::ModifyMeasurement'),
+    //     ('advance',             'advance',              'callback::Advance'),
+    //     ('upstream-arb',        'upstream_arb',         'callback::Arb'),
+    //     ('host-arb',            'host_arb',             'callback::Arb'),
+    // ])))
+    //
+    // print('    // End of generated code.')
+
+  private:
+
+    /**
+     * Assigns the initialize callback function from a `new`-initialized
+     * raw pointer to a `callback::Initialize` object. Callee will ensure that
+     * `delete` is called.
+     */
+    void set_initialize(callback::Initialize *data) {
+      try {
+        check(raw::dqcs_pdef_set_initialize_cb(
+          handle,
+          callback::cb_entry_initialize,
+          callback::cb_entry_user_free<callback::Initialize>,
+          data));
+      } catch (...) {
+        delete data;
+        throw;
+      }
+    }
+
+  public:
+
+    /**
+     * Assigns the initialize callback function from a pre-existing
+     * `callback::Initialize` object by copy.
+     */
+    PluginDefinition &with_initialize(const callback::Initialize &data) {
+      set_initialize(new callback::Initialize(data));
+      return *this;
+    }
+
+    /**
+     * Assigns the initialize callback function from a pre-existing
+     * `callback::Initialize` object by move.
+     */
+    PluginDefinition &with_initialize(callback::Initialize &&data) {
+      set_initialize(new callback::Initialize(std::move(data)));
+      return *this;
+    }
+
+    /**
+     * Assigns the initialize callback function by constructing the
+     * callback object implicitly.
+     */
+    template<typename... Args>
+    PluginDefinition &with_initialize(Args... args) {
+      set_initialize(new callback::Initialize(args...));
+      return *this;
+    }
+
+  private:
+
+    /**
+     * Assigns the drop callback function from a `new`-initialized
+     * raw pointer to a `callback::Drop` object. Callee will ensure that
+     * `delete` is called.
+     */
+    void set_drop(callback::Drop *data) {
+      try {
+        check(raw::dqcs_pdef_set_drop_cb(
+          handle,
+          callback::cb_entry_drop,
+          callback::cb_entry_user_free<callback::Drop>,
+          data));
+      } catch (...) {
+        delete data;
+        throw;
+      }
+    }
+
+  public:
+
+    /**
+     * Assigns the drop callback function from a pre-existing
+     * `callback::Drop` object by copy.
+     */
+    PluginDefinition &with_drop(const callback::Drop &data) {
+      set_drop(new callback::Drop(data));
+      return *this;
+    }
+
+    /**
+     * Assigns the drop callback function from a pre-existing
+     * `callback::Drop` object by move.
+     */
+    PluginDefinition &with_drop(callback::Drop &&data) {
+      set_drop(new callback::Drop(std::move(data)));
+      return *this;
+    }
+
+    /**
+     * Assigns the drop callback function by constructing the
+     * callback object implicitly.
+     */
+    template<typename... Args>
+    PluginDefinition &with_drop(Args... args) {
+      set_drop(new callback::Drop(args...));
+      return *this;
+    }
+
+  private:
+
+    /**
+     * Assigns the run callback function from a `new`-initialized
+     * raw pointer to a `callback::Run` object. Callee will ensure that
+     * `delete` is called.
+     */
+    void set_run(callback::Run *data) {
+      try {
+        check(raw::dqcs_pdef_set_run_cb(
+          handle,
+          callback::cb_entry_run,
+          callback::cb_entry_user_free<callback::Run>,
+          data));
+      } catch (...) {
+        delete data;
+        throw;
+      }
+    }
+
+  public:
+
+    /**
+     * Assigns the run callback function from a pre-existing
+     * `callback::Run` object by copy.
+     */
+    PluginDefinition &with_run(const callback::Run &data) {
+      set_run(new callback::Run(data));
+      return *this;
+    }
+
+    /**
+     * Assigns the run callback function from a pre-existing
+     * `callback::Run` object by move.
+     */
+    PluginDefinition &with_run(callback::Run &&data) {
+      set_run(new callback::Run(std::move(data)));
+      return *this;
+    }
+
+    /**
+     * Assigns the run callback function by constructing the
+     * callback object implicitly.
+     */
+    template<typename... Args>
+    PluginDefinition &with_run(Args... args) {
+      set_run(new callback::Run(args...));
+      return *this;
+    }
+
+  private:
+
+    /**
+     * Assigns the allocate callback function from a `new`-initialized
+     * raw pointer to a `callback::Allocate` object. Callee will ensure that
+     * `delete` is called.
+     */
+    void set_allocate(callback::Allocate *data) {
+      try {
+        check(raw::dqcs_pdef_set_allocate_cb(
+          handle,
+          callback::cb_entry_allocate,
+          callback::cb_entry_user_free<callback::Allocate>,
+          data));
+      } catch (...) {
+        delete data;
+        throw;
+      }
+    }
+
+  public:
+
+    /**
+     * Assigns the allocate callback function from a pre-existing
+     * `callback::Allocate` object by copy.
+     */
+    PluginDefinition &with_allocate(const callback::Allocate &data) {
+      set_allocate(new callback::Allocate(data));
+      return *this;
+    }
+
+    /**
+     * Assigns the allocate callback function from a pre-existing
+     * `callback::Allocate` object by move.
+     */
+    PluginDefinition &with_allocate(callback::Allocate &&data) {
+      set_allocate(new callback::Allocate(std::move(data)));
+      return *this;
+    }
+
+    /**
+     * Assigns the allocate callback function by constructing the
+     * callback object implicitly.
+     */
+    template<typename... Args>
+    PluginDefinition &with_allocate(Args... args) {
+      set_allocate(new callback::Allocate(args...));
+      return *this;
+    }
+
+  private:
+
+    /**
+     * Assigns the free callback function from a `new`-initialized
+     * raw pointer to a `callback::Free` object. Callee will ensure that
+     * `delete` is called.
+     */
+    void set_free(callback::Free *data) {
+      try {
+        check(raw::dqcs_pdef_set_free_cb(
+          handle,
+          callback::cb_entry_free,
+          callback::cb_entry_user_free<callback::Free>,
+          data));
+      } catch (...) {
+        delete data;
+        throw;
+      }
+    }
+
+  public:
+
+    /**
+     * Assigns the free callback function from a pre-existing
+     * `callback::Free` object by copy.
+     */
+    PluginDefinition &with_free(const callback::Free &data) {
+      set_free(new callback::Free(data));
+      return *this;
+    }
+
+    /**
+     * Assigns the free callback function from a pre-existing
+     * `callback::Free` object by move.
+     */
+    PluginDefinition &with_free(callback::Free &&data) {
+      set_free(new callback::Free(std::move(data)));
+      return *this;
+    }
+
+    /**
+     * Assigns the free callback function by constructing the
+     * callback object implicitly.
+     */
+    template<typename... Args>
+    PluginDefinition &with_free(Args... args) {
+      set_free(new callback::Free(args...));
+      return *this;
+    }
+
+  private:
+
+    /**
+     * Assigns the gate callback function from a `new`-initialized
+     * raw pointer to a `callback::Gate` object. Callee will ensure that
+     * `delete` is called.
+     */
+    void set_gate(callback::Gate *data) {
+      try {
+        check(raw::dqcs_pdef_set_gate_cb(
+          handle,
+          callback::cb_entry_gate,
+          callback::cb_entry_user_free<callback::Gate>,
+          data));
+      } catch (...) {
+        delete data;
+        throw;
+      }
+    }
+
+  public:
+
+    /**
+     * Assigns the gate callback function from a pre-existing
+     * `callback::Gate` object by copy.
+     */
+    PluginDefinition &with_gate(const callback::Gate &data) {
+      set_gate(new callback::Gate(data));
+      return *this;
+    }
+
+    /**
+     * Assigns the gate callback function from a pre-existing
+     * `callback::Gate` object by move.
+     */
+    PluginDefinition &with_gate(callback::Gate &&data) {
+      set_gate(new callback::Gate(std::move(data)));
+      return *this;
+    }
+
+    /**
+     * Assigns the gate callback function by constructing the
+     * callback object implicitly.
+     */
+    template<typename... Args>
+    PluginDefinition &with_gate(Args... args) {
+      set_gate(new callback::Gate(args...));
+      return *this;
+    }
+
+  private:
+
+    /**
+     * Assigns the modify-measurement callback function from a `new`-initialized
+     * raw pointer to a `callback::ModifyMeasurement` object. Callee will ensure that
+     * `delete` is called.
+     */
+    void set_modify_measurement(callback::ModifyMeasurement *data) {
+      try {
+        check(raw::dqcs_pdef_set_modify_measurement_cb(
+          handle,
+          callback::cb_entry_modify_measurement,
+          callback::cb_entry_user_free<callback::ModifyMeasurement>,
+          data));
+      } catch (...) {
+        delete data;
+        throw;
+      }
+    }
+
+  public:
+
+    /**
+     * Assigns the modify-measurement callback function from a pre-existing
+     * `callback::ModifyMeasurement` object by copy.
+     */
+    PluginDefinition &with_modify_measurement(const callback::ModifyMeasurement &data) {
+      set_modify_measurement(new callback::ModifyMeasurement(data));
+      return *this;
+    }
+
+    /**
+     * Assigns the modify-measurement callback function from a pre-existing
+     * `callback::ModifyMeasurement` object by move.
+     */
+    PluginDefinition &with_modify_measurement(callback::ModifyMeasurement &&data) {
+      set_modify_measurement(new callback::ModifyMeasurement(std::move(data)));
+      return *this;
+    }
+
+    /**
+     * Assigns the modify-measurement callback function by constructing the
+     * callback object implicitly.
+     */
+    template<typename... Args>
+    PluginDefinition &with_modify_measurement(Args... args) {
+      set_modify_measurement(new callback::ModifyMeasurement(args...));
+      return *this;
+    }
+
+  private:
+
+    /**
+     * Assigns the advance callback function from a `new`-initialized
+     * raw pointer to a `callback::Advance` object. Callee will ensure that
+     * `delete` is called.
+     */
+    void set_advance(callback::Advance *data) {
+      try {
+        check(raw::dqcs_pdef_set_advance_cb(
+          handle,
+          callback::cb_entry_advance,
+          callback::cb_entry_user_free<callback::Advance>,
+          data));
+      } catch (...) {
+        delete data;
+        throw;
+      }
+    }
+
+  public:
+
+    /**
+     * Assigns the advance callback function from a pre-existing
+     * `callback::Advance` object by copy.
+     */
+    PluginDefinition &with_advance(const callback::Advance &data) {
+      set_advance(new callback::Advance(data));
+      return *this;
+    }
+
+    /**
+     * Assigns the advance callback function from a pre-existing
+     * `callback::Advance` object by move.
+     */
+    PluginDefinition &with_advance(callback::Advance &&data) {
+      set_advance(new callback::Advance(std::move(data)));
+      return *this;
+    }
+
+    /**
+     * Assigns the advance callback function by constructing the
+     * callback object implicitly.
+     */
+    template<typename... Args>
+    PluginDefinition &with_advance(Args... args) {
+      set_advance(new callback::Advance(args...));
+      return *this;
+    }
+
+  private:
+
+    /**
+     * Assigns the upstream-arb callback function from a `new`-initialized
+     * raw pointer to a `callback::Arb` object. Callee will ensure that
+     * `delete` is called.
+     */
+    void set_upstream_arb(callback::Arb *data) {
+      try {
+        check(raw::dqcs_pdef_set_upstream_arb_cb(
+          handle,
+          callback::cb_entry_upstream_arb,
+          callback::cb_entry_user_free<callback::Arb>,
+          data));
+      } catch (...) {
+        delete data;
+        throw;
+      }
+    }
+
+  public:
+
+    /**
+     * Assigns the upstream-arb callback function from a pre-existing
+     * `callback::Arb` object by copy.
+     */
+    PluginDefinition &with_upstream_arb(const callback::Arb &data) {
+      set_upstream_arb(new callback::Arb(data));
+      return *this;
+    }
+
+    /**
+     * Assigns the upstream-arb callback function from a pre-existing
+     * `callback::Arb` object by move.
+     */
+    PluginDefinition &with_upstream_arb(callback::Arb &&data) {
+      set_upstream_arb(new callback::Arb(std::move(data)));
+      return *this;
+    }
+
+    /**
+     * Assigns the upstream-arb callback function by constructing the
+     * callback object implicitly.
+     */
+    template<typename... Args>
+    PluginDefinition &with_upstream_arb(Args... args) {
+      set_upstream_arb(new callback::Arb(args...));
+      return *this;
+    }
+
+  private:
+
+    /**
+     * Assigns the host-arb callback function from a `new`-initialized
+     * raw pointer to a `callback::Arb` object. Callee will ensure that
+     * `delete` is called.
+     */
+    void set_host_arb(callback::Arb *data) {
+      try {
+        check(raw::dqcs_pdef_set_host_arb_cb(
+          handle,
+          callback::cb_entry_host_arb,
+          callback::cb_entry_user_free<callback::Arb>,
+          data));
+      } catch (...) {
+        delete data;
+        throw;
+      }
+    }
+
+  public:
+
+    /**
+     * Assigns the host-arb callback function from a pre-existing
+     * `callback::Arb` object by copy.
+     */
+    PluginDefinition &with_host_arb(const callback::Arb &data) {
+      set_host_arb(new callback::Arb(data));
+      return *this;
+    }
+
+    /**
+     * Assigns the host-arb callback function from a pre-existing
+     * `callback::Arb` object by move.
+     */
+    PluginDefinition &with_host_arb(callback::Arb &&data) {
+      set_host_arb(new callback::Arb(std::move(data)));
+      return *this;
+    }
+
+    /**
+     * Assigns the host-arb callback function by constructing the
+     * callback object implicitly.
+     */
+    template<typename... Args>
+    PluginDefinition &with_host_arb(Args... args) {
+      set_host_arb(new callback::Arb(args...));
+      return *this;
+    }
+
+    // End of generated code.
+
+  };
 
 } // namespace wrap
 
