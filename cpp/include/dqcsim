@@ -22,19 +22,19 @@ namespace dqcsim {
 namespace wrap {
 
   /**
+   * C++-styled type name for `raw::dqcs_handle_t`.
+   */
+  using HandleIndex = raw::dqcs_handle_t;
+
+  /**
+   * C++-styled type name for `raw::dqcs_qubit_t`.
+   */
+  using QubitIndex = raw::dqcs_qubit_t;
+
+  /**
    * C++-styled type name for `raw::dqcs_cycle_t`.
    */
   using Cycle = raw::dqcs_cycle_t;
-
-  /**
-   * C++-styled type name for `raw::dqcs_handle_type_t`.
-   */
-  using HandleType = raw::dqcs_handle_type_t;
-
-  /**
-   * C++-styled type name for `raw::dqcs_loglevel_t`.
-   */
-  using LogLevel = raw::dqcs_loglevel_t;
 
   /**
    * Checks a `dqcs_return_t` return value; if failure, throws a runtime error
@@ -75,7 +75,7 @@ namespace wrap {
    * Checks a `dqcs_cycle_t` return value; if failure, throws a runtime error
    * with DQCsim's error message.
    */
-  inline Cycle check(raw::dqcs_cycle_t cycle) {
+  inline Cycle check(Cycle cycle) {
     if (cycle == -1) {
       throw std::runtime_error(raw::dqcs_error_get());
     }
@@ -94,25 +94,139 @@ namespace wrap {
   }
 
   /**
-   * Checks a `dqcs_handle_type_t` return value; if failure, throws a runtime
-   * error with DQCsim's error message.
+   * More C++-like wrapper for `raw::handle_type_t`, not including the
+   * `invalid` option (since we use exceptions to communicate failure).
    */
-  inline HandleType check(raw::dqcs_handle_type_t type) {
-    if (type == HandleType::DQCS_HTYPE_INVALID) {
-      throw std::runtime_error(raw::dqcs_error_get());
+  enum class HandleType {
+    ArbData = 100,
+    ArbCmd = 101,
+    ArbCmdQueue = 102,
+    QubitSet = 103,
+    Gate = 104,
+    Measurement = 105,
+    MeasurementSet = 106,
+    FrontendProcessConfig = 200,
+    OperatorProcessConfig = 201,
+    BackendProcessConfig = 203,
+    FrontendThreadConfig = 204,
+    OperatorThreadConfig = 205,
+    BackendThreadConfig = 206,
+    SimulationConfig = 207,
+    Simulation = 208,
+    FrontendDefinition = 300,
+    OperatorDefinition = 301,
+    BackendDefinition = 302,
+    PluginJoinHandle = 303
+  };
+
+  /**
+   * Converts a `HandleType` to its raw C enum.
+   */
+  inline raw::dqcs_handle_type_t to_raw(HandleType type) {
+    switch (type) {
+      case HandleType::ArbData:               return raw::dqcs_handle_type_t::DQCS_HTYPE_ARB_DATA;
+      case HandleType::ArbCmd:                return raw::dqcs_handle_type_t::DQCS_HTYPE_ARB_CMD;
+      case HandleType::ArbCmdQueue:           return raw::dqcs_handle_type_t::DQCS_HTYPE_ARB_CMD_QUEUE;
+      case HandleType::QubitSet:              return raw::dqcs_handle_type_t::DQCS_HTYPE_QUBIT_SET;
+      case HandleType::Gate:                  return raw::dqcs_handle_type_t::DQCS_HTYPE_GATE;
+      case HandleType::Measurement:           return raw::dqcs_handle_type_t::DQCS_HTYPE_MEAS;
+      case HandleType::MeasurementSet:        return raw::dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET;
+      case HandleType::FrontendProcessConfig: return raw::dqcs_handle_type_t::DQCS_HTYPE_FRONT_PROCESS_CONFIG;
+      case HandleType::OperatorProcessConfig: return raw::dqcs_handle_type_t::DQCS_HTYPE_OPER_PROCESS_CONFIG;
+      case HandleType::BackendProcessConfig:  return raw::dqcs_handle_type_t::DQCS_HTYPE_BACK_PROCESS_CONFIG;
+      case HandleType::FrontendThreadConfig:  return raw::dqcs_handle_type_t::DQCS_HTYPE_FRONT_THREAD_CONFIG;
+      case HandleType::OperatorThreadConfig:  return raw::dqcs_handle_type_t::DQCS_HTYPE_OPER_THREAD_CONFIG;
+      case HandleType::BackendThreadConfig:   return raw::dqcs_handle_type_t::DQCS_HTYPE_BACK_THREAD_CONFIG;
+      case HandleType::SimulationConfig:      return raw::dqcs_handle_type_t::DQCS_HTYPE_SIM_CONFIG;
+      case HandleType::Simulation:            return raw::dqcs_handle_type_t::DQCS_HTYPE_SIM;
+      case HandleType::FrontendDefinition:    return raw::dqcs_handle_type_t::DQCS_HTYPE_FRONT_DEF;
+      case HandleType::OperatorDefinition:    return raw::dqcs_handle_type_t::DQCS_HTYPE_OPER_DEF;
+      case HandleType::BackendDefinition:     return raw::dqcs_handle_type_t::DQCS_HTYPE_BACK_DEF;
+      case HandleType::PluginJoinHandle:      return raw::dqcs_handle_type_t::DQCS_HTYPE_PLUGIN_JOIN;
     }
-    return type;
   }
 
   /**
-   * Checks a `dqcs_loglevel_t` return value; if failure, throws a runtime
-   * error with DQCsim's error message.
+   * Checks a `dqcs_handle_type_t` return value and converts it to its C++
+   * enum representation; if failure, throws a runtime error with DQCsim's
+   * error message.
    */
-  inline LogLevel check(raw::dqcs_loglevel_t level) {
-    if (level == LogLevel::DQCS_LOG_INVALID) {
-      throw std::runtime_error(raw::dqcs_error_get());
+  inline HandleType check(raw::dqcs_handle_type_t type) {
+    switch (type) {
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_ARB_DATA:             return HandleType::ArbData;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_ARB_CMD:              return HandleType::ArbCmd;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_ARB_CMD_QUEUE:        return HandleType::ArbCmdQueue;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_QUBIT_SET:            return HandleType::QubitSet;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_GATE:                 return HandleType::Gate;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_MEAS:                 return HandleType::Measurement;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET:             return HandleType::MeasurementSet;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_FRONT_PROCESS_CONFIG: return HandleType::FrontendProcessConfig;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_OPER_PROCESS_CONFIG:  return HandleType::OperatorProcessConfig;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_BACK_PROCESS_CONFIG:  return HandleType::BackendProcessConfig;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_FRONT_THREAD_CONFIG:  return HandleType::FrontendThreadConfig;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_OPER_THREAD_CONFIG:   return HandleType::OperatorThreadConfig;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_BACK_THREAD_CONFIG:   return HandleType::BackendThreadConfig;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_SIM_CONFIG:           return HandleType::SimulationConfig;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_SIM:                  return HandleType::Simulation;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_FRONT_DEF:            return HandleType::FrontendDefinition;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_OPER_DEF:             return HandleType::OperatorDefinition;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_BACK_DEF:             return HandleType::BackendDefinition;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_PLUGIN_JOIN:          return HandleType::PluginJoinHandle;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_INVALID:              throw std::runtime_error(raw::dqcs_error_get());
     }
-    return level;
+  }
+
+  /**
+   * More C++-like wrapper for `raw::dqcs_loglevel_t`, not including the
+   * `invalid` option (since we use exceptions to communicate failure).
+   */
+  enum class Loglevel {
+    Off = 0,
+    Fatal = 1,
+    Error = 2,
+    Warn = 3,
+    Note = 4,
+    Info = 5,
+    Debug = 6,
+    Trace = 7,
+    Pass = 8
+  };
+
+  /**
+   * Converts a `Loglevel` to its raw C enum.
+   */
+  inline raw::dqcs_loglevel_t to_raw(Loglevel loglevel) {
+    switch (loglevel) {
+      case Loglevel::Off:   return raw::dqcs_loglevel_t::DQCS_LOG_OFF;
+      case Loglevel::Fatal: return raw::dqcs_loglevel_t::DQCS_LOG_FATAL;
+      case Loglevel::Error: return raw::dqcs_loglevel_t::DQCS_LOG_ERROR;
+      case Loglevel::Warn:  return raw::dqcs_loglevel_t::DQCS_LOG_WARN;
+      case Loglevel::Note:  return raw::dqcs_loglevel_t::DQCS_LOG_NOTE;
+      case Loglevel::Info:  return raw::dqcs_loglevel_t::DQCS_LOG_INFO;
+      case Loglevel::Debug: return raw::dqcs_loglevel_t::DQCS_LOG_DEBUG;
+      case Loglevel::Trace: return raw::dqcs_loglevel_t::DQCS_LOG_TRACE;
+      case Loglevel::Pass:  return raw::dqcs_loglevel_t::DQCS_LOG_PASS;
+    }
+  }
+
+  /**
+   * Checks a `dqcs_loglevel_t` return value and converts it to its C++
+   * enum representation; if failure, throws a runtime error with DQCsim's
+   * error message.
+   */
+  inline Loglevel check(raw::dqcs_loglevel_t loglevel) {
+    switch (loglevel) {
+      case raw::dqcs_loglevel_t::DQCS_LOG_OFF:      return Loglevel::Off;
+      case raw::dqcs_loglevel_t::DQCS_LOG_FATAL:    return Loglevel::Fatal;
+      case raw::dqcs_loglevel_t::DQCS_LOG_ERROR:    return Loglevel::Error;
+      case raw::dqcs_loglevel_t::DQCS_LOG_WARN:     return Loglevel::Warn;
+      case raw::dqcs_loglevel_t::DQCS_LOG_NOTE:     return Loglevel::Note;
+      case raw::dqcs_loglevel_t::DQCS_LOG_INFO:     return Loglevel::Info;
+      case raw::dqcs_loglevel_t::DQCS_LOG_DEBUG:    return Loglevel::Debug;
+      case raw::dqcs_loglevel_t::DQCS_LOG_TRACE:    return Loglevel::Trace;
+      case raw::dqcs_loglevel_t::DQCS_LOG_PASS:     return Loglevel::Pass;
+      case raw::dqcs_loglevel_t::DQCS_LOG_INVALID:  throw std::runtime_error(raw::dqcs_error_get());
+    }
   }
 
   /**
@@ -128,7 +242,7 @@ namespace wrap {
   /**
    * Converts a `MeasurementValue` to its raw C enum.
    */
-  inline raw::dqcs_measurement_t measurement_value_to_raw(MeasurementValue measurement) {
+  inline raw::dqcs_measurement_t to_raw(MeasurementValue measurement) {
     switch (measurement) {
       case MeasurementValue::Zero:      return raw::dqcs_measurement_t::DQCS_MEAS_ZERO;
       case MeasurementValue::One:       return raw::dqcs_measurement_t::DQCS_MEAS_ONE;
@@ -146,31 +260,78 @@ namespace wrap {
       case raw::dqcs_measurement_t::DQCS_MEAS_ZERO:      return MeasurementValue::Zero;
       case raw::dqcs_measurement_t::DQCS_MEAS_ONE:       return MeasurementValue::One;
       case raw::dqcs_measurement_t::DQCS_MEAS_UNDEFINED: return MeasurementValue::Undefined;
-      default: ;
+      case raw::dqcs_measurement_t::DQCS_MEAS_INVALID:   throw std::runtime_error(raw::dqcs_error_get());
     }
-    throw std::runtime_error(raw::dqcs_error_get());
   }
 
   /**
-   * Checks a `dqcs_path_style_t` return value; if failure, throws a runtime
-   * error with DQCsim's error message.
+   * More C++-like wrapper for `raw::dqcs_path_style_t`, not including the
+   * `invalid` option (since we use exceptions to communicate failure).
    */
-  inline raw::dqcs_path_style_t check(raw::dqcs_path_style_t style) {
-    if (style == raw::dqcs_path_style_t::DQCS_PATH_STYLE_INVALID) {
-      throw std::runtime_error(raw::dqcs_error_get());
+  enum class PathStyle {
+    Keep = 0,
+    Relative = 1,
+    Absolute = 2
+  };
+
+  /**
+   * Converts a `PathStyle` to its raw C enum.
+   */
+  inline raw::dqcs_path_style_t to_raw(PathStyle style) {
+    switch (style) {
+      case PathStyle::Keep:     return raw::dqcs_path_style_t::DQCS_PATH_STYLE_KEEP;
+      case PathStyle::Relative: return raw::dqcs_path_style_t::DQCS_PATH_STYLE_RELATIVE;
+      case PathStyle::Absolute: return raw::dqcs_path_style_t::DQCS_PATH_STYLE_ABSOLUTE;
     }
-    return style;
   }
 
   /**
-   * Checks a `dqcs_plugin_type_t` return value; if failure, throws a runtime
-   * error with DQCsim's error message.
+   * Checks a `dqcs_path_style_t` return value and converts it to its C++
+   * enum representation; if failure, throws a runtime error with DQCsim's
+   * error message.
    */
-  inline raw::dqcs_plugin_type_t check(raw::dqcs_plugin_type_t type) {
-    if (type == raw::dqcs_plugin_type_t::DQCS_PTYPE_INVALID) {
-      throw std::runtime_error(raw::dqcs_error_get());
+  inline PathStyle check(raw::dqcs_path_style_t style) {
+    switch (style) {
+      case raw::dqcs_path_style_t::DQCS_PATH_STYLE_KEEP:      return PathStyle::Keep;
+      case raw::dqcs_path_style_t::DQCS_PATH_STYLE_RELATIVE:  return PathStyle::Relative;
+      case raw::dqcs_path_style_t::DQCS_PATH_STYLE_ABSOLUTE:  return PathStyle::Absolute;
+      case raw::dqcs_path_style_t::DQCS_PATH_STYLE_INVALID:   throw std::runtime_error(raw::dqcs_error_get());
     }
-    return type;
+  }
+
+  /**
+   * More C++-like wrapper for `raw::dqcs_plugin_type_t`, not including the
+   * `invalid` option (since we use exceptions to communicate failure).
+   */
+  enum class PluginType {
+    Frontend = 0,
+    Operator = 1,
+    Backend = 2
+  };
+
+  /**
+   * Converts a `PluginType` to its raw C enum.
+   */
+  inline raw::dqcs_plugin_type_t to_raw(PluginType type) {
+    switch (type) {
+      case PluginType::Frontend:  return raw::dqcs_plugin_type_t::DQCS_PTYPE_FRONT;
+      case PluginType::Operator:  return raw::dqcs_plugin_type_t::DQCS_PTYPE_OPER;
+      case PluginType::Backend:   return raw::dqcs_plugin_type_t::DQCS_PTYPE_BACK;
+    }
+  }
+
+  /**
+   * Checks a `dqcs_plugin_type_t` return value and converts it to its C++
+   * enum representation; if failure, throws a runtime error with DQCsim's
+   * error message.
+   */
+  inline PluginType check(raw::dqcs_plugin_type_t type) {
+    switch (type) {
+      case raw::dqcs_plugin_type_t::DQCS_PTYPE_FRONT:   return PluginType::Frontend;
+      case raw::dqcs_plugin_type_t::DQCS_PTYPE_OPER:    return PluginType::Operator;
+      case raw::dqcs_plugin_type_t::DQCS_PTYPE_BACK:    return PluginType::Backend;
+      case raw::dqcs_plugin_type_t::DQCS_PTYPE_INVALID: throw std::runtime_error(raw::dqcs_error_get());
+    }
   }
 
   /**
@@ -194,14 +355,14 @@ namespace wrap {
     /**
      * The wrapped handle.
      */
-    raw::dqcs_handle_t handle;
+    HandleIndex handle;
 
   public:
 
     /**
      * Wrap the given raw handle.
      */
-    Handle(raw::dqcs_handle_t handle) : handle(handle) {
+    Handle(HandleIndex handle) : handle(handle) {
     }
 
     /**
@@ -225,13 +386,13 @@ namespace wrap {
      * Returns whether this wrapper (still) contains a valid handle.
      */
     bool is_valid() const noexcept {
-      return raw::dqcs_handle_type(handle) != HandleType::DQCS_HTYPE_INVALID;
+      return raw::dqcs_handle_type(handle) != raw::dqcs_handle_type_t::DQCS_HTYPE_INVALID;
     }
 
     /**
      * Returns the raw handle without relinquishing ownership.
      */
-    raw::dqcs_handle_t get_handle() const noexcept {
+    HandleIndex get_handle() const noexcept {
       return handle;
     }
 
@@ -241,8 +402,8 @@ namespace wrap {
      * constructor) the compiler can statically check that the wrapper object
      * is not reused.
      */
-    raw::dqcs_handle_t take_handle() noexcept {
-      raw::dqcs_handle_t h = handle;
+    HandleIndex take_handle() noexcept {
+      HandleIndex h = handle;
       handle = 0;
       return h;
     }
@@ -304,7 +465,7 @@ namespace wrap {
     /**
      * Wrap the given `arb` handle.
      */
-    Arb(raw::dqcs_handle_t handle) : Handle(handle) {
+    Arb(HandleIndex handle) : Handle(handle) {
     }
 
     /**
@@ -568,7 +729,7 @@ namespace wrap {
     /**
      * Wrap the given `ArbData` handle.
      */
-    ArbData(raw::dqcs_handle_t handle) : Arb(handle) {
+    ArbData(HandleIndex handle) : Arb(handle) {
     }
 
     /**
@@ -614,7 +775,7 @@ namespace wrap {
     /**
      * Wrap the given `cmd` handle.
      */
-    Cmd(raw::dqcs_handle_t handle) : Arb(handle) {
+    Cmd(HandleIndex handle) : Arb(handle) {
     }
 
     /**
@@ -662,7 +823,7 @@ namespace wrap {
     /**
      * Wrap the given `ArbCmd` handle.
      */
-    ArbCmd(raw::dqcs_handle_t handle) : Cmd(handle) {
+    ArbCmd(HandleIndex handle) : Cmd(handle) {
     }
 
     /**
@@ -739,7 +900,7 @@ namespace wrap {
     /**
      * Wrap the given `ArbCmd` handle.
      */
-    ArbCmdQueue(raw::dqcs_handle_t handle) : Cmd(handle) {
+    ArbCmdQueue(HandleIndex handle) : Cmd(handle) {
     }
 
     /**
@@ -867,14 +1028,14 @@ namespace wrap {
     /**
      * The raw qubit index wrapped by this reference.
      */
-    raw::dqcs_qubit_t index;
+    QubitIndex index;
 
   public:
 
     /**
      * Wraps a raw reference.
      */
-    QubitRef(raw::dqcs_qubit_t index) : index(index) {
+    QubitRef(QubitIndex index) : index(index) {
       if (index == 0) {
         throw std::runtime_error("Qubit indices cannot be zero in DQCsim");
       }
@@ -912,7 +1073,7 @@ namespace wrap {
     /**
      * Returns the raw qubit index.
      */
-    raw::dqcs_qubit_t get_index() const {
+    QubitIndex get_index() const {
       return index;
     }
 
@@ -934,7 +1095,7 @@ namespace wrap {
     /**
      * Wrap the given qubit set handle.
      */
-    QubitSet(raw::dqcs_handle_t handle) : Handle(handle) {
+    QubitSet(HandleIndex handle) : Handle(handle) {
     }
 
     /**
@@ -1202,7 +1363,7 @@ namespace wrap {
     /**
      * Wrap the given `Gate` handle.
      */
-    Gate(raw::dqcs_handle_t handle) : Arb(handle) {
+    Gate(HandleIndex handle) : Arb(handle) {
     }
 
     // Delete copy construct/assign.
@@ -1427,14 +1588,14 @@ namespace wrap {
     /**
      * Wrap the given measurement handle.
      */
-    Measurement(raw::dqcs_handle_t handle) : Arb(handle) {
+    Measurement(HandleIndex handle) : Arb(handle) {
     }
 
     /**
      * Constructs a measurement object.
      */
     Measurement(const QubitRef &qubit, MeasurementValue value) : Arb(check(
-      raw::dqcs_meas_new(qubit.get_index(), measurement_value_to_raw(value))
+      raw::dqcs_meas_new(qubit.get_index(), to_raw(value))
     )) {
     }
 
@@ -1442,7 +1603,7 @@ namespace wrap {
      * Copy-constructs a `Measurement` object.
      */
     Measurement(const Measurement &src) : Arb(check(
-      raw::dqcs_meas_new(src.get_qubit().get_index(), measurement_value_to_raw(src.get_value()))
+      raw::dqcs_meas_new(src.get_qubit().get_index(), to_raw(src.get_value()))
     )) {
       set_arb(src);
     }
@@ -1471,7 +1632,7 @@ namespace wrap {
      * Sets the measurement value.
      */
     void set_value(MeasurementValue value) {
-      check(raw::dqcs_meas_value_set(handle, measurement_value_to_raw(value)));
+      check(raw::dqcs_meas_value_set(handle, to_raw(value)));
     }
 
     /**
@@ -1499,7 +1660,7 @@ namespace wrap {
     /**
      * Wrap the given measurement set handle.
      */
-    MeasurementSet(raw::dqcs_handle_t handle) : Handle(handle) {
+    MeasurementSet(HandleIndex handle) : Handle(handle) {
     }
 
     /**

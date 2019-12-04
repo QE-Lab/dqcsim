@@ -30,7 +30,7 @@ TEST(handle, test) {
   {
     wrap::Handle handle(raw::dqcs_arb_new());
     EXPECT_EQ(handle.is_valid(), true);
-    EXPECT_EQ(handle.type(), raw::dqcs_handle_type_t::DQCS_HTYPE_ARB_DATA);
+    EXPECT_EQ(handle.type(), wrap::HandleType::ArbData);
     EXPECT_EQ(handle.dump(),
       "ArbData(\n"
       "    ArbData {\n"
@@ -71,7 +71,7 @@ TEST(handle, test) {
     }
     {
       wrap::Handle handle(raw_handle);
-      EXPECT_EQ(handle.type(), raw::dqcs_handle_type_t::DQCS_HTYPE_ARB_DATA);
+      EXPECT_EQ(handle.type(), wrap::HandleType::ArbData);
     }
     wrap::check(raw::dqcs_handle_leak_check());
   }
