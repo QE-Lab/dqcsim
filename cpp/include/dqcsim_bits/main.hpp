@@ -1407,7 +1407,7 @@ namespace wrap {
     /**
      * Constructs a new unitary gate with no control qubits.
      */
-    static Gate new_unitary(QubitSet &&targets, const Matrix &matrix) {
+    static Gate unitary(QubitSet &&targets, const Matrix &matrix) {
       return Gate(check(raw::dqcs_gate_new_unitary(
         targets.get_handle(),
         0,
@@ -1419,14 +1419,14 @@ namespace wrap {
     /**
      * Constructs a new unitary gate with no control qubits.
      */
-    static Gate new_unitary(const QubitSet &targets, const Matrix &matrix) {
+    static Gate unitary(const QubitSet &targets, const Matrix &matrix) {
       return new_unitary(std::move(QubitSet(targets)), matrix);
     }
 
     /**
      * Constructs a new unitary gate with control qubits.
      */
-    static Gate new_unitary(QubitSet &&targets, QubitSet &&controls, const Matrix &matrix) {
+    static Gate unitary(QubitSet &&targets, QubitSet &&controls, const Matrix &matrix) {
       return Gate(check(raw::dqcs_gate_new_unitary(
         targets.get_handle(),
         controls.get_handle(),
@@ -1438,28 +1438,28 @@ namespace wrap {
     /**
      * Constructs a new unitary gate with control qubits.
      */
-    static Gate new_unitary(const QubitSet &targets, const QubitSet &controls, const Matrix &matrix) {
+    static Gate unitary(const QubitSet &targets, const QubitSet &controls, const Matrix &matrix) {
       return new_unitary(std::move(QubitSet(targets)), std::move(QubitSet(controls)), matrix);
     }
 
     /**
      * Constructs a new Z-axis measurement gate.
      */
-    static Gate new_measure(QubitSet &&measures) {
+    static Gate measure(QubitSet &&measures) {
       return Gate(check(raw::dqcs_gate_new_measurement(measures.get_handle())));
     }
 
     /**
      * Constructs a new Z-axis measurement gate.
      */
-    static Gate new_measure(const QubitSet &measures) {
+    static Gate measure(const QubitSet &measures) {
       return new_measure(std::move(QubitSet(measures)));
     }
 
     /**
      * Constructs a new custom gate with a matrix.
      */
-    static Gate new_custom(
+    static Gate custom(
       const std::string &name,
       QubitSet &&targets,
       QubitSet &&controls,
@@ -1479,7 +1479,7 @@ namespace wrap {
     /**
      * Constructs a new custom gate with a matrix.
      */
-    static Gate new_custom(
+    static Gate custom(
       const std::string &name,
       const QubitSet &targets,
       const QubitSet &controls,
@@ -1498,7 +1498,7 @@ namespace wrap {
     /**
      * Constructs a new custom gate without a matrix.
      */
-    static Gate new_custom(
+    static Gate custom(
       const std::string &name,
       QubitSet &&targets,
       QubitSet &&controls,
@@ -1517,7 +1517,7 @@ namespace wrap {
     /**
      * Constructs a new custom gate without a matrix.
      */
-    static Gate new_custom(
+    static Gate custom(
       const std::string &name,
       const QubitSet &targets,
       const QubitSet &controls,
@@ -1535,7 +1535,7 @@ namespace wrap {
      * Constructs a new custom gate with target qubits, control qubits,
      * and a matrix.
      */
-    static Gate new_custom(
+    static Gate custom(
       const std::string &name,
       QubitSet &&targets,
       QubitSet &&controls,
@@ -1555,7 +1555,7 @@ namespace wrap {
      * Constructs a new custom gate with target qubits, control qubits,
      * and a matrix.
      */
-    static Gate new_custom(
+    static Gate custom(
       const std::string &name,
       const QubitSet &targets,
       const QubitSet &controls,
@@ -1572,7 +1572,7 @@ namespace wrap {
     /**
      * Constructs a new custom gate with target qubits and control qubits.
      */
-    static Gate new_custom(
+    static Gate custom(
       const std::string &name,
       QubitSet &&targets,
       QubitSet &&controls
@@ -1590,7 +1590,7 @@ namespace wrap {
     /**
      * Constructs a new custom gate with target qubits and control qubits.
      */
-    static Gate new_custom(
+    static Gate custom(
       const std::string &name,
       const QubitSet &targets,
       const QubitSet &controls
@@ -1605,7 +1605,7 @@ namespace wrap {
     /**
      * Constructs a new custom gate with target qubits and a matrix.
      */
-    static Gate new_custom(
+    static Gate custom(
       const std::string &name,
       QubitSet &&targets,
       const Matrix &matrix
@@ -1623,7 +1623,7 @@ namespace wrap {
     /**
      * Constructs a new custom gate with target qubits and a matrix.
      */
-    static Gate new_custom(
+    static Gate custom(
       const std::string &name,
       const QubitSet &targets,
       const Matrix &matrix
@@ -1638,7 +1638,7 @@ namespace wrap {
     /**
      * Constructs a new custom gate with only target qubits.
      */
-    static Gate new_custom(
+    static Gate custom(
       const std::string &name,
       QubitSet &&targets
     ) {
@@ -1655,7 +1655,7 @@ namespace wrap {
     /**
      * Constructs a new custom gate with only target qubits.
      */
-    static Gate new_custom(
+    static Gate custom(
       const std::string &name,
       const QubitSet &targets
     ) {
