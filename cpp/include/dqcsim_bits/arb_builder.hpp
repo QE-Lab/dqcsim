@@ -1,10 +1,3 @@
-// Include this file into a class derived from `Arb` after defining
-// `ARB_BUILDER_SUBCLASS` to the subclass name to add the `ArbData` builder
-// functions to it.
-
-#ifndef ARB_BUILDER_SUBCLASS
-#error
-#endif
 
 /**
  * Sets the arbitrary JSON data to the given serialized JSON string
