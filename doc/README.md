@@ -1,5 +1,4 @@
-Documentation source files
-==========================
+# Documentation source files
 
 This directory contains the source files for the documentation. **You can find
 the documentation for the latest version
