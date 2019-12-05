@@ -27,6 +27,7 @@
 #include <complex>
 #include <functional>
 #include <memory>
+#include <cmath>
 #include <cdqcsim>
 
 /**
@@ -1776,6 +1777,116 @@ namespace wrap {
      */
     bool operator!=(const Matrix &other) const {
       return d != other.d;
+    }
+
+  };
+
+  /**
+   * Contains shorthand methods for a variety of commonly used gate matrices.
+   */
+  class GateMatrix {
+  private:
+
+    /**
+     * Dummy constructor. There is no point in ever constructing this class,
+     * all members are static.
+     */
+    GateMatrix() {};
+
+  public:
+
+    /**
+     * The matrix for a single-qubit identity gate.
+     */
+    const Matrix &I() {
+      const double values[8] = {
+        1.0,  0.0,    0.0,  0.0,
+        0.0,  0.0,    1.0,  0.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * Computes the matrix for an arbitrary X rotation. The angle is specified
+     * in radians.
+     */
+    Matrix RX(double theta) {
+      double co = std::cos(0.5 * theta);
+      double si = std::sin(0.5 * theta);
+      double values[8] = {
+        co,   0.0,    0.0,  -si,
+        0.0,  -si,    co,   0.0,
+      };
+      return Matrix(2, values);
+    }
+
+    /**
+     * Computes the matrix for an arbitrary Y rotation. The angle is specified
+     * in radians.
+     */
+    Matrix RY(double theta) {
+      double co = std::cos(0.5 * theta);
+      double si = std::sin(0.5 * theta);
+      double values[8] = {
+        co,   0.0,    -si,  0.0,
+        si,   0.0,    co,   0.0,
+      };
+      return Matrix(2, values);
+    }
+
+    /**
+     * Computes the matrix for an arbitrary Z rotation. The angle is specified
+     * in radians.
+     */
+    Matrix RZ(double theta) {
+      double co = std::cos(0.5 * theta);
+      double si = std::sin(0.5 * theta);
+      double values[8] = {
+        co,   -si,    0.0,  0.0,
+        0.0,  0.0,    co,   si,
+      };
+      return Matrix(2, values);
+    }
+
+    /**
+     * Computes the matrix for an arbitrary rotation. The angles are specified
+     * in radians.
+     */
+    Matrix R(double theta, double phi, double lambda) {
+      Matrix matrix = RY(theta);
+      matrix(0, 1) *= std::exp(std::complex<double>(0.0, lambda));
+      matrix(1, 0) *= std::exp(std::complex<double>(0.0, phi));
+      matrix(1, 1) *= std::exp(std::complex<double>(0.0, lambda + phi));
+      return matrix;
+    }
+
+    /**
+     * The matrix for a swap gate.
+     */
+    const Matrix &Swap() {
+      const double values[32] = {
+        1.0,  0.0,    0.0,  0.0,    0.0,  0.0,    0.0,  0.0,
+        0.0,  0.0,    0.0,  0.0,    1.0,  0.0,    0.0,  0.0,
+        0.0,  0.0,    1.0,  0.0,    0.0,  0.0,    0.0,  0.0,
+        0.0,  0.0,    0.0,  0.0,    0.0,  0.0,    1.0,  0.0,
+      };
+      static const Matrix matrix(4, values);
+      return matrix;
+    }
+
+    /**
+     * The square-root of a swap gate matrix.
+     */
+    const Matrix &SqSwap() {
+      const double values[32] = {
+        1.0,  0.0,    0.0,  0.0,    0.0,  0.0,    0.0,  0.0,
+        0.0,  0.0,    0.5,  0.5,    0.5,  -0.5,   0.0,  0.0,
+        0.0,  0.0,    0.5,  -0.5,   0.5,  0.5,    0.0,  0.0,
+        0.0,  0.0,    0.0,  0.0,    0.0,  0.0,    1.0,  0.0,
+      };
+      static const Matrix matrix(4, values);
+      return matrix;
     }
 
   };
