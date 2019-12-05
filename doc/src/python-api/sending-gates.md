@@ -80,7 +80,7 @@ The plugin runs the algorithm on all possible oracles in sequence. Observe that
 we hardly had to duplicate any code to do that, by making clever use of
 Python's expressivity! Also note that DQCsim's Python plugin provides you with
 a number of built-in gate types. You can find the full list
-[here](https://mbrobbel.github.io/dqcsim/py_/dqcsim/plugin/index.html#dqcsim.plugin.GateStreamSource).
+[here](../py_/dqcsim/plugin/index.html#dqcsim.plugin.GateStreamSource).
 
 You can run this example with the null backend provided by DQCsim as follows.
 

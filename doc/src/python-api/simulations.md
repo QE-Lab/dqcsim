@@ -210,7 +210,7 @@ with Simulator('my-plugin.py', 'null') as sim:
 ```
 
 This line starts a simulation. You can call the `Simulator()` constructor in
-[many different ways](https://mbrobbel.github.io/dqcsim/py_/dqcsim/host/index.html);
+[many different ways](../py_/dqcsim/host/index.html);
 the one we're using here is very similar to the command line we used before.
 However, instead of using strings to try to hack a list of host calls in there
 (which isn't even supported by the constructor), we'll interact with the
