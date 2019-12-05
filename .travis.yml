@@ -33,14 +33,11 @@ matrix:
         - sudo pip3 install target/python/dist/*.whl
       before_deploy:
         - cd doc && make && mdbook test
-        - cp -R $TRAVIS_BUILD_DIR/target/doc/ $TRAVIS_BUILD_DIR/doc/book/rust_
-        - pdoc3 --html --output-dir $TRAVIS_BUILD_DIR/doc/book/py_ dqcsim
-        - doxygen
       deploy:
         provider: pages
         skip-cleanup: true
         github-token: $GITHUB_TOKEN
-        local-dir: doc/book
+        local-dir: target/book
         keep-history: false
         on:
           branch: master

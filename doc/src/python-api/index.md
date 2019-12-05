@@ -10,7 +10,7 @@ into a Pythonic interface.
 This chapter reads like a tutorial to DQCsim's Python API to get you coding
 quickly. However, it doesn't even get close to documenting every single
 feature. If you're looking for something more complete, check out the
-generated API documentation [here](https://mbrobbel.github.io/dqcsim/py_/dqcsim/).
+generated API documentation [here](../py_/dqcsim/index.html).
 
 The tutorial assumes that you already know what DQCsim is, and have a decent
 understanding of the basic concepts. If you don't, start [here](../index.md).
