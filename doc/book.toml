@@ -3,3 +3,7 @@ authors = ["Matthijs Brobbel", "Jeroen van Straten"]
 multilingual = false
 src = "src"
 title = "DQCsim"
+
+[build]
+build-dir = "../target/book"
+create-mising = false
