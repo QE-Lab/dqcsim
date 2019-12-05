@@ -1,54 +1,54 @@
 use super::*;
 
 /// Type for a handle.
-///>
-///> Handles are like pointers into DQCsim's internal structures: all API calls
-///> use these to refer to objects. Besides the object, they contain type
-///> information. This type can be retrieved using `dqcs_handle_type()`.
-///>
-///> Handles are always positive integers, counting upwards from 1 upon
-///> allocation, and they are not reused even after being deleted. Thus, every
-///> subsequent object allocation returns a handle one greater than the
-///> previous. Note however that DQCsim may allocate objects as well without
-///> the user specifically requesting this, so external code should generally
-///> *not* rely on this behavior unless otherwise noted. The value zero is
-///> reserved for invalid references or error propagation.
-///>
-///> Note that the scope for handles is thread-local. That is, data referenced
-///> by a handle cannot be shared or moved between threads.
-///>
-///> The value zero is reserved for invalid references or error propagation.
+///
+/// Handles are like pointers into DQCsim's internal structures: all API calls
+/// use these to refer to objects. Besides the object, they contain type
+/// information. This type can be retrieved using `dqcs_handle_type()`.
+///
+/// Handles are always positive integers, counting upwards from 1 upon
+/// allocation, and they are not reused even after being deleted. Thus, every
+/// subsequent object allocation returns a handle one greater than the
+/// previous. Note however that DQCsim may allocate objects as well without
+/// the user specifically requesting this, so external code should generally
+/// *not* rely on this behavior unless otherwise noted. The value zero is
+/// reserved for invalid references or error propagation.
+///
+/// Note that the scope for handles is thread-local. That is, data referenced
+/// by a handle cannot be shared or moved between threads.
+///
+/// The value zero is reserved for invalid references or error propagation.
 #[allow(non_camel_case_types)]
 pub type dqcs_handle_t = c_ulonglong;
 
 /// Type for a qubit reference.
-///>
-///> Qubit references are exchanged between the frontend, operator, and backend
-///> plugins to indicate which qubits a gate operates on. Note that this makes
-///> them fundamentally different from handles, which are thread-local.
-///>
-///> Qubit references are always positive integers, counting upwards from 1 upon
-///> allocation, and they are not reused even after the qubit is deallocated.
-///> Thus, every subsequent allocation returns a qubit reference one greater
-///> than the previous. This is guaranteed behavior that external code can rely
-///> upon. The value zero is reserved for invalid references or error
-///> propagation.
+///
+/// Qubit references are exchanged between the frontend, operator, and backend
+/// plugins to indicate which qubits a gate operates on. Note that this makes
+/// them fundamentally different from handles, which are thread-local.
+///
+/// Qubit references are always positive integers, counting upwards from 1 upon
+/// allocation, and they are not reused even after the qubit is deallocated.
+/// Thus, every subsequent allocation returns a qubit reference one greater
+/// than the previous. This is guaranteed behavior that external code can rely
+/// upon. The value zero is reserved for invalid references or error
+/// propagation.
 #[allow(non_camel_case_types)]
 pub type dqcs_qubit_t = c_ulonglong;
 
 /// Type for a simulation cycle timestamp.
-///>
-///> Timestamps count upward from zero. The type is signed to allow usage of -1
-///> for errors, and to allow numerical differences to be represented.
+///
+/// Timestamps count upward from zero. The type is signed to allow usage of -1
+/// for errors, and to allow numerical differences to be represented.
 #[allow(non_camel_case_types)]
 pub type dqcs_cycle_t = c_longlong;
 
 /// Type for a plugin state.
-///>
-///> This is an opaque type that is passed along to plugin implementation
-///> callback functions, which those callbacks can then use to interact with the
-///> plugin instance. User code shall not create or modify values of this type,
-///> and shall only use the values when calling `dqcs_plugin_*` functions.
+///
+/// This is an opaque type that is passed along to plugin implementation
+/// callback functions, which those callbacks can then use to interact with the
+/// plugin instance. User code shall not create or modify values of this type,
+/// and shall only use the values when calling `dqcs_plugin_*` functions.
 #[allow(non_camel_case_types)]
 #[repr(transparent)]
 #[derive(Clone, Copy)]
@@ -85,131 +85,131 @@ impl dqcs_plugin_state_t {
 #[allow(non_camel_case_types)]
 pub enum dqcs_handle_type_t {
     /// Indicates that the given handle is invalid.
-    ///>
-    ///> This indicates one of the following:
-    ///>
-    ///>  - The handle value is invalid (zero or negative).
-    ///>  - The handle has not been used yet.
-    ///>  - The object associated with the handle was deleted.
+    ///
+    /// This indicates one of the following:
+    ///
+    ///  - The handle value is invalid (zero or negative).
+    ///  - The handle has not been used yet.
+    ///  - The object associated with the handle was deleted.
     DQCS_HTYPE_INVALID = 0,
 
     /// Indicates that the given handle belongs to an `ArbData` object.
-    ///>
-    ///> This means that the handle supports the `handle` and `arb` interfaces.
+    ///
+    /// This means that the handle supports the `handle` and `arb` interfaces.
     DQCS_HTYPE_ARB_DATA = 100,
 
     /// Indicates that the given handle belongs to an `ArbCmd` object.
-    ///>
-    ///> This means that the handle supports the `handle`, `arb`, and `cmd`
-    ///> interfaces.
+    ///
+    /// This means that the handle supports the `handle`, `arb`, and `cmd`
+    /// interfaces.
     DQCS_HTYPE_ARB_CMD = 101,
 
     /// Indicates that the given handle belongs to a queue of `ArbCmd` object.
-    ///>
-    ///> This means that the handle supports the `handle`, `arb`, `cmd`, and
-    ///> `cq` interfaces.
+    ///
+    /// This means that the handle supports the `handle`, `arb`, `cmd`, and
+    /// `cq` interfaces.
     DQCS_HTYPE_ARB_CMD_QUEUE = 102,
 
     /// Indicates that the given handle belongs to a set of qubit references.
-    ///>
-    ///> This means that the handle supports the `handle` and `qbset`
-    ///> interfaces.
+    ///
+    /// This means that the handle supports the `handle` and `qbset`
+    /// interfaces.
     DQCS_HTYPE_QUBIT_SET = 103,
 
     /// Indicates that the given handle belongs to a quantum gate description.
-    ///>
-    ///> This means that the handle supports the `handle`, `gate`, and `arb`
-    ///> interfaces.
+    ///
+    /// This means that the handle supports the `handle`, `gate`, and `arb`
+    /// interfaces.
     DQCS_HTYPE_GATE = 104,
 
     /// Indicates that the given handle belongs to a qubit measurement result.
-    ///>
-    ///> This means that the handle supports the `handle`, `meas`, and `arb`
-    ///> interfaces. It can also be used in place of a qubit measurement result
-    ///> set by functions that consume the object.
+    ///
+    /// This means that the handle supports the `handle`, `meas`, and `arb`
+    /// interfaces. It can also be used in place of a qubit measurement result
+    /// set by functions that consume the object.
     DQCS_HTYPE_MEAS = 105,
 
     /// Indicates that the given handle belongs to a set of qubit measurement
     /// results.
-    ///>
-    ///> This means that the handle supports the `handle` and `mset` interfaces.
+    ///
+    /// This means that the handle supports the `handle` and `mset` interfaces.
     DQCS_HTYPE_MEAS_SET = 106,
 
     /// Indicates that the given handle belongs to a frontend plugin process
     /// configuration object.
-    ///>
-    ///> This means that the handle supports the `handle`, `pcfg`, and `xcfg`
-    ///> interfaces.
+    ///
+    /// This means that the handle supports the `handle`, `pcfg`, and `xcfg`
+    /// interfaces.
     DQCS_HTYPE_FRONT_PROCESS_CONFIG = 200,
 
     /// Indicates that the given handle belongs to an operator plugin process
     /// configuration object.
-    ///>
-    ///> This means that the handle supports the `handle`, `pcfg`, and `xcfg`
-    ///> interfaces.
+    ///
+    /// This means that the handle supports the `handle`, `pcfg`, and `xcfg`
+    /// interfaces.
     DQCS_HTYPE_OPER_PROCESS_CONFIG = 201,
 
     /// Indicates that the given handle belongs to a backend plugin process
     /// configuration object.
-    ///>
-    ///> This means that the handle supports the `handle`, `pcfg`, and `xcfg`
-    ///> interfaces.
+    ///
+    /// This means that the handle supports the `handle`, `pcfg`, and `xcfg`
+    /// interfaces.
     DQCS_HTYPE_BACK_PROCESS_CONFIG = 203,
 
     /// Indicates that the given handle belongs to a frontend plugin thread
     /// configuration object.
-    ///>
-    ///> This means that the handle supports the `handle`, `tcfg`, and `xcfg`
-    ///> interfaces.
+    ///
+    /// This means that the handle supports the `handle`, `tcfg`, and `xcfg`
+    /// interfaces.
     DQCS_HTYPE_FRONT_THREAD_CONFIG = 204,
 
     /// Indicates that the given handle belongs to an operator plugin thread
     /// configuration object.
-    ///>
-    ///> This means that the handle supports the `handle`, `tcfg`, and `xcfg`
-    ///> interfaces.
+    ///
+    /// This means that the handle supports the `handle`, `tcfg`, and `xcfg`
+    /// interfaces.
     DQCS_HTYPE_OPER_THREAD_CONFIG = 205,
 
     /// Indicates that the given handle belongs to a backend plugin thread
     /// configuration object.
-    ///>
-    ///> This means that the handle supports the `handle`, `tcfg`, and `xcfg`
-    ///> interfaces.
+    ///
+    /// This means that the handle supports the `handle`, `tcfg`, and `xcfg`
+    /// interfaces.
     DQCS_HTYPE_BACK_THREAD_CONFIG = 206,
 
     /// Indicates that the given handle belongs to a simulator configuration
     /// object.
-    ///>
-    ///> This means that the handle supports the `handle` and `scfg` interfaces.
+    ///
+    /// This means that the handle supports the `handle` and `scfg` interfaces.
     DQCS_HTYPE_SIM_CONFIG = 207,
 
     /// Indicates that the given handle belongs to a simulator instance.
-    ///>
-    ///> This means that the handle supports the `handle` and `sim` interfaces.
+    ///
+    /// This means that the handle supports the `handle` and `sim` interfaces.
     DQCS_HTYPE_SIM = 208,
 
     /// Indicates that the given handle belongs to a frontend plugin
     /// definition object.
-    ///>
-    ///> This means that the handle supports the `handle` and `pdef` interfaces.
+    ///
+    /// This means that the handle supports the `handle` and `pdef` interfaces.
     DQCS_HTYPE_FRONT_DEF = 300,
 
     /// Indicates that the given handle belongs to an operator plugin
     /// definition object.
-    ///>
-    ///> This means that the handle supports the `handle` and `pdef` interfaces.
+    ///
+    /// This means that the handle supports the `handle` and `pdef` interfaces.
     DQCS_HTYPE_OPER_DEF = 301,
 
     /// Indicates that the given handle belongs to a backend plugin
     /// definition object.
-    ///>
-    ///> This means that the handle supports the `handle` and `pdef` interfaces.
+    ///
+    /// This means that the handle supports the `handle` and `pdef` interfaces.
     DQCS_HTYPE_BACK_DEF = 302,
 
     /// Indicates that the given handle belongs to a plugin thread join handle.
-    ///>
-    ///> This means that the handle supports the `handle` and `pjoin`
-    ///> interfaces.
+    ///
+    /// This means that the handle supports the `handle` and `pjoin`
+    /// interfaces.
     DQCS_HTYPE_PLUGIN_JOIN = 303,
 }
 

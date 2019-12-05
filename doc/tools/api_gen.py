@@ -185,6 +185,12 @@ def entities_to_markdown(entities):
         brief, *doc = doc.split('\n\n', maxsplit=1)
         if doc:
             doc = doc[0]
+
+            # Hacky thing: doxygen wants headers to start with level 1 so
+            # that's what we have to do in the Rust docstrings, but mdbook
+            # wants at least level 2, which we already use in the book source,
+            # so we need level 3. We have to fix that here.
+            doc = doc.replace('\n#', '\n###')
         else:
             doc = None
 

@@ -1,11 +1,11 @@
 use super::*;
 
 /// Creates a new set of qubit references.
-///>
-///> Returns the handle of the newly created set. The set is initially empty.
-///> Qubit sets are ordered, meaning that the order in which qubits are popped
-///> from the set equals the order in which they were pushed. To iterate over a
-///> set, simply make a copy and drain the copy using pop.
+///
+/// Returns the handle of the newly created set. The set is initially empty.
+/// Qubit sets are ordered, meaning that the order in which qubits are popped
+/// from the set equals the order in which they were pushed. To iterate over a
+/// set, simply make a copy and drain the copy using pop.
 #[no_mangle]
 pub extern "C" fn dqcs_qbset_new() -> dqcs_handle_t {
     insert(QubitReferenceSet::new())
@@ -26,8 +26,8 @@ pub extern "C" fn dqcs_qbset_contains(
 }
 
 /// Pushes a qubit reference into a qubit reference set.
-///>
-///> This function will fail if the specified qubit was already part of the set.
+///
+/// This function will fail if the specified qubit was already part of the set.
 #[no_mangle]
 pub extern "C" fn dqcs_qbset_push(qbset: dqcs_handle_t, qubit: dqcs_qubit_t) -> dqcs_return_t {
     api_return_none(|| {
@@ -44,9 +44,9 @@ pub extern "C" fn dqcs_qbset_push(qbset: dqcs_handle_t, qubit: dqcs_qubit_t) -> 
 }
 
 /// Pops a qubit reference off of a qubit reference set.
-///>
-///> Qubits are popped in the same order in which they were pushed. That is,
-///> they are FIFO-ordered.
+///
+/// Qubits are popped in the same order in which they were pushed. That is,
+/// they are FIFO-ordered.
 #[no_mangle]
 pub extern "C" fn dqcs_qbset_pop(qbset: dqcs_handle_t) -> dqcs_qubit_t {
     api_return(0, || {
@@ -60,8 +60,8 @@ pub extern "C" fn dqcs_qbset_pop(qbset: dqcs_handle_t) -> dqcs_qubit_t {
 }
 
 /// Returns the number of qubits in the given set.
-///>
-///> This function returns -1 to indicate failure.
+///
+/// This function returns -1 to indicate failure.
 #[no_mangle]
 pub extern "C" fn dqcs_qbset_len(qbset: dqcs_handle_t) -> ssize_t {
     api_return(-1, || {
