@@ -1420,7 +1420,7 @@ namespace wrap {
      * Constructs a new unitary gate with no control qubits.
      */
     static Gate unitary(const QubitSet &targets, const Matrix &matrix) {
-      return new_unitary(std::move(QubitSet(targets)), matrix);
+      return unitary(std::move(QubitSet(targets)), matrix);
     }
 
     /**
@@ -1439,7 +1439,7 @@ namespace wrap {
      * Constructs a new unitary gate with control qubits.
      */
     static Gate unitary(const QubitSet &targets, const QubitSet &controls, const Matrix &matrix) {
-      return new_unitary(std::move(QubitSet(targets)), std::move(QubitSet(controls)), matrix);
+      return unitary(std::move(QubitSet(targets)), std::move(QubitSet(controls)), matrix);
     }
 
     /**
@@ -1453,7 +1453,7 @@ namespace wrap {
      * Constructs a new Z-axis measurement gate.
      */
     static Gate measure(const QubitSet &measures) {
-      return new_measure(std::move(QubitSet(measures)));
+      return measure(std::move(QubitSet(measures)));
     }
 
     /**
@@ -1486,7 +1486,7 @@ namespace wrap {
       const QubitSet &measures,
       const Matrix &matrix
     ) {
-      return new_custom(
+      return custom(
         name,
         std::move(QubitSet(targets)),
         std::move(QubitSet(controls)),
@@ -1523,7 +1523,7 @@ namespace wrap {
       const QubitSet &controls,
       const QubitSet &measures
     ) {
-      return new_custom(
+      return custom(
         name,
         std::move(QubitSet(targets)),
         std::move(QubitSet(controls)),
@@ -1561,7 +1561,7 @@ namespace wrap {
       const QubitSet &controls,
       const Matrix &matrix
     ) {
-      return new_custom(
+      return custom(
         name,
         std::move(QubitSet(targets)),
         std::move(QubitSet(controls)),
@@ -1595,7 +1595,7 @@ namespace wrap {
       const QubitSet &targets,
       const QubitSet &controls
     ) {
-      return new_custom(
+      return custom(
         name,
         std::move(QubitSet(targets)),
         std::move(QubitSet(controls))
@@ -1628,7 +1628,7 @@ namespace wrap {
       const QubitSet &targets,
       const Matrix &matrix
     ) {
-      return new_custom(
+      return custom(
         name,
         std::move(QubitSet(targets)),
         matrix
@@ -1659,7 +1659,7 @@ namespace wrap {
       const std::string &name,
       const QubitSet &targets
     ) {
-      return new_custom(
+      return custom(
         name,
         std::move(QubitSet(targets))
       );
