@@ -1,6 +1,6 @@
 # C++ API
 
-Find the (WIP) C++ API [here](https://mbrobbel.github.io/dqcsim/cpp_/).
+Find the (WIP) C++ API [here](../cpp_/index.html).
 
 The C++ API, once finished, will allow you to use DQCsim in a way that should
 be intuitive for C++11 developers, in order to both construct plugins and
