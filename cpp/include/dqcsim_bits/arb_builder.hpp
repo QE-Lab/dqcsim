@@ -43,7 +43,7 @@ ARB_BUILDER_SUBCLASS &with_arg_string(const std::string &data) {
  * Pushes a value of type `T` to the back of the arbitrary argument list
  * (builder pattern).
  *
- * WARNING: type `T` must be a primitive value (like an `int`) or a struct
+ * \warning Type `T` must be a primitive value (like an `int`) or a struct
  * thereof, without pointers or any other "complicated" constructs. DQCsim
  * just copies the bytes over. It is up to you to ensure that that's what
  * you want to happen; unfortunately C++11 does not provide a way to

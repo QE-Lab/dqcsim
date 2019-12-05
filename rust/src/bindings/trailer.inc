@@ -8,16 +8,29 @@ namespace dqcsim {
 
 /**
  * Namespace containing all the symbols defined by the C API.
+ *
+ * When including `<cdqcsim>` instead of `<dqcsim.h>`, the C API symbols are
+ * placed in this namespace. This behavior mimics the C++ standard library,
+ * like how for instance including `<cstring>` gives you `std::memcpy()`
+ * instead of `memcpy()`.
+ *
+ * Note that the `dqcs_`/`DQCS_` namespacing prefixes of the C API remain,
+ * so the full name of the symbols becomes `dqcsim::raw::dqcs_*` etc. The
+ * `dqcsim::wrap` namespace populated in addition by including `<dqcsim>`
+ * provides more C++-like bindings, similar to `<cstring>` versus `<string>`
+ * in the standard library.
  */
 namespace raw {
 #endif
 
 // Use namespaced C stdlib functions if this is the C++ header.
+//! \cond Doxygen_Suppress
 #ifdef _DQCSIM_HDR_CPP_
 #define _DQCSIM_STD_PREFIX_ ::std::
 #else
 #define _DQCSIM_STD_PREFIX_
 #endif
+//! \endcond
 
 /**
  * Sends a log message using the current logger using printf-like formatting.
@@ -88,6 +101,7 @@ inline void dqcs_log_format(
 // Macros
 //*****************************************************************************
 
+//! \cond Doxygen_Suppress
 #ifndef _DQCSIM_LANGUAGE_
 #ifdef _DQCSIM_HDR_CPP_
 #define _DQCSIM_LANGUAGE_ "CPP"
@@ -95,7 +109,9 @@ inline void dqcs_log_format(
 #define _DQCSIM_LANGUAGE_ "C"
 #endif
 #endif
+//! \endcond
 
+//! \cond Doxygen_Suppress
 #ifndef _DQCSIM_LOGLEVEL_PREFIX_
 #ifdef _DQCSIM_HDR_CPP_
 #define _DQCSIM_LOGLEVEL_PREFIX_ ::dqcsim::raw::dqcs_loglevel_t::
@@ -103,6 +119,7 @@ inline void dqcs_log_format(
 #define _DQCSIM_LOGLEVEL_PREFIX_
 #endif
 #endif
+//! \endcond
 
 #ifndef dqcs_log_trace
 /**

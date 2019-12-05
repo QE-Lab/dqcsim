@@ -1,5 +1,23 @@
 #ifndef _DQCSIM_INCLUDED_
+//! \cond Doxygen_Suppress
 #define _DQCSIM_INCLUDED_
+//! \endcond
+
+/*!
+ * \file dqcsim
+ * \brief Provides DQCsim's entire C++ API.
+ *
+ * This is the main file you should be including in pure C++ projects:
+ *
+ * \code
+ * #include <dqcsim>
+ * \endcode
+ *
+ * It should be installed into `/usr/include` by installing the DQCsim Python
+ * module using `pip` as root. If you're pulling DQCsim in through CMake
+ * instead, the appropriate include path should be added to your project
+ * automatically.
+ */
 
 #include <stdexcept>
 #include <string>
@@ -19,21 +37,59 @@ namespace dqcsim {
 /**
  * Namespace containing thin wrapper objects around the handles exposed by
  * the raw C interface.
+ *
+ * The symbols in this namespace fully wrap those provided by the raw C API.
+ * The following things are abstracted away.
+ *
+ *  - The signal-error-by-return-value and `dqcs_set_error`/`dqcs_get_error`
+ *    error reporting system is replaced with C++ exceptions. This is handled
+ *    primarily by the `check` function; placing this around any raw C API
+ *    function will turn DQCsim errors into an `std::runtime_error`.
+ *
+ *  - The typedefs from the raw C API are replaced with or aliased by C++
+ *    equivalents, making full use of C++'s namespacing to abbreviate names,
+ *    and using more C++-esque naming conventions.
+ *
+ *  - Handles are abstracted to classes, using RAII to ensure that there are
+ *    no leaks, inheritance to represent the difference interfaces supported by
+ *    different handles, and strong typing to prevent APIs from being called on
+ *    incompatible handles.
+ *
+ *  - The `dqcs_plugin_state_t` type is encapsulated by a class which can
+ *    only be constructed by this library, cannot be moved or copied, and
+ *    cannot be mutated. This prevents mistakes leading to crashes in the Rust
+ *    portion of DQCsim.
  */
 namespace wrap {
 
   /**
    * C++-styled type name for `raw::dqcs_handle_t`.
+   *
+   * This integer type is used to represent C API handles internally. You
+   * normally shouldn't encounter this type.
+   *
+   * \note DQCsim starts counting handles from 1. Handle 0 is reserved for
+   * signaling errors in the C API.
    */
   using HandleIndex = raw::dqcs_handle_t;
 
   /**
    * C++-styled type name for `raw::dqcs_qubit_t`.
+   *
+   * This integer type is used to represent qubit indices. You can do math on
+   * this type if you like, though this normally doesn't bear any significance.
+   * Most of the time you'll be using `QubitRef` instead, which prevents such
+   * (usually) meaningless operations.
+   *
+   * \note DQCsim starts counting qubits from index 1. Index 0 is reserved for
+   * signaling errors in the C API.
    */
   using QubitIndex = raw::dqcs_qubit_t;
 
   /**
    * C++-styled type name for `raw::dqcs_cycle_t`.
+   *
+   * This integer type is used to represent simulation cycles.
    */
   using Cycle = raw::dqcs_cycle_t;
 
@@ -95,17 +151,49 @@ namespace wrap {
   }
 
   /**
-   * More C++-like wrapper for `raw::handle_type_t`, not including the
-   * `invalid` option (since we use exceptions to communicate failure).
+   * Represents the type of a raw handle.
+   *
+   * This wraps `raw::handle_type_t`, not including the `invalid` option
+   * (since we use exceptions to communicate failure).
    */
   enum class HandleType {
+
+    /**
+     * Indicates that a handle is an `ArbData`.
+     */
     ArbData = 100,
+
+    /**
+     * Indicates that a handle is an `ArbCmd`.
+     */
     ArbCmd = 101,
+
+    /**
+     * Indicates that a handle is an `ArbCmdQueue`.
+     */
     ArbCmdQueue = 102,
+
+    /**
+     * Indicates that a handle is a `QubitSet`.
+     */
     QubitSet = 103,
+
+    /**
+     * Indicates that a handle is a `Gate`.
+     */
     Gate = 104,
+
+    /**
+     * Indicates that a handle is a `Measurement`.
+     */
     Measurement = 105,
+
+    /**
+     * Indicates that a handle is a `MeasurementSet`.
+     */
     MeasurementSet = 106,
+
+    // TODO document these entries
     FrontendProcessConfig = 200,
     OperatorProcessConfig = 201,
     BackendProcessConfig = 203,
@@ -114,9 +202,25 @@ namespace wrap {
     BackendThreadConfig = 206,
     SimulationConfig = 207,
     Simulation = 208,
+
+    /**
+     * Indicates that a handle is a frontend `Plugin`.
+     */
     FrontendDefinition = 300,
+
+    /**
+     * Indicates that a handle is an operator `Plugin`.
+     */
     OperatorDefinition = 301,
+
+    /**
+     * Indicates that a handle is a backend `Plugin`.
+     */
     BackendDefinition = 302,
+
+    /**
+     * Indicates that a handle is a `PluginJoinHandle`.
+     */
     PluginJoinHandle = 303
   };
 
@@ -178,19 +282,85 @@ namespace wrap {
   }
 
   /**
-   * More C++-like wrapper for `raw::dqcs_loglevel_t`, not including the
-   * `invalid` option (since we use exceptions to communicate failure).
+   * Represents the loglevel of a message, a loglevel filter level, or one
+   * of the possible actions to take when a message is received from a plugin
+   * through `stdout` or `stderr`.
+   *
+   * This wraps `raw::dqcs_loglevel_t`, not including the `invalid` option
+   * (since we use exceptions to communicate failure).
    */
   enum class Loglevel {
+
+    /**
+     * In the context of a filter, turns logging off.
+     */
     Off = 0,
+
+    /**
+     * This loglevel is to be used for reporting a fatal error, resulting from
+     * the owner of the logger getting into an illegal state from which it
+     * cannot recover. Such problems are also reported to the API caller if
+     * applicable.
+     */
     Fatal = 1,
+
+    /**
+     * This loglevel is to be used for reporting or propagating a non-fatal
+     * error caused by the API caller doing something wrong. Such problems are
+     * also reported to the API caller if applicable.
+     */
     Error = 2,
+
+    /**
+     * This loglevel is to be used for reporting that a called API/function is
+     * telling us we did something wrong (that we weren't expecting), but we
+     * can recover. For instance, for a failed connection attempt to something
+     * that really should not be failing, we can still retry (and eventually
+     * report critical or error if a retry counter overflows). Since we're
+     * still trying to rectify things at this point, such problems are NOT
+     * reported to the API/function caller via Result::Err.
+     */
     Warn = 3,
+
+    /**
+     * This loglevel is to be used for reporting information specifically
+     * requested by the user/API caller, such as the result of an API function
+     * requested through the command line, or an explicitly captured
+     * stdout/stderr stream.
+     */
     Note = 4,
+
+    /**
+     * This loglevel is to be used for reporting information NOT specifically
+     * requested by the user/API caller, such as a plugin starting up or
+     * shutting down.
+     */
     Info = 5,
+
+    /**
+     * This loglevel is to be used for reporting debugging information useful
+     * for debugging the user of the API provided by the logged instance.
+     */
     Debug = 6,
+
+    /**
+     * This loglevel is to be used for reporting debugging information useful
+     * for debugging the internals of the logged instance. Such messages would
+     * normally only be generated by debug builds, to prevent them from
+     * impacting performance under normal circumstances.
+     */
     Trace = 7,
+
+    /**
+     * This is intended to be used when configuring the stdout/stderr capture
+     * mode for a plugin process. Selecting it will prevent the stream from
+     * being captured; it will just be the same stream as DQCsim's own
+     * stdout/stderr. When used as the loglevel for a message, the message
+     * itself is sent to stderr instead of passing into DQCsim's log system.
+     * Using this for loglevel filters leads to undefined behavior.
+     */
     Pass = 8
+
   };
 
   /**
@@ -231,13 +401,30 @@ namespace wrap {
   }
 
   /**
-   * More C++-like wrapper for `raw::dqcs_measurement_t`, not including the
-   * `invalid` option (since we use exceptions to communicate failure).
+   * Represents the result of a qubit measurement.
+   *
+   * This wraps `raw::dqcs_measurement_t`, not including the `invalid`
+   * option (since we use exceptions to communicate failure).
    */
   enum class MeasurementValue {
+
+    /**
+     * Qubit measurement returned zero.
+     */
     Zero = 0,
+
+    /**
+     * Qubit measurement returned one.
+     */
     One = 1,
+
+    /**
+     * This value can be used by backends to indicate that the qubit state
+     * was collapsed as part of the measurement process, but the value is
+     * unknown for some reason.
+     */
     Undefined = 2
+
   };
 
   /**
@@ -266,13 +453,32 @@ namespace wrap {
   }
 
   /**
-   * More C++-like wrapper for `raw::dqcs_path_style_t`, not including the
-   * `invalid` option (since we use exceptions to communicate failure).
+   * Represents the possible options for dealing with paths when writing a
+   * reproduction file.
+   *
+   * This wraps `raw::dqcs_path_style_t`, not including the `invalid` option
+   * (since we use exceptions to communicate failure).
    */
   enum class PathStyle {
+
+    /**
+     * Specifies that paths should be saved the same way they were specified
+     * on the command line.
+     */
     Keep = 0,
+
+    /**
+     * Specifies that all paths should be saved relative to DQCsim's working
+     * directory.
+     */
     Relative = 1,
+
+    /**
+     * Specifies that all paths should be saved canonically, i.e. relative to
+     * the root directory.
+     */
     Absolute = 2
+
   };
 
   /**
@@ -301,13 +507,28 @@ namespace wrap {
   }
 
   /**
-   * More C++-like wrapper for `raw::dqcs_plugin_type_t`, not including the
-   * `invalid` option (since we use exceptions to communicate failure).
+   * Enumeration of the three types of plugins.
+   *
+   * This wraps `raw::dqcs_plugin_type_t`, not including the `invalid` option
+   * (since we use exceptions to communicate failure).
    */
   enum class PluginType {
+
+    /**
+     * Frontend plugin.
+     */
     Frontend = 0,
+
+    /**
+     * Operator plugin.
+     */
     Operator = 1,
+
+    /**
+     * Backend plugin.
+     */
     Backend = 2
+
   };
 
   /**
@@ -349,6 +570,25 @@ namespace wrap {
 
   /**
    * Base class for wrapping any handle.
+   *
+   * This class ensures that the wrapped handle is freed when it is destroyed,
+   * preventing memory leaks. You can also free the handle before destruction,
+   * which allows any errors reported by DQCsim to be caught. You can take back
+   * ownership of the handle using `take_handle`, preventing it from being
+   * freed at destruction.
+   *
+   * Only one `Handle` should wrap a single handle at a time. Since handles
+   * cannot typically be cloned, this class is not copy constructible or
+   * assignable. If you need it to be, consider wrapping the `Handle` in a
+   * `std::shared_ptr`.
+   *
+   * \warning `Handle` objects can not and should never be passed between
+   * threads. The wrapped C API handles are thread local can cannot be moved
+   * between threads, therefore this wrapper can't either. Trying to do so
+   * anyway is undefined behavior and will absolutely not work! If you need to
+   * move data between threads, copy the data represented by the handle into
+   * C++ variables, pass those over, and reconstruct the handle from them in
+   * the destination thread.
    */
   class Handle {
   protected:
@@ -361,7 +601,19 @@ namespace wrap {
   public:
 
     /**
+     * Constructs an empty wrapper.
+     *
+     * \note The only way to use a wrapper constructed this way is to move a
+     * handle into it using the move assignment operator.
+     */
+    Handle() : handle(0) {
+    }
+
+    /**
      * Wrap the given raw handle.
+     *
+     * \note This class will take ownership of the handle, i.e. it is in charge
+     * of freeing it.
      */
     Handle(HandleIndex handle) : handle(handle) {
     }
@@ -377,6 +629,9 @@ namespace wrap {
 
     /**
      * Explicitly delete the handle, allowing errors to be caught.
+     *
+     * \note The wrapper no longer owns a handle after this call. That means
+     * `is_valid` will return `false` and all other methods will likely fail.
      */
     void free() {
       check(raw::dqcs_handle_delete(handle));
@@ -398,10 +653,10 @@ namespace wrap {
     }
 
     /**
-     * Unwrap the raw handle; that is, without deleting it. By moving the
-     * wrapper into the static function (in conjunction with the lack of a copy
-     * constructor) the compiler can statically check that the wrapper object
-     * is not reused.
+     * Returns the raw handle and relinquishes ownership.
+     *
+     * \note The wrapper no longer owns a handle after this call. That means
+     * `is_valid` will return `false` and all other methods will likely fail.
      */
     HandleIndex take_handle() noexcept {
       HandleIndex h = handle;
@@ -415,16 +670,36 @@ namespace wrap {
     void operator=(const Handle&) = delete;
 
     /**
-     * Move constructor; simply move ownership of the handle.
+     * Move constructor; simply moves ownership of the handle from the source
+     * object to the constructed object.
+     *
+     * \note The source wrapper no longer owns a handle after this call. That
+     * means that its `is_valid` will return `false` and all other methods will
+     * likely fail. Note that using an object after moving it is explicitly
+     * undefined behavior in the C++ specification, so you shouldn't be using
+     * it anymore anyway.
      */
     Handle(Handle &&src) : handle(src.handle) {
       src.handle = 0;
     }
 
     /**
-     * Move assignment; simply move ownership of the handle.
+     * Move constructor; simply moves ownership of the handle from the source
+     * object to the assignment target.
+     *
+     * \note If the assignment target wrapper already contained a handle, it
+     * is implicitly freed.
+     *
+     * \note The source wrapper no longer owns a handle after this call. That
+     * means that its `is_valid` will return `false` and all other methods will
+     * likely fail. Note that using an object after moving it is explicitly
+     * undefined behavior in the C++ specification, so you shouldn't be using
+     * it anymore anyway.
      */
     Handle &operator=(Handle &&src) {
+      if (handle) {
+        free(handle);
+      }
       handle = src.handle;
       src.handle = 0;
       return *this;
@@ -432,6 +707,9 @@ namespace wrap {
 
     /**
      * Returns a string containing a debug dump of the handle.
+     *
+     * The string uses newlines and indentation to improve readability. It does
+     * not end in a newline.
      */
     std::string dump() const {
       char *dump_c = check(raw::dqcs_handle_dump(handle));
@@ -442,6 +720,9 @@ namespace wrap {
 
     /**
      * Write the debug dump string of the handle to the given output stream.
+     *
+     * Newlines and indentation are used to improve readability. However, there
+     * is implicit trailing `std::endl`.
      */
     friend std::ostream& operator<<(std::ostream &out, const Handle &handle) {
       out << handle.dump();
@@ -449,7 +730,7 @@ namespace wrap {
     }
 
     /**
-     * Return the raw handle type for the given handle.
+     * Returns the type of this handle.
      */
     HandleType type() const {
       return check(raw::dqcs_handle_type(handle));
@@ -459,6 +740,8 @@ namespace wrap {
 
   /**
    * Class wrapper for handles that support the `arb` interface.
+   *
+   * You normally wouldn't instantiate this directly (see `ArbData`).
    */
   class Arb : public Handle {
   public:
@@ -511,7 +794,7 @@ namespace wrap {
      * already, you need to specify the `nlohmann::json` type as a generic to
      * this function.
      *
-     * WARNING: this function returns a *copy* of the JSON data embedded in the
+     * \warning This function returns a *copy* of the JSON data embedded in the
      * `ArbData`. Therefore, modifying the returned JSON object does *not*
      * modify the original `ArbData`. To modify, you need to pass the modified
      * JSON object to `set_arb_json()`.
@@ -554,7 +837,7 @@ namespace wrap {
      * Returns the arbitrary argument at the given index as the given type.
      * Negative indices are relative to the back of the list, as in Python.
      *
-     * WARNING: type `T` must be a primitive value (like an `int`) or a struct
+     * \warning Type `T` must be a primitive value (like an `int`) or a struct
      * thereof, without pointers or any other "complicated" constructs. DQCsim
      * just copies the bytes over. It is up to you to ensure that that's what
      * you want to happen; unfortunately C++11 does not provide a way to
@@ -598,7 +881,7 @@ namespace wrap {
      * Sets the arbitrary argument at the given index to a value of type `T`.
      * Negative indices are relative to the back of the list, as in Python.
      *
-     * WARNING: type `T` must be a primitive value (like an `int`) or a struct
+     * \warning Type `T` must be a primitive value (like an `int`) or a struct
      * thereof, without pointers or any other "complicated" constructs. DQCsim
      * just copies the bytes over. It is up to you to ensure that that's what
      * you want to happen; unfortunately C++11 does not provide a way to
@@ -619,7 +902,7 @@ namespace wrap {
     /**
      * Pushes a value of type `T` to the back of the arbitrary argument list.
      *
-     * WARNING: type `T` must be a primitive value (like an `int`) or a struct
+     * \warning Type `T` must be a primitive value (like an `int`) or a struct
      * thereof, without pointers or any other "complicated" constructs. DQCsim
      * just copies the bytes over. It is up to you to ensure that that's what
      * you want to happen; unfortunately C++11 does not provide a way to
@@ -645,7 +928,7 @@ namespace wrap {
      * Pops from the back of the arbitrary argument list as a value of type
      * `T`.
      *
-     * WARNING: type `T` must be a primitive value (like an `int`) or a struct
+     * \warning Type `T` must be a primitive value (like an `int`) or a struct
      * thereof, without pointers or any other "complicated" constructs. DQCsim
      * just copies the bytes over. It is up to you to ensure that that's what
      * you want to happen; unfortunately C++11 does not provide a way to
@@ -679,7 +962,7 @@ namespace wrap {
      * `T`. Negative indices are relative to the back of the list, as in
      * Python.
      *
-     * WARNING: type `T` must be a primitive value (like an `int`) or a struct
+     * \warning Type `T` must be a primitive value (like an `int`) or a struct
      * thereof, without pointers or any other "complicated" constructs. DQCsim
      * just copies the bytes over. It is up to you to ensure that that's what
      * you want to happen; unfortunately C++11 does not provide a way to
@@ -723,6 +1006,27 @@ namespace wrap {
 
   /**
    * Class wrapper for `ArbData` handles.
+   *
+   * `ArbData` objects can be used by simulations to communicate information
+   * that isn't specified by DQCsim between plugins. DQCsim only defines that
+   * such arbitrary data consists of a JSON-like object and zero or more
+   * binary-safe strings. This means that it is up to the plugins to agree on
+   * a common format!
+   *
+   * `ArbData` objects (as well as the attached `ArbData` in `ArbCmd`, `Gate`,
+   * and `Measurement` objects) can be be constructed in-line using the builder
+   * pattern. For example, an `ArbData` object with the JSON data
+   * `{"hello": "world"}`, an integer argument, and a string argument, can be
+   * created as follows:
+   *
+   * \code
+   * ArbData().with_json_string("{\"hello\": \"world\"}")
+   *          .with_arg<int>(33)
+   *          .with_arg_string("I'm a string!");
+   * \endcode
+   *
+   * When you receive an `ArbData`, you can use the various getters to see
+   * what's inside. You can also use the various setters to modify them.
    */
   class ArbData : public Arb {
   public:
@@ -772,6 +1076,9 @@ namespace wrap {
     ArbData &operator=(ArbData&&) = default;
 
     // Include builder pattern functions.
+    /**
+     * Helper macro to prevent code repetition; not visible outside of the header.
+     */
     #define ARB_BUILDER_SUBCLASS ArbData
     #include "arb_builder.hpp"
 
@@ -827,12 +1134,39 @@ namespace wrap {
 
   /**
    * Class wrapper for `ArbCmd` handles.
+   *
+   * `ArbCmd`s, like `ArbData`s, represent user-defined information that can be
+   * transferred between plugins. However, where `ArbData` represents only
+   * data, `ArbCmd`s represent intent. Usually, where `ArbCmd`s come into play,
+   * DQCsim will accept a queue of them rather than just one (`ArbCmdQueue`),
+   * where each command represents some custom action to be taken in some
+   * context. For instance, when allocating qubits, you can specify one or more
+   * `ArbCmd`s to modify the behavior of the qubits, such as requesting that a
+   * certain error model be used, if available.
+   *
+   * `ArbCmd`s are essentially just `ArbData` objects with two required
+   * identifier strings attached to them in addition: the *interface* and
+   * *operation* identifiers. Their significance is as follows:
+   *
+   *  - When a plugin receives a command with unknown interface identifier, the
+   *    command can be ignored.
+   *  - When a plugin receives a command with a known interface identifier but
+   *    unknown operation identifier, it must reject the command with an error
+   *    of some kind.
+   *  - When both identifiers are known, the plugin should take the respective
+   *    action.
+   *
+   * The identifiers must be matched case-sensitively.
+   *
+   * The identifiers are specified when constructing an `ArbCmd` and are then
+   * immutable. The attached `ArbData` can be constructed, manipulated, and
+   * queried in the same way as `ArbData` objects.
    */
   class ArbCmd : public Cmd {
   public:
 
     /**
-     * Wrap the given `ArbCmd` handle.
+     * Wraps the given `ArbCmd` handle.
      */
     ArbCmd(HandleIndex handle) : Cmd(handle) {
     }
@@ -888,23 +1222,29 @@ namespace wrap {
     ArbCmd &operator=(ArbCmd&&) = default;
 
     // Include builder pattern functions.
+    /**
+     * Helper macro to prevent code repetition; not visible outside of the header.
+     */
     #define ARB_BUILDER_SUBCLASS ArbCmd
     #include "arb_builder.hpp"
 
   };
 
   /**
-   * Class wrapper for `ArbCmd` queue handles.
+   * Class wrapper for queues (lists) of `ArbCmd`s.
    *
    * To construct an `ArbCmd` queue iteratively, create a new queue using the
-   * default constructor and push `ArbCmd`s into it using `push()`. Note that
-   * there is an rvalue reference `push()` operation that entirely avoids
-   * copying the `ArbCmd`. You can also construct the queue from an iterable of
-   * `ArbCmd`s directly; again, including a zero-copy function using an rvalue
-   * reference.
+   * default constructor and push `ArbCmd`s into it using `push()`. For
+   * instance:
+   *
+   * \code
+   * ArbCmdQueue()
+   *   .push(ArbCmd("dummy", "foo").with_arg_string("bar"))
+   *   .push(ArbCmd("dummy", "baz").with_arg<int>(42));
+   * \endcode
    *
    * To iterate over an existing `ArbCmd` queue (destructively!) in the most
-   * efficient way, use the following code:
+   * efficient way, you can use the following code:
    *
    * ```
    * for (; queue.size() > 0; queue.next()) {
@@ -912,8 +1252,9 @@ namespace wrap {
    * }
    * ```
    *
-   * You can also drain it into a `std::vector` of `ArbCmd`s, or (if you must)
-   * copy it into one.
+   * You can also drain it into a `std::vector` of `ArbCmd`s
+   * (`drain_into_vector`), or, if you must, copy it into one
+   * (`copy_into_vector`).
    */
   class ArbCmdQueue : public Cmd {
   public:
@@ -1018,7 +1359,7 @@ namespace wrap {
      * than iterating over the queue manually or using `drain_into_vector()`,
      * because it requires (additional) copies.
      *
-     * NOTE: this function is not `const`, because exceptions during the copy
+     * \note This function is not `const`, because exceptions during the copy
      * operation can change its value, and the underlying handle is changed.
      * However, under normal conditions, the contents appear to be unchanged.
      */
@@ -1061,8 +1402,20 @@ namespace wrap {
   };
 
   /**
-   * Wrapper around the qubit reference typedef in the raw C bindings. This
-   * prevents mutation and mathematical operations that don't make sense.
+   * Represents a qubit.
+   *
+   * This is a wrapper around the `QubitIndex` type, which prevents mutation
+   * and mathematical operations that don't make sense.
+   *
+   * DQCsim's C++ API expects and gives out qubit references in this form. You
+   * can convert between it and `QubitIndex`es using the constructor and the
+   * `get_index` function as you please. Note that there is no performance
+   * difference between one or the other as they both represent a 64-bit
+   * integer in memory; this class purely adds some type-safety.
+   *
+   * If you have the `dqcsim::wrap` namespace in scope, a custom literal is
+   * available for qubit references: instead of `QubitRef(33)` you can type
+   * `33_q` as well.
    */
   class QubitRef {
   private:
@@ -1142,7 +1495,20 @@ namespace wrap {
   }
 
   /**
-   * Wrapper around qubit set handles.
+   * Represents an ordered set of qubit references.
+   *
+   * DQCsim's API primarily uses these objects to represent the gate operand
+   * lists for multi-qubit gates. They can also be used to represent
+   * multi-qubit registers, but typically a `std::vector<QubitRef>` will be
+   * more suitable for that, as it supports fast and convenient indexation.
+   * You can convert between a `QubitSet` and a vector easily using
+   * `from_iter`, `drain_into_vector`, and `copy_into_vector`.
+   *
+   * You can use the builder pattern to construct qubit sets in a single line:
+   *
+   * \code
+   * QubitSet().with(1_q).with(2_q).with(3_q);
+   * \endcode
    */
   class QubitSet : public Handle {
   public:
@@ -1415,7 +1781,47 @@ namespace wrap {
   };
 
   /**
-   * Class wrapper for `Gate` handles.
+   * Represents any kind of gate with qubits bound to it.
+   *
+   * DQCsim currently knows three kinds of gates: %unitary gates, Z-axis
+   * %measurement gates, and %custom gates. These are constructed with the
+   * `unitary`, `measurement`, and `custom` constructors respectively.
+   * Briefly put:
+   *
+   *  - %unitary gates represent any kind of pure-quantum gate, represented
+   *    using a unitary matrix operating on one or more qubits, and zero or
+   *    more condition qubits that are implicitly added to the gate matrix by
+   *    the backend.
+   *
+   *  - %measurement gates simply measure one or more qubits along the Z axis.
+   *    Measurements along different axes can be emulated using a sequence of
+   *    gates or (if needed) through a %custom gate.
+   *
+   *  - %custom gates allow any of the above and anything in addition. They
+   *    are case-sensitively identified by their name. Use them sparingly;
+   *    limiting your plugin to using regular %unitary and %measurement gates
+   *    greatly increases the chance of it playing together nicely with other
+   *    plugins out of the box.
+   *
+   * Refer to the constructor overloads for more information.
+   *
+   * Gates may have arbitrary data attached to them. This is particularly
+   * useful for %custom gates, but non-%custom gates can also have such data to
+   * augment their behavior. The difference in that case is that %custom gates
+   * must be rejected by downstream plugins that don't support them, while the
+   * arbitrary dats for augmented %unitary and %measurement gates may be
+   * ignored. To construct a gate with arbitrary data, use one of the
+   * constructor overloads followed by the `ArbData` builder pattern functions,
+   * for instance:
+   *
+   * \code
+   * Gate::custom(
+   *   "foobar", // name
+   *   QubitSet().with(1_q) // target
+   * ).with_json_string("{\"hello\": \"world\"}")
+   *  .with_arg<int>(33)
+   *  .with_arg_string("I'm a string!");
+   * \endcode
    */
   class Gate : public Arb {
   private:
@@ -1465,7 +1871,10 @@ namespace wrap {
     Gate &operator=(Gate&&) = default;
 
     /**
-     * Constructs a new unitary gate with no control qubits.
+     * Constructs a new unitary gate.
+     *
+     * The matrix must be appropriately sized for the number of qubits in the
+     * `targets` qubit set (2^n by 2^n).
      */
     static Gate unitary(QubitSet &&targets, const Matrix &matrix) {
       return Gate(check(raw::dqcs_gate_new_unitary(
@@ -1477,7 +1886,10 @@ namespace wrap {
     }
 
     /**
-     * Constructs a new unitary gate with no control qubits.
+     * Constructs a new unitary gate.
+     *
+     * The matrix must be appropriately sized for the number of qubits in the
+     * `targets` qubit set (2^n by 2^n).
      */
     static Gate unitary(const QubitSet &targets, const Matrix &matrix) {
       return unitary(std::move(QubitSet(targets)), matrix);
@@ -1485,6 +1897,11 @@ namespace wrap {
 
     /**
      * Constructs a new unitary gate with control qubits.
+     *
+     * The matrix must be appropriately sized for the number of qubits in the
+     * `targets` qubit set (2^n by 2^n). The control qubits do not count toward
+     * n; the backend will supplement the gate matrix as needed. The `targets`
+     * and `controls` qubit sets must be disjoint.
      */
     static Gate unitary(QubitSet &&targets, QubitSet &&controls, const Matrix &matrix) {
       return Gate(check(raw::dqcs_gate_new_unitary(
@@ -1497,6 +1914,11 @@ namespace wrap {
 
     /**
      * Constructs a new unitary gate with control qubits.
+     *
+     * The matrix must be appropriately sized for the number of qubits in the
+     * `targets` qubit set (2^n by 2^n). The control qubits do not count toward
+     * n; the backend will supplement the gate matrix as needed. The `targets`
+     * and `controls` qubit sets must be disjoint.
      */
     static Gate unitary(const QubitSet &targets, const QubitSet &controls, const Matrix &matrix) {
       return unitary(std::move(QubitSet(targets)), std::move(QubitSet(controls)), matrix);
@@ -1504,6 +1926,10 @@ namespace wrap {
 
     /**
      * Constructs a new Z-axis measurement gate.
+     *
+     * Exactly those qubits in the `measures` set must be measured. The results
+     * can be queried from `PluginState` after the gate is executed. Any
+     * previous measurement results for those qubits will be overridden.
      */
     static Gate measure(QubitSet &&measures) {
       return Gate(check(raw::dqcs_gate_new_measurement(measures.get_handle())));
@@ -1511,13 +1937,28 @@ namespace wrap {
 
     /**
      * Constructs a new Z-axis measurement gate.
+     *
+     * Exactly those qubits in the `measures` set must be measured. The results
+     * can be queried from `PluginState` after the gate is executed. Any
+     * previous measurement results for those qubits will be overridden.
      */
     static Gate measure(const QubitSet &measures) {
       return measure(std::move(QubitSet(measures)));
     }
 
     /**
-     * Constructs a new custom gate with a matrix.
+     * Constructs a new custom gate with target qubits, control qubits,
+     * measured qubits, and a matrix.
+     *
+     * The `targets` and `controls` qubit sets must be disjoint.
+     *
+     * Exactly those qubits in the `measures` set must be measured. The results
+     * can be queried from `PluginState` after the gate is executed. Any
+     * previous measurement results for those qubits will be overridden.
+     *
+     * The matrix must be appropriately sized for the number of qubits in the
+     * `targets` qubit set (2^n by 2^n). The control qubits do not count toward
+     * n.
      */
     static Gate custom(
       const std::string &name,
@@ -1537,7 +1978,18 @@ namespace wrap {
     }
 
     /**
-     * Constructs a new custom gate with a matrix.
+     * Constructs a new custom gate with target qubits, control qubits,
+     * measured qubits, and a matrix.
+     *
+     * The `targets` and `controls` qubit sets must be disjoint.
+     *
+     * Exactly those qubits in the `measures` set must be measured. The results
+     * can be queried from `PluginState` after the gate is executed. Any
+     * previous measurement results for those qubits will be overridden.
+     *
+     * The matrix must be appropriately sized for the number of qubits in the
+     * `targets` qubit set (2^n by 2^n). The control qubits do not count toward
+     * n.
      */
     static Gate custom(
       const std::string &name,
@@ -1556,7 +2008,14 @@ namespace wrap {
     }
 
     /**
-     * Constructs a new custom gate without a matrix.
+     * Constructs a new custom gate with target qubits, control qubits, and
+     * measured qubits.
+     *
+     * The `targets` and `controls` qubit sets must be disjoint.
+     *
+     * Exactly those qubits in the `measures` set must be measured. The results
+     * can be queried from `PluginState` after the gate is executed. Any
+     * previous measurement results for those qubits will be overridden.
      */
     static Gate custom(
       const std::string &name,
@@ -1575,7 +2034,14 @@ namespace wrap {
     }
 
     /**
-     * Constructs a new custom gate without a matrix.
+     * Constructs a new custom gate with target qubits, control qubits, and
+     * measured qubits.
+     *
+     * The `targets` and `controls` qubit sets must be disjoint.
+     *
+     * Exactly those qubits in the `measures` set must be measured. The results
+     * can be queried from `PluginState` after the gate is executed. Any
+     * previous measurement results for those qubits will be overridden.
      */
     static Gate custom(
       const std::string &name,
@@ -1594,6 +2060,12 @@ namespace wrap {
     /**
      * Constructs a new custom gate with target qubits, control qubits,
      * and a matrix.
+     *
+     * The `targets` and `controls` qubit sets must be disjoint.
+     *
+     * The matrix must be appropriately sized for the number of qubits in the
+     * `targets` qubit set (2^n by 2^n). The control qubits do not count toward
+     * n.
      */
     static Gate custom(
       const std::string &name,
@@ -1614,6 +2086,12 @@ namespace wrap {
     /**
      * Constructs a new custom gate with target qubits, control qubits,
      * and a matrix.
+     *
+     * The `targets` and `controls` qubit sets must be disjoint.
+     *
+     * The matrix must be appropriately sized for the number of qubits in the
+     * `targets` qubit set (2^n by 2^n). The control qubits do not count toward
+     * n.
      */
     static Gate custom(
       const std::string &name,
@@ -1631,6 +2109,8 @@ namespace wrap {
 
     /**
      * Constructs a new custom gate with target qubits and control qubits.
+     *
+     * The `targets` and `controls` qubit sets must be disjoint.
      */
     static Gate custom(
       const std::string &name,
@@ -1649,6 +2129,8 @@ namespace wrap {
 
     /**
      * Constructs a new custom gate with target qubits and control qubits.
+     *
+     * The `targets` and `controls` qubit sets must be disjoint.
      */
     static Gate custom(
       const std::string &name,
@@ -1664,6 +2146,9 @@ namespace wrap {
 
     /**
      * Constructs a new custom gate with target qubits and a matrix.
+     *
+     * The matrix must be appropriately sized for the number of qubits in the
+     * `targets` qubit set (2^n by 2^n).
      */
     static Gate custom(
       const std::string &name,
@@ -1682,6 +2167,9 @@ namespace wrap {
 
     /**
      * Constructs a new custom gate with target qubits and a matrix.
+     *
+     * The matrix must be appropriately sized for the number of qubits in the
+     * `targets` qubit set (2^n by 2^n).
      */
     static Gate custom(
       const std::string &name,
@@ -1723,6 +2211,22 @@ namespace wrap {
         name,
         std::move(QubitSet(targets))
       );
+    }
+
+    /**
+     * Constructs a new custom gate without qubit operands.
+     */
+    static Gate custom(
+      const std::string &name
+    ) {
+      return Gate(check(raw::dqcs_gate_new_custom(
+        name.c_str(),
+        0,
+        0,
+        0,
+        nullptr,
+        0
+      )));
     }
 
     /**
@@ -1803,13 +2307,32 @@ namespace wrap {
     }
 
     // Include `ArbData` builder pattern functions.
+    /**
+     * Helper macro to prevent code repetition; not visible outside of the header.
+     */
     #define ARB_BUILDER_SUBCLASS Gate
     #include "arb_builder.hpp"
 
   };
 
   /**
-   * Class wrapper for measurement handles.
+   * Class representation of the measurement result for a single qubit.
+   *
+   * Measurement objects carry the following information:
+   *
+   *  - which qubit was measured;
+   *  - what the measured state was (zero, one, or undefined);
+   *  - optional arbitrary data.
+   *
+   * You can construct the arbitrary data part of a measurement object with the
+   * builder pattern, for instance:
+   *
+   * \code
+   * Measurement(1_q, MeasurementValue::One)
+   *    .with_json_string("{\"hello\": \"world\"}")
+   *    .with_arg<int>(33)
+   *    .with_arg_string("I'm a string!");
+   * \endcode
    */
   class Measurement : public Arb {
   public:
@@ -1885,13 +2408,18 @@ namespace wrap {
     }
 
     // Include `ArbData` builder pattern functions.
+    /**
+     * Helper macro to prevent code repetition; not visible outside of the header.
+     */
     #define ARB_BUILDER_SUBCLASS Measurement
     #include "arb_builder.hpp"
 
   };
 
   /**
-   * Wrapper around measurement set handles.
+   * Represents a set of measurements.
+   *
+   * Measurement sets contain `Measurement` data for zero or more qubits.
    */
   class MeasurementSet : public Handle {
   public:
@@ -2064,6 +2592,9 @@ namespace wrap {
  */
 namespace callback {
 
+  /**
+   * Helper macro to prevent code repetition; not visible outside of the header.
+   */
   #define DQCSIM_CALLBACK_FRIENDS                             \
     friend raw::dqcs_return_t cb_entry_initialize(            \
       void *user_data,                                        \
@@ -2117,10 +2648,13 @@ namespace callback {
     );
 
   /**
-   * Wrapper for the `dqcs_plugin_state_t` type for upstream-synchronous
-   * callbacks. Cannot be moved or copied, as it must stay in scope of the
-   * plugin callbacks. Can also not be constructed except for by the callback
-   * wrapper classes.
+   * Wrapper for DQCsim's internal plugin state within the context of
+   * upstream-synchronous plugin callbacks (that is, the `modify_measurement`
+   * callback).
+   *
+   * Cannot be moved or copied, as it must stay in scope of the plugin
+   * callbacks. Can also not be constructed except for by the callback wrapper
+   * classes.
    */
   class UpstreamPluginState {
   protected:
@@ -2182,10 +2716,12 @@ namespace callback {
   };
 
   /**
-   * Wrapper for the `dqcs_plugin_state_t` type for downstream-synchronous
-   * callbacks. Cannot be moved or copied, as it must stay in scope of the
-   * plugin callbacks. Can also not be constructed except for by the callback
-   * wrapper classes.
+   * Wrapper for DQCsim's internal plugin state within the context of
+   * downstream-synchronous plugin callbacks.
+   *
+   * Cannot be moved or copied, as it must stay in scope of the plugin
+   * callbacks. Can also not be constructed except for by the callback wrapper
+   * classes.
    */
   class PluginState : public UpstreamPluginState {
   protected:
@@ -2314,10 +2850,12 @@ namespace callback {
   };
 
   /**
-   * Wrapper for the `dqcs_plugin_state_t` type for downstream-synchronous
-   * callbacks. Cannot be moved or copied, as it must stay in scope of the
-   * plugin callbacks. Can also not be constructed except for by the callback
-   * wrapper classes.
+   * Wrapper for DQCsim's internal plugin state within the context of the `run`
+   * callback in a frontend.
+   *
+   * Cannot be moved or copied, as it must stay in scope of the plugin
+   * callbacks. Can also not be constructed except for by the callback wrapper
+   * classes.
    */
   class RunningPluginState : public PluginState {
   protected:
@@ -2423,7 +2961,7 @@ namespace callback {
   }
 
   /**
-   * Wrapper for the initialization callback.
+   * Class template shared between all callback functions.
    */
   template <class R, class... Args>
   class Callback {
@@ -2807,6 +3345,11 @@ namespace wrap {
 
   /**
    * Class wrapper for plugin join handles.
+   *
+   * Join handles are used only by the `Plugin::start` function, which starts
+   * the plugin process in a different, DQCsim-controlled thread. You can then
+   * use this object to wait for the thread to terminate, or let the
+   * destructor handle it if you want, RAII-style.
    */
   class PluginJoinHandle : public Handle {
   public:
@@ -2844,7 +3387,223 @@ namespace wrap {
   };
 
   /**
-   * Class wrapper for plugin definition handles.
+   * Plugin definition class.
+   *
+   * To make a DQCsim plugin in C++, you must construct one of these objects,
+   * assign callback functions that define your plugin's functionality, and
+   * then call `run` or `start`. Having done so, you can point the `dqcsim`
+   * command line or a host program to your plugin's executable.
+   *
+   * DQCsim supports three kinds of plugins: frontends, operators, and
+   * backends:
+   *
+   *  - Frontends deal with the microarchitecture-specific classical part of
+   *    the simulation. They usually ingest an algorithm described in some other
+   *    language (cQASM, OpenQASM, etc.), but the frontend can also be the
+   *    algorithm itself. Ultimately, frontends produce a stream of
+   *    quantum-only gates.
+   *
+   *  - Operators can modify the gatestream produced by the frontend or an
+   *    earlier operator, before it is passed on to the backend or the next
+   *    operator. This is useful for all kinds of things; monitoring for
+   *    statistics, error injection, runtime map and route algorithms, and so
+   *    on.
+   *
+   *  - Backends handle the mathematics of the quantum simulation itself,
+   *    usually in a microarchitecture-agnostic way.
+   *
+   * Each plugin type supports a different set of callback functions to define
+   * the plugin's functionality, but many of the callback functions are shared.
+   * The following matrix shows which functions are required (x), optional (o),
+   * and not applicable (-):
+   * 
+   * | Callback             | Frontend  | Operator  |  Backend  |
+   * |----------------------|:---------:|:---------:|:---------:|
+   * | `initialize`         |     o     |     o     |     o     |
+   * | `drop`               |     o     |     o     |     o     |
+   * | `run`                |     x     |     -     |     -     |
+   * | `allocate`           |     -     |     o     |     o     |
+   * | `free`               |     -     |     o     |     o     |
+   * | `gate`               |     -     |     o     |     x     |
+   * | `modify_measurement` |     -     |     o     |     -     |
+   * | `advance`            |     -     |     o     |     o     |
+   * | `upstream_arb`       |     -     |     o     |     o     |
+   * | `host_arb`           |     o     |     o     |     o     |
+   *
+   * These callbacks perform the following functions.
+   *
+   * # Initialize
+   *
+   * The initialize callback is to be used by plugins to initialize their
+   * internal state, if any. All plugin types support it. It is always called
+   * before any of the other callbacks are run, but after the downstream
+   * plugins have been initialized. That means it's legal to execute downstream
+   * commands here already, such as pre-allocating a number of qubits,
+   * preparing their state, querying the capabilities of downstream plugins
+   * through `ArbCmd`s, etc.
+   *
+   * Besides the common arguments, the callback receives a queue of `ArbCmd`s
+   * containing user-defined initialization commands. These can be thought of
+   * as parameters or command-line arguments affecting the behavior of the
+   * plugin. Note that plugins should not use the actual command line arguments
+   * for their own purposes, as they cannot be set with DQCsim. Rather, the
+   * command-line arguments of the plugin are used by DQCsim to pass a
+   * connection endpoint string used to let the plugin connect to DQCsim's
+   * main process. There is one exception to this baked into DQCsim intended
+   * to make running quantum algorithm files more intuitive: if such a script
+   * is passed to DQCsim, DQCsim will search for a plugin based on the file
+   * extension of the script, and pass the filename of the script to the plugin
+   * using the second command-line argument. The search algorithm is described
+   * in DQCsim's command-line help, among other places.
+   *
+   * If this callback is not supplied, the default behavior is no-op.
+   *
+   * # Drop
+   *
+   * The drop callback can be used to do the inverse operation of the
+   * initialize callback. It is called when a plugin is gracefully terminated,
+   * and is supported by all plugin types. Note that graceful termination does
+   * not mean there was no error; it just means that things didn't crash hard
+   * enough for DQCsim to lose the ability to send the drop command.
+   *
+   * It is not recommended to execute any downstream instructions at this time,
+   * as any errors caused at this time will crash DQCsim. However, it will work
+   * in case this is really necessary.
+   *
+   * If this callback is not supplied, the default behavior is no-op.
+   *
+   * # Run
+   *
+   * This is the primary callback for frontend plugins, in which all the magic
+   * should happen. It must therefore be defined. The other plugin types don't
+   * support it.
+   *
+   * It is called in response to a `start()` host API call. It can therefore be
+   * called multiple times, though for most simulations it's only called once.
+   * The `start()` function takes an `ArbData` object, which is passed to the
+   * callback as an argument. The return value is also an `ArbData`, which is
+   * returned to the host through its `wait()` API call.
+   *
+   * # Allocate
+   *
+   * The allocate callback is called when the upstream plugin requests that a
+   * number of qubits be allocated. DQCsim will allocate the qubit indices
+   * automatically, which are passed to the function in the form of a
+   * `QubitSet`, but of course it is up to the plugin to allocate its own data
+   * structures to track the state of the qubits.
+   *
+   * The upstream plugin can also specify an `ArbCmdQueue` to supply additional
+   * information for the qubit, for instance to request that a specific error
+   * model be used. Plugins are free to ignore this, as per the semantics of
+   * the `ArbCmd` interface and operation identifiers.
+   *
+   * The default behavior for operator plugins is to pass the allocation
+   * command on to the backend without modification. For backends it is no-op.
+   * Frontends do not support this callback.
+   *
+   * \note If an operator changes the allocation scheme, for instance to
+   * allocate 9 downstream qubits for each upstream qubit with the intent of
+   * applying surface-9 error correction, the upstream and downstream qubit
+   * indices will diverge. It is up to the operator to track the mapping
+   * between these qubits, and override the free, gate, and modify-measurement
+   * callbacks accordingly to translate between them.
+   *
+   * # Free
+   *
+   * The free callback is called when the upstream plugin requests that a
+   * number of qubits be freed. After this call, DQCsim will ensure that the
+   * qubit indices are never used again. Plugins may use this to collapse any
+   * remaining superposition state in a random way, free up memory, or reuse
+   * the memory already allocated for these qubits for new qubits allocated
+   * later.
+   *
+   * The default behavior for operator plugins is to pass the command on to
+   * the backend without modification. For backends it is no-op. Frontends do
+   * not support this callback.
+   *
+   * # Gate
+   *
+   * The gate callback is called when the upstream plugin requests that a gate
+   * be executed. The semantics of this are documented in in the `Gate` class.
+   *
+   * Backend plugins must return a measurement result set containing exactly
+   * those qubits specified in the measurement set. For operators, however, the
+   * story is more complicated. Let's say we want to make a silly operator that
+   * inverts all measurements. The trivial way to do this would be to forward
+   * the gate, query all the measurement results using
+   * `PluginState::get_measurement()`, invert them, stick them in a measurement
+   * result set, and return that result set. However, this approach would not
+   * be very efficient, because `PluginState::get_measurement()` has to wait
+   * for all downstream plugins to finish executing the gate, forcing the OS
+   * to switch threads, etc. Instead, operators are allowed to return only a
+   * subset (or none) of the measured qubits, as long as they return exactly
+   * the remaining measurements as they arrive through the modify-measurement
+   * callback.
+   *
+   * The default implementation for this callback for operators is to pass the
+   * gate through to the downstream plugin and return an empty set of
+   * measurements. Combined with the default implementation of
+   * modify-measurement, this behavior is correct. Backends must override this
+   * callback, and frontends do not support it.
+   *
+   * Note that for our silly example operator, the default behavior for this
+   * function is actually sufficient; you'd only have to override the
+   * modify-measurement callback in that case.
+   *
+   * # Modify-measurement
+   *
+   * This callback is called for every measurement result received from the
+   * downstream plugin, and returns the measurements that should be reported to
+   * the upstream plugin.
+   *
+   * Note that while this function is called for only a single measurement at a
+   * time, it is allowed to produce a set of measurements. This allows you to
+   * cancel propagation of the measurement by returning an empty vector, to
+   * just modify the measurement data itself, or to generate additional
+   * measurements from a single measurement. However, if you need to modify the
+   * qubit references for operators that remap qubits, take care to only send
+   * measurement data upstream when these were explicitly requested through the
+   * associated upstream gate function's measured list. It is up to you to keep
+   * the stream of measurements returned upstream consistent with the gates it
+   * sent to your plugin.
+   *
+   * \note The results from our plugin's `PluginState::get_measurement()` and
+   * friends are consistent with the results received from downstream. That is,
+   * they are not affected by this function. Only the measurement retrieval
+   * functions in the upstream plugin are.
+   *
+   * \note This callback is somewhat special in that it is not allowed to call
+   * any plugin command other than logging and the pseudorandom number
+   * generator functions. This is because this function is called
+   * asynchronously with respect to the downstream functions, making the timing
+   * of these calls non-deterministic based on operating system scheduling.
+   *
+   * # Advance
+   *
+   * This callback is called when the upstream plugin calls `advance` to
+   * advance the simulation time by a number of cycles. Operators and backends
+   * can use this to update their error models. The default behavior for an
+   * operator is to pass the request on to the downstream plugin, while the
+   * default for backends is to ignore it. Frontends don't support it.
+   *
+   * # Upstream-arb
+   *
+   * This callback is called when the upstream plugin calls `arb`. It receives
+   * the `ArbCmd` as an argument, and must return an `ArbData`, which is in
+   * turn returned through the upstream plugin's `arb` function.
+   *
+   * The default behavior for operators is to forward the command to the
+   * downstream plugin. Even if you override this callback, you should maintain
+   * this behavior for any interface identifiers unknown to you. The default
+   * for backends is to ignore it. Frontends don't support it.
+   *
+   * # Host-arb
+   *
+   * This callback is called when the host sends an `ArbCmd` to the plugin. It
+   * receives the `ArbCmd` as an argument, and must return an `ArbData`, which
+   * is in turn returned to the host.
+   *
+   * All plugins support this callback. The default behavior is no-op.
    */
   class Plugin : public Handle {
   public:
