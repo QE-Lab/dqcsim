@@ -11,6 +11,9 @@
 #include <memory>
 #include <cdqcsim>
 
+/**
+ * Main DQCsim namespace.
+ */
 namespace dqcsim {
 
 /**
@@ -758,8 +761,14 @@ namespace wrap {
       set_arb(src);
     }
 
-    // Default move construct/assign.
+    /**
+     * Default move constructor.
+     */
     ArbData(ArbData&&) = default;
+
+    /**
+     * Default move assignment.
+     */
     ArbData &operator=(ArbData&&) = default;
 
     // Include builder pattern functions.
@@ -868,8 +877,14 @@ namespace wrap {
       handle = copy.take_handle();
     }
 
-    // Default move construct/assign.
+    /**
+     * Default move constructor.
+     */
     ArbCmd(ArbCmd&&) = default;
+
+    /**
+     * Default move assignment.
+     */
     ArbCmd &operator=(ArbCmd&&) = default;
 
     // Include builder pattern functions.
@@ -1033,8 +1048,14 @@ namespace wrap {
       handle = ArbCmdQueue::from_iter(src.copy_into_vector()).take_handle();
     }
 
-    // Default move construct/assign.
+    /**
+     * Default move constructor.
+     */
     ArbCmdQueue(ArbCmdQueue&&) = default;
+
+    /**
+     * Default move assignment.
+     */
     ArbCmdQueue &operator=(ArbCmdQueue&&) = default;
 
   };
@@ -1062,11 +1083,24 @@ namespace wrap {
       }
     }
 
-    // The default assignment, copy, and move operators are fine and need not
-    // be restricted.
+    /**
+     * Default copy constructor.
+     */
     QubitRef(const QubitRef&) = default;
+
+    /**
+     * Default copy assignment.
+     */
     QubitRef &operator=(const QubitRef&) = default;
+
+    /**
+     * Default move constructor.
+     */
     QubitRef(QubitRef &&handle) = default;
+
+    /**
+     * Default move assignment.
+     */
     QubitRef &operator=(QubitRef&&) = default;
 
     /**
@@ -1152,8 +1186,14 @@ namespace wrap {
       handle = copy.take_handle();
     }
 
-    // Default move construct/assign.
+    /**
+     * Default move constructor.
+     */
     QubitSet(QubitSet&&) = default;
+
+    /**
+     * Default move assignment.
+     */
     QubitSet &operator=(QubitSet&&) = default;
 
     /**
@@ -1267,10 +1307,24 @@ namespace wrap {
       std::memcpy(d.data(), data, d.size() * sizeof(std::complex<double>));
     }
 
-    // Default copy/move construct/assign.
+    /**
+     * Default copy constructor.
+     */
     Matrix(const Matrix&) = default;
+
+    /**
+     * Default copy assignment.
+     */
     Matrix &operator=(const Matrix&) = default;
+
+    /**
+     * Default move constructor.
+     */
     Matrix(Matrix&&) = default;
+
+    /**
+     * Default move assignment.
+     */
     Matrix &operator=(Matrix&&) = default;
 
     /**
@@ -1400,8 +1454,14 @@ namespace wrap {
     Gate(const Gate&) = delete;
     void operator=(const Gate&) = delete;
 
-    // Default move construct/assign.
+    /**
+     * Default move constructor.
+     */
     Gate(Gate&&) = default;
+
+    /**
+     * Default move assignment.
+     */
     Gate &operator=(Gate&&) = default;
 
     /**
@@ -1786,8 +1846,14 @@ namespace wrap {
       set_arb(src);
     }
 
-    // Defaults for move construct/assign.
+    /**
+     * Default move constructor.
+     */
     Measurement(Measurement &&handle) = default;
+
+    /**
+     * Default move assignment.
+     */
     Measurement &operator=(Measurement&&) = default;
 
     /**
@@ -1979,8 +2045,14 @@ namespace wrap {
       handle = MeasurementSet::from_iter(src.copy_into_vector()).take_handle();
     }
 
-    // Defaults for move construct/assign.
+    /**
+     * Default move constructor.
+     */
     MeasurementSet(MeasurementSet &&handle) = default;
+
+    /**
+     * Default move assignment.
+     */
     MeasurementSet &operator=(MeasurementSet&&) = default;
 
   };
@@ -2749,8 +2821,14 @@ namespace wrap {
     PluginJoinHandle(const PluginJoinHandle&) = delete;
     void operator=(const PluginJoinHandle&) = delete;
 
-    // Default move construct/assign.
+    /**
+     * Default move constructor.
+     */
     PluginJoinHandle(PluginJoinHandle&&) = default;
+
+    /**
+     * Default move assignment.
+     */
     PluginJoinHandle &operator=(PluginJoinHandle&&) = default;
 
     /**
@@ -2794,8 +2872,14 @@ namespace wrap {
     Plugin(const Plugin&) = delete;
     void operator=(const Plugin&) = delete;
 
-    // Default move construct/assign.
+    /**
+     * Default move constructor.
+     */
     Plugin(Plugin&&) = default;
+
+    /**
+     * Default move assignment.
+     */
     Plugin &operator=(Plugin&&) = default;
 
     /**

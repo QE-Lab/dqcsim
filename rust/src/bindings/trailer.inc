@@ -5,6 +5,10 @@
 // Place log function in namespace if this is the C++ header.
 #ifdef _DQCSIM_HDR_CPP_
 namespace dqcsim {
+
+/**
+ * Namespace containing all the symbols defined by the C API.
+ */
 namespace raw {
 #endif
 

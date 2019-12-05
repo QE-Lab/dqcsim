@@ -145,6 +145,9 @@ def parse_header_file(fname):
             else:
                 entities.append(('typedef', name, block, doc))
 
+        elif block.startswith('namespace'):
+            pass
+
         else:
             level = 0
             enumerator = enumerate(block)
