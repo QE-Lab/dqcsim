@@ -18,6 +18,7 @@ TEST(handle, test) {
     EXPECT_ERROR(handle.type(), "Invalid argument: handle 33 is invalid");
     EXPECT_ERROR(handle.free(), "Invalid argument: handle 33 is invalid");
     EXPECT_ERROR(handle.dump(), "Invalid argument: handle 33 is invalid");
+    handle.take_handle();
 
     handle = wrap::Handle(0u);
     EXPECT_EQ(handle.is_valid(), false);
