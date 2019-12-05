@@ -698,7 +698,7 @@ namespace wrap {
      */
     Handle &operator=(Handle &&src) {
       if (handle) {
-        free(handle);
+        free();
       }
       handle = src.handle;
       src.handle = 0;
