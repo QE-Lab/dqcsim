@@ -12,7 +12,7 @@ TEST(gate, controlled) {
     control.push(wrap::QubitRef(1));
     wrap::QubitSet target;
     target.push(wrap::QubitRef(3));
-    wrap::Matrix matrix(2);
+    wrap::Matrix matrix = wrap::Matrix::identity(2);
     gate = std::make_shared<wrap::Gate>(wrap::Gate::unitary(target, control, matrix));
   }
   EXPECT_EQ(gate->get_targets().dump(), std::string("QubitReferenceSet(\n    [\n        QubitRef(\n            3,\n        ),\n    ],\n)"));
@@ -33,7 +33,7 @@ TEST(gate, unitary) {
     wrap::QubitSet target;
     target.push(wrap::QubitRef(2));
     target.push(wrap::QubitRef(3));
-    wrap::Matrix matrix(4);
+    wrap::Matrix matrix = wrap::Matrix::identity(4);
     gate = std::make_shared<wrap::Gate>(wrap::Gate::unitary(target, matrix));
   }
   EXPECT_EQ(gate->get_targets().dump(), std::string("QubitReferenceSet(\n    [\n        QubitRef(\n            2,\n        ),\n        QubitRef(\n            3,\n        ),\n    ],\n)"));
@@ -77,7 +77,7 @@ TEST(gate, custom_matrix) {
     target.push(wrap::QubitRef(3));
     wrap::QubitSet measures;
     measures.push(wrap::QubitRef(4));
-    wrap::Matrix matrix(4);
+    wrap::Matrix matrix = wrap::Matrix::identity(4);
     gate = std::make_shared<wrap::Gate>(wrap::Gate::custom("test", target, control, measures, matrix));
   }
   EXPECT_EQ(gate->get_targets().dump(), std::string("QubitReferenceSet(\n    [\n        QubitRef(\n            2,\n        ),\n        QubitRef(\n            3,\n        ),\n    ],\n)"));

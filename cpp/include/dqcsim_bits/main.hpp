@@ -1624,6 +1624,11 @@ namespace wrap {
   };
 
   /**
+   * Typedef for the complex numbers used within the gate matrices.
+   */
+  using complex = std::complex<double>;
+
+  /**
    * Convenience class for the square complex matrices used to express the
    * qubit gates.
    */
@@ -1633,7 +1638,7 @@ namespace wrap {
     /**
      * Row-major data storage.
      */
-    std::vector<std::complex<double>> d;
+    std::vector<complex> d;
 
     /**
      * Number of rows == number of columns. So we don't have to compute the
@@ -1650,20 +1655,28 @@ namespace wrap {
     Matrix() = delete;
 
     /**
-     * Constructs an identity matrix of the given size.
+     * Constructs a zero matrix of size `n` times `n`.
      */
-    Matrix(size_t size) : d(size * size, std::complex<double>(0.0, 0.0)), n(size) {
+    Matrix(size_t n) : d(n * n, complex(0.0, 0.0)), n(n) {
+    }
+
+    /**
+     * Constructs an identity matrix of size `n` times `n`.
+     */
+    static Matrix identity(size_t n) {
+      Matrix result(n);
       for (size_t i = 0; i < n; i++) {
-        (*this)(i, i) = std::complex<double>(1.0, 0.0);
+        result(i, i) = complex(1.0, 0.0);
       }
+      return result;
     }
 
     /**
      * Constructs a matrix from a row-major flattened array of `size` x `size`
-     * `std::complex<double>`s.
+     * `complex`s.
      */
-    Matrix(size_t size, const std::complex<double> *data) : d(size*size), n(size) {
-      std::memcpy(d.data(), data, d.size() * sizeof(std::complex<double>));
+    Matrix(size_t size, const complex *data) : d(size*size), n(size) {
+      std::memcpy(d.data(), data, d.size() * sizeof(complex));
     }
 
     /**
@@ -1671,7 +1684,7 @@ namespace wrap {
      * 2 x `size` x `size` `double`s.
      */
     Matrix(size_t size, const double *data) : d(size*size), n(size) {
-      std::memcpy(d.data(), data, d.size() * sizeof(std::complex<double>));
+      std::memcpy(d.data(), data, d.size() * sizeof(complex));
     }
 
     /**
@@ -1697,7 +1710,7 @@ namespace wrap {
     /**
      * Mutable matrix element accessor.
      */
-    std::complex<double>& operator()(size_t row, size_t column) {
+    complex& operator()(size_t row, size_t column) {
       if (row >= n || column >= n) {
         throw std::invalid_argument("matrix subscript out of bounds");
       }
@@ -1707,7 +1720,7 @@ namespace wrap {
     /**
      * Const matrix element accessor.
      */
-    const std::complex<double>& operator()(size_t row, size_t column) const {
+    const complex& operator()(size_t row, size_t column) const {
       if (row >= n || column >= n) {
         throw std::invalid_argument("matrix subscript out of bounds");
       }
@@ -1715,17 +1728,31 @@ namespace wrap {
     }
 
     /**
-     * Mutable matrix flattened data accessor.
+     * Mutable flattened data accessor.
      */
-    std::complex<double> *data() {
+    complex *data() {
       return d.data();
     }
 
     /**
-     * Const matrix flattened data accessor.
+     * Immutable flattened data accessor.
      */
-    const std::complex<double> *data() const {
+    const complex *data() const {
       return d.data();
+    }
+
+    /**
+     * Mutable flattened data accessor.
+     */
+    double *data_double() {
+      return reinterpret_cast<double*>(d.data());
+    }
+
+    /**
+     * Immutable flattened data accessor.
+     */
+    const double *data_double() const {
+      return reinterpret_cast<const double*>(d.data());
     }
 
     /**
@@ -1766,17 +1793,80 @@ namespace wrap {
     }
 
     /**
-     * Matrix equality operator.
+     * Matrix equality operator (exact).
      */
     bool operator==(const Matrix &other) const {
       return d == other.d;
     }
 
     /**
-     * Matrix inequality operator.
+     * Matrix inequality operator (exact).
      */
     bool operator!=(const Matrix &other) const {
       return d != other.d;
+    }
+
+    /**
+     * Matrix fuzzy equality operator.
+     *
+     * `epsilon` sets the maximum tolerated RMS variation of the elements.
+     */
+    bool fuzzy_equal(const Matrix &other, double epsilon = 0.000001) const {
+      if (n != other.n) {
+        return false;
+      }
+      double accum = 0;
+      const double *a = data_double();
+      const double *b = other.data_double();
+      for (size_t i = 0; i < n*n*2; i++) {
+        double delta = *a++ - *b++;
+        accum += delta * delta;
+      }
+      return accum <= (epsilon * epsilon);
+    }
+
+    /**
+     * Returns the determinant of the matrix.
+     */
+    complex determinant() const {
+      const Matrix &M = *this; // shorthand
+
+      // Handle trivial cases, starting with the most common one.
+      if (n == 2) {
+        return M(0, 0) * M(1, 1) - M(0, 1) * M(1, 0);
+      }
+      if (n == 1) {
+        return M(0, 0);
+      }
+      if (n == 0) {
+        return 0.0;
+      }
+
+      // Handle larger matrices.
+      complex accum;
+      Matrix S(n - 1);
+
+      for (size_t x = 0; x < n; x++) {
+        size_t subi = 0;
+        for (size_t i = 1; i < n; i++) {
+          size_t subj = 0;
+          for (size_t j = 0; j < n; j++) {
+            if (j == x) {
+              continue;
+            }
+            S(subi, subj) = M(i, j);
+            subj++;
+          }
+          subi++;
+        }
+        if (x & 1) {
+          accum -= M(0, x) * S.determinant();
+        } else {
+          accum += M(0, x) * S.determinant();
+        }
+      }
+
+      return accum;
     }
 
   };
@@ -1796,7 +1886,16 @@ namespace wrap {
   public:
 
     /**
-     * The matrix for a single-qubit identity gate.
+     * The Pauli I matrix.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * I = \sigma_0 = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & 1
+     * \end{bmatrix}
+     * \f]
      */
     const Matrix &I() {
       const double values[8] = {
@@ -1808,8 +1907,191 @@ namespace wrap {
     }
 
     /**
-     * Computes the matrix for an arbitrary X rotation. The angle is specified
-     * in radians.
+     * The Pauli X matrix.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * X = \sigma_1 = \begin{bmatrix}
+     * 0 & 1 \\
+     * 1 & 0
+     * \end{bmatrix}
+     * \f]
+     */
+    const Matrix &X() {
+      const double values[8] = {
+        0.0,  0.0,    1.0,  0.0,
+        1.0,  0.0,    0.0,  0.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * The Pauli Y matrix.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * Y = \sigma_2 = \begin{bmatrix}
+     * 0 & -i \\
+     * i & 0
+     * \end{bmatrix}
+     * \f]
+     */
+    const Matrix &Y() {
+      const double values[8] = {
+        0.0,  0.0,    0.0,  -1.0,
+        0.0,  1.0,    0.0,  0.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * The Pauli Z matrix.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * Z = \sigma_3 = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & -1
+     * \end{bmatrix}
+     * \f]
+     */
+    const Matrix &Z() {
+      const double values[8] = {
+        1.0,  0.0,    0.0,  0.0,
+        0.0,  0.0,    -1.0, 0.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * Hadamard gate.
+     *
+     * This represents a 180-degree Y rotation, followed by a 90-degree X
+     * rotation. The matrix is as follows:
+     *
+     * \f[
+     * H = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & 1 \\
+     * 1 & -1
+     * \end{bmatrix}
+     * \f]
+     */
+    const Matrix &H() {
+      const double IR2 = M_SQRT1_2;
+      const double values[8] = {
+        IR2,  0.0,    IR2,  0.0,
+        IR2,  0.0,    -IR2, 0.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * The S matrix.
+     *
+     * This represents a 90 degree Z rotation. The matrix is as follows:
+     *
+     * \f[
+     * S = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & i
+     * \end{bmatrix}
+     * \f]
+     */
+    const Matrix &S() {
+      const double values[8] = {
+        1.0,  0.0,    0.0,  0.0,
+        0.0,  0.0,    0.0,  1.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * The S-dagger matrix.
+     *
+     * This represents a negative 90 degree Z rotation. The matrix is as
+     * follows:
+     *
+     * \f[
+     * S^\dagger = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & -i
+     * \end{bmatrix}
+     * \f]
+     */
+    const Matrix &Sdag() {
+      const double values[8] = {
+        1.0,  0.0,    0.0,  0.0,
+        0.0,  0.0,    0.0,  -1.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * The T matrix.
+     *
+     * This represents a 45 degree Z rotation. The matrix is as follows:
+     *
+     * \f[
+     * T = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & e^{i\frac{\pi}{4}}
+     * \end{bmatrix}
+     * \f]
+     */
+    const Matrix &T() {
+      const double IR2 = M_SQRT1_2;
+      const double values[8] = {
+        1.0,  0.0,    0.0,  0.0,
+        0.0,  0.0,    IR2,  IR2,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * The T-dagger matrix.
+     *
+     * This represents a negative 45 degree Z rotation. The matrix is as follows:
+     *
+     * \f[
+     * T^\dagger = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & e^{-i\frac{\pi}{4}}
+     * \end{bmatrix}
+     * \f]
+     */
+    const Matrix &Tdag() {
+      const double IR2 = M_SQRT1_2;
+      const double values[8] = {
+        1.0,  0.0,    0.0,  0.0,
+        0.0,  0.0,    IR2,  -IR2,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * Computes the matrix for an arbitrary X rotation.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * R_x(\theta) = \begin{bmatrix}
+     * \cos{\frac{\theta}{2}} & -i\sin{\frac{\theta}{2}} \\
+     * -i\sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
+     * \end{bmatrix}
+     * \f]
+     *
+     * The rotation angle is specified in radians.
      */
     Matrix RX(double theta) {
       double co = std::cos(0.5 * theta);
@@ -1822,8 +2104,86 @@ namespace wrap {
     }
 
     /**
-     * Computes the matrix for an arbitrary Y rotation. The angle is specified
-     * in radians.
+     * Precomputed 90-degree X rotation gate.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * R_x\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & -i \\
+     * -i & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    const Matrix &X90() {
+      const double IR2 = M_SQRT1_2;
+      const double values[8] = {
+        IR2,  0.0,    0.0,  -IR2,
+        0.0,  -IR2,   IR2,  0.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * Precomputed negative 90-degree X rotation gate.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * R_x\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & i \\
+     * i & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    const Matrix &Xm90() {
+      const double IR2 = M_SQRT1_2;
+      const double values[8] = {
+        IR2,  0.0,    0.0,  IR2,
+        0.0,  IR2,    IR2,  0.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * Precomputed 180-degree RX gate.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * R_x(\pi) = \begin{bmatrix}
+     * 0 & -i \\
+     * -i & 0
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the Pauli X gate, but differs in global
+     * phase.
+     */
+    const Matrix &X180() {
+      const double values[8] = {
+        0.0,  0.0,    0.0,  -1.0,
+        0.0,  -1.0,   0.0,  0.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * Computes the matrix for an arbitrary Y rotation.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * R_y(\theta) = \begin{bmatrix}
+     * \cos{\frac{\theta}{2}} & -\sin{\frac{\theta}{2}} \\
+     * \sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
+     * \end{bmatrix}
+     * \f]
+     *
+     * The rotation angle is specified in radians.
      */
     Matrix RY(double theta) {
       double co = std::cos(0.5 * theta);
@@ -1836,8 +2196,86 @@ namespace wrap {
     }
 
     /**
-     * Computes the matrix for an arbitrary Z rotation. The angle is specified
-     * in radians.
+     * Precomputed 90-degree Y rotation gate.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & -1 \\
+     * 1 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    const Matrix &Y90() {
+      const double IR2 = M_SQRT1_2;
+      const double values[8] = {
+        IR2,  0.0,    -IR2, 0.0,
+        IR2,  0.0,    IR2,  0.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * Precomputed negative 90-degree RY gate.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & 1 \\
+     * -1 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    const Matrix &Ym90() {
+      const double IR2 = M_SQRT1_2;
+      const double values[8] = {
+        IR2,  0.0,    IR2,  0.0,
+        -IR2, 0.0,    IR2,  0.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * Precomputed 180-degree RY gate.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * R_y(\pi) = \begin{bmatrix}
+     * 0 & -1 \\
+     * 1 & 0
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the Pauli Y gate, but differs in global
+     * phase.
+     */
+    const Matrix &Y180() {
+      const double values[8] = {
+        0.0,  0.0,    -1.0, 0.0,
+        1.0,  0.0,    0.0,  0.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * Computes the matrix for an arbitrary Z rotation.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * R_z(\theta) = \begin{bmatrix}
+     * e^{-i\frac{\theta}{2}} & 0 \\
+     * 0 & e^{i\frac{\theta}{2}}
+     * \end{bmatrix}
+     * \f]
+     *
+     * The rotation angle is specified in radians.
      */
     Matrix RZ(double theta) {
       double co = std::cos(0.5 * theta);
@@ -1850,19 +2288,120 @@ namespace wrap {
     }
 
     /**
-     * Computes the matrix for an arbitrary rotation. The angles are specified
-     * in radians.
+     * Precomputed 90-degree RZ gate.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * R_z\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1-i & 0 \\
+     * 0 & 1+i
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the S gate, but differs in global phase.
+     */
+    const Matrix &Z90() {
+      const double IR2 = M_SQRT1_2;
+      const double values[8] = {
+        IR2,  -IR2,   0.0,  0.0,
+        0.0,  0.0,    IR2,  IR2,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * Precomputed negative 90-degree RZ gate.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * R_z\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1+i & 0 \\
+     * 0 & 1-i
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the S-dagger gate, but differs in global
+     * phase.
+     */
+    const Matrix &Zm90() {
+      const double IR2 = M_SQRT1_2;
+      const double values[8] = {
+        IR2,  IR2,    0.0,  0.0,
+        0.0,  0.0,    IR2,  -IR2,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * Precomputed 180-degree RZ gate.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * R_z(\pi) = \begin{bmatrix}
+     * -i & 0 \\
+     * 0 & i
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the Pauli Z gate, but differs in global
+     * phase.
+     */
+    const Matrix &Z180() {
+      const double values[8] = {
+        0.0,  -1.0,   0.0,  0.0,
+        0.0,  0.0,    0.0,  1.0,
+      };
+      static const Matrix matrix(2, values);
+      return matrix;
+    }
+
+    /**
+     * Computes the matrix for an arbitrary rotation.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * U(\theta, \phi, \lambda) = \begin{bmatrix}
+     * e^{i\frac{-\phi - \lambda}{2}} \cos{\frac{\theta}{2}} & e^{i\frac{-\phi + \lambda}{2}} \sin{\frac{\theta}{2}} \\
+     * e^{i\frac{ \phi - \lambda}{2}} \sin{\frac{\theta}{2}} & e^{i\frac{ \phi + \lambda}{2}} \cos{\frac{\theta}{2}}
+     * \end{bmatrix}
+     * \f]
+     *
+     * This is equivalent to the following:
+     *
+     * \f[
+     * U(\theta, \phi, \lambda) = R_z(\phi) \cdot R_y(\theta) \cdot R_z(\lambda)
+     * \f]
+     *
+     * The rotation angles are specified in radians.
      */
     Matrix R(double theta, double phi, double lambda) {
       Matrix matrix = RY(theta);
-      matrix(0, 1) *= std::exp(std::complex<double>(0.0, lambda));
-      matrix(1, 0) *= std::exp(std::complex<double>(0.0, phi));
-      matrix(1, 1) *= std::exp(std::complex<double>(0.0, lambda + phi));
+      matrix(0, 0) *= std::exp(std::complex<double>(0.0, 0.5 * (- lambda - phi)));
+      matrix(0, 1) *= std::exp(std::complex<double>(0.0, 0.5 * (+ lambda - phi)));
+      matrix(1, 0) *= std::exp(std::complex<double>(0.0, 0.5 * (- lambda + phi)));
+      matrix(1, 1) *= std::exp(std::complex<double>(0.0, 0.5 * (+ lambda + phi)));
       return matrix;
     }
 
     /**
      * The matrix for a swap gate.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * \textit{SWAP} = \begin{bmatrix}
+     * 1 & 0 & 0 & 0 \\
+     * 0 & 0 & 1 & 0 \\
+     * 0 & 1 & 0 & 0 \\
+     * 0 & 0 & 0 & 1
+     * \end{bmatrix}
+     * \f]
      */
     const Matrix &Swap() {
       const double values[32] = {
@@ -1877,6 +2416,17 @@ namespace wrap {
 
     /**
      * The square-root of a swap gate matrix.
+     *
+     * The matrix is as follows:
+     *
+     * \f[
+     * \sqrt{\textit{SWAP}} = \begin{bmatrix}
+     * 1 & 0 & 0 & 0 \\
+     * 0 & \frac{i+1}{2} & \frac{i-1}{2} & 0 \\
+     * 0 & \frac{i-1}{2} & \frac{i+1}{2} & 0 \\
+     * 0 & 0 & 0 & 1
+     * \end{bmatrix}
+     * \f]
      */
     const Matrix &SqSwap() {
       const double values[32] = {

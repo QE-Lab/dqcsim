@@ -14,7 +14,7 @@ static std::string to_string(const wrap::Matrix &matrix) {
 
 // Test matrices.
 TEST(matrix, test) {
-  wrap::Matrix a(2);
+  wrap::Matrix a = wrap::Matrix::identity(2);
   EXPECT_EQ(to_string(a), "{[1, 0], [0, 1]}");
   a(1, 1) = std::complex<double>(-1.0, 0.0);
   EXPECT_EQ(to_string(a), "{[1, 0], [0, -1]}");
