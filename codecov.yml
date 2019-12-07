@@ -1,13 +1,13 @@
 coverage:
-    status:
-        project:
-            default:
-                threshold: 1
-            rust:
-                paths: rust/
-            cpp:
-                paths: 
-                  - cpp/
-                  - target/include/
-            python:
-                paths: python/
+  status:
+    project:
+      default:
+        threshold: 1
+      rust:
+        paths: rust/
+      cpp:
+        paths: 
+          - cpp/
+          - target/include/
+      python:
+        paths: python/
