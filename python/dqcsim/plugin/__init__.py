@@ -495,15 +495,20 @@ class GateStreamSource(Plugin):
         b = cmath.exp(0.5j * theta)
         self.unitary(target, [a, 0.0, 0.0, b])
 
-    def r_gate(self, target, theta, phi, gamma):
+    def r_gate(self, target, theta, phi, lambd):
         """Instructs the downstream plugin to perform a number of rotations at
         once.
 
-        `target` is the targetted qubit. `theta`, `phi`, and `gamma` are the
+        `target` is the targetted qubit. `theta`, `phi`, and `lambd` are the
         angles in radians."""
-        a = cmath.exp(-0.5j * theta)
-        b = cmath.exp(0.5j * theta)
-        self.unitary(target, [a, 0.0, 0.0, b])
+        a = math.cos(0.5 * theta)
+        b = math.sin(0.5 * theta)
+        self.unitary(target, [
+            a,
+            -b * cmath.exp(1.0j * lambd),
+            b * cmath.exp(1.0j * phi),
+            a * cmath.exp(1.0j * (phi + lambd)),
+        ])
 
     def swap_gate(self, a, b):
         """Instructs the downstream plugin to execute a swap gate.
