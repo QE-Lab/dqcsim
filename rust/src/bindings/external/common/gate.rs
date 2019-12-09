@@ -387,3 +387,68 @@ pub extern "C" fn dqcs_gate_matrix_len(gate: dqcs_handle_t) -> ssize_t {
         }
     })
 }
+
+/// Utility function that detects control qubits in the `targets` list of the
+/// gate by means of the gate matrix, and reduces them into `controls` qubits.
+///
+/// This function borrows a handle to any gate with a matrix, and returns an
+/// equivalent copy of said gate with any control qubits in the `targets` set
+/// moved to the `controls` set. The associated gate matrix is accordingly
+/// reduced in size. The control qubits are added at the end of the `controls`
+/// set in the same order they appeared in the `targets` qubit set.
+///
+/// `epsilon` specifies the maximum element-wise deviation from the identity
+/// matrix for the relevant array elements for a qubit to be considered a
+/// control qubit. Note that if this is greater than zero, the resulting gate
+/// may not be exactly equivalent. If `ignore_gphase` is set, any global phase
+/// in the matrix is ignored, but the global phase of the non-control submatrix
+/// is not changed.
+///
+/// This function returns a new gate handle with the modified gate, or a copy
+/// of the input gate if the matrix could not be reduced. If the input gate
+/// does not have a matrix (measurement gate, or custom gate without matrix) an
+/// error is returned instead.
+#[no_mangle]
+pub extern "C" fn dqcs_gate_reduce_control(
+    gate: dqcs_handle_t,
+    epsilon: c_double,
+    ignore_gphase: bool,
+) -> dqcs_handle_t {
+    api_return(0, || {
+        resolve!(gate as &Gate);
+        if gate.get_matrix().is_none() {
+            inv_arg("no matrix associated with gate")
+        } else {
+            // TODO
+            err("not yet implemented")
+        }
+    })
+}
+
+/// Utility function that expands a gate matrix to account for all control
+/// qubits.
+///
+/// This function borrows a handle to any gate with a matrix, and returns an
+/// equivalent copy of said gate with any control qubits in the `controls` set
+/// moved to the `targets` set. The associated gate matrix is extended
+/// accordingly. The control qubits are added at the front of the `targets`
+/// set in the same order they appeared in the `controls` qubit set.
+///
+/// This function returns a new gate handle with the modified gate, or a copy
+/// of the input gate if the matrix could not be reduced. If the input gate
+/// does not have a matrix (measurement gate, or custom gate without matrix) an
+/// error is returned instead.
+#[no_mangle]
+pub extern "C" fn dqcs_gate_expand_control(
+    gate: dqcs_handle_t,
+) -> dqcs_handle_t {
+    api_return(0, || {
+        resolve!(gate as &Gate);
+        if gate.get_matrix().is_none() {
+            inv_arg("no matrix associated with gate")
+        } else {
+            // TODO
+            err("not yet implemented")
+        }
+    })
+}
