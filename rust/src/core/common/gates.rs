@@ -1,17 +1,7 @@
 //! Helper functions for common quantum Gates
 
 use crate::common::types::{Gate, QubitRef};
-use num_complex::Complex64;
 use std::f64::consts::{FRAC_1_SQRT_2, PI};
-
-macro_rules! c {
-    ($re:expr, $im:expr) => {
-        Complex64::new($re, $im);
-    };
-    ($re:expr) => {
-        Complex64::new($re, 0.)
-    };
-}
 
 /// Enumeration of predefined quantum gates.
 pub enum Gates {

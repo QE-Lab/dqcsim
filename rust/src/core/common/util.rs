@@ -2,6 +2,29 @@
 
 use crate::common::error::{inv_arg, Result};
 
+/// Returns a `Complex64` number.
+///
+/// Shorthand macro which calls the `Complex64` constructor and returns the
+/// `Complex64`.
+///
+/// # Examples
+///
+/// ```rust
+/// use num_complex::Complex64;
+///
+/// assert_eq!(c!(1.), Complex64::new(1., 0.));
+/// assert_eq!(c!(1., 2.), Complex64::new(1., 2.));
+/// assert_eq!(c!(0., 1.), Complex64::new(0., 1.));
+/// ```
+macro_rules! c {
+    ($re:expr, $im:expr) => {
+        $crate::core::Complex64::new($re, $im);
+    };
+    ($re:expr) => {
+        $crate::core::Complex64::new($re, 0.)
+    };
+}
+
 /// Splits a CamelCase name into space-separated lowercase words.
 ///
 /// Abbreviations remain uppercase, as shown in the examples below.
