@@ -439,9 +439,7 @@ pub extern "C" fn dqcs_gate_reduce_control(
 /// does not have a matrix (measurement gate, or custom gate without matrix) an
 /// error is returned instead.
 #[no_mangle]
-pub extern "C" fn dqcs_gate_expand_control(
-    gate: dqcs_handle_t,
-) -> dqcs_handle_t {
+pub extern "C" fn dqcs_gate_expand_control(gate: dqcs_handle_t) -> dqcs_handle_t {
     api_return(0, || {
         resolve!(gate as &Gate);
         if gate.get_matrix().is_none() {
