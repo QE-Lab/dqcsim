@@ -1,17 +1,61 @@
 use num_complex::Complex64;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashSet,
     hash::{Hash, Hasher},
+    iter::FromIterator,
     ops::{Index, IndexMut},
 };
 
 /// Matrix wrapper for `Gate` matrices.
-#[derive(Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct Matrix {
     /// The elements in the matrix stored as a `Vec<Complex64>`.
+    #[serde(with = "complex_serde")]
     data: Vec<Complex64>,
     /// Cached dimension of inner data.
+    #[serde(skip)]
     dimension: usize,
+}
+
+/// This mod provides ser/de for Vec<Complex64>
+mod complex_serde {
+    use super::Complex64;
+    use serde::{
+        ser::SerializeSeq,
+        {Deserialize, Deserializer, Serialize, Serializer},
+    };
+
+    #[derive(Serialize, Deserialize)]
+    #[serde(remote = "Complex64")]
+    struct Complex64Def {
+        re: f64,
+        im: f64,
+    }
+
+    pub fn serialize<S>(value: &[Complex64], serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        #[derive(Serialize)]
+        struct Wrapper<'a>(#[serde(with = "Complex64Def")] &'a Complex64);
+        let mut seq = serializer.serialize_seq(Some(value.len()))?;
+        for c in value.iter().map(Wrapper) {
+            seq.serialize_element(&c)?;
+        }
+        seq.end()
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> std::result::Result<Vec<Complex64>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct Wrapper(#[serde(with = "Complex64Def")] Complex64);
+        let v = Vec::deserialize(deserializer)?;
+        Ok(v.into_iter().map(|Wrapper(c)| c).collect())
+    }
 }
 
 impl Hash for Matrix {
@@ -75,6 +119,21 @@ impl From<Vec<Complex64>> for Matrix {
     }
 }
 
+impl FromIterator<Complex64> for Matrix {
+    fn from_iter<I: IntoIterator<Item = Complex64>>(iter: I) -> Self {
+        Matrix::new(iter)
+    }
+}
+
+impl IntoIterator for Matrix {
+    type Item = Complex64;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.into_iter()
+    }
+}
+
 impl Matrix {
     /// Returns a new Matrix with provided elements.
     pub fn new(elements: impl IntoIterator<Item = Complex64>) -> Self {
@@ -127,6 +186,11 @@ impl Matrix {
     pub fn len(&self) -> usize {
         self.data.len()
     }
+    /// Returns true if the Matrix is empty.
+    pub fn is_empty(&self) -> bool {
+        self.data.len() == 0
+    }
+
     /// Returns the dimension of the Matrix.
     /// The dimension equals the square root of the number of elements.
     pub fn dimension(&self) -> usize {
