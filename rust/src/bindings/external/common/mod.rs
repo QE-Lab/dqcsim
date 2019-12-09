@@ -30,6 +30,11 @@ pub use qbset::*;
 mod gate;
 pub use gate::*;
 
+// dqcs_mmb_* and dqcs_mm_* functions, for converting gate matrices back to
+// named gates.
+mod mm;
+pub use mm::*;
+
 // dqcs_meas_* functions, for operating on qubit measurement objects.
 mod meas;
 pub use meas::*;

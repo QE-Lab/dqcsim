@@ -37,6 +37,7 @@
     - [ArbCmd queues: dqcs_cq_*](./c-api/cq.apigen.md)
   - [Qubits: dqcs_qbset_*](./c-api/qbset.apigen.md)
   - [Gates: dqcs_gate_*](./c-api/gate.apigen.md)
+  - [Matrix maps: dqcs_mm_* and dqcs_mmb_*](./c-api/mm.apigen.md)
   - [Measurements](./c-api/measurements.apigen.md)
     - [Singular measurements: dqcs_meas_*](./c-api/meas.apigen.md)
     - [Measurement sets: dqcs_mset_*](./c-api/mset.apigen.md)

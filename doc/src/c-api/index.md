@@ -27,6 +27,7 @@ decent understanding of the basic concepts. If you don't, start
  - [ArbData and ArbCmd objects](arb-cmd-cq.apigen.md)
  - [Qubits](qbset.apigen.md)
  - [Gates](gate.apigen.md)
+ - [Matrix maps](mm.apigen.md)
  - [Measurements](measurements.apigen.md)
  - [Plugins](plugins.apigen.md)
  - [Simulations](simulations.apigen.md)

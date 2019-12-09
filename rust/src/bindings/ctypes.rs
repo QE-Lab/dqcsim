@@ -511,3 +511,91 @@ impl From<ReproductionPathStyle> for dqcs_path_style_t {
         }
     }
 }
+
+/// Enumeration of gates defined by DQCsim.
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+#[allow(non_camel_case_types)]
+pub enum dqcs_internal_gate_t {
+    /// Invalid gate.
+    DQCS_GATE_INVALID = 0,
+
+    /// Identity gate.
+    DQCS_GATE_PAULI_I = 100,
+
+    /// Identity gate.
+    DQCS_GATE_PAULI_X = 101,
+
+    /// Identity gate.
+    DQCS_GATE_PAULI_Y = 102,
+
+    /// Identity gate.
+    DQCS_GATE_PAULI_Z = 103,
+
+    /// Hadamard gate.
+    DQCS_GATE_H = 104,
+
+    /// S gate.
+    DQCS_GATE_S = 105,
+
+    /// S-dagger gate.
+    DQCS_GATE_S_DAG = 106,
+
+    /// T gate.
+    DQCS_GATE_T = 107,
+
+    /// T-dagger gate.
+    DQCS_GATE_T_DAG = 108,
+
+    /// RX(pi) gate.
+    DQCS_GATE_RX_90 = 109,
+
+    /// RX(-pi) gate.
+    DQCS_GATE_RX_M90 = 110,
+
+    /// RX(2pi) gate.
+    DQCS_GATE_RX_180 = 111,
+
+    /// RX(pi) gate.
+    DQCS_GATE_RY_90 = 112,
+
+    /// RX(-pi) gate.
+    DQCS_GATE_RY_M90 = 113,
+
+    /// RX(2pi) gate.
+    DQCS_GATE_RY_180 = 114,
+
+    /// RX(pi) gate.
+    DQCS_GATE_RZ_90 = 115,
+
+    /// RX(-pi) gate.
+    DQCS_GATE_RZ_M90 = 116,
+
+    /// RX(2pi) gate.
+    DQCS_GATE_RZ_180 = 117,
+
+    /// Parameterized RX gate with radian angle.
+    DQCS_GATE_RX = 150,
+
+    /// Parameterized RY gate with radian angle.
+    DQCS_GATE_RY = 151,
+
+    /// Parameterized RZ gate with pi/2^k angle, where k is an integer.
+    DQCS_GATE_RK = 152,
+
+    /// Parameterized RZ gate with radian angle.
+    DQCS_GATE_RZ = 153,
+
+    /// Any single-qubit unitary gate, parameterized as a full unitary matrix.
+    DQCS_GATE_U = 190,
+
+    /// Any single-qubit unitary gate, parameterized IBM-style with Z-Y-Z
+    /// angles.
+    DQCS_GATE_R = 191,
+
+    /// Swap gate.
+    DQCS_GATE_SWAP = 200,
+
+    /// Square-root of swap gate.
+    DQCS_GATE_SQRT_SWAP = 201,
+}
