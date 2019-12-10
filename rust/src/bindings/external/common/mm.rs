@@ -231,12 +231,9 @@ pub extern "C" fn dqcs_mm_new(mmb: dqcs_handle_t) -> dqcs_handle_t {
 /// it is set to a handle to a new `ArbData` object representing the gate's
 /// parameters. Ownership of this object is passed to the user, so it is up
 /// to the user to eventually delete this object. If no match is found,
-/// `param_data` is set to 0. `cache_hit` also serves as an optional return
-/// value; if non-NULL and a match is found, `true` is written if the cache
-/// was hit, and `false` if it was not. If no match is found, it is set to
-/// `false` as well. This function returns `DQCS_TRUE` if a match was found,
-/// `DQCS_FALSE` if no match was found, or `DQCS_BOOL_FAILURE` if an error
-/// occurs.
+/// `param_data` is set to 0. This function returns `DQCS_TRUE` if a match was
+/// found, `DQCS_FALSE` if no match was found, or `DQCS_BOOL_FAILURE` if an
+/// error occurs.
 #[no_mangle]
 pub extern "C" fn dqcs_mm_map_matrix(
     mm: dqcs_handle_t,
@@ -244,7 +241,6 @@ pub extern "C" fn dqcs_mm_map_matrix(
     matrix_len: size_t,
     key_data: *mut *const c_void,
     param_data: *mut dqcs_handle_t,
-    cache_hit: *mut bool,
 ) -> dqcs_bool_return_t {
     api_return_bool(|| {
         // TODO
@@ -265,19 +261,15 @@ pub extern "C" fn dqcs_mm_map_matrix(
 /// it is set to a handle to a new `ArbData` object representing the gate's
 /// parameters. Ownership of this object is passed to the user, so it is up
 /// to the user to eventually delete this object. If no match is found,
-/// `param_data` is set to 0. `cache_hit` also serves as an optional return
-/// value; if non-NULL and a match is found, `true` is written if the cache
-/// was hit, and `false` if it was not. If no match is found, it is set to
-/// `false` as well. This function returns `DQCS_TRUE` if a match was found,
-/// `DQCS_FALSE` if no match was found, or `DQCS_BOOL_FAILURE` if an error
-/// occurs.
+/// `param_data` is set to 0. This function returns `DQCS_TRUE` if a match was
+/// found, `DQCS_FALSE` if no match was found, or `DQCS_BOOL_FAILURE` if an
+/// error occurs.
 #[no_mangle]
 pub extern "C" fn dqcs_mm_map_gate(
     mm: dqcs_handle_t,
     gate: dqcs_handle_t,
     key_data: *mut *const c_void,
     param_data: *mut dqcs_handle_t,
-    cache_hit: *mut bool,
 ) -> dqcs_bool_return_t {
     api_return_bool(|| {
         // TODO
