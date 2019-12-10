@@ -1811,62 +1811,14 @@ namespace wrap {
      *
      * `epsilon` sets the maximum tolerated RMS variation of the elements.
      */
-    bool fuzzy_equal(const Matrix &other, double epsilon = 0.000001) const {
-      if (n != other.n) {
-        return false;
-      }
-      double accum = 0;
-      const double *a = data_double();
-      const double *b = other.data_double();
-      for (size_t i = 0; i < n*n*2; i++) {
-        double delta = *a++ - *b++;
-        accum += delta * delta;
-      }
-      return accum <= (epsilon * epsilon);
-    }
-
-    /**
-     * Returns the determinant of the matrix.
-     */
-    complex determinant() const {
-      const Matrix &M = *this; // shorthand
-
-      // Handle trivial cases, starting with the most common one.
-      if (n == 2) {
-        return M(0, 0) * M(1, 1) - M(0, 1) * M(1, 0);
-      }
-      if (n == 1) {
-        return M(0, 0);
-      }
-      if (n == 0) {
-        return 0.0;
-      }
-
-      // Handle larger matrices.
-      complex accum;
-      Matrix S(n - 1);
-
-      for (size_t x = 0; x < n; x++) {
-        size_t subi = 0;
-        for (size_t i = 1; i < n; i++) {
-          size_t subj = 0;
-          for (size_t j = 0; j < n; j++) {
-            if (j == x) {
-              continue;
-            }
-            S(subi, subj) = M(i, j);
-            subj++;
-          }
-          subi++;
-        }
-        if (x & 1) {
-          accum -= M(0, x) * S.determinant();
-        } else {
-          accum += M(0, x) * S.determinant();
-        }
-      }
-
-      return accum;
+    bool fuzzy_equal(
+      const Matrix &other,
+      double epsilon = 0.000001,
+      bool ignore_gphase = true
+    ) const {
+      // TODO connect to API when it becomes available with the `gatemap`
+      // branch/PR
+      throw std::logic_error("not yet implemented");
     }
 
   };
@@ -1897,7 +1849,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &I() {
+    static const Matrix &I() {
       const double values[8] = {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    1.0,  0.0,
@@ -1918,7 +1870,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &X() {
+    static const Matrix &X() {
       const double values[8] = {
         0.0,  0.0,    1.0,  0.0,
         1.0,  0.0,    0.0,  0.0,
@@ -1939,7 +1891,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &Y() {
+    static const Matrix &Y() {
       const double values[8] = {
         0.0,  0.0,    0.0,  -1.0,
         0.0,  1.0,    0.0,  0.0,
@@ -1960,7 +1912,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &Z() {
+    static const Matrix &Z() {
       const double values[8] = {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    -1.0, 0.0,
@@ -1982,7 +1934,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &H() {
+    static const Matrix &H() {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  0.0,    IR2,  0.0,
@@ -2004,7 +1956,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &S() {
+    static const Matrix &S() {
       const double values[8] = {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    0.0,  1.0,
@@ -2026,7 +1978,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &Sdag() {
+    static const Matrix &Sdag() {
       const double values[8] = {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    0.0,  -1.0,
@@ -2047,7 +1999,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &T() {
+    static const Matrix &T() {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         1.0,  0.0,    0.0,  0.0,
@@ -2069,7 +2021,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &Tdag() {
+    static const Matrix &Tdag() {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         1.0,  0.0,    0.0,  0.0,
@@ -2093,7 +2045,7 @@ namespace wrap {
      *
      * The rotation angle is specified in radians.
      */
-    Matrix RX(double theta) {
+    static Matrix RX(double theta) {
       double co = std::cos(0.5 * theta);
       double si = std::sin(0.5 * theta);
       double values[8] = {
@@ -2115,7 +2067,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &X90() {
+    static const Matrix &X90() {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  0.0,    0.0,  -IR2,
@@ -2137,7 +2089,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &Xm90() {
+    static const Matrix &Xm90() {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  0.0,    0.0,  IR2,
@@ -2162,7 +2114,7 @@ namespace wrap {
      * This matrix is equivalent to the Pauli X gate, but differs in global
      * phase.
      */
-    const Matrix &X180() {
+    static const Matrix &X180() {
       const double values[8] = {
         0.0,  0.0,    0.0,  -1.0,
         0.0,  -1.0,   0.0,  0.0,
@@ -2185,7 +2137,7 @@ namespace wrap {
      *
      * The rotation angle is specified in radians.
      */
-    Matrix RY(double theta) {
+    static Matrix RY(double theta) {
       double co = std::cos(0.5 * theta);
       double si = std::sin(0.5 * theta);
       double values[8] = {
@@ -2207,7 +2159,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &Y90() {
+    static const Matrix &Y90() {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  0.0,    -IR2, 0.0,
@@ -2229,7 +2181,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &Ym90() {
+    static const Matrix &Ym90() {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  0.0,    IR2,  0.0,
@@ -2254,7 +2206,7 @@ namespace wrap {
      * This matrix is equivalent to the Pauli Y gate, but differs in global
      * phase.
      */
-    const Matrix &Y180() {
+    static const Matrix &Y180() {
       const double values[8] = {
         0.0,  0.0,    -1.0, 0.0,
         1.0,  0.0,    0.0,  0.0,
@@ -2277,7 +2229,7 @@ namespace wrap {
      *
      * The rotation angle is specified in radians.
      */
-    Matrix RZ(double theta) {
+    static Matrix RZ(double theta) {
       double co = std::cos(0.5 * theta);
       double si = std::sin(0.5 * theta);
       double values[8] = {
@@ -2301,7 +2253,7 @@ namespace wrap {
      *
      * This matrix is equivalent to the S gate, but differs in global phase.
      */
-    const Matrix &Z90() {
+    static const Matrix &Z90() {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  -IR2,   0.0,  0.0,
@@ -2326,7 +2278,7 @@ namespace wrap {
      * This matrix is equivalent to the S-dagger gate, but differs in global
      * phase.
      */
-    const Matrix &Zm90() {
+    static const Matrix &Zm90() {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  IR2,    0.0,  0.0,
@@ -2351,7 +2303,7 @@ namespace wrap {
      * This matrix is equivalent to the Pauli Z gate, but differs in global
      * phase.
      */
-    const Matrix &Z180() {
+    static const Matrix &Z180() {
       const double values[8] = {
         0.0,  -1.0,   0.0,  0.0,
         0.0,  0.0,    0.0,  1.0,
@@ -2380,7 +2332,7 @@ namespace wrap {
      *
      * The rotation angles are specified in radians.
      */
-    Matrix R(double theta, double phi, double lambda) {
+    static Matrix R(double theta, double phi, double lambda) {
       Matrix matrix = RY(theta);
       matrix(0, 0) *= std::exp(std::complex<double>(0.0, 0.5 * (- lambda - phi)));
       matrix(0, 1) *= std::exp(std::complex<double>(0.0, 0.5 * (+ lambda - phi)));
@@ -2403,7 +2355,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &Swap() {
+    static const Matrix &Swap() {
       const double values[32] = {
         1.0,  0.0,    0.0,  0.0,    0.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    0.0,  0.0,    1.0,  0.0,    0.0,  0.0,
@@ -2428,7 +2380,7 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      */
-    const Matrix &SqSwap() {
+    static const Matrix &SqSwap() {
       const double values[32] = {
         1.0,  0.0,    0.0,  0.0,    0.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    0.5,  0.5,    0.5,  -0.5,   0.0,  0.0,
@@ -3499,13 +3451,276 @@ namespace callback {
     }
 
     /**
-     * Frees the given downstream qubit.
+     * Sends a gate to the downstream plugin.
      *
      * Backend plugins are not allowed to call this. Doing so will result in an
      * error.
      */
-    void free(wrap::QubitRef &&qubit) {
-      free(std::move(wrap::QubitSet().with(std::move(qubit))));
+    void gate(wrap::Gate &&gate) {
+      wrap::check(raw::dqcs_plugin_gate(state, gate.get_handle()));
+    }
+
+    /**
+     * Shorthand for sending a single-qubit gate to the downstream plugin.
+     *
+     * The matrix must be 2x2 in size.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void gate(const wrap::Matrix &matrix, const wrap::QubitRef &q) {
+      if (matrix.size() == 2) {
+        gate(wrap::Gate::unitary(wrap::QubitSet().with(q), matrix));
+      } else {
+        throw std::invalid_argument("matrix has incorrect size");
+      }
+    }
+
+    /**
+     * Shorthand for sending a two-qubit gate to the downstream plugin.
+     *
+     * The matrix may be 2x2 (one-qubit gate) or 4x4 (two-qubit gate) in size.
+     * If it is 2x2, `qa` is used as a control qubit and `qb` is the target.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void gate(const wrap::Matrix &matrix, const wrap::QubitRef &qa, const wrap::QubitRef &qb) {
+      if (matrix.size() == 2) {
+        gate(wrap::Gate::unitary(wrap::QubitSet().with(qb), wrap::QubitSet().with(qa), matrix));
+      } else if (matrix.size() == 4) {
+        gate(wrap::Gate::unitary(wrap::QubitSet().with(qa).with(qb), matrix));
+      } else {
+        throw std::invalid_argument("matrix has incorrect size");
+      }
+    }
+
+    /**
+     * Shorthand for sending a three-qubit gate to the downstream plugin.
+     *
+     * The matrix may be 2x2 (one-qubit gate), 4x4 (two-qubit gate), or 8x8
+     * (three-qubit gate) in size. If it is 2x2, `qa` and `qb` are used as
+     * control qubits and `qc` is the target. If it is 4x4, `qa` is used as
+     * a control qubit and `qb` and `qc` are the targets.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void gate(const wrap::Matrix &matrix, const wrap::QubitRef &qa, const wrap::QubitRef &qb, const wrap::QubitRef &qc) {
+      if (matrix.size() == 2) {
+        gate(wrap::Gate::unitary(wrap::QubitSet().with(qc), wrap::QubitSet().with(qa).with(qb), matrix));
+      } else if (matrix.size() == 4) {
+        gate(wrap::Gate::unitary(wrap::QubitSet().with(qb).with(qc), wrap::QubitSet().with(qa), matrix));
+      } else if (matrix.size() == 8) {
+        gate(wrap::Gate::unitary(wrap::QubitSet().with(qa).with(qb).with(qc), matrix));
+      } else {
+        throw std::invalid_argument("matrix has incorrect size");
+      }
+    }
+
+    /**
+     * Shorthand for sending a single-qubit X-axis measurement to the
+     * downstream plugin.
+     *
+     * This actually sends the following gates to the downstream plugin for
+     * each qubit:
+     *
+     * ```C++
+     * gate(wrap::GateMatrix::H(), q);
+     * measure_z(q);
+     * gate(wrap::GateMatrix::H(), q);
+     * ```
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void measure_x(const wrap::QubitRef &q) {
+      gate(wrap::GateMatrix::H(), q);
+      measure_z(q);
+      gate(wrap::GateMatrix::H(), q);
+    }
+
+    /**
+     * Shorthand for sending a multi-qubit X-axis measurement to the downstream
+     * plugin.
+     *
+     * This actually sends the following gates to the downstream plugin for
+     * each qubit:
+     *
+     * ```C++
+     * for (q : qs) gate(wrap::GateMatrix::H(), q);
+     * measure_z(qs);
+     * for (q : qs) gate(wrap::GateMatrix::H(), q);
+     * ```
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void measure_x(const wrap::QubitSet &qs) {
+      auto qs_vec = qs.copy_into_vector();
+      for (auto &q : qs_vec) gate(wrap::GateMatrix::H(), q);
+      measure_z(qs);
+      for (auto &q : qs_vec) gate(wrap::GateMatrix::H(), q);
+    }
+
+    /**
+     * Shorthand for sending a single-qubit Y-axis measurement to the
+     * downstream plugin.
+     *
+     * This actually sends the following gates to the downstream plugin for
+     * each qubit:
+     *
+     * ```C++
+     * gate(wrap::GateMatrix::S(), q);
+     * gate(wrap::GateMatrix::Z(), q);
+     * measure_z(q);
+     * gate(wrap::GateMatrix::S(), q);
+     * ```
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void measure_y(const wrap::QubitRef &q) {
+      gate(wrap::GateMatrix::S(), q);
+      gate(wrap::GateMatrix::Z(), q);
+      measure_z(q);
+      gate(wrap::GateMatrix::S(), q);
+    }
+
+    /**
+     * Shorthand for sending a multi-qubit Y-axis measurement to the downstream
+     * plugin.
+     *
+     * This actually sends the following gates to the downstream plugin for
+     * each qubit:
+     *
+     * ```C++
+     * for (q : qs) gate(wrap::GateMatrix::S(), q);
+     * for (q : qs) gate(wrap::GateMatrix::Z(), q);
+     * measure_z(qs);
+     * for (q : qs) gate(wrap::GateMatrix::S(), q);
+     * ```
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void measure_y(const wrap::QubitSet &qs) {
+      auto qs_vec = qs.copy_into_vector();
+      for (auto &q : qs_vec) gate(wrap::GateMatrix::S(), q);
+      for (auto &q : qs_vec) gate(wrap::GateMatrix::Z(), q);
+      measure_z(qs);
+      for (auto &q : qs_vec) gate(wrap::GateMatrix::S(), q);
+    }
+
+    /**
+     * Shorthand for sending a single-qubit Z-axis measurement to the
+     * downstream plugin.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void measure_z(const wrap::QubitRef &q) {
+      measure_z(std::move(wrap::QubitSet().with(q)));
+    }
+
+    /**
+     * Shorthand for sending a multi-qubit Z-axis measurement to the downstream
+     * plugin.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void measure_z(const wrap::QubitSet &qs) {
+      measure_z(std::move(qs));
+    }
+
+    /**
+     * Shorthand for sending a multi-qubit Z-axis measurement to the downstream
+     * plugin.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void measure_z(wrap::QubitSet &&qs) {
+      gate(wrap::Gate::measure(std::move(qs)));
+    }
+
+    /**
+     * Tells the downstream plugin to run for the specified number of cycles.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     *
+     * The return value is the new cycle counter.
+     */
+    wrap::Cycle advance(wrap::Cycle cycles) {
+      return wrap::check(raw::dqcs_plugin_advance(state, cycles));
+    }
+
+    /**
+     * Sends an arbitrary command downstream.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     *
+     * This function returns the `ArbData` object resulting from the command.
+     */
+    wrap::ArbData arb(const wrap::ArbCmd &cmd) {
+      arb(std::move(wrap::ArbCmd(cmd)));
+    }
+
+    /**
+     * Sends an arbitrary command downstream.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     *
+     * This function returns the `ArbData` object resulting from the command.
+     */
+    wrap::ArbData arb(wrap::ArbCmd &&cmd) {
+      return wrap::ArbData(wrap::check(raw::dqcs_plugin_arb(state, cmd.get_handle())));
+    }
+
+    /**
+     * Returns the latest measurement of the given downstream qubit.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    wrap::Measurement get_measurement(const wrap::QubitRef &qubit) {
+      return wrap::Measurement(wrap::check(raw::dqcs_plugin_get_measurement(state, qubit.get_index())));
+    }
+
+    /**
+     * Returns the number of downstream cycles since the latest measurement of
+     * the given downstream qubit.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    wrap::Cycle get_cycles_since_measure(const wrap::QubitRef &qubit) {
+      return wrap::check(raw::dqcs_plugin_get_cycles_since_measure(state, qubit.get_index()));
+    }
+
+    /**
+     * Returns the number of downstream cycles between the last two
+     * measurements of the given downstream qubit.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    wrap::Cycle get_cycles_between_measures(const wrap::QubitRef &qubit) {
+      return wrap::check(raw::dqcs_plugin_get_cycles_between_measures(state, qubit.get_index()));
+    }
+
+    /**
+     * Returns the current value of the downstream cycle counter.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    wrap::Cycle get_cycle() {
+      return wrap::check(raw::dqcs_plugin_get_cycle(state));
     }
 
   };
