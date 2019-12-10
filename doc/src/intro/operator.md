@@ -1,8 +1,8 @@
 # Operator use cases
 
 Following up on the above, a prime example of an operator plugin is an error
-model. Any error model that can be described by modifying the Pauli matrices of
-the gates requested by the frontend, by inserting gates to model decoherence
+model. Any error model that can be described by modifying the unitary matrices
+of the gates requested by the frontend, by inserting gates to model decoherence
 over time, by modifying measurement results, or any combination thereof, can
 be described this way. Separating the error models from the (perfect) qubit
 simulation allows you to mix and match both error model and simulation accuracy
