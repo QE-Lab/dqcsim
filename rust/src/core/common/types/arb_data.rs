@@ -6,11 +6,13 @@ const EMPTY_CBOR: &[u8] = &[0xBF, 0xFF];
 
 /// Represents an ArbData structure, consisting of an (unparsed, TODO) JSON
 /// string and a list of binary strings.
-#[derive(Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Hash, PartialEq, Deserialize, Serialize)]
 pub struct ArbData {
     cbor: Vec<u8>,
     args: Vec<Vec<u8>>,
 }
+
+impl Eq for ArbData {}
 
 impl fmt::Debug for ArbData {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -452,5 +454,15 @@ mod test {
             vec![b"Hello, world!", b"\x01\x23\x45\x67\x89\xAB\xCD\xEF"],
             "{},Hello_, world!,_01_23_45_67_89_AB_CD_EF",
         );
+    }
+
+    #[test]
+    fn eq() {
+        let args: Vec<Vec<u8>> = vec![b"x", b"y", b"z"]
+            .into_iter()
+            .map(|x| x.to_vec())
+            .collect();
+        let data = ArbData::from_json(json!({"test": 42}).to_string(), args).unwrap();
+        assert_eq!(data, data);
     }
 }

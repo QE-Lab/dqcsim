@@ -188,7 +188,7 @@ impl Matrix {
     }
     /// Returns true if the Matrix is empty.
     pub fn is_empty(&self) -> bool {
-        self.data.len() == 0
+        self.data.is_empty()
     }
 
     /// Returns the dimension of the Matrix.
