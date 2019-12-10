@@ -6,7 +6,7 @@ The state of a quantum system is modified by means of quantum gates.
 
 DQCsim provides three types of gates:
 
- - Unitary gates: these apply a Pauli matrix on one or more qubits.
+ - Unitary gates: these apply a gate matrix on one or more qubits.
  - Measurement gates: these cause the state of a qubit to be collapsed along
    and measured in the Z basis.
  - Custom gates: anything else that the downstream plugin supports.
@@ -36,11 +36,11 @@ algorithm to be compliant with DQCsim's interface.
 
  - If the gate doesn't have a name and doesn't have any `ArbData` attached:
 
-    - If the gate has target qubits, no control qubits, and a Pauli matrix,
-      apply the Pauli matrix to the target qubits.
+    - If the gate has target qubits, no control qubits, and a gate matrix,
+      apply the gate matrix to the target qubits.
 
-    - If the gate has target qubits, control qubits, and a Pauli matrix,
-      convert the Pauli matrix into a controlled gate with the appropriate
+    - If the gate has target qubits, control qubits, and a gate matrix,
+      convert the gate matrix into a controlled gate with the appropriate
       number of control qubits, and then apply it to the concatenation of the
       control and target qubit sets.
 
@@ -54,7 +54,7 @@ algorithm to be compliant with DQCsim's interface.
    apply random errors to the gate. However, it is recommended to not change
    the functionality too much; that's what custom gates are for.
 
-Note that the above implies that a gate can consist of both a Pauli gate and
+Note that the above implies that a gate can consist of both a unitary gate and
 one or more measurements, to be applied in that order. It is currently however
 impossible to construct such a gate using the C API.
 

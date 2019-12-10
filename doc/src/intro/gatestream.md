@@ -49,7 +49,7 @@ DQCsim internally represents gates using the following pieces of data:
  - a list of target qubits;
  - a list of control qubits;
  - a list of measured qubits;
- - an optional Pauli matrix, sized appropriately for the number of qubits in
+ - an optional unitary matrix, sized appropriately for the number of qubits in
    the target list;
  - an `ArbData` object that may contain classical arguments and/or additional
    information specifying the behavior of the gate.
@@ -58,12 +58,12 @@ It is not currently possible to send all the gates allowed by the above
 representation through the C, C++, or Python APIs. Specifically, only the
 following classes of gates can be constructed:
 
- - unitary gates, which consist of one or more target qubits, a Pauli matrix,
+ - unitary gates, which consist of one or more target qubits, a unitary matrix,
    and zero or more control qubits;
  - z-basis measurement gates, which consist of one or more measured qubits and
    nothing else;
  - custom gates, which have a name (required), zero or more target qubits, zero
-   or more control qubits, zero or more measured qubits, an optional Pauli
+   or more control qubits, zero or more measured qubits, an optional gate
    matrix, and `ArbData` information.
 
 A backend *must* process gates according to the following algorithm.
@@ -71,13 +71,13 @@ A backend *must* process gates according to the following algorithm.
 On the receiving end, the behavior is standardized as follows.
 
  - If the gate does not have a name:
-    - if there is a Pauli matrix:
+    - if there is a matrix:
        - turn the matrix into a controlled matrix with the appropriate number
          of control qubits (which may be zero), and
        - apply the matrix to the concatenation of the control and target
          qubits;
     - measure every qubit in the `measures` list in the Z basis. Note that this
-      should be supported *in addition* to the application of a Pauli gate.
+      should be supported *in addition* to the application of a unitary gate.
  - Otherwise, if the gate has a name recognized by the backend implementation,
    the behavior is up to the backend implementation.
  - Otherwise, the backend should return an error.
