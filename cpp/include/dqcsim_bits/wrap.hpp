@@ -1823,6 +1823,7 @@ namespace wrap {
 
   };
 
+  // TODO: copy the names used within GateMatrix from the Rust API
   /**
    * Contains shorthand methods for a variety of commonly used gate matrices.
    */
@@ -5301,6 +5302,73 @@ namespace wrap {
    * determined filename and line number.
    */
   #define DQCSIM_FATAL(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Fatal, fmt, ##__VA_ARGS__)
+
+  /**
+   * Generic class for plugin configurations.
+   */
+  class PluginConfiguration : public Handle {
+  public:
+
+    /**
+     * Wrap the given plugin process or thread configuration handle.
+     */
+    PluginConfiguration(HandleIndex handle) : Handle(handle) {
+    }
+
+    // Delete copy construct/assign.
+    PluginConfiguration(const PluginConfiguration&) = delete;
+    void operator=(const PluginConfiguration&) = delete;
+
+    /**
+     * Default move constructor.
+     */
+    PluginConfiguration(PluginConfiguration&&) = default;
+
+    /**
+     * Default move assignment.
+     */
+    PluginConfiguration &operator=(PluginConfiguration&&) = default;
+
+    /**
+     * Returns the plugin type.
+     */
+    virtual PluginType plugin_type() const = 0;
+
+    /**
+     * Returns the name given to the plugin.
+     */
+    virtual std::string name() const = 0;
+
+    /**
+     * Attaches an arbitrary initialization command to the plugin.
+     */
+    void add_init_cmd(const ArbCmd &cmd) {
+      add_init_cmd(std::move(ArbCmd(cmd)));
+    }
+
+    /**
+     * Attaches an arbitrary initialization command to the plugin.
+     */
+    virtual void add_init_cmd(ArbCmd &&cmd) = 0;
+
+    /**
+     * Sets the logging verbosity level of the plugin.
+     */
+    virtual void set_verbosity(Loglevel level) = 0;
+
+    /**
+     * Returns the current logging verbosity level of the plugin.
+     */
+    virtual Loglevel get_verbosity() const = 0;
+
+    /**
+     * Configures a plugin thread to also output its log messages to a file.
+     *
+     * `verbosity` configures the verbosity level for the file only.
+     */
+    virtual void log_tee(Loglevel verbosity, std::string filename) = 0;
+
+  };
 
 } // namespace wrap
 
