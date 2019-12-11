@@ -5184,6 +5184,124 @@ namespace wrap {
 
   };
 
+  /**
+   * Shim around the `dqcs_log_format` C API using `std::string` for the
+   * strings.
+   *
+   * \note The `printf` format arguments are passed directly into a C-only
+   * `printf`-like function. Therefore, you must use the `c_str()` function if
+   * you want to format `std::string` variables.
+   *
+   * Returns whether logging succeeded.
+   *
+   * To avoid having to fill out `module`, `file`, and `line_nr` manually, you
+   * can use the `DQCSIM_LOG` macro (or its loglevel-specific friends). If you
+   * define `DQCSIM_SHORT_LOGGING_MACROS` before including `<dqcsim>`, you can
+   * also use the `LOG` shorthand (or its loglevel-specific friends).
+   */
+  template<typename... Args>
+  inline bool log(
+    wrap::Loglevel level,
+    const std::string &module,
+    const std::string &file,
+    unsigned int line_nr,
+    const std::string &format,
+    Args... args
+  ) {
+    return raw::dqcs_log_format(
+      to_raw(level),
+      module.c_str(),
+      file.c_str(),
+      line_nr,
+      format.c_str(),
+      args...
+    ) == raw::dqcs_return_t::DQCS_SUCCESS;
+  }
+
+  /**
+   * Shim around the `dqcs_log_raw` C API using `std::string` for the strings.
+   *
+   * Returns whether logging succeeded.
+   *
+   * To avoid having to fill out `module`, `file`, and `line_nr` manually, you
+   * can use the `DQCSIM_LOG` macro (or its loglevel-specific friends). If you
+   * define `DQCSIM_SHORT_LOGGING_MACROS` before including `<dqcsim>`, you can
+   * also use the `LOG` shorthand (or its loglevel-specific friends).
+   */
+  template<>
+  inline bool log(
+    wrap::Loglevel level,
+    const std::string &module,
+    const std::string &file,
+    unsigned int line_nr,
+    const std::string &message
+  ) {
+    return raw::dqcs_log_raw(
+      to_raw(level),
+      module.c_str(),
+      file.c_str(),
+      line_nr,
+      message.c_str()
+    ) == raw::dqcs_return_t::DQCS_SUCCESS;
+  }
+
+  /**
+   * Convenience macro for calling `log()` with automatically determined filename
+   * and line number, but a dynamic loglevel (first argument).
+   */
+  #define DQCSIM_LOG(level, fmt, ...)             \
+    ::dqcsim::wrap::log(                          \
+      level, "C++", __FILE__, __LINE__,           \
+      fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with trace loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_TRACE(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Trace, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with debug loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_DEBUG(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Debug, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with info loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_INFO(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Info, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with note loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_NOTE(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Note, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with warn loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_WARN(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Warn, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with warn loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_WARNING(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Warn, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with error loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_ERROR(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Error, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with fatal loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_FATAL(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Fatal, fmt, ##__VA_ARGS__)
+
 } // namespace wrap
 
 } // namespace dqcsim
