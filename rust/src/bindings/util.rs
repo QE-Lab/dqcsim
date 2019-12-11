@@ -1,4 +1,5 @@
 use super::*;
+use crate::common::util::log_2;
 
 /// Convenience function for converting a C string to a Rust `str`.
 pub fn receive_str<'a>(s: *const c_char) -> Result<&'a str> {
@@ -106,6 +107,22 @@ pub fn receive_matrix(
     }
 }
 
+/// Version of receive_matrix with implicit number of qubits.
+pub fn receive_matrix_raw(
+    ptr: *const c_double,
+    matrix_len: size_t,
+) -> Result<Option<Vec<Complex64>>> {
+    receive_matrix(
+        ptr,
+        matrix_len,
+        if matrix_len % 2 != 0 {
+            inv_arg("invalid matrix size")
+        } else {
+            log_2(matrix_len / 2).ok_or_else(oe_inv_arg("invalid matrix size"))
+        }?,
+    )
+}
+
 /// User data structure for callbacks.
 ///
 /// All callbacks carry a user-defined `void*` with them, which is passed to
@@ -128,17 +145,17 @@ pub fn receive_matrix(
 /// closure! For example:
 ///
 /// ```ignore
-/// let data = CallbackUserData::new(user_free, user_data);
+/// let data = UserData::new(user_free, user_data);
 /// let cb = move || callback(data.data());
 /// ```
-pub struct CallbackUserData {
+pub struct UserData {
     user_free: Option<extern "C" fn(*mut c_void)>,
     data: *mut c_void,
 }
 
-unsafe impl Send for CallbackUserData {}
+unsafe impl Send for UserData {}
 
-impl Drop for CallbackUserData {
+impl Drop for UserData {
     fn drop(&mut self) {
         if let Some(user_free) = self.user_free {
             user_free(self.data);
@@ -146,13 +163,10 @@ impl Drop for CallbackUserData {
     }
 }
 
-impl CallbackUserData {
-    /// Constructs a `CallbackUserData` object.
-    pub fn new(
-        user_free: Option<extern "C" fn(*mut c_void)>,
-        data: *mut c_void,
-    ) -> CallbackUserData {
-        CallbackUserData { user_free, data }
+impl UserData {
+    /// Constructs a `UserData` object.
+    pub fn new(user_free: Option<extern "C" fn(*mut c_void)>, data: *mut c_void) -> UserData {
+        UserData { user_free, data }
     }
 
     /// Returns the user data pointer.

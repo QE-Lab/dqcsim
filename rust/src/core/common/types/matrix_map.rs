@@ -1,17 +1,33 @@
-use crate::core::common::types::Matrix;
-use std::{cell::RefCell, collections::HashMap};
+use crate::core::common::{
+    error::{inv_arg, inv_op, Result},
+    types::Matrix,
+};
+use std::{
+    cell::RefCell,
+    collections::HashMap,
+    fmt,
+    fmt::{Debug, Formatter},
+};
 
 /// MatrixMap type to detect gates based on their matrices.
 /// Users can add a key for every registered detector and link this to a type
 /// T. A MatrixMap can be constructed using a MatrixMapBuilder.
 pub struct MatrixMap<T, K> {
     detectors: Vec<(K, Box<Detector<T>>)>,
-    map: RefCell<HashMap<Matrix, (K, T)>>,
+    map: RefCell<HashMap<Matrix, Option<(K, T)>>>,
 }
 
-pub type Detector<T> = dyn Fn(&Matrix) -> Option<T>;
+impl<T, K> Debug for MatrixMap<T, K> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "MatrixMap")
+    }
+}
 
-impl<T: Clone, K: Clone + PartialEq> MatrixMap<T, K> {
+/// A Detector is a function which gets a reference to a Matrix and returns an
+/// Result with an Option of T.
+pub type Detector<T> = dyn Fn(&Matrix) -> Result<Option<T>>;
+
+impl<T: Clone, K: Clone> MatrixMap<T, K> {
     /// Returns a new MatrixMapBuilder to construxt a MatrixMap.
     pub fn builder() -> MatrixMapBuilder<T, K> {
         MatrixMapBuilder::new()
@@ -28,50 +44,79 @@ impl<T: Clone, K: Clone + PartialEq> MatrixMap<T, K> {
     pub fn detectors(&self) -> &[(K, Box<Detector<T>>)] {
         self.detectors.as_slice()
     }
+    /// Clear the cache.
+    pub fn clear_cache(&self) {
+        self.map.borrow_mut().clear();
+    }
+}
 
+impl<'a, T: 'a + Clone, K: 'a + Clone + PartialEq> MatrixMap<T, K> {
+    /// Check this MatrixMap for the provided Matrix, using the detectors with
+    /// provided keys. This never uses or updates the internal cache.
+    pub fn detect_with(&self, input: &Matrix, keys: &[K]) -> Result<Option<(K, T)>> {
+        self.run_detectors(
+            input,
+            self.detectors.iter().filter(|(k, _)| keys.contains(k)),
+            false,
+        )
+    }
+}
+
+impl<'a, T: 'a + Clone, K: 'a + Clone> MatrixMap<T, K> {
     /// Check this MatrixMap for the provided Matrix.
-    pub fn detect(&self, input: &Matrix) -> Option<(K, T)> {
+    pub fn detect(&self, input: &Matrix) -> Result<Option<(K, T)>> {
         {
             let hit = self.map.borrow().get(input).cloned();
             if hit.is_some() {
-                return hit;
+                // TODO(mb): option_flattening
+                return Ok(hit.unwrap());
             }
         }
-        self.run_detectors(input)
+        self.run_detectors(input, self.detectors.iter(), true)
     }
 
-    /// Check this MatrixMap for the provided Matrix, using the detectors with
-    /// provided keys. This never uses or updates the internal cache.
-    pub fn detect_with(&self, input: &Matrix, keys: &[K]) -> Option<(K, T)> {
-        self.detectors
-            .iter()
-            .filter(|(k, _)| keys.contains(k))
-            .find_map(|(k, f)| f(input).map(|v| (k.clone(), v)))
-    }
-
-    /// Internal method to run all detectors for the given Matrix. This also
-    /// updates the cache on hits.
-    fn run_detectors(&self, input: &Matrix) -> Option<(K, T)> {
-        self.detectors
-            .iter()
-            .find_map(|(k, f)| f(input).map(|v| (k.clone(), v)))
-            .and_then(|(k, v)| {
-                self.map
-                    .borrow_mut()
-                    .insert(input.clone(), (k.clone(), v.clone()));
-                Some((k, v))
+    /// Internal method to run detectors in iterator for the given Matrix.
+    /// Caching can be enabled by setting the cache parameter.
+    fn run_detectors(
+        &self,
+        input: &Matrix,
+        mut detectors: impl Iterator<Item = &'a (K, Box<Detector<T>>)>,
+        cache: bool,
+    ) -> Result<Option<(K, T)>> {
+        detectors
+            .find_map(|(k, f)| {
+                f(input)
+                    .map(|res| res.map(|opt| (k.clone(), opt)))
+                    .transpose()
             })
+            .transpose()
+            .and_then(|opt| {
+                if cache {
+                    self.map.borrow_mut().insert(input.clone(), opt.clone());
+                }
+                Ok(opt)
+            })
+            .or_else(|e| inv_op(format!("Detector function failed: {}", e)))
     }
 }
 
 impl<T: Clone, K: Clone + PartialEq> Default for MatrixMap<T, K> {
     fn default() -> Self {
-        MatrixMap::builder().with_defaults().finish()
+        MatrixMap::builder()
+            .with_defaults(0, 0.000_001, true)
+            .unwrap()
+            .finish()
     }
 }
 
 pub struct MatrixMapBuilder<T, K> {
     map: MatrixMap<T, K>,
+}
+
+impl<T, K> Debug for MatrixMapBuilder<T, K> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "MatrixMapBuilder")
+    }
 }
 
 impl<T, K> MatrixMapBuilder<T, K> {
@@ -86,18 +131,47 @@ impl<T, K> MatrixMapBuilder<T, K> {
     }
 
     /// Adds default detectors to this MatrixMapBuilder.
-    pub fn with_defaults(self) -> Self {
-        unimplemented!()
+    pub fn with_defaults(
+        mut self,
+        version: usize,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> Result<Self> {
+        self.add_defaults(version, epsilon, ignore_global_phase)?;
+        Ok(self)
     }
 
-    /// Add a detector to this MatrixMapBuilder.
-    pub fn with_detector<F: Fn(&Matrix) -> Option<T> + 'static>(
+    /// Adds default detectors to this MatrixMapBuilder.
+    pub(crate) fn add_defaults(
+        &mut self,
+        version: usize,
+        _epsilon: f64,
+        _ignore_global_phase: bool,
+    ) -> Result<()> {
+        if version != 0 {
+            inv_arg("Version should be set to zero.")
+        } else {
+            unimplemented!()
+        }
+    }
+
+    /// Adds a detector to this MatrixMapBuilder.
+    pub fn with_detector<F: Fn(&Matrix) -> Result<Option<T>> + 'static>(
         mut self,
         key: K,
         callback: F,
     ) -> Self {
-        self.map.detectors.push((key, Box::new(callback)));
+        self.add_detector(key, callback);
         self
+    }
+
+    /// Adds a detector to this MatrixMapBuilder.
+    pub(crate) fn add_detector<F: Fn(&Matrix) -> Result<Option<T>> + 'static>(
+        &mut self,
+        key: K,
+        callback: F,
+    ) {
+        self.map.detectors.push((key, Box::new(callback)));
     }
 
     /// Returns the constructed MatrixMap.
@@ -118,6 +192,20 @@ impl<T, K> From<MatrixMapBuilder<T, K>> for MatrixMap<T, K> {
     }
 }
 
+/// Returns a detector function which detects the given Matrix.
+pub fn matrix_detector<T: Default>(
+    matrix: Matrix,
+    epsilon: f64,
+    ignore_global_phase: bool,
+) -> Box<dyn Fn(&Matrix) -> Result<Option<T>>> {
+    Box::new(move |input: &Matrix| -> Result<Option<T>> {
+        match matrix.approx_eq(input, epsilon, ignore_global_phase) {
+            true => Ok(Some(T::default())),
+            false => Ok(None),
+        }
+    })
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -126,28 +214,50 @@ mod test {
     fn matrix_map_builder() {
         // Construct a map which always returns x.
         let matrix_map = MatrixMap::builder()
-            .with_detector("key", |_| Some("x"))
+            .with_detector("key", |_| Ok(Some("x")))
             .finish();
         let matrix = Matrix::new(vec![c!(1.)]);
-        assert!(matrix_map.detect_with(&matrix, &["unknown"]).is_none());
-        assert_eq!(
-            matrix_map.detect_with(&matrix, &["key"]),
-            Some(("key", "x"))
-        );
-        assert_eq!(matrix_map.detect(&matrix), Some(("key", "x")));
+        let detect = matrix_map.detect_with(&matrix, &["unknown"]);
+        assert!(detect.is_ok());
+        assert!(detect.unwrap().is_none());
+
+        let detect = matrix_map.detect_with(&matrix, &["key"]);
+        assert!(detect.is_ok());
+        assert!(detect.as_ref().unwrap().is_some());
+        assert_eq!(detect.unwrap(), Some(("key", "x")));
+
+        let detect = matrix_map.detect(&matrix);
+        assert!(detect.is_ok());
+        assert!(detect.as_ref().unwrap().is_some());
+        assert_eq!(detect.unwrap(), Some(("key", "x")));
 
         let matrix = Matrix::new(vec![c!(1.)]);
         let matrix_map = MatrixMapBuilder::default()
             .with_detector("key", |input| {
-                if input.approx_eq(&Matrix::new(vec![c!(1.)]), 0.) {
-                    Some(1)
+                if input.approx_eq(&Matrix::new(vec![c!(1.)]), 0., true) {
+                    Ok(Some(1))
                 } else {
-                    None
+                    Ok(None)
                 }
             })
             .finish();
-        assert_eq!(matrix_map.detect(&matrix), Some(("key", 1)));
-        // cache hit
-        assert_eq!(matrix_map.detect(&matrix), Some(("key", 1)));
+        let detect = matrix_map.detect(&matrix);
+        assert!(detect.is_ok());
+        assert!(detect.as_ref().unwrap().is_some());
+        assert_eq!(detect.unwrap(), Some(("key", 1)));
+
+        let detect = matrix_map.detect(&matrix);
+        assert!(detect.is_ok());
+        assert!(detect.as_ref().unwrap().is_some());
+        assert_eq!(detect.unwrap(), Some(("key", 1)));
+
+        let detect = matrix_map.detect_with(&matrix, &["unknown"]);
+        assert!(detect.is_ok());
+        assert!(detect.as_ref().unwrap().is_none());
+
+        let matrix = Matrix::new(vec![c!(0.)]);
+        let detect = matrix_map.detect(&matrix);
+        assert!(detect.is_ok());
+        assert!(detect.as_ref().unwrap().is_none());
     }
 }

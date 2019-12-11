@@ -43,4 +43,4 @@ pub use matrix::Matrix;
 
 // MatrixMap type to detect gates based on their matrices.
 mod matrix_map;
-pub use matrix_map::{MatrixMap, MatrixMapBuilder};
+pub use matrix_map::{matrix_detector, Detector, MatrixMap, MatrixMapBuilder};

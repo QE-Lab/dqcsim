@@ -51,7 +51,6 @@ builder. First, the builder itself must be constructed with `dqcs_mmb_new()`.
 Once constructed, you can add detectors to the map with the following
 functions.
 
-@@@c_api_gen ^dqcs_mmb_add_defaults$@@@
 @@@c_api_gen ^dqcs_mmb_add_internal$@@@
 @@@c_api_gen ^dqcs_mmb_add_fixed$@@@
 @@@c_api_gen ^dqcs_mmb_add_user$@@@

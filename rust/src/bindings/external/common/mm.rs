@@ -1,4 +1,6 @@
 use super::*;
+use crate::common::{gates::GateType, types::matrix_detector};
+use std::rc::Rc;
 
 /// Constructs a new matrix map builder.
 ///>
@@ -8,67 +10,7 @@ use super::*;
 ///> Then construct the matrix map object itself using `dqcs_mm_new()`.
 #[no_mangle]
 pub extern "C" fn dqcs_mmb_new() -> dqcs_handle_t {
-    api_return(0, || {
-        // TODO
-        err("not yet implemented")
-    })
-}
-
-/// Adds a set of default gate matrix detectors to the given matrix map
-/// builder.
-///>
-///> `mmb` must be a handle to a matrix map builder object (`dqcs_mmb_new()`).
-///> `version` is reserved and should be set to zero; if the default set of
-///> gates is changed in a future version of DQCsim, the different defaults will
-///> be disambiguated with this numbed. `epsilon` specifies the maximum
-///> element-wise root-mean-square error between the incoming matrix and the to
-///> be detected matrix that results in a positive match. `ignore_phase`
-///> specifies whether the aforementioned check should ignore global phase or
-///> not.
-///>
-///> The current (version 0) defaults are equivalent to calling:
-///>
-///> ```C
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_PAULI_I, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_PAULI_X, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_PAULI_Y, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_PAULI_Z, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_H, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_S, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_S_DAG, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_T, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_T_DAG, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_RX_90, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_RX_M90, epsilon, ignore_gphase, 0);
-///> if (!ignore_gphase) {
-///>   dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_RX_180, epsilon, ignore_gphase, 0);
-///> }
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_RY_90, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_RY_M90, epsilon, ignore_gphase, 0);
-///> if (!ignore_gphase) {
-///>   dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_RY_180, epsilon, ignore_gphase, 0);
-///>   dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_RZ_90, epsilon, ignore_gphase, 0);
-///>   dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_RZ_M90, epsilon, ignore_gphase, 0);
-///>   dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_RZ_180, epsilon, ignore_gphase, 0);
-///> }
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_RX, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_RY, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_RZ, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_R, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_SWAP, epsilon, ignore_gphase, 0);
-///> dqcs_mmb_add_internal(mmb, NULL, NULL, DQCS_GATE_SQRT_SWAP, epsilon, ignore_gphase, 0);
-///> ```
-#[no_mangle]
-pub extern "C" fn dqcs_mmb_add_defaults(
-    mmb: dqcs_handle_t,
-    version: usize,
-    epsilon: c_double,
-    ignore_gphase: bool,
-) -> dqcs_return_t {
-    api_return_none(|| {
-        // TODO
-        err("not yet implemented")
-    })
+    insert(MatrixMapBuilderC::new())
 }
 
 /// Adds a gate matrix detector for the given DQCsim-defined gate to the given
@@ -87,13 +29,9 @@ pub extern "C" fn dqcs_mmb_add_defaults(
 ///> element-wise root-mean-square error between the incoming matrix and the to
 ///> be detected matrix that results in a positive match. `ignore_phase`
 ///> specifies whether the aforementioned check should ignore global phase or
-///> not. `param_proto` optionally specifies an `ArbData` handle (consumed by
-///> this function) used as a prototype for the gate parameter data returned by
-///> the match function. The gate detectors will push the following parameters
-///> as binary strings on top of any binary strings in the prototype object:
+///> not. Most gate detectors return an empty ArbData object as they are not
+///> parameterized. The following exceptions exist:
 ///>
-///>  - all gate detectors push an unsigned 32-bit integer with the value of the
-///>    `dqcs_internal_gate_t` enum.
 ///>  - `DQCS_GATE_RX`, `DQCS_GATE_RY`, and `DQCS_GATE_RZ` push a 64-bit double
 ///>    floating point with the angle in addition to the enum.
 ///>  - `DQCS_GATE_RK` pushes a 32-bit integer with the k parameter in addition
@@ -111,11 +49,16 @@ pub extern "C" fn dqcs_mmb_add_internal(
     gate: dqcs_internal_gate_t,
     epsilon: c_double,
     ignore_gphase: bool,
-    param_proto: dqcs_handle_t,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        // TODO
-        err("not yet implemented")
+        resolve!(mmb as &mut MatrixMapBuilderC);
+        let key = Rc::new(UserData::new(key_free, key_data));
+        if let Some(gate) = Into::<Option<GateType>>::into(gate) {
+            mmb.add_detector(key, gate.into_detector(epsilon, ignore_gphase));
+            Ok(())
+        } else {
+            inv_arg("invalid gate")
+        }
     })
 }
 
@@ -135,10 +78,9 @@ pub extern "C" fn dqcs_mmb_add_internal(
 ///> gate and so on). `epsilon` specifies the maximum element-wise
 ///> root-mean-square error between the incoming matrix and the to be detected
 ///> matrix that results in a positive match. `ignore_phase` specifies whether
-///> the aforementioned check should ignore global phase or not. `param_data`
-///> optionally specifies an `ArbData` handle (consumed by this function) of
-///> which a copy will be returned by the detector as the gate parameter data
-///> object when a positive match occurs.
+///> the aforementioned check should ignore global phase or not. The generated
+///> gate detector always returns an empty ArbData object for the parameter
+///> data as it is not parameterized.
 #[no_mangle]
 pub extern "C" fn dqcs_mmb_add_fixed(
     mmb: dqcs_handle_t,
@@ -148,11 +90,15 @@ pub extern "C" fn dqcs_mmb_add_fixed(
     matrix_len: size_t,
     epsilon: c_double,
     ignore_gphase: bool,
-    param_data: dqcs_handle_t,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        // TODO
-        err("not yet implemented")
+        resolve!(mmb as &mut MatrixMapBuilderC);
+        let key = Rc::new(UserData::new(key_free, key_data));
+        let matrix: Matrix = receive_matrix_raw(matrix, matrix_len)?
+            .ok_or_else(oe_inv_arg("empty matrix"))?
+            .into();
+        mmb.add_detector(key, matrix_detector(matrix, epsilon, ignore_gphase));
+        Ok(())
     })
 }
 
@@ -184,18 +130,57 @@ pub extern "C" fn dqcs_mmb_add_user(
     mmb: dqcs_handle_t,
     key_free: Option<extern "C" fn(key_data: *mut c_void)>,
     key_data: *mut c_void,
-    callback: extern "C" fn(
-        user_data: *const c_void,
-        matrix: *const c_double,
-        matrix_len: size_t,
-        param_data: *mut dqcs_handle_t,
-    ) -> dqcs_bool_return_t,
+    callback: Option<
+        extern "C" fn(
+            user_data: *const c_void,
+            matrix: *const c_double,
+            matrix_len: size_t,
+            param_data: *mut dqcs_handle_t,
+        ) -> dqcs_bool_return_t,
+    >,
     user_free: Option<extern "C" fn(user_data: *mut c_void)>,
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        // TODO
-        err("not yet implemented")
+        resolve!(mmb as &mut MatrixMapBuilderC);
+        let key = Rc::new(UserData::new(key_free, key_data));
+        let user = UserData::new(user_free, user_data);
+        let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
+        mmb.add_detector(
+            key,
+            Box::new(move |input: &Matrix| -> Result<Option<ArbData>> {
+                let mut handle = 0;
+                let res: Result<bool> = cb_return_bool(callback(
+                    user.data(),
+                    input.as_ptr(),
+                    input.len(),
+                    &mut handle as *mut dqcs_handle_t,
+                ));
+                match res {
+                    Ok(true) => Ok({
+                        if handle != 0 {
+                            take!(handle as ArbData);
+                            Some(handle)
+                        } else {
+                            Some(ArbData::default())
+                        }
+                    }),
+                    Err(x) => {
+                        if handle != 0 {
+                            delete!(handle);
+                        }
+                        Err(x)
+                    }
+                    Ok(false) => {
+                        if handle != 0 {
+                            delete!(handle);
+                        }
+                        Ok(None)
+                    }
+                }
+            }),
+        );
+        Ok(())
     })
 }
 
@@ -209,8 +194,8 @@ pub extern "C" fn dqcs_mmb_add_user(
 #[no_mangle]
 pub extern "C" fn dqcs_mm_new(mmb: dqcs_handle_t) -> dqcs_handle_t {
     api_return(0, || {
-        // TODO
-        err("not yet implemented")
+        take!(mmb as MatrixMapBuilderC);
+        Ok(insert(mmb.finish()))
     })
 }
 
@@ -243,8 +228,28 @@ pub extern "C" fn dqcs_mm_map_matrix(
     param_data: *mut dqcs_handle_t,
 ) -> dqcs_bool_return_t {
     api_return_bool(|| {
-        // TODO
-        err("not yet implemented")
+        resolve!(mm as &MatrixMapC);
+        let matrix: Matrix = receive_matrix_raw(matrix, matrix_len)?
+            .ok_or_else(oe_inv_arg("empty matrix"))?
+            .into();
+        let detect = mm.detect(&matrix)?;
+        match detect {
+            Some((key, param)) => {
+                if !key_data.is_null() {
+                    unsafe { *key_data = key.data() };
+                }
+                if !param_data.is_null() {
+                    unsafe { *param_data = insert(param) };
+                }
+                Ok(true)
+            }
+            None => {
+                if !param_data.is_null() {
+                    unsafe { *param_data = 0 };
+                }
+                Ok(false)
+            }
+        }
     })
 }
 
@@ -272,8 +277,29 @@ pub extern "C" fn dqcs_mm_map_gate(
     param_data: *mut dqcs_handle_t,
 ) -> dqcs_bool_return_t {
     api_return_bool(|| {
-        // TODO
-        err("not yet implemented")
+        resolve!(mm as &MatrixMapC);
+        resolve!(gate as &Gate);
+        match mm.detect(
+            &gate
+                .get_matrix()
+                .ok_or_else(oe_inv_arg("gate has no matrix"))?,
+        )? {
+            Some((key, param)) => {
+                if !key_data.is_null() {
+                    unsafe { *key_data = key.data() };
+                }
+                if !param_data.is_null() {
+                    unsafe { *param_data = insert(param) };
+                }
+                Ok(true)
+            }
+            None => {
+                if !param_data.is_null() {
+                    unsafe { *param_data = 0 };
+                }
+                Ok(false)
+            }
+        }
     })
 }
 
@@ -285,8 +311,9 @@ pub extern "C" fn dqcs_mm_map_gate(
 #[no_mangle]
 pub extern "C" fn dqcs_mm_clear_cache(mm: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
-        // TODO
-        err("not yet implemented")
+        resolve!(mm as &MatrixMapC);
+        mm.clear_cache();
+        Ok(())
     })
 }
 
@@ -320,7 +347,12 @@ pub extern "C" fn dqcs_mat_compare(
     ignore_gphase: bool,
 ) -> dqcs_bool_return_t {
     api_return_bool(|| {
-        // TODO
-        err("not yet implemented")
+        let a: Matrix = receive_matrix_raw(matrix_a, matrix_len)?
+            .ok_or_else(oe_inv_arg("empty matrix"))?
+            .into();
+        let b: Matrix = receive_matrix_raw(matrix_b, matrix_len)?
+            .ok_or_else(oe_inv_arg("empty matrix"))?
+            .into();
+        Ok(a.approx_eq(&b, epsilon, ignore_gphase))
     })
 }

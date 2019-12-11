@@ -2,6 +2,24 @@
 
 use crate::common::error::{inv_arg, Result};
 
+/// Returns the number of bits of a type
+const fn num_bits<T>() -> usize {
+    std::mem::size_of::<T>() * 8
+}
+
+/// Returns the log2 for a usize as an Option<usize>.
+pub fn log_2(x: usize) -> Option<usize> {
+    if x == 0 {
+        None
+    } else {
+        let result = num_bits::<usize>() as u32 - x.leading_zeros() - 1;
+        if 2_usize.pow(result) == x {
+            Some(result as usize)
+        } else {
+            None
+        }
+    }
+}
 /// Returns a `Complex64` number.
 ///
 /// Shorthand macro which calls the `Complex64` constructor and returns the

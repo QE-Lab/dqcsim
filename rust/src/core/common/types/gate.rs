@@ -103,22 +103,6 @@ pub struct Gate {
 }
 
 impl Gate {
-    /// Internal method to construct a gate.
-    pub(crate) fn unitary(
-        targets: Vec<QubitRef>,
-        controls: Vec<QubitRef>,
-        matrix: Vec<Complex64>,
-    ) -> Gate {
-        Gate {
-            name: None,
-            targets,
-            controls,
-            measures: vec![],
-            matrix: matrix.into(),
-            data: ArbData::default(),
-        }
-    }
-
     /// Constructs a new unitary gate.
     pub fn new_unitary(
         targets: impl IntoIterator<Item = QubitRef>,

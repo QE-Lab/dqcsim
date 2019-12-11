@@ -1,3 +1,4 @@
+use crate::common::util::log_2;
 use num_complex::Complex64;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -5,6 +6,7 @@ use std::{
     hash::{Hash, Hasher},
     iter::FromIterator,
     ops::{Index, IndexMut},
+    os::raw::c_double,
 };
 
 /// Matrix wrapper for `Gate` matrices.
@@ -138,6 +140,7 @@ impl Matrix {
     /// Returns a new Matrix with provided elements.
     pub fn new(elements: impl IntoIterator<Item = Complex64>) -> Self {
         let elements = elements.into_iter().collect::<Vec<Complex64>>();
+        // TODO(mb): fix
         let dimension = (elements.len() as f64).sqrt() as usize;
         Matrix {
             data: elements,
@@ -147,20 +150,24 @@ impl Matrix {
 
     /// Approximately compares this Matrix with another Matrix.
     /// TODO(mb): add details about this comparison
-    pub fn approx_eq(&self, other: &Matrix, epsilon: f64) -> bool {
+    pub fn approx_eq(&self, other: &Matrix, epsilon: f64, ignore_global_phase: bool) -> bool {
         // Sizes must match
         if self.len() != other.len() {
             return false;
         }
-        let phase_delta =
-            self.data
-                .iter()
-                .zip(other.data.iter())
-                .fold(c!(0.), |mut phase_delta, (a, b)| {
-                    phase_delta += a * b.conj();
-                    phase_delta
-                });
-        let phase_delta = phase_delta / phase_delta.norm();
+        let phase_delta = if ignore_global_phase {
+            let phase_delta =
+                self.data
+                    .iter()
+                    .zip(other.data.iter())
+                    .fold(c!(0.), |mut phase_delta, (a, b)| {
+                        phase_delta += a * b.conj();
+                        phase_delta
+                    });
+            phase_delta / phase_delta.norm()
+        } else {
+            c!(1.)
+        };
         self.data
             .iter()
             .zip(other.data.iter())
@@ -196,10 +203,20 @@ impl Matrix {
     pub fn dimension(&self) -> usize {
         self.dimension
     }
+
+    /// Returns the number of qubits for this Matrix.
+    pub fn num_qubits(&self) -> Option<usize> {
+        log_2(self.dimension)
+    }
+
     /// Returns the element at given row and colum index.
     /// Returns `None` for out of bound indices.
     pub fn get(&self, row: usize, column: usize) -> Option<&Complex64> {
         self.data.get(row * self.dimension + column)
+    }
+
+    pub(crate) fn as_ptr(&self) -> *const c_double {
+        self.data.as_ptr() as *const c_double
     }
 }
 
@@ -245,8 +262,8 @@ mod tests {
     fn matrix_approx_eq() {
         let x1 = Matrix::new(vec![c!(0.), c!(1.), c!(1.), c!(0.)]);
         let x2 = Matrix::new(vec![c!(0.), c!(0., -1.), c!(0., -1.), c!(0.)]);
-        assert!(x1.approx_eq(&x2, 0.));
-        assert!(x2.approx_eq(&x1, 0.));
+        assert!(x1.approx_eq(&x2, 0., true));
+        assert!(x2.approx_eq(&x1, 0., true));
 
         let h1 = Matrix::new(vec![
             c!(FRAC_1_SQRT_2),
@@ -272,17 +289,17 @@ mod tests {
             c!(0., -FRAC_1_SQRT_2),
             c!(0., FRAC_1_SQRT_2),
         ]);
-        assert!(h1.approx_eq(&h2, 0.));
-        assert!(h1.approx_eq(&h3, 0.));
-        assert!(h1.approx_eq(&h4, 0.));
-        assert!(h2.approx_eq(&h1, 0.));
-        assert!(h2.approx_eq(&h3, 0.));
-        assert!(h2.approx_eq(&h4, 0.));
-        assert!(h3.approx_eq(&h1, 0.));
-        assert!(h3.approx_eq(&h2, 0.));
-        assert!(h3.approx_eq(&h4, 0.));
-        assert!(h4.approx_eq(&h1, 0.));
-        assert!(h3.approx_eq(&h2, 0.));
-        assert!(h3.approx_eq(&h3, 0.));
+        assert!(h1.approx_eq(&h2, 0., true));
+        assert!(h1.approx_eq(&h3, 0., true));
+        assert!(h1.approx_eq(&h4, 0., true));
+        assert!(h2.approx_eq(&h1, 0., true));
+        assert!(h2.approx_eq(&h3, 0., true));
+        assert!(h2.approx_eq(&h4, 0., true));
+        assert!(h3.approx_eq(&h1, 0., true));
+        assert!(h3.approx_eq(&h2, 0., true));
+        assert!(h3.approx_eq(&h4, 0., true));
+        assert!(h4.approx_eq(&h1, 0., true));
+        assert!(h3.approx_eq(&h2, 0., true));
+        assert!(h3.approx_eq(&h3, 0., true));
     }
 }
