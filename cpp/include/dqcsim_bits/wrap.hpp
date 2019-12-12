@@ -28,6 +28,7 @@
 #include <functional>
 #include <memory>
 #include <cmath>
+#include <limits>
 #include <cdqcsim>
 
 /**
@@ -149,6 +150,16 @@ namespace wrap {
       throw std::runtime_error(raw::dqcs_error_get());
     }
     return static_cast<size_t>(size);
+  }
+
+  /**
+   * Checks a `double` return value from `dqcs_pcfg_*_timeout_get()`; if
+   * failure, throws a runtime error with DQCsim's error message.
+   */
+  inline double check(double value) {
+    if (value < 0.0) {
+      throw std::runtime_error(raw::dqcs_error_get());
+    }
   }
 
   /**
@@ -5362,12 +5373,12 @@ namespace wrap {
     /**
      * Returns the plugin type.
      */
-    virtual PluginType plugin_type() const = 0;
+    virtual PluginType get_plugin_type() const = 0;
 
     /**
      * Returns the name given to the plugin.
      */
-    virtual std::string name() const = 0;
+    virtual std::string get_name() const = 0;
 
     /**
      * Attaches an arbitrary initialization command to the plugin.
@@ -5396,7 +5407,7 @@ namespace wrap {
      *
      * `verbosity` configures the verbosity level for the file only.
      */
-    virtual void log_tee(Loglevel verbosity, std::string filename) = 0;
+    virtual void log_tee(Loglevel verbosity, const std::string &filename) = 0;
 
   };
 
@@ -5429,15 +5440,38 @@ namespace wrap {
     /**
      * Returns the plugin type.
      */
-    virtual PluginType plugin_type() const {
+    virtual PluginType get_plugin_type() const {
       return check(raw::dqcs_pcfg_type(get_handle()));
     }
 
     /**
      * Returns the name given to the plugin.
      */
-    virtual std::string name() const {
-      return std::string(check(raw::dqcs_pcfg_name(get_handle())));
+    virtual std::string get_name() const {
+      char *ptr = check(raw::dqcs_pcfg_name(get_handle()));
+      std::string retval(ptr);
+      std::free(ptr);
+      return retval;
+    }
+
+    /**
+     * Returns the configured executable path for the given plugin process.
+     */
+    std::string get_executable() const {
+      char *ptr = check(raw::dqcs_pcfg_executable(get_handle()));
+      std::string retval(ptr);
+      std::free(ptr);
+      return retval;
+    }
+
+    /**
+     * Returns the configured script path for the given plugin process.
+     */
+    std::string get_script() const {
+      char *ptr = check(raw::dqcs_pcfg_script(get_handle()));
+      std::string retval(ptr);
+      std::free(ptr);
+      return retval;
     }
 
     /**
@@ -5448,10 +5482,97 @@ namespace wrap {
     }
 
     /**
+     * Attaches an arbitrary initialization command to the plugin (builder
+     * pattern).
+     */
+    PluginProcessConfiguration &with_init_cmd(ArbCmd &&cmd) {
+      add_init_cmd(std::move(cmd));
+      return *this;
+    }
+
+    /**
+     * Overrides an environment variable for the plugin process.
+     *
+     * The environment variable `key` is set to `value` regardless of whether
+     * it exists in the parent environment variable scope.
+     */
+    void set_env_var(const std::string &key, const std::string &value) {
+      check(raw::dqcs_pcfg_env_set(get_handle(), key.c_str(), value.c_str()));
+    }
+
+    /**
+     * Overrides an environment variable for the plugin process (builder
+     * pattern).
+     *
+     * The environment variable `key` is set to `value` regardless of whether
+     * it exists in the parent environment variable scope.
+     */
+    PluginProcessConfiguration &with_env_var(const std::string &key, const std::string &value) {
+      set_env_var(key, value);
+      return *this;
+    }
+
+    /**
+     * Removes/unsets an environment variable for the plugin process.
+     *
+     * The environment variable key is unset regardless of whether it exists
+     * in the parent environment variable scope.
+     */
+    void unset_env_var(const std::string &key) {
+      check(raw::dqcs_pcfg_env_unset(get_handle(), key.c_str()));
+    }
+
+    /**
+     * Removes/unsets an environment variable for the plugin process (builder
+     * pattern).
+     *
+     * The environment variable key is unset regardless of whether it exists
+     * in the parent environment variable scope.
+     */
+    PluginProcessConfiguration &without_env_var(const std::string &key) {
+      unset_env_var(key);
+      return *this;
+    }
+
+    /**
+     * Overrides the working directory for the plugin process.
+     */
+    void set_work_dir(const std::string &dir) {
+      check(raw::dqcs_pcfg_work_set(get_handle(), dir.c_str()));
+    }
+
+    /**
+     * Overrides the working directory for the plugin process (builder
+     * pattern).
+     */
+    PluginProcessConfiguration &with_work_dir(const std::string &dir) {
+      set_work_dir(dir);
+      return *this;
+    }
+
+    /**
+     * Returns the configured working directory for the given plugin process.
+     */
+    std::string get_work_dir() const {
+      char *ptr = check(raw::dqcs_pcfg_work_get(get_handle()));
+      std::string retval(ptr);
+      std::free(ptr);
+      return retval;
+    }
+
+    /**
      * Sets the logging verbosity level of the plugin.
      */
     virtual void set_verbosity(Loglevel level) {
       check(raw::dqcs_pcfg_verbosity_set(get_handle(), to_raw(level)));
+    }
+
+    /**
+     * Sets the logging verbosity level of the plugin (builder pattern).
+     */
+    PluginProcessConfiguration &with_verbosity(Loglevel level) {
+      set_verbosity(level);
+      return *this;
     }
 
     /**
@@ -5466,11 +5587,160 @@ namespace wrap {
      *
      * `verbosity` configures the verbosity level for the file only.
      */
-    virtual void log_tee(Loglevel verbosity, std::string filename) {
+    virtual void log_tee(Loglevel verbosity, const std::string &filename) {
       return check(raw::dqcs_pcfg_tee(get_handle(), to_raw(verbosity), filename.c_str()));
     }
 
-    // TODO: pcfg-specific functions
+    /**
+     * Configures a plugin thread to also output its log messages to a file
+     * (builder pattern).
+     *
+     * `verbosity` configures the verbosity level for the file only.
+     */
+    PluginProcessConfiguration &with_log_tee(Loglevel verbosity, const std::string &filename) {
+      log_tee(verbosity, filename);
+      return *this;
+    }
+
+    /**
+     * Configures the capture mode for the stdout stream of the specified
+     * plugin process.
+     */
+    void set_stdout_loglevel(Loglevel level) {
+      check(raw::dqcs_pcfg_stdout_mode_set(get_handle(), to_raw(level)));
+    }
+
+    /**
+     * Configures the capture mode for the stdout stream of the specified
+     * plugin process (builder pattern).
+     */
+    PluginProcessConfiguration &with_stdout_loglevel(Loglevel level) {
+      set_stdout_loglevel(level);
+      return *this;
+    }
+
+    /**
+     * Returns the configured stdout capture mode for the specified plugin
+     * process.
+     */
+    Loglevel get_stdout_loglevel() const {
+      return check(raw::dqcs_pcfg_stdout_mode_get(get_handle()));
+    }
+
+    /**
+     * Configures the capture mode for the stderr stream of the specified
+     * plugin process.
+     */
+    void set_stderr_loglevel(Loglevel level) {
+      check(raw::dqcs_pcfg_stderr_mode_set(get_handle(), to_raw(level)));
+    }
+
+    /**
+     * Configures the capture mode for the stderr stream of the specified
+     * plugin process (builder pattern).
+     */
+    PluginProcessConfiguration &with_stderr_loglevel(Loglevel level) {
+      set_stderr_loglevel(level);
+      return *this;
+    }
+
+    /**
+     * Returns the configured stderr capture mode for the specified plugin
+     * process.
+     */
+    Loglevel get_stderr_loglevel() const {
+      return check(raw::dqcs_pcfg_stderr_mode_get(get_handle()));
+    }
+
+    /**
+     * Configures the timeout for the plugin process to connect to DQCsim.
+     *
+     * The default is 5 seconds, so you should normally be able to leave this
+     * alone.
+     *
+     * The time unit is seconds. Use `std::numeric_limits<double>::infinity()`
+     * to specify an infinite timeout.
+     */
+    void set_accept_timeout(double timeout) {
+      check(raw::dqcs_pcfg_accept_timeout_set(get_handle(), timeout));
+    }
+
+    /**
+     * Configures the timeout for the plugin process to connect to DQCsim
+     * (builder pattern).
+     *
+     * The default is 5 seconds, so you should normally be able to leave this
+     * alone.
+     *
+     * The time unit is seconds. Use `std::numeric_limits<double>::infinity()`
+     * to specify an infinite timeout.
+     */
+    PluginProcessConfiguration &with_accept_timeout(double timeout) {
+      set_accept_timeout(timeout);
+      return *this;
+    }
+
+    /**
+     * Disables the timeout for the plugin process to connect to DQCsim
+     * (builder pattern).
+     */
+    PluginProcessConfiguration &without_accept_timeout() {
+      set_accept_timeout(std::numeric_limits<double>::infinity());
+      return *this;
+    }
+
+    /**
+     * Returns the configured timeout for the plugin process to connect to
+     * DQCsim.
+     */
+    double get_accept_timeout() {
+      return check(raw::dqcs_pcfg_accept_timeout_get(get_handle()));
+    }
+
+    /**
+     * Configures the timeout for the plugin process to shut down gracefully.
+     *
+     * The default is 5 seconds, so you should normally be able to leave this
+     * alone.
+     *
+     * The time unit is seconds. Use `std::numeric_limits<double>::infinity()`
+     * to specify an infinite timeout.
+     */
+    void set_shutdown_timeout(double timeout) {
+      check(raw::dqcs_pcfg_shutdown_timeout_set(get_handle(), timeout));
+    }
+
+    /**
+     * Configures the timeout for the plugin process to shut down gracefully
+     * (builder pattern).
+     *
+     * The default is 5 seconds, so you should normally be able to leave this
+     * alone.
+     *
+     * The time unit is seconds. Use `std::numeric_limits<double>::infinity()`
+     * to specify an infinite timeout.
+     */
+    PluginProcessConfiguration &with_shutdown_timeout(double timeout) {
+      set_shutdown_timeout(timeout);
+      return *this;
+    }
+
+    /**
+     * Disables the timeout for the plugin process to shut down gracefully
+     * (builder pattern).
+     */
+    PluginProcessConfiguration &without_shutdown_timeout() {
+      set_shutdown_timeout(std::numeric_limits<double>::infinity());
+      return *this;
+    }
+
+    /**
+     * Returns the configured timeout for the plugin process to shut down
+     * gracefully.
+     */
+    double get_shutdown_timeout() {
+      return check(raw::dqcs_pcfg_shutdown_timeout_get(get_handle()));
+    }
 
   };
 
@@ -5503,15 +5773,18 @@ namespace wrap {
     /**
      * Returns the plugin type.
      */
-    virtual PluginType plugin_type() const {
+    virtual PluginType get_plugin_type() const {
       return check(raw::dqcs_tcfg_type(get_handle()));
     }
 
     /**
      * Returns the name given to the plugin.
      */
-    virtual std::string name() const {
-      return std::string(check(raw::dqcs_tcfg_name(get_handle())));
+    virtual std::string get_name() const {
+      char *ptr = check(raw::dqcs_tcfg_name(get_handle()));
+      std::string retval(ptr);
+      std::free(ptr);
+      return retval;
     }
 
     /**
@@ -5522,10 +5795,27 @@ namespace wrap {
     }
 
     /**
+     * Attaches an arbitrary initialization command to the plugin (builder
+     * pattern).
+     */
+    PluginThreadConfiguration &with_init_cmd(ArbCmd &&cmd) {
+      add_init_cmd(std::move(cmd));
+      return *this;
+    }
+
+    /**
      * Sets the logging verbosity level of the plugin.
      */
     virtual void set_verbosity(Loglevel level) {
       check(raw::dqcs_tcfg_verbosity_set(get_handle(), to_raw(level)));
+    }
+
+    /**
+     * Sets the logging verbosity level of the plugin (builder pattern).
+     */
+    PluginThreadConfiguration &with_verbosity(Loglevel level) {
+      set_verbosity(level);
+      return *this;
     }
 
     /**
@@ -5540,8 +5830,19 @@ namespace wrap {
      *
      * `verbosity` configures the verbosity level for the file only.
      */
-    virtual void log_tee(Loglevel verbosity, std::string filename) {
+    virtual void log_tee(Loglevel verbosity, const std::string &filename) {
       return check(raw::dqcs_tcfg_tee(get_handle(), to_raw(verbosity), filename.c_str()));
+    }
+
+    /**
+     * Configures a plugin thread to also output its log messages to a file
+     * (builder pattern).
+     *
+     * `verbosity` configures the verbosity level for the file only.
+     */
+    PluginThreadConfiguration &with_log_tee(Loglevel verbosity, const std::string &filename) {
+      log_tee(verbosity, filename);
+      return *this;
     }
 
   };
