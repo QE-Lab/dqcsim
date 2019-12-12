@@ -570,6 +570,124 @@ namespace wrap {
   }
 
   /**
+   * Shim around the `dqcs_log_format` C API using `std::string` for the
+   * strings.
+   *
+   * \note The `printf` format arguments are passed directly into a C-only
+   * `printf`-like function. Therefore, you must use the `c_str()` function if
+   * you want to format `std::string` variables.
+   *
+   * If logging through DQCsim's conventional channels fails, this function
+   * simply outputs to stderr directly. Therefore, it cannot fail.
+   *
+   * To avoid having to fill out `module`, `file`, and `line_nr` manually, you
+   * can use the `DQCSIM_LOG` macro (or its loglevel-specific friends). If you
+   * define `DQCSIM_SHORT_LOGGING_MACROS` before including `<dqcsim>`, you can
+   * also use the `LOG` shorthand (or its loglevel-specific friends).
+   */
+  template<typename... Args>
+  inline void log(
+    wrap::Loglevel level,
+    const std::string &module,
+    const std::string &file,
+    unsigned int line_nr,
+    const std::string &format,
+    Args... args
+  ) {
+    raw::dqcs_log_format(
+      to_raw(level),
+      module.c_str(),
+      file.c_str(),
+      line_nr,
+      format.c_str(),
+      args...
+    );
+  }
+
+  /**
+   * Shim around the `dqcs_log_raw` C API using `std::string` for the strings.
+   *
+   * Returns whether logging succeeded.
+   *
+   * To avoid having to fill out `module`, `file`, and `line_nr` manually, you
+   * can use the `DQCSIM_LOG` macro (or its loglevel-specific friends). If you
+   * define `DQCSIM_SHORT_LOGGING_MACROS` before including `<dqcsim>`, you can
+   * also use the `LOG` shorthand (or its loglevel-specific friends).
+   */
+  inline bool log_raw(
+    wrap::Loglevel level,
+    const std::string &module,
+    const std::string &file,
+    unsigned int line_nr,
+    const std::string &message
+  ) {
+    return raw::dqcs_log_raw(
+      to_raw(level),
+      module.c_str(),
+      file.c_str(),
+      line_nr,
+      message.c_str()
+    ) == raw::dqcs_return_t::DQCS_SUCCESS;
+  }
+
+  /**
+   * Convenience macro for calling `log()` with automatically determined filename
+   * and line number, but a dynamic loglevel (first argument).
+   */
+  #define DQCSIM_LOG(level, fmt, ...)             \
+    ::dqcsim::wrap::log(                          \
+      level, "C++", __FILE__, __LINE__,           \
+      fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with trace loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_TRACE(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Trace, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with debug loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_DEBUG(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Debug, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with info loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_INFO(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Info, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with note loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_NOTE(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Note, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with warn loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_WARN(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Warn, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with warn loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_WARNING(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Warn, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with error loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_ERROR(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Error, fmt, ##__VA_ARGS__)
+
+  /**
+   * Convenience macro for calling `log()` with fatal loglevel and automatically
+   * determined filename and line number.
+   */
+  #define DQCSIM_FATAL(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Fatal, fmt, ##__VA_ARGS__)
+
+  /**
    * Base class for wrapping any handle.
    *
    * This class ensures that the wrapped handle is freed when it is destroyed,
@@ -3259,6 +3377,10 @@ namespace callback {
       void *user_data,                                        \
       raw::dqcs_plugin_state_t state,                         \
       raw::dqcs_handle_t cmd                                  \
+    );                                                        \
+    friend void cb_entry_spawn_plugin(                        \
+      void *user_data,                                        \
+      const char *simulator                                   \
     );
 
   /**
@@ -4198,6 +4320,32 @@ namespace callback {
       raw::dqcs_error_set(e.what());
     }
     return 0;
+  }
+
+  /**
+   * Callback wrapper specialized for the manual plugin spawning callback.
+   */
+  typedef Callback<void, std::string&&> SpawnPlugin;
+
+  /**
+   * Entry point for the `advance` callback.
+   */
+  void cb_entry_spawn_plugin(
+    void *user_data,
+    const char *simulator
+  ) {
+
+    // Wrap inputs.
+    SpawnPlugin *cb_wrapper = reinterpret_cast<SpawnPlugin*>(user_data);
+    std::string simulator_wrapper(simulator);
+
+    // Catch exceptions thrown in the user function to convert them to
+    // DQCsim's error reporting protocol.
+    try {
+      (*(cb_wrapper->cb))(std::move(simulator_wrapper));
+    } catch (const std::exception &e) {
+      DQCSIM_FATAL("DQCsim caught std::exception in plugin thread: %s", e.what());
+    }
   }
 
   /**
@@ -5186,124 +5334,6 @@ namespace wrap {
   };
 
   /**
-   * Shim around the `dqcs_log_format` C API using `std::string` for the
-   * strings.
-   *
-   * \note The `printf` format arguments are passed directly into a C-only
-   * `printf`-like function. Therefore, you must use the `c_str()` function if
-   * you want to format `std::string` variables.
-   *
-   * Returns whether logging succeeded.
-   *
-   * To avoid having to fill out `module`, `file`, and `line_nr` manually, you
-   * can use the `DQCSIM_LOG` macro (or its loglevel-specific friends). If you
-   * define `DQCSIM_SHORT_LOGGING_MACROS` before including `<dqcsim>`, you can
-   * also use the `LOG` shorthand (or its loglevel-specific friends).
-   */
-  template<typename... Args>
-  inline bool log(
-    wrap::Loglevel level,
-    const std::string &module,
-    const std::string &file,
-    unsigned int line_nr,
-    const std::string &format,
-    Args... args
-  ) {
-    return raw::dqcs_log_format(
-      to_raw(level),
-      module.c_str(),
-      file.c_str(),
-      line_nr,
-      format.c_str(),
-      args...
-    ) == raw::dqcs_return_t::DQCS_SUCCESS;
-  }
-
-  /**
-   * Shim around the `dqcs_log_raw` C API using `std::string` for the strings.
-   *
-   * Returns whether logging succeeded.
-   *
-   * To avoid having to fill out `module`, `file`, and `line_nr` manually, you
-   * can use the `DQCSIM_LOG` macro (or its loglevel-specific friends). If you
-   * define `DQCSIM_SHORT_LOGGING_MACROS` before including `<dqcsim>`, you can
-   * also use the `LOG` shorthand (or its loglevel-specific friends).
-   */
-  template<>
-  inline bool log(
-    wrap::Loglevel level,
-    const std::string &module,
-    const std::string &file,
-    unsigned int line_nr,
-    const std::string &message
-  ) {
-    return raw::dqcs_log_raw(
-      to_raw(level),
-      module.c_str(),
-      file.c_str(),
-      line_nr,
-      message.c_str()
-    ) == raw::dqcs_return_t::DQCS_SUCCESS;
-  }
-
-  /**
-   * Convenience macro for calling `log()` with automatically determined filename
-   * and line number, but a dynamic loglevel (first argument).
-   */
-  #define DQCSIM_LOG(level, fmt, ...)             \
-    ::dqcsim::wrap::log(                          \
-      level, "C++", __FILE__, __LINE__,           \
-      fmt, ##__VA_ARGS__)
-
-  /**
-   * Convenience macro for calling `log()` with trace loglevel and automatically
-   * determined filename and line number.
-   */
-  #define DQCSIM_TRACE(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Trace, fmt, ##__VA_ARGS__)
-
-  /**
-   * Convenience macro for calling `log()` with debug loglevel and automatically
-   * determined filename and line number.
-   */
-  #define DQCSIM_DEBUG(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Debug, fmt, ##__VA_ARGS__)
-
-  /**
-   * Convenience macro for calling `log()` with info loglevel and automatically
-   * determined filename and line number.
-   */
-  #define DQCSIM_INFO(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Info, fmt, ##__VA_ARGS__)
-
-  /**
-   * Convenience macro for calling `log()` with note loglevel and automatically
-   * determined filename and line number.
-   */
-  #define DQCSIM_NOTE(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Note, fmt, ##__VA_ARGS__)
-
-  /**
-   * Convenience macro for calling `log()` with warn loglevel and automatically
-   * determined filename and line number.
-   */
-  #define DQCSIM_WARN(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Warn, fmt, ##__VA_ARGS__)
-
-  /**
-   * Convenience macro for calling `log()` with warn loglevel and automatically
-   * determined filename and line number.
-   */
-  #define DQCSIM_WARNING(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Warn, fmt, ##__VA_ARGS__)
-
-  /**
-   * Convenience macro for calling `log()` with error loglevel and automatically
-   * determined filename and line number.
-   */
-  #define DQCSIM_ERROR(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Error, fmt, ##__VA_ARGS__)
-
-  /**
-   * Convenience macro for calling `log()` with fatal loglevel and automatically
-   * determined filename and line number.
-   */
-  #define DQCSIM_FATAL(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Fatal, fmt, ##__VA_ARGS__)
-
-  /**
    * Generic class for plugin configurations.
    */
   class PluginConfiguration : public Handle {
@@ -5369,6 +5399,313 @@ namespace wrap {
     virtual void log_tee(Loglevel verbosity, std::string filename) = 0;
 
   };
+
+  /**
+   * Wrapper class for plugin process configurations.
+   */
+  class PluginProcessConfiguration : public PluginConfiguration {
+  public:
+
+    /**
+     * Wrap the given plugin process or thread configuration handle.
+     */
+    PluginProcessConfiguration(HandleIndex handle) : PluginConfiguration(handle) {
+    }
+
+    // Delete copy construct/assign.
+    PluginProcessConfiguration(const PluginProcessConfiguration&) = delete;
+    void operator=(const PluginProcessConfiguration&) = delete;
+
+    /**
+     * Default move constructor.
+     */
+    PluginProcessConfiguration(PluginProcessConfiguration&&) = default;
+
+    /**
+     * Default move assignment.
+     */
+    PluginProcessConfiguration &operator=(PluginProcessConfiguration&&) = default;
+
+    /**
+     * Returns the plugin type.
+     */
+    virtual PluginType plugin_type() const {
+      return check(raw::dqcs_pcfg_type(get_handle()));
+    }
+
+    /**
+     * Returns the name given to the plugin.
+     */
+    virtual std::string name() const {
+      return std::string(check(raw::dqcs_pcfg_name(get_handle())));
+    }
+
+    /**
+     * Attaches an arbitrary initialization command to the plugin.
+     */
+    virtual void add_init_cmd(ArbCmd &&cmd) {
+      check(raw::dqcs_pcfg_init_cmd(get_handle(), cmd.get_handle()));
+    }
+
+    /**
+     * Sets the logging verbosity level of the plugin.
+     */
+    virtual void set_verbosity(Loglevel level) {
+      check(raw::dqcs_pcfg_verbosity_set(get_handle(), to_raw(level)));
+    }
+
+    /**
+     * Returns the current logging verbosity level of the plugin.
+     */
+    virtual Loglevel get_verbosity() const {
+      return check(raw::dqcs_pcfg_verbosity_get(get_handle()));
+    }
+
+    /**
+     * Configures a plugin thread to also output its log messages to a file.
+     *
+     * `verbosity` configures the verbosity level for the file only.
+     */
+    virtual void log_tee(Loglevel verbosity, std::string filename) {
+      return check(raw::dqcs_pcfg_tee(get_handle(), to_raw(verbosity), filename.c_str()));
+    }
+
+    // TODO: pcfg-specific functions
+
+  };
+
+  /**
+   * Wrapper class for local plugin thread configurations.
+   */
+  class PluginThreadConfiguration : public PluginConfiguration {
+  public:
+
+    /**
+     * Wrap the given plugin process or thread configuration handle.
+     */
+    PluginThreadConfiguration(HandleIndex handle) : PluginConfiguration(handle) {
+    }
+
+    // Delete copy construct/assign.
+    PluginThreadConfiguration(const PluginThreadConfiguration&) = delete;
+    void operator=(const PluginThreadConfiguration&) = delete;
+
+    /**
+     * Default move constructor.
+     */
+    PluginThreadConfiguration(PluginThreadConfiguration&&) = default;
+
+    /**
+     * Default move assignment.
+     */
+    PluginThreadConfiguration &operator=(PluginThreadConfiguration&&) = default;
+
+    /**
+     * Returns the plugin type.
+     */
+    virtual PluginType plugin_type() const {
+      return check(raw::dqcs_tcfg_type(get_handle()));
+    }
+
+    /**
+     * Returns the name given to the plugin.
+     */
+    virtual std::string name() const {
+      return std::string(check(raw::dqcs_tcfg_name(get_handle())));
+    }
+
+    /**
+     * Attaches an arbitrary initialization command to the plugin.
+     */
+    virtual void add_init_cmd(ArbCmd &&cmd) {
+      check(raw::dqcs_tcfg_init_cmd(get_handle(), cmd.get_handle()));
+    }
+
+    /**
+     * Sets the logging verbosity level of the plugin.
+     */
+    virtual void set_verbosity(Loglevel level) {
+      check(raw::dqcs_tcfg_verbosity_set(get_handle(), to_raw(level)));
+    }
+
+    /**
+     * Returns the current logging verbosity level of the plugin.
+     */
+    virtual Loglevel get_verbosity() const {
+      return check(raw::dqcs_tcfg_verbosity_get(get_handle()));
+    }
+
+    /**
+     * Configures a plugin thread to also output its log messages to a file.
+     *
+     * `verbosity` configures the verbosity level for the file only.
+     */
+    virtual void log_tee(Loglevel verbosity, std::string filename) {
+      return check(raw::dqcs_tcfg_tee(get_handle(), to_raw(verbosity), filename.c_str()));
+    }
+
+  };
+
+  /**
+   * Builder class used to construct plugin configurations.
+   */
+  class PluginConfigurationBuilder {
+  private:
+    PluginType type;
+    std::string name;
+  public:
+
+    /**
+     * Constructs a plugin configuration builder for the given plugin type.
+     *
+     * You can use the `Frontend`, `Operator`, and `Backend` functions as
+     * shorthands for this constructor.
+     */
+    PluginConfigurationBuilder(PluginType type) : type(type), name() {}
+
+    /**
+     * Builder function for naming the plugin.
+     *
+     * The name must be unique within the simulation. It is used, among other
+     * things, by the logging system.
+     *
+     * If this is not called or is called with an empty string, auto-naming
+     * will be performed: "front" for the frontend, "oper[i]" for the operators
+     * (indices starting at 1 from frontend to backend), and "back" for the
+     * backend.
+     */
+    PluginConfigurationBuilder &with_name(const std::string &name) {
+      this->name = name;
+      return *this;
+    }
+
+    /**
+     * Builds a plugin process configuration object from a "sugared" plugin
+     * specification string, using the same syntax that the `dqcsim` command
+     * line interface uses.
+     */
+    PluginProcessConfiguration with_spec(const std::string &spec) {
+      return PluginProcessConfiguration(check(raw::dqcs_pcfg_new(
+        to_raw(type), name.c_str(), spec.c_str()
+      )));
+    }
+
+    /**
+     * Builds a plugin process configuration object from a path to a plugin
+     * executable and an optional path to a script for it to run.
+     *
+     * Note that not all plugins will use the optional `script` parameter.
+     */
+    PluginProcessConfiguration with_executable(const std::string &executable, const std::string &script = "") {
+      return PluginProcessConfiguration(check(raw::dqcs_pcfg_new_raw(
+        to_raw(type), name.c_str(), executable.c_str(), script.c_str()
+      )));
+    }
+
+    /**
+     * Builds a plugin thread configuration object from a plugin definition
+     * object, containing a bunch of callback functions.
+     */
+    PluginThreadConfiguration with_callbacks(Plugin &&plugin) {
+      if (plugin.get_type() != type) {
+        throw std::invalid_argument("plugin type does not match callback object type");
+      }
+      return PluginThreadConfiguration(check(raw::dqcs_tcfg_new(
+        plugin.get_handle(), name.c_str()
+      )));
+    }
+
+  private:
+
+    /**
+     * Builds a plugin thread configuration object using a single callback that
+     * spawns the entire plugin.
+     *
+     * This version takes a pointer to a callback object, pre-allocated using
+     * new. The callback is called by DQCsim from a dedicated thread when
+     * DQCsim wants to start the plugin. The callback must then in some way
+     * spawn a plugin process that connects to the provided simulator string.
+     * The callback should return only when the process terminates.
+     */
+    PluginThreadConfiguration with_spawner_ptr(callback::SpawnPlugin *data) {
+      return PluginThreadConfiguration(check(raw::dqcs_tcfg_new_raw(
+        to_raw(type),
+        name.c_str(),
+        callback::cb_entry_spawn_plugin,
+        callback::cb_entry_user_free<callback::SpawnPlugin>,
+        data
+      )));
+    }
+
+  public:
+
+    /**
+     * Builds a plugin thread configuration object using a single callback that
+     * spawns the entire plugin.
+     *
+     * This version takes a pre-existing callback object by copy. The callback
+     * is called by DQCsim from a dedicated thread when DQCsim wants to start
+     * the plugin. The callback must then in some way spawn a plugin process
+     * that connects to the provided simulator string. The callback should
+     * return only when the process terminates.
+     */
+    PluginThreadConfiguration with_spawner(const callback::SpawnPlugin &data) {
+      return with_spawner_ptr(new callback::SpawnPlugin(data));
+    }
+
+    /**
+     * Builds a plugin thread configuration object using a single callback that
+     * spawns the entire plugin.
+     *
+     * This version takes a pre-existing callback object by move. The callback
+     * is called by DQCsim from a dedicated thread when DQCsim wants to start
+     * the plugin. The callback must then in some way spawn a plugin process
+     * that connects to the provided simulator string. The callback should
+     * return only when the process terminates.
+     */
+    PluginThreadConfiguration with_spawner(callback::SpawnPlugin &&data) {
+      return with_spawner_ptr(new callback::SpawnPlugin(std::move(data)));
+    }
+
+    /**
+     * Builds a plugin thread configuration object using a single callback that
+     * spawns the entire plugin.
+     *
+     * This version allows the callback object to be (copy-)constructed
+     * in-place. The callback is called by DQCsim from a dedicated thread when
+     * DQCsim wants to start the plugin. The callback must then in some way
+     * spawn a plugin process that connects to the provided simulator string.
+     * The callback should return only when the process terminates.
+     */
+    template<typename... Args>
+    PluginThreadConfiguration with_spawner(Args... args) {
+      return with_spawner_ptr(new callback::SpawnPlugin(args...));
+    }
+
+  };
+
+  /**
+   * Shorthand for constructing a frontend plugin configuration builder.
+   */
+  static inline PluginConfigurationBuilder Frontend() {
+    return PluginConfigurationBuilder(PluginType::Frontend);
+  }
+
+  /**
+   * Shorthand for constructing an operator plugin configuration builder.
+   */
+  static inline PluginConfigurationBuilder Operator() {
+    return PluginConfigurationBuilder(PluginType::Operator);
+  }
+
+  /**
+   * Shorthand for constructing a frontend plugin configuration builder.
+   */
+  static inline PluginConfigurationBuilder Backend() {
+    return PluginConfigurationBuilder(PluginType::Backend);
+  }
+
+
 
 } // namespace wrap
 
