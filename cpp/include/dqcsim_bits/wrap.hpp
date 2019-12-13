@@ -5694,8 +5694,8 @@ namespace wrap {
      * The default is 5 seconds, so you should normally be able to leave this
      * alone.
      *
-     * The time unit is seconds. Use `std::numeric_limits<double>::infinity()`
-     * to specify an infinite timeout.
+     * The time unit is seconds. Use IEEE positive infinity from `<limits>` to
+     * specify an infinite timeout.
      */
     void set_accept_timeout(double timeout) {
       check(raw::dqcs_pcfg_accept_timeout_set(get_handle(), timeout));
@@ -5708,8 +5708,8 @@ namespace wrap {
      * The default is 5 seconds, so you should normally be able to leave this
      * alone.
      *
-     * The time unit is seconds. Use `std::numeric_limits<double>::infinity()`
-     * to specify an infinite timeout.
+     * The time unit is seconds. Use IEEE positive infinity from `<limits>` to
+     * specify an infinite timeout.
      */
     PluginProcessConfiguration &with_accept_timeout(double timeout) {
       set_accept_timeout(timeout);
@@ -5739,8 +5739,8 @@ namespace wrap {
      * The default is 5 seconds, so you should normally be able to leave this
      * alone.
      *
-     * The time unit is seconds. Use `std::numeric_limits<double>::infinity()`
-     * to specify an infinite timeout.
+     * The time unit is seconds. Use IEEE positive infinity from `<limits>` to
+     * specify an infinite timeout.
      */
     void set_shutdown_timeout(double timeout) {
       check(raw::dqcs_pcfg_shutdown_timeout_set(get_handle(), timeout));
@@ -5753,8 +5753,8 @@ namespace wrap {
      * The default is 5 seconds, so you should normally be able to leave this
      * alone.
      *
-     * The time unit is seconds. Use `std::numeric_limits<double>::infinity()`
-     * to specify an infinite timeout.
+     * The time unit is seconds. Use IEEE positive infinity from `<limits>` to
+     * specify an infinite timeout.
      */
     PluginProcessConfiguration &with_shutdown_timeout(double timeout) {
       set_shutdown_timeout(timeout);
