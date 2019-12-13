@@ -205,14 +205,50 @@ namespace wrap {
      */
     MeasurementSet = 106,
 
-    // TODO document these entries
+    /**
+     * Indicates that a handle is a `PluginProcessConfiguration` for a frontend
+     * plugin.
+     */
     FrontendProcessConfig = 200,
+
+    /**
+     * Indicates that a handle is a `PluginProcessConfiguration` for an
+     * operator plugin.
+     */
     OperatorProcessConfig = 201,
+
+    /**
+     * Indicates that a handle is a `PluginProcessConfiguration` for a backend
+     * plugin.
+     */
     BackendProcessConfig = 203,
+
+    /**
+     * Indicates that a handle is a `PluginThreadConfiguration` for a frontend
+     * plugin.
+     */
     FrontendThreadConfig = 204,
+
+    /**
+     * Indicates that a handle is a `PluginThreadConfiguration` for an operator
+     * plugin.
+     */
     OperatorThreadConfig = 205,
+
+    /**
+     * Indicates that a handle is a `PluginThreadConfiguration` for a backend
+     * plugin.
+     */
     BackendThreadConfig = 206,
+
+    /**
+     * Indicates that a handle is a `SimulationConfiguration`.
+     */
     SimulationConfig = 207,
+
+    /**
+     * Indicates that a handle is a `Simulation`.
+     */
     Simulation = 208,
 
     /**
@@ -740,7 +776,7 @@ namespace wrap {
     }
 
     /**
-     * Wrap the given raw handle.
+     * Wraps the given raw handle.
      *
      * \note This class will take ownership of the handle, i.e. it is in charge
      * of freeing it.
@@ -877,7 +913,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given `arb` handle.
+     * Wraps the given `arb` handle.
      */
     Arb(HandleIndex handle) : Handle(handle) {
     }
@@ -1162,7 +1198,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given `ArbData` handle.
+     * Wraps the given `ArbData` handle.
      */
     ArbData(HandleIndex handle) : Arb(handle) {
     }
@@ -1221,7 +1257,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given `cmd` handle.
+     * Wraps the given `cmd` handle.
      */
     Cmd(HandleIndex handle) : Arb(handle) {
     }
@@ -1390,7 +1426,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given `ArbCmd` handle.
+     * Wraps the given `ArbCmdQueue` handle.
      */
     ArbCmdQueue(HandleIndex handle) : Cmd(handle) {
     }
@@ -1644,7 +1680,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given qubit set handle.
+     * Wraps the given qubit set handle.
      */
     QubitSet(HandleIndex handle) : Handle(handle) {
     }
@@ -2594,7 +2630,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given `Gate` handle.
+     * Wraps the given `Gate` handle.
      */
     Gate(HandleIndex handle) : Arb(handle) {
     }
@@ -3081,7 +3117,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given measurement handle.
+     * Wraps the given measurement handle.
      */
     Measurement(HandleIndex handle) : Arb(handle) {
     }
@@ -3168,7 +3204,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given measurement set handle.
+     * Wraps the given measurement set handle.
      */
     MeasurementSet(HandleIndex handle) : Handle(handle) {
     }
@@ -4391,7 +4427,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given plugin definition handle.
+     * Wraps the given plugin join handle.
      */
     PluginJoinHandle(HandleIndex handle) : Handle(handle) {
     }
@@ -4645,7 +4681,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given plugin definition handle.
+     * Wraps the given plugin definition handle.
      */
     Plugin(HandleIndex handle) : Handle(handle) {
     }
@@ -5351,7 +5387,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given plugin process or thread configuration handle.
+     * Wraps the given plugin process or thread configuration handle.
      */
     PluginConfiguration(HandleIndex handle) : Handle(handle) {
     }
@@ -5418,7 +5454,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given plugin process or thread configuration handle.
+     * Wraps the given plugin process configuration handle.
      */
     PluginProcessConfiguration(HandleIndex handle) : PluginConfiguration(handle) {
     }
@@ -5751,7 +5787,7 @@ namespace wrap {
   public:
 
     /**
-     * Wrap the given plugin process or thread configuration handle.
+     * Wraps the given plugin thread configuration handle.
      */
     PluginThreadConfiguration(HandleIndex handle) : PluginConfiguration(handle) {
     }
@@ -6006,7 +6042,154 @@ namespace wrap {
     return PluginConfigurationBuilder(PluginType::Backend);
   }
 
+  /**
+   * Wrapper class for configuring a simulation.
+   */
+  class SimulationConfiguration : public Handle {
+  public:
 
+    /**
+     * Wraps the given simulation configuration handle.
+     */
+    SimulationConfiguration(HandleIndex handle) : Handle(handle) {
+    }
+
+    /**
+     * Creates a new simulation configuration.
+     */
+    SimulationConfiguration() : Handle(check(raw::dqcs_scfg_new())) {
+    }
+
+    // Delete copy construct/assign.
+    SimulationConfiguration(const SimulationConfiguration&) = delete;
+    void operator=(const SimulationConfiguration&) = delete;
+
+    /**
+     * Default move constructor.
+     */
+    SimulationConfiguration(SimulationConfiguration&&) = default;
+
+    /**
+     * Default move assignment.
+     */
+    SimulationConfiguration &operator=(SimulationConfiguration&&) = default;
+
+    /**
+     * Appends a plugin to a simulation configuration.
+     *
+     * Plugin configurations are always moved into the simulation (they cannot
+     * be copied). Use `std::move()` if you use a named variable for the
+     * plugin configurations.
+     *
+     * Frontend and backend plugins will automatically be inserted at the front
+     * and back of the pipeline when the simulation is created. Operators are
+     * inserted in front to back order. This function does not provide
+     * safeguards against multiple frontends/backends; such errors will only be
+     * reported when the simulation is started.
+     *
+     * Note that it is not possible to observe or mutate a plugin configuration
+     * once it has been added to a simulator configuration handle. If you want
+     * to do this for some reason, you should maintain your own data
+     * structures, and only build the DQCsim structures from them when you're
+     * done.
+     */
+    void add_plugin(PluginConfiguration &&plugin) {
+      check(raw::dqcs_scfg_push_plugin(handle, plugin.get_handle()));
+    }
+
+    /**
+     * Appends a plugin to a simulation configuration (builder pattern).
+     *
+     * @see add_plugin()
+     */
+    SimulationConfiguration &with_plugin(PluginConfiguration &&plugin) {
+      add_plugin(std::move(plugin));
+      return *this;
+    }
+
+    /**
+     * Configures the random seed that the simulation should use.
+     *
+     * Note that the seed is randomized by default.
+     */
+    virtual void set_seed(uint64_t seed) {
+      check(raw::dqcs_scfg_seed_set(get_handle(), seed));
+    }
+
+    /**
+     * Configures the random seed that the simulation should use (builder
+     * pattern).
+     *
+     * Note that the seed is randomized by default.
+     */
+    SimulationConfiguration &with_seed(uint64_t seed) {
+      set_seed(seed);
+      return *this;
+    }
+
+    /**
+     * Returns the configured random seed.
+     */
+    virtual uint64_t get_seed() const {
+      // NOTE: no check(), cannot distinguish between seed 0 and exception.
+      return raw::dqcs_scfg_seed_get(get_handle());
+    }
+
+    // TODO: more stuff
+
+    /**
+     * Configures DQCsim to also output its log messages to a file.
+     *
+     * `verbosity` configures the verbosity level for the file only.
+     */
+    void log_tee(Loglevel verbosity, const std::string &filename) {
+      return check(raw::dqcs_scfg_tee(get_handle(), to_raw(verbosity), filename.c_str()));
+    }
+
+    /**
+     * Configures DQCsim to also output its log messages to a file (builder
+     * pattern).
+     *
+     * `verbosity` configures the verbosity level for the file only.
+     */
+    SimulationConfiguration &with_log_tee(Loglevel verbosity, const std::string &filename) {
+      log_tee(verbosity, filename);
+      return *this;
+    }
+
+    // TODO: more stuff
+
+  };
+
+  /**
+   * Wrapper class for a running simulation.
+   */
+  class Simulation : public Handle {
+  public:
+
+    /**
+     * Wraps the given simulation handle.
+     */
+    Simulation(HandleIndex handle) : Handle(handle) {
+    }
+
+    // Delete copy construct/assign.
+    Simulation(const Simulation&) = delete;
+    void operator=(const Simulation&) = delete;
+
+    /**
+     * Default move constructor.
+     */
+    Simulation(Simulation&&) = default;
+
+    /**
+     * Default move assignment.
+     */
+    Simulation &operator=(Simulation&&) = default;
+
+    // TODO: more stuff
+
+  };
 
 } // namespace wrap
 
