@@ -13,6 +13,7 @@ keywords = ["quantum", "simulation", "framework"]
 categories = ["simulation", "science"]
 license = "Apache-2.0"
 default-run = "dqcsim"
+exclude = ["**/*.qasm"]
 
 [badges]
 codecov = { repository = "mbrobbel/dqcsim" }
@@ -27,24 +28,34 @@ required-features = ["cli"]
 
 [[bin]]
 name = "dqcsbenull"
+path = "src/bin/null/backend.rs"
 doc = false
 required-features = ["null-plugins"]
 
 [[bin]]
 name = "dqcsopnull"
+path = "src/bin/null/operator.rs"
 doc = false
 required-features = ["null-plugins"]
 
 [[bin]]
 name = "dqcsfenull"
+path = "src/bin/null/frontend.rs"
 doc = false
 required-features = ["null-plugins"]
+
+[[bin]]
+name = "dqcsfeqasm"
+path = "src/bin/openqasm/main.rs"
+doc = false
+required-features = ["openqasm"]
 
 [features]
 default = ["cli", "null-plugins"]
 cli = ["structopt", "ansi_term", "clap", "git-testament"]
 null-plugins = []
 bindings = ["cbindgen", "libc", "regex", "lazy_static"]
+openqasm = ["qasm", "meval", "structopt"]
 
 [dependencies]
 strum = "0.17"
@@ -77,6 +88,8 @@ ansi_term = { version = "0.12", optional = true }
 clap = { version = "2.33", optional = true }
 git-testament = { version = "0.1", optional = true }
 libc = { version = "0.2", optional = true }
+qasm = { version = "1.0", optional = true }
+meval = { version = "0.2", optional = true }
 
 [build-dependencies]
 cbindgen = { version = "0.12", optional = true }
