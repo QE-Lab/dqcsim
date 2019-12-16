@@ -29,6 +29,7 @@
 #include <memory>
 #include <cmath>
 #include <limits>
+#include <chrono>
 #include <cdqcsim>
 
 /**
@@ -1438,6 +1439,20 @@ namespace wrap {
     }
 
     /**
+     * Pushes an `ArbCmd` into the queue by moving.
+     */
+    void push(ArbCmd &&cmd) {
+      check(raw::dqcs_cq_push(handle, cmd.get_handle()));
+    }
+
+    /**
+     * Pushes an `ArbCmd` into the queue by copying.
+     */
+    void push(const Cmd &cmd) {
+      push(std::move(ArbCmd(cmd)));
+    }
+
+    /**
      * Constructs an `ArbCmd` queue object from an iterable of `ArbCmd`s by
      * copying.
      */
@@ -1464,17 +1479,11 @@ namespace wrap {
     }
 
     /**
-     * Pushes an `ArbCmd` into the queue by copying.
+     * Pushes an `ArbCmd` into the queue by moving (builder pattern).
      */
-    void push(const Cmd &cmd) {
-      push(std::move(ArbCmd(cmd)));
-    }
-
-    /**
-     * Pushes an `ArbCmd` into the queue by moving.
-     */
-    void push(ArbCmd &&cmd) {
-      check(raw::dqcs_cq_push(handle, cmd.get_handle()));
+    ArbCmdQueue &with(ArbCmd &&cmd) {
+      push(std::move(cmd));
+      return *this;
     }
 
     /**
@@ -1482,14 +1491,6 @@ namespace wrap {
      */
     ArbCmdQueue &with(const Cmd &cmd) {
       push(cmd);
-      return *this;
-    }
-
-    /**
-     * Pushes an `ArbCmd` into the queue by moving (builder pattern).
-     */
-    ArbCmdQueue &with(ArbCmd &&cmd) {
-      push(std::move(cmd));
       return *this;
     }
 
@@ -3228,16 +3229,6 @@ namespace wrap {
     }
 
     /**
-     * Copies the given measurement object into the set. If the set already
-     * contained measurement data for the qubit associated with the measurement
-     * object, the previous measurement data is overwritten.
-     */
-    void set(const Measurement &measurement) {
-      Measurement copy = measurement;
-      check(raw::dqcs_mset_set(handle, copy.get_handle()));
-    }
-
-    /**
      * Moves the given measurement object into the set. If the set already
      * contained measurement data for the qubit associated with the measurement
      * object, the previous measurement data is overwritten.
@@ -3247,12 +3238,12 @@ namespace wrap {
     }
 
     /**
-     * Copies the given measurement object into the set (builder pattern). If
-     * the set already contained measurement data for the qubit associated with
-     * the measurement object, the previous measurement data is overwritten.
+     * Copies the given measurement object into the set. If the set already
+     * contained measurement data for the qubit associated with the measurement
+     * object, the previous measurement data is overwritten.
      */
-    MeasurementSet &with(const Measurement &measurement) {
-      set(measurement);
+    void set(const Measurement &measurement) {
+      set(std::move(Measurement(measurement)));
     }
 
     /**
@@ -3262,6 +3253,15 @@ namespace wrap {
      */
     MeasurementSet &with(Measurement &&measurement) {
       set(std::move(measurement));
+    }
+
+    /**
+     * Copies the given measurement object into the set (builder pattern). If
+     * the set already contained measurement data for the qubit associated with
+     * the measurement object, the previous measurement data is overwritten.
+     */
+    MeasurementSet &with(const Measurement &measurement) {
+      set(measurement);
     }
 
     /**
@@ -3428,6 +3428,19 @@ namespace callback {
     friend void cb_entry_spawn_plugin(                        \
       void *user_data,                                        \
       const char *simulator                                   \
+    );                                                        \
+    friend void cb_entry_log(                                 \
+      void *user_data,                                        \
+      const char *message,                                    \
+      const char *logger,                                     \
+      raw::dqcs_loglevel_t level,                             \
+      const char *module,                                     \
+      const char *file,                                       \
+      uint32_t line,                                          \
+      uint64_t time_s,                                        \
+      uint32_t time_ns,                                       \
+      uint32_t pid,                                           \
+      uint64_t tid                                            \
     );
 
   /**
@@ -3527,17 +3540,6 @@ namespace callback {
     PluginState &operator=(PluginState&&) = delete;
 
     /**
-     * Allocates a number of downstream qubits, moving in the given command
-     * queue as arbitrary additional data for the qubits.
-     *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
-     */
-    wrap::QubitSet allocate(size_t num_qubits, wrap::ArbCmdQueue &queue) {
-      return allocate(num_qubits, std::move(wrap::ArbCmdQueue(queue)));
-    }
-
-    /**
      * Allocates a number of downstream qubits, copying in the given command
      * queue as arbitrary additional data for the qubits.
      *
@@ -3546,6 +3548,17 @@ namespace callback {
      */
     wrap::QubitSet allocate(size_t num_qubits, wrap::ArbCmdQueue &&queue) {
       return wrap::QubitSet(wrap::check(raw::dqcs_plugin_allocate(state, num_qubits, queue.get_handle())));
+    }
+
+    /**
+     * Allocates a number of downstream qubits, moving in the given command
+     * queue as arbitrary additional data for the qubits.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    wrap::QubitSet allocate(size_t num_qubits, wrap::ArbCmdQueue &queue) {
+      return allocate(num_qubits, std::move(wrap::ArbCmdQueue(queue)));
     }
 
     /**
@@ -3559,17 +3572,6 @@ namespace callback {
     }
 
     /**
-     * Allocates a single downstream qubit, moving in the given command queue
-     * as arbitrary additional data for the qubits.
-     *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
-     */
-    wrap::QubitRef allocate(wrap::ArbCmdQueue &queue) {
-      return allocate(std::move(wrap::ArbCmdQueue(queue)));
-    }
-
-    /**
      * Allocates a single downstream qubit, copying in the given command queue
      * as arbitrary additional data for the qubits.
      *
@@ -3578,6 +3580,17 @@ namespace callback {
      */
     wrap::QubitRef allocate(wrap::ArbCmdQueue &&queue) {
       return allocate(1, std::move(queue)).pop();
+    }
+
+    /**
+     * Allocates a single downstream qubit, moving in the given command queue
+     * as arbitrary additional data for the qubits.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    wrap::QubitRef allocate(wrap::ArbCmdQueue &queue) {
+      return allocate(std::move(wrap::ArbCmdQueue(queue)));
     }
 
     /**
@@ -3596,8 +3609,8 @@ namespace callback {
      * Backend plugins are not allowed to call this. Doing so will result in an
      * error.
      */
-    void free(const wrap::QubitSet &qubits) {
-      free(std::move(wrap::QubitSet(qubits)));
+    void free(wrap::QubitSet &&qubits) {
+      wrap::check(raw::dqcs_plugin_free(state, qubits.get_handle()));
     }
 
     /**
@@ -3606,8 +3619,8 @@ namespace callback {
      * Backend plugins are not allowed to call this. Doing so will result in an
      * error.
      */
-    void free(wrap::QubitSet &&qubits) {
-      wrap::check(raw::dqcs_plugin_free(state, qubits.get_handle()));
+    void free(const wrap::QubitSet &qubits) {
+      free(std::move(wrap::QubitSet(qubits)));
     }
 
     /**
@@ -3783,6 +3796,17 @@ namespace callback {
     }
 
     /**
+     * Shorthand for sending a multi-qubit Z-axis measurement to the downstream
+     * plugin.
+     *
+     * Backend plugins are not allowed to call this. Doing so will result in an
+     * error.
+     */
+    void measure_z(wrap::QubitSet &&qs) {
+      gate(wrap::Gate::measure(std::move(qs)));
+    }
+
+    /**
      * Shorthand for sending a single-qubit Z-axis measurement to the
      * downstream plugin.
      *
@@ -3805,17 +3829,6 @@ namespace callback {
     }
 
     /**
-     * Shorthand for sending a multi-qubit Z-axis measurement to the downstream
-     * plugin.
-     *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
-     */
-    void measure_z(wrap::QubitSet &&qs) {
-      gate(wrap::Gate::measure(std::move(qs)));
-    }
-
-    /**
      * Tells the downstream plugin to run for the specified number of cycles.
      *
      * Backend plugins are not allowed to call this. Doing so will result in an
@@ -3835,8 +3848,8 @@ namespace callback {
      *
      * This function returns the `ArbData` object resulting from the command.
      */
-    wrap::ArbData arb(const wrap::ArbCmd &cmd) {
-      arb(std::move(wrap::ArbCmd(cmd)));
+    wrap::ArbData arb(wrap::ArbCmd &&cmd) {
+      return wrap::ArbData(wrap::check(raw::dqcs_plugin_arb(state, cmd.get_handle())));
     }
 
     /**
@@ -3847,8 +3860,8 @@ namespace callback {
      *
      * This function returns the `ArbData` object resulting from the command.
      */
-    wrap::ArbData arb(wrap::ArbCmd &&cmd) {
-      return wrap::ArbData(wrap::check(raw::dqcs_plugin_arb(state, cmd.get_handle())));
+    wrap::ArbData arb(const wrap::ArbCmd &cmd) {
+      arb(std::move(wrap::ArbCmd(cmd)));
     }
 
     /**
@@ -3926,15 +3939,15 @@ namespace callback {
     /**
      * Sends a message to the host.
      */
-    void send(const wrap::ArbData &message) {
-      send(std::move(wrap::ArbData(message)));
+    void send(wrap::ArbData &&message) {
+      wrap::check(raw::dqcs_plugin_send(state, message.get_handle()));
     }
 
     /**
      * Sends a message to the host.
      */
-    void send(wrap::ArbData &&message) {
-      wrap::check(raw::dqcs_plugin_send(state, message.get_handle()));
+    void send(const wrap::ArbData &message) {
+      send(std::move(wrap::ArbData(message)));
     }
 
     /**
@@ -4049,13 +4062,6 @@ namespace callback {
     {}
 
     /**
-     * Constructs the callback wrapper by copying a `std::function`.
-     */
-    Callback(const std::function<R(Args...)> &cb)
-      : cb(std::make_shared<std::function<R(Args...)>>(cb))
-    {}
-
-    /**
      * Constructs the callback wrapper by moving a `std::function`.
      */
     Callback(std::function<R(Args...)> &&cb)
@@ -4063,17 +4069,24 @@ namespace callback {
     {}
 
     /**
-     * Constructs the callback wrapper by means of a copying a `shared_ptr`
-     * to a `std::function`.
+     * Constructs the callback wrapper by copying a `std::function`.
      */
-    Callback(const std::shared_ptr<std::function<R(Args...)>> &cb) : cb(cb) {
-    }
+    Callback(const std::function<R(Args...)> &cb)
+      : cb(std::make_shared<std::function<R(Args...)>>(cb))
+    {}
 
     /**
      * Constructs the callback wrapper by means of moving a `shared_ptr`
      * to a `std::function`.
      */
     Callback(std::shared_ptr<std::function<R(Args...)>> &&cb) : cb(cb) {
+    }
+
+    /**
+     * Constructs the callback wrapper by means of a copying a `shared_ptr`
+     * to a `std::function`.
+     */
+    Callback(const std::shared_ptr<std::function<R(Args...)>> &cb) : cb(cb) {
     }
 
   };
@@ -4375,7 +4388,7 @@ namespace callback {
   typedef Callback<void, std::string&&> SpawnPlugin;
 
   /**
-   * Entry point for the `advance` callback.
+   * Entry point for the manual plugin spawning callback.
    */
   void cb_entry_spawn_plugin(
     void *user_data,
@@ -4392,6 +4405,84 @@ namespace callback {
       (*(cb_wrapper->cb))(std::move(simulator_wrapper));
     } catch (const std::exception &e) {
       DQCSIM_FATAL("DQCsim caught std::exception in plugin thread: %s", e.what());
+    }
+  }
+
+  /**
+   * Callback wrapper specialized for the simulation logging callback.
+   *
+   * This callback takes the following arguments:
+   *
+   *  - `std::string&&`: log message string, excluding metadata.
+   *  - `std::string&&`: name assigned to the logger that was used to produce
+   *     the message (= "dqcsim" or a plugin name).
+   *  - `Loglevel`: the severity of the log message.
+   *  - `std::string&&`: string representing the source of the log message, or
+   *    empty when no source is known.
+   *  - `std::string&&`: string containing the filename of the source that
+   *     generated the message, or empty when no source is known.
+   *  - `uint32_t`: line number within the aforementioned file, or 0 if not
+   *    known.
+   *  - `std::chrono::system_clock::time_point&&`: timestamp for the message.
+   *  - `uint32_t`: PID of the generating process.
+   *  - `uint64_t`: TID of the generating thread.
+   *
+   * If an internal log record is particularly malformed and cannot be coerced
+   * into the C equivalents of the above (nul bytes in the strings, invalid
+   * timestamp, whatever) the message is silently ignored.
+   */
+  typedef Callback<
+    void,
+    std::string&&,                            // message
+    std::string&&,                            // logger
+    wrap::Loglevel,                           // severity
+    std::string&&,                            // module
+    std::string&&,                            // file
+    uint32_t,                                 // line number
+    std::chrono::system_clock::time_point&&,  // timestamp
+    uint32_t,                                 // process ID
+    uint64_t                                  // thread ID
+  > Log;
+
+  /**
+   * Entry point for the simulation logging callback.
+   */
+  void cb_entry_log(
+    void *user_data,
+    const char *message,
+    const char *logger,
+    raw::dqcs_loglevel_t level,
+    const char *module,
+    const char *file,
+    uint32_t line,
+    uint64_t time_s,
+    uint32_t time_ns,
+    uint32_t pid,
+    uint64_t tid
+  ) {
+
+    // Wrap inputs.
+    Log *cb_wrapper = reinterpret_cast<Log*>(user_data);
+
+    // Catch exceptions thrown in the user function to convert them to
+    // DQCsim's error reporting protocol.
+    try {
+      (*(cb_wrapper->cb))(
+        std::string(message ? message : ""),
+        std::string(logger ? logger : ""),
+        wrap::check(level),
+        std::string(module ? module : ""),
+        std::string(file ? file : ""),
+        line,
+        std::chrono::system_clock::time_point(
+          std::chrono::seconds(time_s)
+          + std::chrono::nanoseconds(time_ns)
+        ),
+        pid,
+        tid
+      );
+    } catch (const std::exception &e) {
+      std::cerr << "DQCsim caught std::exception in log callback: " << e.what() << std::endl;
     }
   }
 
@@ -4744,7 +4835,7 @@ namespace wrap {
     /**
      * Constructs a new frontend.
      */
-    static Plugin front(
+    static Plugin Frontend(
       const std::string &name,
       const std::string &author,
       const std::string &version
@@ -4755,7 +4846,7 @@ namespace wrap {
     /**
      * Constructs a new operator.
      */
-    static Plugin oper(
+    static Plugin Operator(
       const std::string &name,
       const std::string &author,
       const std::string &version
@@ -4766,7 +4857,7 @@ namespace wrap {
     /**
      * Constructs a new backend.
      */
-    static Plugin back(
+    static Plugin Backend(
       const std::string &name,
       const std::string &author,
       const std::string &version
@@ -5419,14 +5510,14 @@ namespace wrap {
     /**
      * Attaches an arbitrary initialization command to the plugin.
      */
-    void add_init_cmd(const ArbCmd &cmd) {
-      add_init_cmd(std::move(ArbCmd(cmd)));
-    }
+    virtual void add_init_cmd(ArbCmd &&cmd) = 0;
 
     /**
      * Attaches an arbitrary initialization command to the plugin.
      */
-    virtual void add_init_cmd(ArbCmd &&cmd) = 0;
+    void add_init_cmd(const ArbCmd &cmd) {
+      add_init_cmd(std::move(ArbCmd(cmd)));
+    }
 
     /**
      * Sets the logging verbosity level of the plugin.
@@ -5477,14 +5568,14 @@ namespace wrap {
      * Returns the plugin type.
      */
     virtual PluginType get_plugin_type() const {
-      return check(raw::dqcs_pcfg_type(get_handle()));
+      return check(raw::dqcs_pcfg_type(handle));
     }
 
     /**
      * Returns the name given to the plugin.
      */
     virtual std::string get_name() const {
-      char *ptr = check(raw::dqcs_pcfg_name(get_handle()));
+      char *ptr = check(raw::dqcs_pcfg_name(handle));
       std::string retval(ptr);
       std::free(ptr);
       return retval;
@@ -5494,7 +5585,7 @@ namespace wrap {
      * Returns the configured executable path for the given plugin process.
      */
     std::string get_executable() const {
-      char *ptr = check(raw::dqcs_pcfg_executable(get_handle()));
+      char *ptr = check(raw::dqcs_pcfg_executable(handle));
       std::string retval(ptr);
       std::free(ptr);
       return retval;
@@ -5504,7 +5595,7 @@ namespace wrap {
      * Returns the configured script path for the given plugin process.
      */
     std::string get_script() const {
-      char *ptr = check(raw::dqcs_pcfg_script(get_handle()));
+      char *ptr = check(raw::dqcs_pcfg_script(handle));
       std::string retval(ptr);
       std::free(ptr);
       return retval;
@@ -5514,7 +5605,7 @@ namespace wrap {
      * Attaches an arbitrary initialization command to the plugin.
      */
     virtual void add_init_cmd(ArbCmd &&cmd) {
-      check(raw::dqcs_pcfg_init_cmd(get_handle(), cmd.get_handle()));
+      check(raw::dqcs_pcfg_init_cmd(handle, cmd.get_handle()));
     }
 
     /**
@@ -5533,7 +5624,7 @@ namespace wrap {
      * it exists in the parent environment variable scope.
      */
     void set_env_var(const std::string &key, const std::string &value) {
-      check(raw::dqcs_pcfg_env_set(get_handle(), key.c_str(), value.c_str()));
+      check(raw::dqcs_pcfg_env_set(handle, key.c_str(), value.c_str()));
     }
 
     /**
@@ -5555,7 +5646,7 @@ namespace wrap {
      * in the parent environment variable scope.
      */
     void unset_env_var(const std::string &key) {
-      check(raw::dqcs_pcfg_env_unset(get_handle(), key.c_str()));
+      check(raw::dqcs_pcfg_env_unset(handle, key.c_str()));
     }
 
     /**
@@ -5574,7 +5665,7 @@ namespace wrap {
      * Overrides the working directory for the plugin process.
      */
     void set_work_dir(const std::string &dir) {
-      check(raw::dqcs_pcfg_work_set(get_handle(), dir.c_str()));
+      check(raw::dqcs_pcfg_work_set(handle, dir.c_str()));
     }
 
     /**
@@ -5590,7 +5681,7 @@ namespace wrap {
      * Returns the configured working directory for the given plugin process.
      */
     std::string get_work_dir() const {
-      char *ptr = check(raw::dqcs_pcfg_work_get(get_handle()));
+      char *ptr = check(raw::dqcs_pcfg_work_get(handle));
       std::string retval(ptr);
       std::free(ptr);
       return retval;
@@ -5600,7 +5691,7 @@ namespace wrap {
      * Sets the logging verbosity level of the plugin.
      */
     virtual void set_verbosity(Loglevel level) {
-      check(raw::dqcs_pcfg_verbosity_set(get_handle(), to_raw(level)));
+      check(raw::dqcs_pcfg_verbosity_set(handle, to_raw(level)));
     }
 
     /**
@@ -5615,7 +5706,7 @@ namespace wrap {
      * Returns the current logging verbosity level of the plugin.
      */
     virtual Loglevel get_verbosity() const {
-      return check(raw::dqcs_pcfg_verbosity_get(get_handle()));
+      return check(raw::dqcs_pcfg_verbosity_get(handle));
     }
 
     /**
@@ -5624,7 +5715,7 @@ namespace wrap {
      * `verbosity` configures the verbosity level for the file only.
      */
     virtual void log_tee(Loglevel verbosity, const std::string &filename) {
-      return check(raw::dqcs_pcfg_tee(get_handle(), to_raw(verbosity), filename.c_str()));
+      return check(raw::dqcs_pcfg_tee(handle, to_raw(verbosity), filename.c_str()));
     }
 
     /**
@@ -5643,7 +5734,7 @@ namespace wrap {
      * plugin process.
      */
     void set_stdout_loglevel(Loglevel level) {
-      check(raw::dqcs_pcfg_stdout_mode_set(get_handle(), to_raw(level)));
+      check(raw::dqcs_pcfg_stdout_mode_set(handle, to_raw(level)));
     }
 
     /**
@@ -5660,7 +5751,7 @@ namespace wrap {
      * process.
      */
     Loglevel get_stdout_loglevel() const {
-      return check(raw::dqcs_pcfg_stdout_mode_get(get_handle()));
+      return check(raw::dqcs_pcfg_stdout_mode_get(handle));
     }
 
     /**
@@ -5668,7 +5759,7 @@ namespace wrap {
      * plugin process.
      */
     void set_stderr_loglevel(Loglevel level) {
-      check(raw::dqcs_pcfg_stderr_mode_set(get_handle(), to_raw(level)));
+      check(raw::dqcs_pcfg_stderr_mode_set(handle, to_raw(level)));
     }
 
     /**
@@ -5685,7 +5776,7 @@ namespace wrap {
      * process.
      */
     Loglevel get_stderr_loglevel() const {
-      return check(raw::dqcs_pcfg_stderr_mode_get(get_handle()));
+      return check(raw::dqcs_pcfg_stderr_mode_get(handle));
     }
 
     /**
@@ -5698,7 +5789,7 @@ namespace wrap {
      * specify an infinite timeout.
      */
     void set_accept_timeout(double timeout) {
-      check(raw::dqcs_pcfg_accept_timeout_set(get_handle(), timeout));
+      check(raw::dqcs_pcfg_accept_timeout_set(handle, timeout));
     }
 
     /**
@@ -5730,7 +5821,7 @@ namespace wrap {
      * DQCsim.
      */
     double get_accept_timeout() {
-      return check(raw::dqcs_pcfg_accept_timeout_get(get_handle()));
+      return check(raw::dqcs_pcfg_accept_timeout_get(handle));
     }
 
     /**
@@ -5743,7 +5834,7 @@ namespace wrap {
      * specify an infinite timeout.
      */
     void set_shutdown_timeout(double timeout) {
-      check(raw::dqcs_pcfg_shutdown_timeout_set(get_handle(), timeout));
+      check(raw::dqcs_pcfg_shutdown_timeout_set(handle, timeout));
     }
 
     /**
@@ -5775,7 +5866,7 @@ namespace wrap {
      * gracefully.
      */
     double get_shutdown_timeout() {
-      return check(raw::dqcs_pcfg_shutdown_timeout_get(get_handle()));
+      return check(raw::dqcs_pcfg_shutdown_timeout_get(handle));
     }
 
   };
@@ -5810,14 +5901,14 @@ namespace wrap {
      * Returns the plugin type.
      */
     virtual PluginType get_plugin_type() const {
-      return check(raw::dqcs_tcfg_type(get_handle()));
+      return check(raw::dqcs_tcfg_type(handle));
     }
 
     /**
      * Returns the name given to the plugin.
      */
     virtual std::string get_name() const {
-      char *ptr = check(raw::dqcs_tcfg_name(get_handle()));
+      char *ptr = check(raw::dqcs_tcfg_name(handle));
       std::string retval(ptr);
       std::free(ptr);
       return retval;
@@ -5827,7 +5918,7 @@ namespace wrap {
      * Attaches an arbitrary initialization command to the plugin.
      */
     virtual void add_init_cmd(ArbCmd &&cmd) {
-      check(raw::dqcs_tcfg_init_cmd(get_handle(), cmd.get_handle()));
+      check(raw::dqcs_tcfg_init_cmd(handle, cmd.get_handle()));
     }
 
     /**
@@ -5843,7 +5934,7 @@ namespace wrap {
      * Sets the logging verbosity level of the plugin.
      */
     virtual void set_verbosity(Loglevel level) {
-      check(raw::dqcs_tcfg_verbosity_set(get_handle(), to_raw(level)));
+      check(raw::dqcs_tcfg_verbosity_set(handle, to_raw(level)));
     }
 
     /**
@@ -5858,7 +5949,7 @@ namespace wrap {
      * Returns the current logging verbosity level of the plugin.
      */
     virtual Loglevel get_verbosity() const {
-      return check(raw::dqcs_tcfg_verbosity_get(get_handle()));
+      return check(raw::dqcs_tcfg_verbosity_get(handle));
     }
 
     /**
@@ -5867,7 +5958,7 @@ namespace wrap {
      * `verbosity` configures the verbosity level for the file only.
      */
     virtual void log_tee(Loglevel verbosity, const std::string &filename) {
-      return check(raw::dqcs_tcfg_tee(get_handle(), to_raw(verbosity), filename.c_str()));
+      return check(raw::dqcs_tcfg_tee(handle, to_raw(verbosity), filename.c_str()));
     }
 
     /**
@@ -6043,6 +6134,334 @@ namespace wrap {
   }
 
   /**
+   * Wrapper class for a running simulation.
+   */
+  class Simulation : public Handle {
+  public:
+
+    /**
+     * Wraps the given simulation handle.
+     */
+    Simulation(HandleIndex handle) : Handle(handle) {
+    }
+
+    // Delete copy construct/assign.
+    Simulation(const Simulation&) = delete;
+    void operator=(const Simulation&) = delete;
+
+    /**
+     * Default move constructor.
+     */
+    Simulation(Simulation&&) = default;
+
+    /**
+     * Default move assignment.
+     */
+    Simulation &operator=(Simulation&&) = default;
+
+    /**
+     * Starts a program on the simulated accelerator without an argument.
+     *
+     * What constitutes "running a program" depends on the frontend plugin.
+     *
+     * This is an asynchronous call: nothing happens until `yield()`, `recv()`,
+     * or `wait()` is called.
+     */
+    void start() {
+      check(raw::dqcs_sim_start(handle, 0));
+    }
+
+    /**
+     * Starts a program on the simulated accelerator using the given `ArbData`
+     * object as an argument (passed by move).
+     *
+     * What constitutes "running a program" depends on the frontend plugin.
+     *
+     * This is an asynchronous call: nothing happens until `yield()`, `recv()`,
+     * or `wait()` is called.
+     */
+    void start(ArbData &&data) {
+      check(raw::dqcs_sim_start(handle, data.get_handle()));
+    }
+
+    /**
+     * Starts a program on the simulated accelerator using the given `ArbData`
+     * object as an argument (passed by copy).
+     *
+     * What constitutes "running a program" depends on the frontend plugin.
+     *
+     * This is an asynchronous call: nothing happens until `yield()`, `recv()`,
+     * or `wait()` is called.
+     */
+    void start(const ArbData &data) {
+      start(std::move(ArbData(data)));
+    }
+
+    /**
+     * Waits for the simulated accelerator to finish its current program.
+     *
+     * This function returns the `ArbData` object that was returned by the
+     * frontend plugin's implementation of the `run` callback.
+     *
+     * Deadlocks are detected and prevented by returning an error.
+     */
+    ArbData wait() {
+      return ArbData(check(raw::dqcs_sim_wait(handle)));
+    }
+
+    /**
+     * Runs a program on the simulated accelerator without an argument.
+     *
+     * This function returns the `ArbData` object that was returned by the
+     * frontend plugin's implementation of the `run` callback.
+     *
+     * Deadlocks are detected and prevented by returning an error.
+     */
+    ArbData run() {
+      start();
+      return wait();
+    }
+
+    /**
+     * Runs a program on the simulated accelerator using the given `ArbData`
+     * object as an argument (passed by move).
+     *
+     * This function returns the `ArbData` object that was returned by the
+     * frontend plugin's implementation of the `run` callback.
+     *
+     * Deadlocks are detected and prevented by returning an error.
+     */
+    ArbData run(ArbData &&data) {
+      start(std::move(data));
+      return wait();
+    }
+
+    /**
+     * Runs a program on the simulated accelerator using the given `ArbData`
+     * object as an argument (passed by copy).
+     *
+     * This function returns the `ArbData` object that was returned by the
+     * frontend plugin's implementation of the `run` callback.
+     *
+     * Deadlocks are detected and prevented by returning an error.
+     */
+    ArbData run(const ArbData &data) {
+      start(data);
+      return wait();
+    }
+
+    /**
+     * Sends an empty message to the simulated accelerator.
+     *
+     * This is an asynchronous call: nothing happens until `yield()`, `recv()`,
+     * or `wait()` is called.
+     */
+    void send() {
+      check(raw::dqcs_sim_send(handle, 0));
+    }
+
+    /**
+     * Sends the given `ArbData` message to the simulated accelerator (passed
+     * by move).
+     *
+     * This is an asynchronous call: nothing happens until `yield()`, `recv()`,
+     * or `wait()` is called.
+     */
+    void send(ArbData &&data) {
+      check(raw::dqcs_sim_send(handle, data.get_handle()));
+    }
+
+    /**
+     * Sends the given `ArbData` message to the simulated accelerator (passed
+     * by copy).
+     *
+     * This is an asynchronous call: nothing happens until `yield()`, `recv()`,
+     * or `wait()` is called.
+     */
+    void send(const ArbData &data) {
+      send(std::move(ArbData(data)));
+    }
+
+    /**
+     * Waits for the simulated accelerator to send a message to us.
+     *
+     * This function returns the `ArbData` object that was sent.
+     *
+     * Deadlocks are detected and prevented by returning an error.
+     */
+    ArbData recv() {
+      return ArbData(check(raw::dqcs_sim_recv(handle)));
+    }
+
+    /**
+     * Yields to the simulator.
+     *
+     * The simulation runs until it blocks again. This is useful if you want an
+     * immediate response to an otherwise asynchronous call through the logging
+     * system or some communication channel outside of DQCsim's control.
+     *
+     * This function silently returns immediately if no asynchronous data was
+     * pending or if the simulator is waiting for something that has not been
+     * sent yet.
+     */
+    void yield() {
+      check(raw::dqcs_sim_yield(handle));
+    }
+
+    /**
+     * Sends an `ArbCmd` (passed by move) to the given plugin (referenced by
+     * instance name).
+     *
+     * `ArbCmd`s are executed immediately after yielding to the simulator, so
+     * all pending asynchronous calls are flushed and executed *before* the
+     * `ArbCmd`.
+     */
+    ArbData arb(const std::string &name, ArbCmd &&cmd) {
+      return ArbData(check(raw::dqcs_sim_arb(handle, name.c_str(), cmd.get_handle())));
+    }
+
+    /**
+     * Sends an `ArbCmd` (passed by copy) to the given plugin (referenced by
+     * instance name).
+     *
+     * `ArbCmd`s are executed immediately after yielding to the simulator, so
+     * all pending asynchronous calls are flushed and executed *before* the
+     * `ArbCmd`.
+     */
+    ArbData arb(const std::string &name, const ArbCmd &cmd) {
+      return arb(name, std::move(ArbCmd(cmd)));
+    }
+
+    /**
+     * Sends an `ArbCmd` (passed by move) to the given plugin (referenced by
+     * index).
+     *
+     * The frontend always has index 0. 1 through N are used for the operators
+     * in front to back order (where N is the number of operators). The backend
+     * is at index N+1.
+     *
+     * Python-style negative indices are supported. That is, -1 can be used to
+     * refer to the backend, -2 to the last operator, and so on.
+     *
+     * `ArbCmd`s are executed immediately after yielding to the simulator, so
+     * all pending asynchronous calls are flushed and executed *before* the
+     * `ArbCmd`.
+     */
+    ArbData arb(ssize_t index, ArbCmd &&cmd) {
+      return ArbData(check(raw::dqcs_sim_arb_idx(handle, index, cmd.get_handle())));
+    }
+
+    /**
+     * Sends an `ArbCmd` (passed by copy) to the given plugin (referenced by
+     * index).
+     *
+     * The frontend always has index 0. 1 through N are used for the operators
+     * in front to back order (where N is the number of operators). The backend
+     * is at index N+1.
+     *
+     * Python-style negative indices are supported. That is, -1 can be used to
+     * refer to the backend, -2 to the last operator, and so on.
+     *
+     * `ArbCmd`s are executed immediately after yielding to the simulator, so
+     * all pending asynchronous calls are flushed and executed *before* the
+     * `ArbCmd`.
+     */
+    ArbData arb(ssize_t index, const ArbCmd &cmd) {
+      return arb(index, std::move(ArbCmd(cmd)));
+    }
+
+    /**
+     * Queries the implementation name of a plugin, referenced by instance
+     * name.
+     */
+    std::string get_name(const std::string &name) {
+      char *ptr = check(raw::dqcs_sim_get_name(handle, name.c_str()));
+      std::string str(ptr);
+      std::free(ptr);
+      return str;
+    }
+
+    /**
+     * Queries the implementation name of a plugin, referenced by index.
+     *
+     * The frontend always has index 0. 1 through N are used for the operators
+     * in front to back order (where N is the number of operators). The backend
+     * is at index N+1.
+     *
+     * Python-style negative indices are supported. That is, -1 can be used to
+     * refer to the backend, -2 to the last operator, and so on.
+     */
+    std::string get_name(ssize_t index) {
+      char *ptr = check(raw::dqcs_sim_get_name_idx(handle, index));
+      std::string str(ptr);
+      std::free(ptr);
+      return str;
+    }
+
+    /**
+     * Queries the author of a plugin, referenced by instance name.
+     */
+    std::string get_author(const std::string &name) {
+      char *ptr = check(raw::dqcs_sim_get_author(handle, name.c_str()));
+      std::string str(ptr);
+      std::free(ptr);
+      return str;
+    }
+
+    /**
+     * Queries the author of a plugin, referenced by index.
+     *
+     * The frontend always has index 0. 1 through N are used for the operators
+     * in front to back order (where N is the number of operators). The backend
+     * is at index N+1.
+     *
+     * Python-style negative indices are supported. That is, -1 can be used to
+     * refer to the backend, -2 to the last operator, and so on.
+     */
+    std::string get_author(ssize_t index) {
+      char *ptr = check(raw::dqcs_sim_get_author_idx(handle, index));
+      std::string str(ptr);
+      std::free(ptr);
+      return str;
+    }
+
+    /**
+     * Queries the version of a plugin, referenced by instance name.
+     */
+    std::string get_version(const std::string &name) {
+      char *ptr = check(raw::dqcs_sim_get_version(handle, name.c_str()));
+      std::string str(ptr);
+      std::free(ptr);
+      return str;
+    }
+
+    /**
+     * Queries the version of a plugin, referenced by index.
+     *
+     * The frontend always has index 0. 1 through N are used for the operators
+     * in front to back order (where N is the number of operators). The backend
+     * is at index N+1.
+     *
+     * Python-style negative indices are supported. That is, -1 can be used to
+     * refer to the backend, -2 to the last operator, and so on.
+     */
+    std::string get_version(ssize_t index) {
+      char *ptr = check(raw::dqcs_sim_get_version_idx(handle, index));
+      std::string str(ptr);
+      std::free(ptr);
+      return str;
+    }
+
+    /**
+     * Writes a reproduction file for the simulation so far.
+     */
+    void write_reproduction_file(const std::string &filename) {
+      check(raw::dqcs_sim_write_reproduction_file(handle, filename.c_str()));
+    }
+
+  };
+
+  /**
    * Wrapper class for configuring a simulation.
    */
   class SimulationConfiguration : public Handle {
@@ -6112,8 +6531,8 @@ namespace wrap {
      *
      * Note that the seed is randomized by default.
      */
-    virtual void set_seed(uint64_t seed) {
-      check(raw::dqcs_scfg_seed_set(get_handle(), seed));
+    void set_seed(uint64_t seed) {
+      check(raw::dqcs_scfg_seed_set(handle, seed));
     }
 
     /**
@@ -6130,12 +6549,120 @@ namespace wrap {
     /**
      * Returns the configured random seed.
      */
-    virtual uint64_t get_seed() const {
+    uint64_t get_seed() const {
       // NOTE: no check(), cannot distinguish between seed 0 and exception.
-      return raw::dqcs_scfg_seed_get(get_handle());
+      return raw::dqcs_scfg_seed_get(handle);
     }
 
-    // TODO: more stuff
+    /**
+     * Sets the path style used when writing reproduction files.
+     *
+     * By default, the generated reproduction file will specify the plugin
+     * executable and script paths as they were generated or specified.
+     * However, depending on how you intend to reproduce the simulation later,
+     * you may want purely relative or purely absolute paths instead. This
+     * function sets the style used.
+     */
+    void set_reproduction_style(PathStyle style) {
+      check(raw::dqcs_scfg_repro_path_style_set(handle, to_raw(style)));
+    }
+
+    /**
+     * Sets the path style used when writing reproduction files (builder
+     * pattern).
+     *
+     * By default, the generated reproduction file will specify the plugin
+     * executable and script paths as they were generated or specified.
+     * However, depending on how you intend to reproduce the simulation later,
+     * you may want purely relative or purely absolute paths instead. This
+     * function sets the style used.
+     */
+    SimulationConfiguration &with_reproduction_style(PathStyle style) {
+      set_reproduction_style(style);
+      return *this;
+    }
+
+    /**
+     * Returns the path style used when writing reproduction files.
+     */
+    PathStyle get_reproduction_style() const {
+      return check(raw::dqcs_scfg_repro_path_style_get(handle));
+    }
+
+    /**
+     * Disables the reproduction logging system.
+     *
+     * Calling this will disable the warnings printed when a simulation that
+     * cannot be reproduced is constructed.
+     */
+    void disable_reproduction() {
+      check(raw::dqcs_scfg_repro_disable(handle));
+    }
+
+    /**
+     * Disables the reproduction logging system (builder pattern).
+     *
+     * Calling this will disable the warnings printed when a simulation that
+     * cannot be reproduced is constructed.
+     */
+    SimulationConfiguration &without_reproduction() {
+      check(raw::dqcs_scfg_repro_disable(handle));
+      return *this;
+    }
+
+    /**
+     * Configures the logging verbosity for DQCsim's own messages.
+     */
+    void set_dqcsim_verbosity(Loglevel level) {
+      check(raw::dqcs_scfg_dqcsim_verbosity_set(handle, to_raw(level)));
+    }
+
+    /**
+     * Configures the logging verbosity for DQCsim's own messages (builder
+     * pattern).
+     */
+    SimulationConfiguration &with_dqcsim_verbosity(Loglevel level) {
+      set_dqcsim_verbosity(level);
+      return *this;
+    }
+
+    /**
+     * Returns the configured verbosity for DQCsim's own messages.
+     */
+    Loglevel get_dqcsim_verbosity() const {
+      return check(raw::dqcs_scfg_dqcsim_verbosity_get(handle));
+    }
+
+    /**
+     * Configures the stderr sink verbosity for a simulation.
+     *
+     * That is, the minimum loglevel that a messages needs to have for it to
+     * be printed to stderr.
+     */
+    void set_stderr_verbosity(Loglevel level) {
+      check(raw::dqcs_scfg_stderr_verbosity_set(handle, to_raw(level)));
+    }
+
+    /**
+     * Configures the stderr sink verbosity for a simulation (builder pattern).
+     *
+     * That is, the minimum loglevel that a messages needs to have for it to
+     * be printed to stderr.
+     */
+    SimulationConfiguration &with_stderr_verbosity(Loglevel level) {
+      set_stderr_verbosity(level);
+      return *this;
+    }
+
+    /**
+     * Returns the configured stderr sink verbosity for a simulation.
+     *
+     * That is, the minimum loglevel that a messages needs to have for it to
+     * be printed to stderr.
+     */
+    Loglevel get_stderr_verbosity() const {
+      return check(raw::dqcs_scfg_stderr_verbosity_get(handle));
+    }
 
     /**
      * Configures DQCsim to also output its log messages to a file.
@@ -6143,7 +6670,7 @@ namespace wrap {
      * `verbosity` configures the verbosity level for the file only.
      */
     void log_tee(Loglevel verbosity, const std::string &filename) {
-      return check(raw::dqcs_scfg_tee(get_handle(), to_raw(verbosity), filename.c_str()));
+      return check(raw::dqcs_scfg_tee(handle, to_raw(verbosity), filename.c_str()));
     }
 
     /**
@@ -6157,37 +6684,200 @@ namespace wrap {
       return *this;
     }
 
-    // TODO: more stuff
+  private:
 
-  };
+    /**
+     * Configures DQCsim to also output its log messages to callback function.
+     *
+     * `verbosity` specifies the minimum importance of a message required for
+     * the callback to be called. `data` takes a pointer to the callback
+     * information object, which must have been previously allocated using
+     * `new`. Refer to `callback::Log` for more information.
+     *
+     * The primary use of this callback is to pipe DQCsim's messages to an
+     * external logging framework. When you do this, you probably also want to
+     * call `set_stderr_verbosity_set(Loglevel::Off)` to prevent DQCsim from
+     * writing the messages to stderr itself.
+     *
+     * \note This callback may be called from a thread spawned by the
+     * simulator. Calling any API calls from the callback is therefore
+     * undefined behavior!
+     */
+    void set_log_callback_ptr(Loglevel verbosity, callback::Log *data) {
+      check(raw::dqcs_scfg_log_callback(
+        handle,
+        to_raw(verbosity),
+        callback::cb_entry_log,
+        callback::cb_entry_user_free<callback::Log>,
+        data
+      ));
+    }
 
-  /**
-   * Wrapper class for a running simulation.
-   */
-  class Simulation : public Handle {
   public:
 
     /**
-     * Wraps the given simulation handle.
+     * Configures DQCsim to also output its log messages to callback function.
+     *
+     * `verbosity` specifies the minimum importance of a message required for
+     * the callback to be called. `data` is the callback information object,
+     * taken by copy by this function. Refer to `callback::Log` for more
+     * information.
+     *
+     * \note This callback may be called from a thread spawned by the
+     * simulator. Calling any API calls from the callback is therefore
+     * undefined behavior!
      */
-    Simulation(HandleIndex handle) : Handle(handle) {
+    void set_log_callback(Loglevel verbosity, const callback::Log &data) {
+      set_log_callback_ptr(verbosity, new callback::Log(data));
     }
 
-    // Delete copy construct/assign.
-    Simulation(const Simulation&) = delete;
-    void operator=(const Simulation&) = delete;
+    /**
+     * Configures DQCsim to also output its log messages to callback function.
+     *
+     * `verbosity` specifies the minimum importance of a message required for
+     * the callback to be called. `data` is the callback information object,
+     * taken by move by this function. Refer to `callback::Log` for more
+     * information.
+     *
+     * \note This callback may be called from a thread spawned by the
+     * simulator. Calling any API calls from the callback is therefore
+     * undefined behavior!
+     */
+    void set_log_callback(Loglevel verbosity, callback::Log &&data) {
+      set_log_callback_ptr(verbosity, new callback::Log(std::move(data)));
+    }
 
     /**
-     * Default move constructor.
+     * Configures DQCsim to also output its log messages to callback function.
+     *
+     * `verbosity` specifies the minimum importance of a message required for
+     * the callback to be called. The callback information object is
+     * constructed in place from the remaining arguments. Refer to
+     * `callback::Log` for more information.
+     *
+     * \note This callback may be called from a thread spawned by the
+     * simulator. Calling any API calls from the callback is therefore
+     * undefined behavior!
      */
-    Simulation(Simulation&&) = default;
+    template<typename... Args>
+    void set_log_callback(Loglevel verbosity, Args... args) {
+      set_log_callback_ptr(verbosity, new callback::Log(args...));
+    }
 
     /**
-     * Default move assignment.
+     * Configures DQCsim to also output its log messages to callback function
+     * (builder pattern).
+     *
+     * `verbosity` specifies the minimum importance of a message required for
+     * the callback to be called. `data` is the callback information object,
+     * taken by copy by this function. Refer to `callback::Log` for more
+     * information.
+     *
+     * \note This callback may be called from a thread spawned by the
+     * simulator. Calling any API calls from the callback is therefore
+     * undefined behavior!
      */
-    Simulation &operator=(Simulation&&) = default;
+    SimulationConfiguration &with_log_callback(Loglevel verbosity, const callback::Log &data) {
+      set_log_callback_ptr(verbosity, new callback::Log(data));
+      return *this;
+    }
 
-    // TODO: more stuff
+    /**
+     * Configures DQCsim to also output its log messages to callback function
+     * (builder pattern).
+     *
+     * `verbosity` specifies the minimum importance of a message required for
+     * the callback to be called. `data` is the callback information object,
+     * taken by move by this function. Refer to `callback::Log` for more
+     * information.
+     *
+     * \note This callback may be called from a thread spawned by the
+     * simulator. Calling any API calls from the callback is therefore
+     * undefined behavior!
+     */
+    SimulationConfiguration &with_log_callback(Loglevel verbosity, callback::Log &&data) {
+      set_log_callback_ptr(verbosity, new callback::Log(std::move(data)));
+      return *this;
+    }
+
+    /**
+     * Configures DQCsim to also output its log messages to callback function
+     * (builder pattern).
+     *
+     * `verbosity` specifies the minimum importance of a message required for
+     * the callback to be called. The callback information object is
+     * constructed in place from the remaining arguments. Refer to
+     * `callback::Log` for more information.
+     *
+     * \note This callback may be called from a thread spawned by the
+     * simulator. Calling any API calls from the callback is therefore
+     * undefined behavior!
+     */
+    template<typename... Args>
+    SimulationConfiguration &with_log_callback(Loglevel verbosity, Args... args) {
+      set_log_callback_ptr(verbosity, new callback::Log(args...));
+      return *this;
+    }
+
+    /**
+     * Constructs the DQCsim simulation from this configuration object.
+     *
+     * \note The builder object can only be used once. After calling
+     * `build()`, the behavior of every other member function is undefined.
+     *
+     * \note It is currently not possible to have more than one simulation
+     * handle within a single thread at the same time. This has to do with
+     * DQCsim's log system, which uses thread-local storage to determine where
+     * log messages should go. If you want to run multiple simulations in
+     * parallel, you'll have to run them from different threads.
+     */
+    Simulation build() {
+      return Simulation(check(raw::dqcs_sim_new(handle)));
+    }
+
+    /**
+     * Constructs the DQCsim simulation from this configuration object, and
+     * runs a program on the simulated accelerator without an argument.
+     *
+     * This is simply a shorthand for `build().run()`. The accelerator return
+     * value is discarded in favor of returning the simulation object, which
+     * you can then call `write_reproduction_file()` on.
+     */
+    Simulation run() {
+      Simulation sim = build();
+      sim.run();
+      return sim;
+    }
+
+    /**
+     * Constructs the DQCsim simulation from this configuration object, and
+     * runs a program on the simulated accelerator with the given `ArbData`
+     * argument (passed by move).
+     *
+     * This is simply a shorthand for `build().run()`. The accelerator return
+     * value is discarded in favor of returning the simulation object, which
+     * you can then call `write_reproduction_file()` on.
+     */
+    Simulation run(ArbData &&data) {
+      Simulation sim = build();
+      sim.run(std::move(data));
+      return sim;
+    }
+
+    /**
+     * Constructs the DQCsim simulation from this configuration object, and
+     * runs a program on the simulated accelerator with the given `ArbData`
+     * argument (passed by copy).
+     *
+     * This is simply a shorthand for `build().run()`. The accelerator return
+     * value is discarded in favor of returning the simulation object, which
+     * you can then call `write_reproduction_file()` on.
+     */
+    Simulation run(const ArbData &data) {
+      Simulation sim = build();
+      sim.run(data);
+      return sim;
+    }
 
   };
 
