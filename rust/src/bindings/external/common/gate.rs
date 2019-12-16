@@ -411,8 +411,8 @@ pub extern "C" fn dqcs_gate_matrix_len(gate: dqcs_handle_t) -> ssize_t {
 #[no_mangle]
 pub extern "C" fn dqcs_gate_reduce_control(
     gate: dqcs_handle_t,
-    epsilon: c_double,
-    ignore_gphase: bool,
+    _epsilon: c_double,
+    _ignore_gphase: bool,
 ) -> dqcs_handle_t {
     api_return(0, || {
         resolve!(gate as &Gate);

@@ -464,5 +464,6 @@ mod test {
             .collect();
         let data = ArbData::from_json(json!({"test": 42}).to_string(), args).unwrap();
         assert_eq!(data, data);
+        assert_eq!(ArbData::default(), ArbData::default());
     }
 }

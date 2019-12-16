@@ -1,5 +1,6 @@
 use crate::core::common::{
     error::{inv_arg, inv_op, Result},
+    gates::GateType,
     types::Matrix,
 };
 use std::{
@@ -67,9 +68,9 @@ impl<'a, T: 'a + Clone, K: 'a + Clone> MatrixMap<T, K> {
     pub fn detect(&self, input: &Matrix) -> Result<Option<(K, T)>> {
         {
             let hit = self.map.borrow().get(input).cloned();
-            if hit.is_some() {
+            if let Some(hit) = hit {
                 // TODO(mb): option_flattening
-                return Ok(hit.unwrap());
+                return Ok(hit);
             }
         }
         self.run_detectors(input, self.detectors.iter(), true)
@@ -100,7 +101,7 @@ impl<'a, T: 'a + Clone, K: 'a + Clone> MatrixMap<T, K> {
     }
 }
 
-impl<T: Clone, K: Clone + PartialEq> Default for MatrixMap<T, K> {
+impl<T: 'static + Clone + Default> Default for MatrixMap<T, GateType> {
     fn default() -> Self {
         MatrixMap::builder()
             .with_defaults(0, 0.000_001, true)
@@ -119,17 +120,7 @@ impl<T, K> Debug for MatrixMapBuilder<T, K> {
     }
 }
 
-impl<T, K> MatrixMapBuilder<T, K> {
-    /// Returns a new MatrixMapBuilder.
-    pub fn new() -> Self {
-        MatrixMapBuilder {
-            map: MatrixMap {
-                detectors: vec![],
-                map: RefCell::new(HashMap::new()),
-            },
-        }
-    }
-
+impl<T: 'static + Default> MatrixMapBuilder<T, GateType> {
     /// Adds default detectors to this MatrixMapBuilder.
     pub fn with_defaults(
         mut self,
@@ -145,13 +136,52 @@ impl<T, K> MatrixMapBuilder<T, K> {
     pub(crate) fn add_defaults(
         &mut self,
         version: usize,
-        _epsilon: f64,
-        _ignore_global_phase: bool,
+        epsilon: f64,
+        ignore_global_phase: bool,
     ) -> Result<()> {
         if version != 0 {
             inv_arg("Version should be set to zero.")
         } else {
-            unimplemented!()
+            for gate_type in &[
+                GateType::I,
+                GateType::X,
+                GateType::Y,
+                GateType::Z,
+                GateType::H,
+                GateType::S,
+                GateType::SDAG,
+                GateType::T,
+                GateType::TDAG,
+                GateType::RX90,
+                GateType::RXM90,
+                GateType::RX180,
+                GateType::RY90,
+                GateType::RYM90,
+                GateType::RY180,
+                GateType::RZ90,
+                GateType::RZM90,
+                GateType::RZ180,
+                GateType::SWAP,
+                GateType::SQSWAP,
+            ] {
+                self.add_detector(
+                    *gate_type,
+                    gate_type.into_detector(epsilon, ignore_global_phase),
+                );
+            }
+            Ok(())
+        }
+    }
+}
+
+impl<T, K> MatrixMapBuilder<T, K> {
+    /// Returns a new MatrixMapBuilder.
+    pub fn new() -> Self {
+        MatrixMapBuilder {
+            map: MatrixMap {
+                detectors: vec![],
+                map: RefCell::new(HashMap::new()),
+            },
         }
     }
 
@@ -199,16 +229,22 @@ pub fn matrix_detector<T: Default>(
     ignore_global_phase: bool,
 ) -> Box<dyn Fn(&Matrix) -> Result<Option<T>>> {
     Box::new(move |input: &Matrix| -> Result<Option<T>> {
-        match matrix.approx_eq(input, epsilon, ignore_global_phase) {
-            true => Ok(Some(T::default())),
-            false => Ok(None),
-        }
+        Ok(if matrix.approx_eq(input, epsilon, ignore_global_phase) {
+            Some(T::default())
+        } else {
+            None
+        })
     })
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn default() {
+        let mm: MatrixMap<bool, GateType> = MatrixMap::default();
+    }
 
     #[test]
     fn matrix_map_builder() {

@@ -44,8 +44,8 @@ impl GateType {
         ignore_global_phase: bool,
     ) -> Box<Detector<T>> {
         let unbound_gate: Result<UnboundGate, _> = self.try_into();
-        if unbound_gate.is_ok() {
-            matrix_detector(unbound_gate.unwrap().into(), epsilon, ignore_global_phase)
+        if let Ok(unbound_gate) = unbound_gate {
+            matrix_detector(unbound_gate.into(), epsilon, ignore_global_phase)
         } else {
             match self {
                 GateType::RX => unimplemented!(),
@@ -117,7 +117,7 @@ impl TryFrom<GateType> for UnboundGate {
             GateType::RZ180 => UnboundGate::RZ180,
             GateType::SWAP => UnboundGate::SWAP,
             GateType::SQSWAP => UnboundGate::SQSWAP,
-            _ => Err("gate is parameterized")?,
+            _ => return Err("gate is parameterized"),
         })
     }
 }
@@ -205,14 +205,14 @@ impl From<BoundGate> for Gate {
             | BoundGate::RY180(q)
             | BoundGate::RZ90(q)
             | BoundGate::RZM90(q)
-            | BoundGate::RZ180(q) => {
+            | BoundGate::RZ180(q)
+            | BoundGate::RX(_, q)
+            | BoundGate::RY(_, q)
+            | BoundGate::RZ(_, q)
+            | BoundGate::RK(_, q)
+            | BoundGate::R(_, _, _, q) => {
                 Gate::new_unitary(vec![q], vec![], Into::<Matrix>::into(bound_gate)).unwrap()
             }
-            BoundGate::RX(_theta, _q) | BoundGate::RY(_theta, _q) | BoundGate::RZ(_theta, _q) => {
-                unimplemented!()
-            }
-            BoundGate::RK(_k, _q) => unimplemented!(),
-            BoundGate::R(_theta, _phi, _lambda, _q) => unimplemented!(),
             BoundGate::SWAP(q1, q2) | BoundGate::SQSWAP(q1, q2) => {
                 Gate::new_unitary(vec![q1, q2], vec![], Into::<Matrix>::into(bound_gate)).unwrap()
             }

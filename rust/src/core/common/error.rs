@@ -242,6 +242,15 @@ impl From<std::string::FromUtf8Error> for Error {
     }
 }
 
+impl From<std::num::ParseFloatError> for Error {
+    fn from(error: std::num::ParseFloatError) -> Error {
+        let msg = error.to_string();
+        Error {
+            ctx: Context::new(ErrorKind::InvalidArgument(msg)),
+        }
+    }
+}
+
 impl From<std::ffi::NulError> for Error {
     fn from(error: std::ffi::NulError) -> Error {
         let msg = error.to_string();
