@@ -99,6 +99,9 @@ namespace wrap {
   /**
    * Checks a `dqcs_return_t` return value; if failure, throws a runtime error
    * with DQCsim's error message.
+   *
+   * \param code The raw function return code.
+   * \throws std::runtime_error if the return code indicated failure.
    */
   inline void check(raw::dqcs_return_t code) {
     if (code == raw::dqcs_return_t::DQCS_FAILURE) {
@@ -109,6 +112,10 @@ namespace wrap {
   /**
    * Checks a `dqcs_bool_return_t` return value; if failure, throws a runtime
    * error with DQCsim's error message.
+   *
+   * \param code The raw function return code.
+   * \returns The wrapped boolean.
+   * \throws std::runtime_error if the return code indicated failure.
    */
   inline bool check(raw::dqcs_bool_return_t code) {
     if (code == raw::dqcs_bool_return_t::DQCS_BOOL_FAILURE) {
@@ -123,6 +130,10 @@ namespace wrap {
   /**
    * Checks a `dqcs_handle_t` or `dqcs_qubit_t` return value; if failure,
    * throws a runtime error with DQCsim's error message.
+   *
+   * \param handle The raw function return code.
+   * \returns The wrapped handle or qubit index.
+   * \throws std::runtime_error if the return code indicated failure.
    */
   inline unsigned long long check(unsigned long long handle) {
     if (handle == 0) {
@@ -134,6 +145,10 @@ namespace wrap {
   /**
    * Checks a `dqcs_cycle_t` return value; if failure, throws a runtime error
    * with DQCsim's error message.
+   *
+   * \param cycle The raw function return code.
+   * \returns The wrapped cycle count.
+   * \throws std::runtime_error if the return code indicated failure.
    */
   inline Cycle check(Cycle cycle) {
     if (cycle == -1) {
@@ -145,6 +160,10 @@ namespace wrap {
   /**
    * Checks a size return value; if failure, throws a runtime error
    * with DQCsim's error message.
+   *
+   * \param size The raw function return code.
+   * \returns The wrapped size.
+   * \throws std::runtime_error if the return code indicated failure.
    */
   inline size_t check(ssize_t size) {
     if (size < 0) {
@@ -156,6 +175,10 @@ namespace wrap {
   /**
    * Checks a `double` return value from `dqcs_pcfg_*_timeout_get()`; if
    * failure, throws a runtime error with DQCsim's error message.
+   *
+   * \param value The raw function return code.
+   * \returns The wrapped double.
+   * \throws std::runtime_error if the return code indicated failure.
    */
   inline double check(double value) {
     if (value < 0.0) {
@@ -275,8 +298,11 @@ namespace wrap {
 
   /**
    * Converts a `HandleType` to its raw C enum.
+   *
+   * \param type The C++ handle type to convert.
+   * \returns The raw handle type.
    */
-  inline raw::dqcs_handle_type_t to_raw(HandleType type) {
+  inline raw::dqcs_handle_type_t to_raw(HandleType type) noexcept {
     switch (type) {
       case HandleType::ArbData:               return raw::dqcs_handle_type_t::DQCS_HTYPE_ARB_DATA;
       case HandleType::ArbCmd:                return raw::dqcs_handle_type_t::DQCS_HTYPE_ARB_CMD;
@@ -304,6 +330,10 @@ namespace wrap {
    * Checks a `dqcs_handle_type_t` return value and converts it to its C++
    * enum representation; if failure, throws a runtime error with DQCsim's
    * error message.
+   *
+   * \param type The raw function return code.
+   * \returns The wrapped handle type.
+   * \throws std::runtime_error if the return code indicated failure.
    */
   inline HandleType check(raw::dqcs_handle_type_t type) {
     switch (type) {
@@ -414,8 +444,11 @@ namespace wrap {
 
   /**
    * Converts a `Loglevel` to its raw C enum.
+   *
+   * \param loglevel The C++ loglevel to convert.
+   * \returns The raw loglevel.
    */
-  inline raw::dqcs_loglevel_t to_raw(Loglevel loglevel) {
+  inline raw::dqcs_loglevel_t to_raw(Loglevel loglevel) noexcept {
     switch (loglevel) {
       case Loglevel::Off:   return raw::dqcs_loglevel_t::DQCS_LOG_OFF;
       case Loglevel::Fatal: return raw::dqcs_loglevel_t::DQCS_LOG_FATAL;
@@ -433,6 +466,10 @@ namespace wrap {
    * Checks a `dqcs_loglevel_t` return value and converts it to its C++
    * enum representation; if failure, throws a runtime error with DQCsim's
    * error message.
+   *
+   * \param loglevel The raw function return code.
+   * \returns The wrapped loglevel.
+   * \throws std::runtime_error if the return code indicated failure.
    */
   inline Loglevel check(raw::dqcs_loglevel_t loglevel) {
     switch (loglevel) {
@@ -478,8 +515,11 @@ namespace wrap {
 
   /**
    * Converts a `MeasurementValue` to its raw C enum.
+   *
+   * \param measurement The C++ measurement value to convert.
+   * \returns The raw measurement value.
    */
-  inline raw::dqcs_measurement_t to_raw(MeasurementValue measurement) {
+  inline raw::dqcs_measurement_t to_raw(MeasurementValue measurement) noexcept {
     switch (measurement) {
       case MeasurementValue::Zero:      return raw::dqcs_measurement_t::DQCS_MEAS_ZERO;
       case MeasurementValue::One:       return raw::dqcs_measurement_t::DQCS_MEAS_ONE;
@@ -491,6 +531,10 @@ namespace wrap {
    * Checks a `dqcs_measurement_t` return value and converts it to its C++
    * enum representation; if failure, throws a runtime error with DQCsim's
    * error message.
+   *
+   * \param measurement The raw function return code.
+   * \returns The wrapped measurement value.
+   * \throws std::runtime_error if the return code indicated failure.
    */
   inline MeasurementValue check(raw::dqcs_measurement_t measurement) {
     switch (measurement) {
@@ -532,8 +576,11 @@ namespace wrap {
 
   /**
    * Converts a `PathStyle` to its raw C enum.
+   *
+   * \param style The C++ path style to convert.
+   * \returns The raw path style.
    */
-  inline raw::dqcs_path_style_t to_raw(PathStyle style) {
+  inline raw::dqcs_path_style_t to_raw(PathStyle style) noexcept {
     switch (style) {
       case PathStyle::Keep:     return raw::dqcs_path_style_t::DQCS_PATH_STYLE_KEEP;
       case PathStyle::Relative: return raw::dqcs_path_style_t::DQCS_PATH_STYLE_RELATIVE;
@@ -545,6 +592,10 @@ namespace wrap {
    * Checks a `dqcs_path_style_t` return value and converts it to its C++
    * enum representation; if failure, throws a runtime error with DQCsim's
    * error message.
+   *
+   * \param style The raw function return code.
+   * \returns The wrapped path style.
+   * \throws std::runtime_error if the return code indicated failure.
    */
   inline PathStyle check(raw::dqcs_path_style_t style) {
     switch (style) {
@@ -582,8 +633,11 @@ namespace wrap {
 
   /**
    * Converts a `PluginType` to its raw C enum.
+   *
+   * \param type The C++ plugin type to convert.
+   * \returns The raw plugin type.
    */
-  inline raw::dqcs_plugin_type_t to_raw(PluginType type) {
+  inline raw::dqcs_plugin_type_t to_raw(PluginType type) noexcept {
     switch (type) {
       case PluginType::Frontend:  return raw::dqcs_plugin_type_t::DQCS_PTYPE_FRONT;
       case PluginType::Operator:  return raw::dqcs_plugin_type_t::DQCS_PTYPE_OPER;
@@ -595,6 +649,10 @@ namespace wrap {
    * Checks a `dqcs_plugin_type_t` return value and converts it to its C++
    * enum representation; if failure, throws a runtime error with DQCsim's
    * error message.
+   *
+   * \param type The raw function return code.
+   * \returns The wrapped plugin type.
+   * \throws std::runtime_error if the return code indicated failure.
    */
   inline PluginType check(raw::dqcs_plugin_type_t type) {
     switch (type) {
@@ -608,6 +666,10 @@ namespace wrap {
   /**
    * Checks a pointer return value; if failure, throws a runtime error with
    * DQCsim's error message.
+   *
+   * \param pointer The raw function return code.
+   * \returns The non-null pointer.
+   * \throws std::runtime_error if the return code indicated failure.
    */
   template <typename T>
   inline T *check(T *pointer) {
@@ -632,6 +694,16 @@ namespace wrap {
    * can use the `DQCSIM_LOG` macro (or its loglevel-specific friends). If you
    * define `DQCSIM_SHORT_LOGGING_MACROS` before including `<dqcsim>`, you can
    * also use the `LOG` shorthand (or its loglevel-specific friends).
+   *
+   * \param level The severity level of the message.
+   * \param module The "module" sending the message. This is unused by the C++
+   * macros.
+   * \param file The source file for the code sending the message (you can use
+   * `__FILE__` for this).
+   * \param line_nr The line number within the source file of the code sending
+   * the message (you can use `__LINE__` for this).
+   * \param format The `printf`-style format string for the log message.
+   * \param args The arguments for the `printf`-style format string.
    */
   template<typename... Args>
   inline void log(
@@ -641,7 +713,7 @@ namespace wrap {
     unsigned int line_nr,
     const std::string &format,
     Args... args
-  ) {
+  ) noexcept {
     raw::dqcs_log_format(
       to_raw(level),
       module.c_str(),
@@ -655,12 +727,20 @@ namespace wrap {
   /**
    * Shim around the `dqcs_log_raw` C API using `std::string` for the strings.
    *
-   * Returns whether logging succeeded.
-   *
    * To avoid having to fill out `module`, `file`, and `line_nr` manually, you
    * can use the `DQCSIM_LOG` macro (or its loglevel-specific friends). If you
    * define `DQCSIM_SHORT_LOGGING_MACROS` before including `<dqcsim>`, you can
    * also use the `LOG` shorthand (or its loglevel-specific friends).
+   *
+   * \param level The severity level of the message.
+   * \param module The "module" sending the message. This is unused by the C++
+   * macros.
+   * \param file The source file for the code sending the message (you can use
+   * `__FILE__` for this).
+   * \param line_nr The line number within the source file of the code sending
+   * the message (you can use `__LINE__` for this).
+   * \param message The log message.
+   * \returns Whether logging succeeded.
    */
   inline bool log_raw(
     wrap::Loglevel level,
@@ -668,7 +748,7 @@ namespace wrap {
     const std::string &file,
     unsigned int line_nr,
     const std::string &message
-  ) {
+  ) noexcept {
     return raw::dqcs_log_raw(
       to_raw(level),
       module.c_str(),
@@ -681,6 +761,10 @@ namespace wrap {
   /**
    * Convenience macro for calling `log()` with automatically determined filename
    * and line number, but a dynamic loglevel (first argument).
+   *
+   * \param level The severity level of the message.
+   * \param fmt The `printf`-style format string for the log message.
+   * \param ... The arguments for the `printf`-style format string.
    */
   #define DQCSIM_LOG(level, fmt, ...)             \
     ::dqcsim::wrap::log(                          \
@@ -690,48 +774,72 @@ namespace wrap {
   /**
    * Convenience macro for calling `log()` with trace loglevel and automatically
    * determined filename and line number.
+   *
+   * \param fmt The `printf`-style format string for the log message.
+   * \param ... The arguments for the `printf`-style format string.
    */
   #define DQCSIM_TRACE(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Trace, fmt, ##__VA_ARGS__)
 
   /**
    * Convenience macro for calling `log()` with debug loglevel and automatically
    * determined filename and line number.
+   *
+   * \param fmt The `printf`-style format string for the log message.
+   * \param ... The arguments for the `printf`-style format string.
    */
   #define DQCSIM_DEBUG(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Debug, fmt, ##__VA_ARGS__)
 
   /**
    * Convenience macro for calling `log()` with info loglevel and automatically
    * determined filename and line number.
+   *
+   * \param fmt The `printf`-style format string for the log message.
+   * \param ... The arguments for the `printf`-style format string.
    */
   #define DQCSIM_INFO(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Info, fmt, ##__VA_ARGS__)
 
   /**
    * Convenience macro for calling `log()` with note loglevel and automatically
    * determined filename and line number.
+   *
+   * \param fmt The `printf`-style format string for the log message.
+   * \param ... The arguments for the `printf`-style format string.
    */
   #define DQCSIM_NOTE(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Note, fmt, ##__VA_ARGS__)
 
   /**
    * Convenience macro for calling `log()` with warn loglevel and automatically
    * determined filename and line number.
+   *
+   * \param fmt The `printf`-style format string for the log message.
+   * \param ... The arguments for the `printf`-style format string.
    */
   #define DQCSIM_WARN(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Warn, fmt, ##__VA_ARGS__)
 
   /**
    * Convenience macro for calling `log()` with warn loglevel and automatically
    * determined filename and line number.
+   *
+   * \param fmt The `printf`-style format string for the log message.
+   * \param ... The arguments for the `printf`-style format string.
    */
   #define DQCSIM_WARNING(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Warn, fmt, ##__VA_ARGS__)
 
   /**
    * Convenience macro for calling `log()` with error loglevel and automatically
    * determined filename and line number.
+   *
+   * \param fmt The `printf`-style format string for the log message.
+   * \param ... The arguments for the `printf`-style format string.
    */
   #define DQCSIM_ERROR(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Error, fmt, ##__VA_ARGS__)
 
   /**
    * Convenience macro for calling `log()` with fatal loglevel and automatically
    * determined filename and line number.
+   *
+   * \param fmt The `printf`-style format string for the log message.
+   * \param ... The arguments for the `printf`-style format string.
    */
   #define DQCSIM_FATAL(fmt, ...) DQCSIM_LOG(::dqcsim::wrap::Loglevel::Fatal, fmt, ##__VA_ARGS__)
 
