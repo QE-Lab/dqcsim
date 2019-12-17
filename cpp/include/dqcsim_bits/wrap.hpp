@@ -101,7 +101,7 @@ namespace wrap {
    * with DQCsim's error message.
    *
    * \param code The raw function return code.
-   * \throws std::runtime_error if the return code indicated failure.
+   * \throws std::runtime_error When the return code indicated failure.
    */
   inline void check(raw::dqcs_return_t code) {
     if (code == raw::dqcs_return_t::DQCS_FAILURE) {
@@ -115,7 +115,7 @@ namespace wrap {
    *
    * \param code The raw function return code.
    * \returns The wrapped boolean.
-   * \throws std::runtime_error if the return code indicated failure.
+   * \throws std::runtime_error When the return code indicated failure.
    */
   inline bool check(raw::dqcs_bool_return_t code) {
     if (code == raw::dqcs_bool_return_t::DQCS_BOOL_FAILURE) {
@@ -133,7 +133,7 @@ namespace wrap {
    *
    * \param handle The raw function return code.
    * \returns The wrapped handle or qubit index.
-   * \throws std::runtime_error if the return code indicated failure.
+   * \throws std::runtime_error When the return code indicated failure.
    */
   inline unsigned long long check(unsigned long long handle) {
     if (handle == 0) {
@@ -148,7 +148,7 @@ namespace wrap {
    *
    * \param cycle The raw function return code.
    * \returns The wrapped cycle count.
-   * \throws std::runtime_error if the return code indicated failure.
+   * \throws std::runtime_error When the return code indicated failure.
    */
   inline Cycle check(Cycle cycle) {
     if (cycle == -1) {
@@ -163,7 +163,7 @@ namespace wrap {
    *
    * \param size The raw function return code.
    * \returns The wrapped size.
-   * \throws std::runtime_error if the return code indicated failure.
+   * \throws std::runtime_error When the return code indicated failure.
    */
   inline size_t check(ssize_t size) {
     if (size < 0) {
@@ -178,7 +178,7 @@ namespace wrap {
    *
    * \param value The raw function return code.
    * \returns The wrapped double.
-   * \throws std::runtime_error if the return code indicated failure.
+   * \throws std::runtime_error When the return code indicated failure.
    */
   inline double check(double value) {
     if (value < 0.0) {
@@ -333,7 +333,7 @@ namespace wrap {
    *
    * \param type The raw function return code.
    * \returns The wrapped handle type.
-   * \throws std::runtime_error if the return code indicated failure.
+   * \throws std::runtime_error When the return code indicated failure.
    */
   inline HandleType check(raw::dqcs_handle_type_t type) {
     switch (type) {
@@ -469,7 +469,7 @@ namespace wrap {
    *
    * \param loglevel The raw function return code.
    * \returns The wrapped loglevel.
-   * \throws std::runtime_error if the return code indicated failure.
+   * \throws std::runtime_error When the return code indicated failure.
    */
   inline Loglevel check(raw::dqcs_loglevel_t loglevel) {
     switch (loglevel) {
@@ -534,7 +534,7 @@ namespace wrap {
    *
    * \param measurement The raw function return code.
    * \returns The wrapped measurement value.
-   * \throws std::runtime_error if the return code indicated failure.
+   * \throws std::runtime_error When the return code indicated failure.
    */
   inline MeasurementValue check(raw::dqcs_measurement_t measurement) {
     switch (measurement) {
@@ -595,7 +595,7 @@ namespace wrap {
    *
    * \param style The raw function return code.
    * \returns The wrapped path style.
-   * \throws std::runtime_error if the return code indicated failure.
+   * \throws std::runtime_error When the return code indicated failure.
    */
   inline PathStyle check(raw::dqcs_path_style_t style) {
     switch (style) {
@@ -652,7 +652,7 @@ namespace wrap {
    *
    * \param type The raw function return code.
    * \returns The wrapped plugin type.
-   * \throws std::runtime_error if the return code indicated failure.
+   * \throws std::runtime_error When the return code indicated failure.
    */
   inline PluginType check(raw::dqcs_plugin_type_t type) {
     switch (type) {
@@ -669,7 +669,7 @@ namespace wrap {
    *
    * \param pointer The raw function return code.
    * \returns The non-null pointer.
-   * \throws std::runtime_error if the return code indicated failure.
+   * \throws std::runtime_error When the return code indicated failure.
    */
   template <typename T>
   inline T *check(T *pointer) {
@@ -881,7 +881,7 @@ namespace wrap {
      * \note The only way to use a wrapper constructed this way is to move a
      * handle into it using the move assignment operator.
      */
-    Handle() : handle(0) {
+    Handle() noexcept : handle(0) {
     }
 
     /**
@@ -889,8 +889,10 @@ namespace wrap {
      *
      * \note This class will take ownership of the handle, i.e. it is in charge
      * of freeing it.
+     *
+     * \param handle The raw handle to wrap.
      */
-    Handle(HandleIndex handle) : handle(handle) {
+    Handle(HandleIndex handle) noexcept : handle(handle) {
     }
 
     /**
@@ -898,6 +900,8 @@ namespace wrap {
      */
     virtual ~Handle() noexcept {
       if (handle) {
+        // NOTE: no check; ignore errors (because destructors should be
+        // noexcept).
         raw::dqcs_handle_delete(handle);
       }
     }
@@ -907,6 +911,9 @@ namespace wrap {
      *
      * \note The wrapper no longer owns a handle after this call. That means
      * `is_valid` will return `false` and all other methods will likely fail.
+     *
+     * \throws std::runtime_error When deletion of the handle fails for some
+     * reason.
      */
     void free() {
       check(raw::dqcs_handle_delete(handle));
@@ -915,13 +922,21 @@ namespace wrap {
 
     /**
      * Returns whether this wrapper (still) contains a valid handle.
+     *
+     * \returns Whether this wrapper (still) contains a valid handle.
      */
     bool is_valid() const noexcept {
-      return raw::dqcs_handle_type(handle) != raw::dqcs_handle_type_t::DQCS_HTYPE_INVALID;
+      try {
+        return raw::dqcs_handle_type(handle) != raw::dqcs_handle_type_t::DQCS_HTYPE_INVALID;
+      } catch (std::runtime_error) {
+        return false;
+      }
     }
 
     /**
      * Returns the raw handle without relinquishing ownership.
+     *
+     * \returns The wrapped raw handle, or 0 if no handle was attached.
      */
     HandleIndex get_handle() const noexcept {
       return handle;
@@ -932,6 +947,8 @@ namespace wrap {
      *
      * \note The wrapper no longer owns a handle after this call. That means
      * `is_valid` will return `false` and all other methods will likely fail.
+     *
+     * \returns The wrapped raw handle, or 0 if no handle was attached.
      */
     HandleIndex take_handle() noexcept {
       HandleIndex h = handle;
@@ -953,6 +970,8 @@ namespace wrap {
      * likely fail. Note that using an object after moving it is explicitly
      * undefined behavior in the C++ specification, so you shouldn't be using
      * it anymore anyway.
+     *
+     * \param src The handle wrapper to move from.
      */
     Handle(Handle &&src) : handle(src.handle) {
       src.handle = 0;
@@ -970,6 +989,11 @@ namespace wrap {
      * likely fail. Note that using an object after moving it is explicitly
      * undefined behavior in the C++ specification, so you shouldn't be using
      * it anymore anyway.
+     *
+     * \param src The handle wrapper to move from.
+     * \returns A reference to the destination handle.
+     * \throws std::runtime_error When the destination already wrapped a
+     * handle, and freeing that handle failed.
      */
     Handle &operator=(Handle &&src) {
       if (handle) {
@@ -985,6 +1009,13 @@ namespace wrap {
      *
      * The string uses newlines and indentation to improve readability. It does
      * not end in a newline.
+     *
+     * \warning Debug dumps are not guaranteed to be the same from DQCsim
+     * version to version. They should *only* be used for debugging.
+     *
+     * \returns A debug dump of the current handle.
+     * \throws std::runtime_error When the currently wrapped handle is
+     * invalid.
      */
     std::string dump() const {
       char *dump_c = check(raw::dqcs_handle_dump(handle));
@@ -998,6 +1029,11 @@ namespace wrap {
      *
      * Newlines and indentation are used to improve readability. However, there
      * is implicit trailing `std::endl`.
+     *
+     * \param out The output stream to write to.
+     * \param handle The handle to dump.
+     * \returns The output stream object.
+     * \throws std::runtime_error When the given handle is invalid.
      */
     friend std::ostream& operator<<(std::ostream &out, const Handle &handle) {
       out << handle.dump();
@@ -1006,6 +1042,9 @@ namespace wrap {
 
     /**
      * Returns the type of this handle.
+     *
+     * \returns The handle type for the currently wrapped handle.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     HandleType type() const {
       return check(raw::dqcs_handle_type(handle));
@@ -1023,12 +1062,20 @@ namespace wrap {
 
     /**
      * Wraps the given `arb` handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    Arb(HandleIndex handle) : Handle(handle) {
+    Arb(HandleIndex handle) noexcept : Handle(handle) {
     }
 
     /**
      * Returns the current arbitrary JSON data as a serialized JSON string.
+     *
+     * \returns A string representation of the current JSON object.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     std::string get_arb_json_string() const {
       char *json_c = check(raw::dqcs_arb_json_get(handle));
@@ -1039,6 +1086,15 @@ namespace wrap {
 
     /**
      * Sets the arbitrary JSON data to the given serialized JSON string.
+     *
+     * \note DQCsim internally stores the JSON object in CBOR format.
+     * Therefore, if after calling this you subsequently call
+     * `get_arb_json_string()` you may get a different string representation
+     * for the same JSON object.
+     *
+     * \param json A string representation of a JSON dictionary object.
+     * \throws std::runtime_error When the string representation is invalid,
+     * or when the current handle is invalid.
      */
     void set_arb_json_string(const std::string &json) {
       check(raw::dqcs_arb_json_set(handle, json.c_str()));
@@ -1046,6 +1102,15 @@ namespace wrap {
 
     /**
      * Returns the current arbitrary JSON data as a serialized CBOR string.
+     *
+     * \note A single JSON object may be represented with CBOR in many
+     * different ways, similar to how it may have different string
+     * representations (spacing, dictionary order, etc.). Therefore, never
+     * use a simple binary comparison on the CBOR object to check if two
+     * JSON objects are equivalent!
+     *
+     * \returns A CBOR string representing the current JSON object.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     std::string get_arb_cbor_string() const {
       size_t size = check(raw::dqcs_arb_cbor_get(handle, nullptr, 0));
@@ -1057,6 +1122,10 @@ namespace wrap {
 
     /**
      * Sets the arbitrary JSON data to the given serialized CBOR string.
+     *
+     * \param cbor A JSON object represented as a CBOR binary string.
+     * \throws std::runtime_error When the CBOR string is invalid, or when the
+     * current handle is invalid.
      */
     void set_arb_cbor_string(const std::string &cbor) {
       check(raw::dqcs_arb_cbor_set(handle, cbor.data(), cbor.size()));
@@ -1064,15 +1133,21 @@ namespace wrap {
 
     /**
      * Returns the current arbitrary JSON data as a JSON object from
-     * `nlohmann::json`. Since that is a header-only library that isn't usually
-     * installed system-wide and be using a specific version in your project
-     * already, you need to specify the `nlohmann::json` type as a generic to
-     * this function.
+     * `nlohmann::json`.
+     *
+     * Since that is a header-only library that isn't usually installed
+     * system-wide and be using a specific version in your project already,
+     * you need to specify the `nlohmann::json` type as a generic to this
+     * function.
      *
      * \warning This function returns a *copy* of the JSON data embedded in the
      * `ArbData`. Therefore, modifying the returned JSON object does *not*
      * modify the original `ArbData`. To modify, you need to pass the modified
      * JSON object to `set_arb_json()`.
+     *
+     * \returns A copy of the embedded JSON object, in the form of a C++ JSON
+     * object wrapper.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     template <class JSON>
     JSON get_arb_json() const {
@@ -1085,10 +1160,15 @@ namespace wrap {
 
     /**
      * Sets the arbitrary JSON data to the given JSON object from
-     * `nlohmann::json`. Since that is a header-only library that isn't usually
-     * installed system-wide and be using a specific version in your project
-     * already, you need to specify the `nlohmann::json` type as a generic to
-     * this function.
+     * `nlohmann::json`.
+     *
+     * Since that is a header-only library that isn't usually installed
+     * system-wide and be using a specific version in your project already,
+     * you need to specify the `nlohmann::json` type as a generic to this
+     * function.
+     *
+     * \param json The C++ JSON object representation of the object to set.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     template <class JSON>
     void set_arb_json(const JSON &json) {
@@ -1098,7 +1178,13 @@ namespace wrap {
 
     /**
      * Returns the arbitrary argument at the given index as a (binary) string.
+     *
      * Negative indices are relative to the back of the list, as in Python.
+     *
+     * \param index The index of the argument to retrieve.
+     * \returns The (binary) string representation of the argument.
+     * \throws std::runtime_error When the current handle is invalid or the
+     * argument index is out of range.
      */
     std::string get_arb_arg_string(ssize_t index) const {
       size_t size = check(raw::dqcs_arb_get_size(handle, index));
@@ -1117,6 +1203,12 @@ namespace wrap {
      * just copies the bytes over. It is up to you to ensure that that's what
      * you want to happen; unfortunately C++11 does not provide a way to
      * statically ensure that this is the case.
+     *
+     * \param index The index of the argument to retrieve.
+     * \returns The C object representation of the argument.
+     * \throws std::runtime_error When the current handle is invalid, the
+     * argument index is out of range, or the size of the requested object type
+     * differs from the size of the stored argument.
      */
     template <typename T>
     T get_arb_arg_as(ssize_t index) const {
@@ -1135,6 +1227,10 @@ namespace wrap {
     /**
      * Sets the arbitrary argument list to the given iterable of
      * `std::string`s.
+     *
+     * \param strings Some object that can be used as an iterator over
+     * `const std::string&`s.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     template <typename T>
     void set_arb_arg_strings(const T &strings) {
@@ -1147,6 +1243,11 @@ namespace wrap {
     /**
      * Sets the arbitrary argument at the given index to a (binary) string.
      * Negative indices are relative to the back of the list, as in Python.
+     *
+     * \param index The index of the argument to set.
+     * \param data The new argument data, represented as a (binary) string.
+     * \throws std::runtime_error When the current handle is invalid or the
+     * index is out of range.
      */
     void set_arb_arg_string(ssize_t index, const std::string &data) {
       check(raw::dqcs_arb_set_raw(handle, index, data.data(), data.size()));
@@ -1161,6 +1262,11 @@ namespace wrap {
      * just copies the bytes over. It is up to you to ensure that that's what
      * you want to happen; unfortunately C++11 does not provide a way to
      * statically ensure that this is the case.
+     *
+     * \param index The index of the argument to set.
+     * \param data The C object representation of the argument data to set.
+     * \throws std::runtime_error When the current handle is invalid or the
+     * index is out of range.
      */
     template <typename T>
     void set_arb_arg(ssize_t index, const T &data) {
@@ -1169,6 +1275,10 @@ namespace wrap {
 
     /**
      * Pushes a (binary) string to the back of the arbitrary argument list.
+     *
+     * \param data The data for the new argument, represented as a (binary)
+     * string.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     void push_arb_arg_string(const std::string &data) {
       check(raw::dqcs_arb_push_raw(handle, data.data(), data.size()));
@@ -1182,6 +1292,9 @@ namespace wrap {
      * just copies the bytes over. It is up to you to ensure that that's what
      * you want to happen; unfortunately C++11 does not provide a way to
      * statically ensure that this is the case.
+     *
+     * \param data The data for the new argument, represented as some C object.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     template <typename T>
     void push_arb_arg(const T &data) {
@@ -1190,6 +1303,11 @@ namespace wrap {
 
     /**
      * Pops from the back of the arbitrary argument list as a (binary) string.
+     *
+     * \returns The data of the popped argument, represented as a (binary)
+     * string.
+     * \throws std::runtime_error When the current handle is invalid or the
+     * argument list is empty.
      */
     std::string pop_arb_arg_string() {
       size_t size = check(raw::dqcs_arb_get_size(handle, -1));
@@ -1203,11 +1321,17 @@ namespace wrap {
      * Pops from the back of the arbitrary argument list as a value of type
      * `T`.
      *
+     * \note If there is an object size mismatch, the argument is *not* popped.
+     *
      * \warning Type `T` must be a primitive value (like an `int`) or a struct
      * thereof, without pointers or any other "complicated" constructs. DQCsim
      * just copies the bytes over. It is up to you to ensure that that's what
      * you want to happen; unfortunately C++11 does not provide a way to
      * statically ensure that this is the case.
+     *
+     * \returns The data of the popped argument, represented as some C object.
+     * \throws std::runtime_error When the current handle is invalid, the
+     * argument list is empty, or there is a size mismatch.
      */
     template <typename T>
     T pop_arb_arg_as() const {
@@ -1227,6 +1351,11 @@ namespace wrap {
      * Inserts an arbitrary argument at the given index using a (binary)
      * string. Negative indices are relative to the back of the list, as in
      * Python.
+     *
+     * \param index The index of the argument to insert at.
+     * \param data The new argument data, represented as a (binary) string.
+     * \throws std::runtime_error When the current handle is invalid or the
+     * index is out of range.
      */
     void insert_arb_arg_string(ssize_t index, const std::string &data) {
       check(raw::dqcs_arb_insert_raw(handle, index, data.data(), data.size()));
@@ -1242,6 +1371,11 @@ namespace wrap {
      * just copies the bytes over. It is up to you to ensure that that's what
      * you want to happen; unfortunately C++11 does not provide a way to
      * statically ensure that this is the case.
+     *
+     * \param index The index of the argument to insert at.
+     * \param data The C object representation of the argument data to set.
+     * \throws std::runtime_error When the current handle is invalid or the
+     * index is out of range.
      */
     template <typename T>
     void insert_arb_arg(ssize_t index, const T &data) {
@@ -1251,6 +1385,10 @@ namespace wrap {
     /**
      * Removes the arbitrary argument at the given index. Negative indices are
      * relative to the back of the list, as in Python.
+     *
+     * \param index The index of the argument to remove.
+     * \throws std::runtime_error When the current handle is invalid or the
+     * index is out of range.
      */
     void remove_arb_arg(ssize_t index) {
       check(raw::dqcs_arb_remove(handle, index));
@@ -1258,6 +1396,9 @@ namespace wrap {
 
     /**
      * Returns the number of arbitrary arguments.
+     *
+     * \returns The number of binary string arguments.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     size_t get_arb_arg_count() const {
       return check(raw::dqcs_arb_len(handle));
@@ -1265,6 +1406,8 @@ namespace wrap {
 
     /**
      * Clears the arbitrary argument list.
+     *
+     * \throws std::runtime_error When the current handle is invalid.
      */
     void clear_arb_args() {
       check(raw::dqcs_arb_clear(handle));
@@ -1272,6 +1415,9 @@ namespace wrap {
 
     /**
      * Assigns all arb data from the given arb to this one.
+     *
+     * \param src The arb-like object to copy the data from.
+     * \throws std::runtime_error When either handle is invalid.
      */
     void set_arb(const Arb &src) {
       check(raw::dqcs_arb_assign(handle, src.get_handle()));
@@ -1308,12 +1454,20 @@ namespace wrap {
 
     /**
      * Wraps the given `ArbData` handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    ArbData(HandleIndex handle) : Arb(handle) {
+    ArbData(HandleIndex handle) noexcept : Arb(handle) {
     }
 
     /**
      * Constructs an empty `ArbData` object.
+     *
+     * \throws std::runtime_error When DQCsim fails to construct the handle for
+     * some reason.
      */
     ArbData() : Arb(check(raw::dqcs_arb_new())) {
     }
@@ -1321,6 +1475,10 @@ namespace wrap {
     /**
      * Copy-constructs an `ArbData` object from any object supporting the `Arb`
      * interface.
+     *
+     * \param src The arb-like object to copy from.
+     * \throws std::runtime_error When the source handle is invalid, or DQCsim
+     * fails to construct the new handle for some reason.
      */
     ArbData(const Arb &src) : Arb(check(raw::dqcs_arb_new())) {
       set_arb(src);
@@ -1328,6 +1486,10 @@ namespace wrap {
 
     /**
      * Copy-constructs an `ArbData` object from another `ArbData` object.
+     *
+     * \param src The arb-like object to copy from.
+     * \throws std::runtime_error When the source handle is invalid, or DQCsim
+     * fails to construct the new handle for some reason.
      */
     ArbData(const ArbData &src) : Arb(check(raw::dqcs_arb_new())) {
       set_arb(src);
@@ -1335,6 +1497,9 @@ namespace wrap {
 
     /**
      * Copy assignment operator for `ArbData` objects.
+     *
+     * \param src The arb-like object to assign from.
+     * \throws std::runtime_error When either handle is invalid.
      */
     void operator=(const ArbData &src) {
       set_arb(src);
@@ -1361,18 +1526,28 @@ namespace wrap {
 
   /**
    * Class wrapper for handles that support the `cmd` interface.
+   *
+   * You normally wouldn't instantiate this directly (see `ArbCmd`).
    */
   class Cmd : public Arb {
   public:
 
     /**
      * Wraps the given `cmd` handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    Cmd(HandleIndex handle) : Arb(handle) {
+    Cmd(HandleIndex handle) noexcept : Arb(handle) {
     }
 
     /**
      * Returns the interface identifier of this command.
+     *
+     * \returns The interface identifier of this command.
+     * \throws std::runtime_error When either handle is invalid.
      */
     std::string get_iface() const {
       char *iface_c = check(raw::dqcs_cmd_iface_get(handle));
@@ -1383,6 +1558,10 @@ namespace wrap {
 
     /**
      * Returns whether this command has the given interface identifier.
+     *
+     * \param iface The interface to match against.
+     * \returns Whether there was a match.
+     * \throws std::runtime_error When either handle is invalid.
      */
     bool is_iface(const std::string &iface) const {
       return check(raw::dqcs_cmd_iface_cmp(handle, iface.c_str()));
@@ -1390,6 +1569,9 @@ namespace wrap {
 
     /**
      * Returns the operation identifier of this command.
+     *
+     * \returns The operation identifier of this command.
+     * \throws std::runtime_error When either handle is invalid.
      */
     std::string get_oper() const {
       char *oper_c = check(raw::dqcs_cmd_oper_get(handle));
@@ -1400,6 +1582,10 @@ namespace wrap {
 
     /**
      * Returns whether this command has the given operation identifier.
+     *
+     * \param oper The operation to match against.
+     * \returns Whether there was a match.
+     * \throws std::runtime_error When either handle is invalid.
      */
     bool is_oper(const std::string &oper) const {
       return check(raw::dqcs_cmd_oper_cmp(handle, oper.c_str()));
@@ -1442,12 +1628,22 @@ namespace wrap {
 
     /**
      * Wraps the given `ArbCmd` handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    ArbCmd(HandleIndex handle) : Cmd(handle) {
+    ArbCmd(HandleIndex handle) noexcept : Cmd(handle) {
     }
 
     /**
      * Constructs an `ArbCmd` object.
+     *
+     * \param iface The interface identifier for the command.
+     * \param oper The operation identifier for the command.
+     * \throws std::runtime_error When constructing the handle fails for some
+     * reason.
      */
     ArbCmd(const std::string &iface, const std::string &oper) : Cmd(check(raw::dqcs_cmd_new(
       iface.c_str(), oper.c_str()
@@ -1457,6 +1653,10 @@ namespace wrap {
     /**
      * Copy-constructs an `ArbCmd` object from any object supporting the `Cmd`
      * interface.
+     *
+     * \param src The cmd-like object to copy from.
+     * \throws std::runtime_error When the source handle is invalid or
+     * constructing the new handle fails for some reason.
      */
     ArbCmd(const Cmd &src) : Cmd(check(raw::dqcs_cmd_new(
       src.get_iface().c_str(), src.get_oper().c_str()
@@ -1466,6 +1666,10 @@ namespace wrap {
 
     /**
      * Copy-constructs an `ArbCmd` object from another `ArbCmd` object.
+     *
+     * \param src The cmd-like object to copy from.
+     * \throws std::runtime_error When the source handle is invalid or
+     * constructing the new handle fails for some reason.
      */
     ArbCmd(const ArbCmd &src) : Cmd(check(raw::dqcs_cmd_new(
       src.get_iface().c_str(), src.get_oper().c_str()
@@ -1475,6 +1679,10 @@ namespace wrap {
 
     /**
      * Copy assignment operator for `ArbCmd` objects.
+     *
+     * \param src The cmd-like object to copy from.
+     * \throws std::runtime_error When freeing the old handle fails, the source
+     * handle is invalid, or constructing the new handle fails for some reason.
      */
     void operator=(const ArbCmd &src) {
       // The C API doesn't allow `ArbCmd`s to be copied natively, so we need to
@@ -1536,18 +1744,29 @@ namespace wrap {
 
     /**
      * Wraps the given `ArbCmdQueue` handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    ArbCmdQueue(HandleIndex handle) : Cmd(handle) {
+    ArbCmdQueue(HandleIndex handle) noexcept : Cmd(handle) {
     }
 
     /**
      * Constructs an empty `ArbCmd` queue object.
+     *
+     * \throws std::runtime_error When constructing the handle fails for some
+     * reason.
      */
     ArbCmdQueue() : Cmd(check(raw::dqcs_cq_new())) {
     }
 
     /**
      * Pushes an `ArbCmd` into the queue by moving.
+     *
+     * \param cmd The `ArbCmd` to push. Consumed by this function.
+     * \throws std::runtime_error When either handle is invalid.
      */
     void push(ArbCmd &&cmd) {
       check(raw::dqcs_cq_push(handle, cmd.get_handle()));
@@ -1555,6 +1774,10 @@ namespace wrap {
 
     /**
      * Pushes an `ArbCmd` into the queue by copying.
+     *
+     * \param cmd The `ArbCmd` to push.
+     * \throws std::runtime_error When either handle is invalid, or copying
+     * `cmd` fails.
      */
     void push(const Cmd &cmd) {
       push(std::move(ArbCmd(cmd)));
@@ -1562,7 +1785,31 @@ namespace wrap {
 
     /**
      * Constructs an `ArbCmd` queue object from an iterable of `ArbCmd`s by
+     * moving.
+     *
+     * \param cmds The iterable of `ArbCmd&`s to push. Consumed by this
+     * function.
+     * \returns The constructed `ArbCmdQueue`.
+     * \throws std::runtime_error When any of the handles are invalid, or
+     * construction of the queue handle fails.
+     */
+    template <class T>
+    static ArbCmdQueue from_iter(T &&cmds) {
+      ArbCmdQueue result;
+      for (Cmd &cmd : cmds) {
+        result.push(std::move(cmd));
+      }
+      return result;
+    }
+
+    /**
+     * Constructs an `ArbCmd` queue object from an iterable of `ArbCmd`s by
      * copying.
+     *
+     * \param cmds The iterable of `const ArbCmd&`s to push.
+     * \returns The constructed `ArbCmdQueue`.
+     * \throws std::runtime_error When any of the handles are invalid, copying
+     * those handles fails, or construction of the queue handle fails.
      */
     template <class T>
     static ArbCmdQueue from_iter(const T &cmds) {
@@ -1574,20 +1821,11 @@ namespace wrap {
     }
 
     /**
-     * Constructs an `ArbCmd` queue object from an iterable of `ArbCmd`s by
-     * moving.
-     */
-    template <class T>
-    static ArbCmdQueue from_iter(T &&cmds) {
-      ArbCmdQueue result;
-      for (const Cmd &cmd : cmds) {
-        result.push(std::move(cmd));
-      }
-      return result;
-    }
-
-    /**
      * Pushes an `ArbCmd` into the queue by moving (builder pattern).
+     *
+     * \param cmd The `ArbCmd` to push. Consumed by this function.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When either handle is invalid.
      */
     ArbCmdQueue &with(ArbCmd &&cmd) {
       push(std::move(cmd));
@@ -1596,6 +1834,11 @@ namespace wrap {
 
     /**
      * Pushes an `ArbCmd` into the queue by copying (builder pattern).
+     *
+     * \param cmd The `ArbCmd` to push.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When either handle is invalid or the copy
+     * fails.
      */
     ArbCmdQueue &with(const Cmd &cmd) {
       push(cmd);
@@ -1605,6 +1848,9 @@ namespace wrap {
     /**
      * Pops the first `ArbCmd` from the queue, allowing the next one to be
      * accessed.
+     *
+     * \throws std::runtime_error When the handle is invalid, or the queue is
+     * empty.
      */
     void next() {
       check(raw::dqcs_cq_next(handle));
@@ -1612,6 +1858,9 @@ namespace wrap {
 
     /**
      * Returns the number of `ArbCmd`s in the queue.
+     *
+     * \returns The number of `ArbCmd`s in the queue.
+     * \throws std::runtime_error When the handle is invalid.
      */
     size_t size() const {
       return check(raw::dqcs_cq_len(handle));
@@ -1620,6 +1869,9 @@ namespace wrap {
     /**
      * Drains the queue into a vector of `ArbCmd`s. This is less performant
      * than iterating over the queue manually, because it requires copies.
+     *
+     * \returns A `std::vector<ArbCmd>` representation of the queue.
+     * \throws std::runtime_error When the handle is invalid.
      */
     std::vector<ArbCmd> drain_into_vector() {
       std::vector<ArbCmd> cmds;
@@ -1637,6 +1889,9 @@ namespace wrap {
      * \note This function is not `const`, because exceptions during the copy
      * operation can change its value, and the underlying handle is changed.
      * However, under normal conditions, the contents appear to be unchanged.
+     *
+     * \returns A `std::vector<ArbCmd>` representation of the queue.
+     * \throws std::runtime_error When the handle is invalid.
      */
     std::vector<ArbCmd> copy_into_vector() {
       std::vector<ArbCmd> cmds = drain_into_vector();
@@ -1646,18 +1901,31 @@ namespace wrap {
     }
 
     /**
-     * Copy-constructs a queue of `ArbCmd`s. This requires destructive
-     * iteration of the source object, so it isn't not const; if an exception
-     * occurs, the state of the source object may be changed.
+     * Copy-constructs a queue of `ArbCmd`s.
+     *
+     * \note This requires destructive iteration of the source object, so it
+     * isn't not const; if an exception occurs, the state of the source object
+     * may be changed.
+     *
+     * \param src The queue to copy from.
+     * \throws std::runtime_error When the source handle is invalid or
+     * construction of the new object fails.
      */
     ArbCmdQueue(ArbCmdQueue &src) : Cmd(0) {
       handle = ArbCmdQueue::from_iter(src.copy_into_vector()).take_handle();
     }
 
     /**
-     * Copy-assigns a queue of `ArbCmd`s. This requires destructive
-     * iteration of the source object, so it isn't not const; if an exception
-     * occurs, the state of the source object may be changed.
+     * Copy-assigns a queue of `ArbCmd`s.
+     *
+     * \note This requires destructive iteration of the source object, so it
+     * isn't not const; if an exception occurs, the state of the source object
+     * may be changed.
+     *
+     * \param src The queue to copy from.
+     * \throws std::runtime_error When the source handle is invalid, freeing
+     * any existing handle in the destination fails, or construction of the
+     * new object fails.
      */
     ArbCmdQueue &operator=(ArbCmdQueue &src) {
       free();
@@ -1704,6 +1972,9 @@ namespace wrap {
 
     /**
      * Wraps a raw reference.
+     *
+     * \param index The index of the qubit to wrap.
+     * \throws std::runtime_error When the qubit index is invalid (zero).
      */
     QubitRef(QubitIndex index) : index(index) {
       if (index == 0) {
@@ -1724,7 +1995,7 @@ namespace wrap {
     /**
      * Default move constructor.
      */
-    QubitRef(QubitRef &&handle) = default;
+    QubitRef(QubitRef&&) = default;
 
     /**
      * Default move assignment.
@@ -1733,20 +2004,30 @@ namespace wrap {
 
     /**
      * Qubit reference equality operator.
+     *
+     * \param other The qubit reference to compare with.
+     * \returns Whether the references refer to the same qubit.
      */
-    bool operator==(const QubitRef &other) const {
+    bool operator==(const QubitRef &other) const noexcept {
       return index == other.index;
     }
 
     /**
      * Qubit reference inequality operator.
+     *
+     * \param other The qubit reference to compare with.
+     * \returns Whether the references refer to different qubits.
      */
-    bool operator!=(const QubitRef &other) const {
+    bool operator!=(const QubitRef &other) const noexcept {
       return index != other.index;
     }
 
     /**
      * Allow qubit references to be printed.
+     *
+     * \param out The output stream to write to.
+     * \param qubit The qubit reference to dump.
+     * \returns The output stream object.
      */
     friend std::ostream& operator<<(std::ostream &out, const QubitRef &qubit) {
       out << 'q' << qubit.index;
@@ -1755,8 +2036,10 @@ namespace wrap {
 
     /**
      * Returns the raw qubit index.
+     *
+     * \returns The raw qubit index.
      */
-    QubitIndex get_index() const {
+    QubitIndex get_index() const noexcept {
       return index;
     }
 
@@ -1790,18 +2073,30 @@ namespace wrap {
 
     /**
      * Wraps the given qubit set handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    QubitSet(HandleIndex handle) : Handle(handle) {
+    QubitSet(HandleIndex handle) noexcept : Handle(handle) {
     }
 
     /**
      * Constructs an empty qubit set.
+     *
+     * \throws std::runtime_error When construction of the new handle fails for
+     * some reason.
      */
     QubitSet() : Handle(check(raw::dqcs_qbset_new())) {
     }
 
     /**
      * Constructs a qubit set object from an iterable of qubit references.
+     *
+     * \param qubits An iterable of `const QubitRef&` to take the qubits from.
+     * \throws std::runtime_error When construction of the new handle fails for
+     * some reason.
      */
     template <class T>
     static QubitSet from_iter(const T &qubits) {
@@ -1814,12 +2109,21 @@ namespace wrap {
 
     /**
      * Copy-constructs a qubit set.
+     *
+     * \param src The object to copy from.
+     * \throws std::runtime_error When the source handle is invalid or
+     * construction of the new handle failed for some reason.
      */
     QubitSet(const QubitSet &src) : Handle(check(raw::dqcs_qbset_copy(src.handle))) {
     }
 
     /**
      * Copy assignment operator for qubit sets.
+     *
+     * \param src The object to copy from.
+     * \throws std::runtime_error When the source handle is invalid, any
+     * previously wrapped handle in the destination object could not be freed,
+     * or construction of the new handle failed for some reason.
      */
     void operator=(const QubitSet &src) {
       QubitSet copy(src);
@@ -1840,6 +2144,9 @@ namespace wrap {
     /**
      * Pushes a qubit into the set. Note that qubit sets are ordered. An
      * exception is thrown if the qubit is already in the set.
+     *
+     * \param qubit The qubit reference to push.
+     * \throws std::runtime_error When the handle is invalid.
      */
     void push(const QubitRef &qubit) {
       check(raw::dqcs_qbset_push(handle, qubit.get_index()));
@@ -1848,6 +2155,10 @@ namespace wrap {
     /**
      * Pushes a qubit into the set (builder pattern). Note that qubit sets are
      * ordered. An exception is thrown if the qubit is already in the set.
+     *
+     * \param qubit The qubit reference to push.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the handle is invalid.
      */
     QubitSet &with(const QubitRef &qubit) {
       push(qubit);
@@ -1857,6 +2168,9 @@ namespace wrap {
     /**
      * Pops a qubit from the set. Qubits are popped in the same order in which
      * they are pushed (like a FIFO).
+     *
+     * \returns The popped qubit reference.
+     * \throws std::runtime_error When the handle is invalid.
      */
     QubitRef pop() {
       return QubitRef(check(raw::dqcs_qbset_pop(handle)));
@@ -1864,6 +2178,9 @@ namespace wrap {
 
     /**
      * Returns the number of qubits in the set.
+     *
+     * \returns The number of qubits in the set.
+     * \throws std::runtime_error When the handle is invalid.
      */
     size_t size() const {
       return check(raw::dqcs_qbset_len(handle));
@@ -1871,6 +2188,10 @@ namespace wrap {
 
     /**
      * Returns whether the given qubit is contained in the set.
+     *
+     * \param qubit The qubit reference that containment should be checked for.
+     * \returns Whether the set contains the given qubit reference.
+     * \throws std::runtime_error When the handle is invalid.
      */
     bool contains(const QubitRef &qubit) const {
       return check(raw::dqcs_qbset_contains(handle, qubit.get_index()));
@@ -1878,6 +2199,14 @@ namespace wrap {
 
     /**
      * Drains the qubit set into a vector.
+     *
+     * \note This requires destructive iteration of the source object, so it
+     * isn't not const; if an exception occurs, the state of the source object
+     * may be changed.
+     *
+     * \returns A `std::vector<QubitRef>` containing the qubits that were in
+     * the set, in insertion order.
+     * \throws std::runtime_error When the handle is invalid.
      */
     std::vector<QubitRef> drain_into_vector() {
       std::vector<QubitRef> qubits;
@@ -1889,6 +2218,14 @@ namespace wrap {
 
     /**
      * Copies the qubit set into a vector.
+     *
+     * \note This requires destructive iteration of the source object, so it
+     * isn't not const; if an exception occurs, the state of the source object
+     * may be changed.
+     *
+     * \returns A `std::vector<QubitRef>` containing the qubits that are in
+     * the set, in insertion order.
+     * \throws std::runtime_error When the handle is invalid.
      */
     std::vector<QubitRef> copy_into_vector() const {
       QubitSet copy(*this);
@@ -2038,6 +2375,10 @@ namespace wrap {
 
     /**
      * Allow matrices to be printed.
+     *
+     * \param out The output stream to write to.
+     * \param matrix The matrix to dump.
+     * \returns The output stream object.
      */
     friend std::ostream& operator<<(std::ostream &out, const Matrix &matrix) {
       out << '{';
@@ -2740,8 +3081,13 @@ namespace wrap {
 
     /**
      * Wraps the given `Gate` handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    Gate(HandleIndex handle) : Arb(handle) {
+    Gate(HandleIndex handle) noexcept : Arb(handle) {
     }
 
     // Delete copy construct/assign.
@@ -3227,8 +3573,13 @@ namespace wrap {
 
     /**
      * Wraps the given measurement handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    Measurement(HandleIndex handle) : Arb(handle) {
+    Measurement(HandleIndex handle) noexcept : Arb(handle) {
     }
 
     /**
@@ -3314,8 +3665,13 @@ namespace wrap {
 
     /**
      * Wraps the given measurement set handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    MeasurementSet(HandleIndex handle) : Handle(handle) {
+    MeasurementSet(HandleIndex handle) noexcept : Handle(handle) {
     }
 
     /**
@@ -4627,8 +4983,13 @@ namespace wrap {
 
     /**
      * Wraps the given plugin join handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    PluginJoinHandle(HandleIndex handle) : Handle(handle) {
+    PluginJoinHandle(HandleIndex handle) noexcept : Handle(handle) {
     }
 
     // Delete copy construct/assign.
@@ -4881,8 +5242,13 @@ namespace wrap {
 
     /**
      * Wraps the given plugin definition handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    Plugin(HandleIndex handle) : Handle(handle) {
+    Plugin(HandleIndex handle) noexcept : Handle(handle) {
     }
 
     /**
@@ -5587,8 +5953,13 @@ namespace wrap {
 
     /**
      * Wraps the given plugin process or thread configuration handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    PluginConfiguration(HandleIndex handle) : Handle(handle) {
+    PluginConfiguration(HandleIndex handle) noexcept : Handle(handle) {
     }
 
     // Delete copy construct/assign.
@@ -6249,8 +6620,13 @@ namespace wrap {
 
     /**
      * Wraps the given simulation handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    Simulation(HandleIndex handle) : Handle(handle) {
+    Simulation(HandleIndex handle) noexcept : Handle(handle) {
     }
 
     // Delete copy construct/assign.
@@ -6577,8 +6953,13 @@ namespace wrap {
 
     /**
      * Wraps the given simulation configuration handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    SimulationConfiguration(HandleIndex handle) : Handle(handle) {
+    SimulationConfiguration(HandleIndex handle) noexcept : Handle(handle) {
     }
 
     /**

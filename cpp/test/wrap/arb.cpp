@@ -24,6 +24,8 @@ TEST(arb, cbor) {
   EXPECT_ERROR(data.set_arb_cbor_string("\xFF"), "Invalid argument: unexpected code at offset 1");
   EXPECT_EQ(data.get_arb_json_string(), "{\"hello\":\"world\"}");
   EXPECT_EQ(data.get_arb_cbor_string(), "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF");
+  EXPECT_ERROR(data.set_arb_cbor_string("this is not CBOR"), "Invalid argument: EOF while parsing a value at offset 16");
+  EXPECT_EQ(data.get_arb_cbor_string(), "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF");
 }
 
 // Test JSON access by means of `nlohmann::json` objects.
