@@ -21,7 +21,7 @@ TEST(gate, controlled) {
   EXPECT_TRUE(gate->has_controls());
   EXPECT_EQ(gate->get_measures().dump(), std::string("QubitReferenceSet(\n    [],\n)"));
   EXPECT_FALSE(gate->has_measures());
-  EXPECT_EQ(gate->get_matrix().size(), 2);
+  EXPECT_EQ(gate->get_matrix().n(), 2);
   EXPECT_TRUE(gate->has_matrix());
   EXPECT_ERROR(gate->get_name(), "Invalid argument: gate is not custom and thus does not have a name");
   EXPECT_FALSE(gate->is_custom());
@@ -42,7 +42,7 @@ TEST(gate, unitary) {
   EXPECT_FALSE(gate->has_controls());
   EXPECT_EQ(gate->get_measures().dump(), std::string("QubitReferenceSet(\n    [],\n)"));
   EXPECT_FALSE(gate->has_measures());
-  EXPECT_EQ(gate->get_matrix().size(), 4);
+  EXPECT_EQ(gate->get_matrix().n(), 4);
   EXPECT_TRUE(gate->has_matrix());
   EXPECT_ERROR(gate->get_name(), "Invalid argument: gate is not custom and thus does not have a name");
   EXPECT_FALSE(gate->is_custom());
@@ -61,7 +61,7 @@ TEST(gate, measurement) {
   EXPECT_FALSE(gate->has_controls());
   EXPECT_EQ(gate->get_measures().dump(), std::string("QubitReferenceSet(\n    [\n        QubitRef(\n            4,\n        ),\n    ],\n)"));
   EXPECT_TRUE(gate->has_measures());
-  EXPECT_ERROR(gate->get_matrix().size(), "Invalid argument: no matrix associated with gate");
+  EXPECT_ERROR(gate->get_matrix(), "Invalid argument: no matrix associated with gate");
   EXPECT_FALSE(gate->has_matrix());
   EXPECT_ERROR(gate->get_name(), "Invalid argument: gate is not custom and thus does not have a name");
   EXPECT_FALSE(gate->is_custom());
@@ -86,7 +86,7 @@ TEST(gate, custom_matrix) {
   EXPECT_TRUE(gate->has_controls());
   EXPECT_EQ(gate->get_measures().dump(), std::string("QubitReferenceSet(\n    [\n        QubitRef(\n            4,\n        ),\n    ],\n)"));
   EXPECT_TRUE(gate->has_measures());
-  EXPECT_EQ(gate->get_matrix().size(), 4);
+  EXPECT_EQ(gate->get_matrix().n(), 4);
   EXPECT_TRUE(gate->has_matrix());
   EXPECT_EQ(gate->get_name(), "test");
   EXPECT_TRUE(gate->is_custom());
@@ -104,7 +104,7 @@ TEST(gate, custom_no_matrix) {
   EXPECT_FALSE(gate->has_controls());
   EXPECT_EQ(gate->get_measures().dump(), std::string("QubitReferenceSet(\n    [],\n)"));
   EXPECT_FALSE(gate->has_measures());
-  EXPECT_ERROR(gate->get_matrix().size(), "Invalid argument: no matrix associated with gate");
+  EXPECT_ERROR(gate->get_matrix(), "Invalid argument: no matrix associated with gate");
   EXPECT_FALSE(gate->has_matrix());
   EXPECT_EQ(gate->get_name(), "test");
   EXPECT_TRUE(gate->is_custom());

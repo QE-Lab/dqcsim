@@ -2240,8 +2240,41 @@ namespace wrap {
   using complex = std::complex<double>;
 
   /**
+   * Anonymous namespace with some private members.
+   */
+  namespace {
+
+    /**
+     * Integer square root.
+     */
+    template <typename T>
+    T isqrt(T n) {
+      T c = (T)1 << (sizeof(T) * 4 - 1);
+      if (c < 0) {
+        c = (T)1 << (sizeof(T) * 4 - 2);
+      }
+      T g = c;
+      while (true) {
+        if (g*g > n) {
+          g ^= c;
+        }
+        c >>= 1;
+        if (c == 0) {
+          return g;
+        }
+        g |= c;
+      }
+    }
+
+  }
+
+  /**
    * Convenience class for the square complex matrices used to express the
    * qubit gates.
+   *
+   * \note DQCsim is not a math library: this matrix class is solely intended
+   * as an interface between DQCsim's internal matrix representation and
+   * whatever math library you want to use.
    */
   class Matrix {
   private:
@@ -2255,7 +2288,7 @@ namespace wrap {
      * Number of rows == number of columns. So we don't have to compute the
      * sqrt of the vector size all the time.
      */
-    const size_t n;
+    const size_t _n;
 
   public:
 
@@ -2267,12 +2300,17 @@ namespace wrap {
 
     /**
      * Constructs a zero matrix of size `n` times `n`.
+     *
+     * \param n The number of rows = the number of columns of the matrix.
      */
-    Matrix(size_t n) : d(n * n, complex(0.0, 0.0)), n(n) {
+    Matrix(size_t n) : d(n * n, complex(0.0, 0.0)), _n(n) {
     }
 
     /**
      * Constructs an identity matrix of size `n` times `n`.
+     *
+     * \param n The number of rows = the number of columns of the matrix.
+     * \returns A new identity matrix of size `n` times `n`.
      */
     static Matrix identity(size_t n) {
       Matrix result(n);
@@ -2283,19 +2321,39 @@ namespace wrap {
     }
 
     /**
-     * Constructs a matrix from a row-major flattened array of `size` x `size`
+     * Constructs a matrix from a row-major flattened array of `size`
      * `complex`s.
+     *
+     * \param size The number of complex numbers. Must be a square number,
+     * as the matrix must be square.
+     * \param data Pointer to an array of complex numbers representing the
+     * desired matrix in row-major form.
+     * \returns A new matrix containing the desired data.
+     * \throws std::invalid_argument When `size` is not a square number.
      */
-    Matrix(size_t size, const complex *data) : d(size*size), n(size) {
-      std::memcpy(d.data(), data, d.size() * sizeof(complex));
+    Matrix(size_t size, const complex *data) : d(size), _n(isqrt(size)) {
+      if (size != _n * _n) {
+        throw std::invalid_argument("size must be a square number");
+      }
+      std::memcpy(d.data(), data, size * sizeof(complex));
     }
 
     /**
      * Constructs a matrix from a row-major, real-first flattened array of
-     * 2 x `size` x `size` `double`s.
+     * 2 x `size` `double`s.
+     *
+     * \param size The number of complex numbers. Must be a square number,
+     * as the matrix must be square.
+     * \param data Pointer to an array of doubles representing the desired
+     * matrix in row-major form using (real, imag) pairs.
+     * \returns A new matrix containing the desired data.
+     * \throws std::invalid_argument When `size` is not a square number.
      */
-    Matrix(size_t size, const double *data) : d(size*size), n(size) {
-      std::memcpy(d.data(), data, d.size() * sizeof(complex));
+    Matrix(size_t size, const double *data) : d(size), _n(isqrt(size)) {
+      if (size != _n * _n) {
+        throw std::invalid_argument("size must be a square number");
+      }
+      std::memcpy(d.data(), data, size * sizeof(complex));
     }
 
     /**
@@ -2320,61 +2378,94 @@ namespace wrap {
 
     /**
      * Mutable matrix element accessor.
+     *
+     * \param row The row index for the element to access.
+     * \param column The column index for the element to access.
+     * \returns A mutable reference to the element.
+     * \throws std::invalid_argument When either index is out of range.
      */
     complex& operator()(size_t row, size_t column) {
-      if (row >= n || column >= n) {
+      if (row >= _n || column >= _n) {
         throw std::invalid_argument("matrix subscript out of bounds");
       }
-      return d[n*row + column];
+      return d[_n*row + column];
     }
 
     /**
      * Const matrix element accessor.
+     *
+     * \param row The row index for the element to access, starting at 0.
+     * \param column The column index for the element to access, starting at 0.
+     * \returns An immutable reference to the element.
+     * \throws std::invalid_argument When either index is out of range.
      */
     const complex& operator()(size_t row, size_t column) const {
-      if (row >= n || column >= n) {
+      if (row >= _n || column >= _n) {
         throw std::invalid_argument("matrix subscript out of bounds");
       }
-      return d[n*row + column];
+      return d[_n*row + column];
+    }
+
+    /**
+     * Returns the number of rows = the number of columns in the matrix.
+     *
+     * \returns The number of rows = the number of columns in the matrix.
+     */
+    size_t n() const noexcept {
+      return _n;
     }
 
     /**
      * Mutable flattened data accessor.
+     *
+     * \returns A mutable pointer to the contained data represented as a
+     * row-major array of complex numbers.
      */
-    complex *data() {
+    complex *data() noexcept {
       return d.data();
     }
 
     /**
      * Immutable flattened data accessor.
+     *
+     * \returns An immutable pointer to the contained data represented as a
+     * row-major array of complex numbers.
      */
-    const complex *data() const {
+    const complex *data() const noexcept {
       return d.data();
     }
 
     /**
      * Mutable flattened data accessor.
+     *
+     * \returns A mutable pointer to the contained data represented as a
+     * row-major array of (real, imag) doubles.
      */
-    double *data_double() {
+    double *data_double() noexcept {
       return reinterpret_cast<double*>(d.data());
     }
 
     /**
      * Immutable flattened data accessor.
+     *
+     * \returns An immutable pointer to the contained data represented as a
+     * row-major array of (real, imag) doubles.
      */
-    const double *data_double() const {
+    const double *data_double() const noexcept {
       return reinterpret_cast<const double*>(d.data());
     }
 
     /**
-     * Returns the size of the matrix (number of rows = number of columns).
+     * Returns the number of complex elements in the matrix.
+     *
+     * \returns The number of complex elements in the matrix.
      */
-    size_t size() const {
-      return n;
+    size_t size() const noexcept {
+      return _n * _n;
     }
 
     /**
-     * Allow matrices to be printed.
+     * Allows matrices to be printed.
      *
      * \param out The output stream to write to.
      * \param matrix The matrix to dump.
@@ -2382,10 +2473,10 @@ namespace wrap {
      */
     friend std::ostream& operator<<(std::ostream &out, const Matrix &matrix) {
       out << '{';
-      for (size_t row = 0; row < matrix.size(); row++) {
+      for (size_t row = 0; row < matrix._n; row++) {
         if (row) out << ", ";
         out << '[';
-        for (size_t col = 0; col < matrix.size(); col++) {
+        for (size_t col = 0; col < matrix._n; col++) {
           if (col) out << ", ";
           auto e = matrix(row, col);
           if (e.real() != 0.0) {
@@ -2409,22 +2500,32 @@ namespace wrap {
 
     /**
      * Matrix equality operator (exact).
+     *
+     * \param other The matrix to compare to.
+     * \returns Whether the matrices are equal.
      */
-    bool operator==(const Matrix &other) const {
+    bool operator==(const Matrix &other) const noexcept {
       return d == other.d;
     }
 
     /**
      * Matrix inequality operator (exact).
+     *
+     * \param other The matrix to compare to.
+     * \returns Whether the matrices are different.
      */
-    bool operator!=(const Matrix &other) const {
+    bool operator!=(const Matrix &other) const noexcept {
       return d != other.d;
     }
 
     /**
      * Matrix fuzzy equality operator.
      *
-     * `epsilon` sets the maximum tolerated RMS variation of the elements.
+     * \param other The matrix to compare to.
+     * \param epsilon The maximum tolerated RMS variation of the elements.
+     * \param ignore_gphase Whether global phase differences should be ignored
+     * in the comparison.
+     * \returns Whether the matrices are approximately equal.
      */
     bool fuzzy_equal(
       const Matrix &other,
@@ -2441,6 +2542,9 @@ namespace wrap {
   // TODO: copy the names used within GateMatrix from the Rust API
   /**
    * Contains shorthand methods for a variety of commonly used gate matrices.
+   *
+   * \note This is a class an not a namespace because it has global constants,
+   * and this is a header-only library.
    */
   class GateMatrix {
   private:
@@ -2470,7 +2574,7 @@ namespace wrap {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    1.0,  0.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2491,7 +2595,7 @@ namespace wrap {
         0.0,  0.0,    1.0,  0.0,
         1.0,  0.0,    0.0,  0.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2512,7 +2616,7 @@ namespace wrap {
         0.0,  0.0,    0.0,  -1.0,
         0.0,  1.0,    0.0,  0.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2533,7 +2637,7 @@ namespace wrap {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    -1.0, 0.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2556,7 +2660,7 @@ namespace wrap {
         IR2,  0.0,    IR2,  0.0,
         IR2,  0.0,    -IR2, 0.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2577,7 +2681,7 @@ namespace wrap {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    0.0,  1.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2599,7 +2703,7 @@ namespace wrap {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    0.0,  -1.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2621,7 +2725,7 @@ namespace wrap {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    IR2,  IR2,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2643,7 +2747,7 @@ namespace wrap {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    IR2,  -IR2,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2668,7 +2772,7 @@ namespace wrap {
         co,   0.0,    0.0,  -si,
         0.0,  -si,    co,   0.0,
       };
-      return Matrix(2, values);
+      return Matrix(4, values);
     }
 
     /**
@@ -2689,7 +2793,7 @@ namespace wrap {
         IR2,  0.0,    0.0,  -IR2,
         0.0,  -IR2,   IR2,  0.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2711,7 +2815,7 @@ namespace wrap {
         IR2,  0.0,    0.0,  IR2,
         0.0,  IR2,    IR2,  0.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2735,7 +2839,7 @@ namespace wrap {
         0.0,  0.0,    0.0,  -1.0,
         0.0,  -1.0,   0.0,  0.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2760,7 +2864,7 @@ namespace wrap {
         co,   0.0,    -si,  0.0,
         si,   0.0,    co,   0.0,
       };
-      return Matrix(2, values);
+      return Matrix(4, values);
     }
 
     /**
@@ -2781,7 +2885,7 @@ namespace wrap {
         IR2,  0.0,    -IR2, 0.0,
         IR2,  0.0,    IR2,  0.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2803,7 +2907,7 @@ namespace wrap {
         IR2,  0.0,    IR2,  0.0,
         -IR2, 0.0,    IR2,  0.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2827,7 +2931,7 @@ namespace wrap {
         0.0,  0.0,    -1.0, 0.0,
         1.0,  0.0,    0.0,  0.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2852,7 +2956,7 @@ namespace wrap {
         co,   -si,    0.0,  0.0,
         0.0,  0.0,    co,   si,
       };
-      return Matrix(2, values);
+      return Matrix(4, values);
     }
 
     /**
@@ -2875,7 +2979,7 @@ namespace wrap {
         IR2,  -IR2,   0.0,  0.0,
         0.0,  0.0,    IR2,  IR2,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2900,7 +3004,7 @@ namespace wrap {
         IR2,  IR2,    0.0,  0.0,
         0.0,  0.0,    IR2,  -IR2,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2924,7 +3028,7 @@ namespace wrap {
         0.0,  -1.0,   0.0,  0.0,
         0.0,  0.0,    0.0,  1.0,
       };
-      static const Matrix matrix(2, values);
+      static const Matrix matrix(4, values);
       return matrix;
     }
 
@@ -2978,7 +3082,7 @@ namespace wrap {
         0.0,  0.0,    1.0,  0.0,    0.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    0.0,  0.0,    0.0,  0.0,    1.0,  0.0,
       };
-      static const Matrix matrix(4, values);
+      static const Matrix matrix(16, values);
       return matrix;
     }
 
@@ -3003,7 +3107,7 @@ namespace wrap {
         0.0,  0.0,    0.5,  -0.5,   0.5,  0.5,    0.0,  0.0,
         0.0,  0.0,    0.0,  0.0,    0.0,  0.0,    1.0,  0.0,
       };
-      static const Matrix matrix(4, values);
+      static const Matrix matrix(16, values);
       return matrix;
     }
 
@@ -3053,30 +3157,6 @@ namespace wrap {
    * \endcode
    */
   class Gate : public Arb {
-  private:
-
-    /**
-     * Integer square root.
-     */
-    template <typename T>
-    static T isqrt(T n) {
-      T c = (T)1 << (sizeof(T) * 4 - 1);
-      if (c < 0) {
-        c = (T)1 << (sizeof(T) * 4 - 2);
-      }
-      T g = c;
-      while (true) {
-        if (g*g > n) {
-          g ^= c;
-        }
-        c >>= 1;
-        if (c == 0) {
-          return g;
-        }
-        g |= c;
-      }
-    }
-
   public:
 
     /**
@@ -3114,8 +3194,8 @@ namespace wrap {
       return Gate(check(raw::dqcs_gate_new_unitary(
         targets.get_handle(),
         0,
-        reinterpret_cast<const double*>(matrix.data()),
-        matrix.size() * matrix.size()
+        matrix.data_double(),
+        matrix.size()
       )));
     }
 
@@ -3141,8 +3221,8 @@ namespace wrap {
       return Gate(check(raw::dqcs_gate_new_unitary(
         targets.get_handle(),
         controls.get_handle(),
-        reinterpret_cast<const double*>(matrix.data()),
-        matrix.size() * matrix.size()
+        matrix.data_double(),
+        matrix.size()
       )));
     }
 
@@ -3206,8 +3286,8 @@ namespace wrap {
         targets.get_handle(),
         controls.get_handle(),
         measures.get_handle(),
-        reinterpret_cast<const double*>(matrix.data()),
-        matrix.size() * matrix.size()
+        matrix.data_double(),
+        matrix.size()
       )));
     }
 
@@ -3312,8 +3392,8 @@ namespace wrap {
         targets.get_handle(),
         controls.get_handle(),
         0,
-        reinterpret_cast<const double*>(matrix.data()),
-        matrix.size() * matrix.size()
+        matrix.data_double(),
+        matrix.size()
       )));
     }
 
@@ -3394,8 +3474,8 @@ namespace wrap {
         targets.get_handle(),
         0,
         0,
-        reinterpret_cast<const double*>(matrix.data()),
-        matrix.size() * matrix.size()
+        matrix.data_double(),
+        matrix.size()
       )));
     }
 
@@ -3511,7 +3591,7 @@ namespace wrap {
      */
     Matrix get_matrix() const {
       double *data = check(raw::dqcs_gate_matrix(handle));
-      Matrix matrix(isqrt(check(raw::dqcs_gate_matrix_len(handle))), data);
+      Matrix matrix(check(raw::dqcs_gate_matrix_len(handle)), data);
       std::free(data);
       return matrix;
     }
