@@ -320,7 +320,7 @@ impl From<UnboundGate> for Matrix {
                 vec![a, -b, b, a].into()
             }
             UnboundGate::RK(k) => {
-                let theta = 2. * PI / 2usize.pow(k as u32) as f64; // TODO(mb): check
+                let theta = PI / 2usize.pow(k as u32) as f64;
                 let a = c!(0., -0.5 * theta).exp();
                 let b = c!(0., 0.5 * theta).exp();
                 vec![a, c!(0.), c!(0.), b].into()
