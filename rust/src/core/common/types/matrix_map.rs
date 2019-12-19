@@ -104,7 +104,7 @@ impl<'a, T: 'a + Clone, K: 'a + Clone> MatrixMap<T, K> {
 impl<T: 'static + Clone + Default> Default for MatrixMap<T, GateType> {
     fn default() -> Self {
         MatrixMap::builder()
-            .with_defaults(0, 0.000_001, true)
+            .with_defaults(0, 1e-6, true)
             .unwrap()
             .finish()
     }
@@ -240,10 +240,15 @@ pub fn matrix_detector<T: Default>(
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::common::gates::UnboundGate;
+    use std::convert::TryInto;
 
     #[test]
     fn default() {
         let mm: MatrixMap<bool, GateType> = MatrixMap::default();
+        let gate = GateType::X;
+        let matrix: UnboundGate = gate.try_into().unwrap();
+        assert_eq!(mm.detect(&matrix.into()).unwrap().unwrap().0, GateType::X)
     }
 
     #[test]

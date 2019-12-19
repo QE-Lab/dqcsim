@@ -214,10 +214,6 @@ impl Matrix {
     pub fn get(&self, row: usize, column: usize) -> Option<&Complex64> {
         self.data.get(row * self.dimension + column)
     }
-
-    pub(crate) fn as_ptr(&self) -> *const c_double {
-        self.data.as_ptr() as *const c_double
-    }
 }
 
 // This looks likes nothing to me.

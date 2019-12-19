@@ -7,7 +7,7 @@ use std::{
 };
 
 /// Enumeration of predefined quantum gates.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum GateType {
     I,
     X,
