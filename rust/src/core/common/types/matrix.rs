@@ -93,13 +93,13 @@ impl Eq for Matrix {}
 impl Index<(usize, usize)> for Matrix {
     type Output = Complex64;
     fn index(&self, index: (usize, usize)) -> &Self::Output {
-        &self.data[index.1 * self.dimension + index.0]
+        &self.data[index.0 * self.dimension + index.1]
     }
 }
 
 impl IndexMut<(usize, usize)> for Matrix {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
-        &mut self.data[index.1 * self.dimension + index.0]
+        &mut self.data[index.0 * self.dimension + index.1]
     }
 }
 
