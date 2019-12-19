@@ -1,11 +1,13 @@
 use crate::core::common::{
     error::{inv_arg, inv_op, Result},
-    gates::GateType,
+    gates::{GateType, UnboundGate},
     types::Matrix,
 };
+use num_complex::Complex64;
 use std::{
     cell::RefCell,
     collections::HashMap,
+    f64::consts::PI,
     fmt,
     fmt::{Debug, Formatter},
 };
@@ -237,10 +239,136 @@ pub fn matrix_detector<T: Default>(
     })
 }
 
+/// Assuming that there is an x and y for which the inputs are equal to the
+/// following equations:
+///
+/// a = sin(x) sin(y) + cos(x) cos(y) = Re(e^(iy - ix))
+/// b = cos(x) sin(y) - sin(x) cos(y) = Im(e^(iy - ix))
+/// c = cos(x) cos(y) - sin(x) sin(y) = Re(e^(iy + ix))
+/// d = sin(x) cos(y) + cos(x) sin(y) = Im(e^(iy + ix))
+///
+/// computes and returns x.
+fn detect_angle(a: f64, b: f64, c: f64, d: f64) -> f64 {
+    (Complex64::new(a, -b) * Complex64::new(c, d)).arg()
+}
+
+/// Normalizes the given complex number, defaulting to 1 if the norm is zero.
+fn try_normalize(x: Complex64) -> Complex64 {
+    let x = x.unscale(x.norm());
+    if x.is_nan() {
+        Complex64::new(1.0, 0.0)
+    } else {
+        x
+    }
+}
+
+/// Detector function for RX gates.
+pub fn detect_rx(matrix: &Matrix, epsilon: f64, ignore_global_phase: bool) -> Option<f64> {
+    let cc = matrix[(0, 0)].re;
+    let cs = matrix[(0, 0)].im;
+    let ss = matrix[(1, 0)].re;
+    let sc = -matrix[(1, 0)].im;
+    let theta = detect_angle(ss + cc, cs - sc, cc - ss, sc + cs);
+    let expected: Matrix = UnboundGate::RX(theta).into();
+    if matrix.approx_eq(&expected, epsilon, ignore_global_phase) {
+        Some(theta)
+    } else {
+        None
+    }
+}
+
+/// Detector function for RY gates.
+pub fn detect_ry(matrix: &Matrix, epsilon: f64, ignore_global_phase: bool) -> Option<f64> {
+    let cc = matrix[(0, 0)].re;
+    let cs = matrix[(0, 0)].im;
+    let ss = -matrix[(1, 0)].im;
+    let sc = -matrix[(1, 0)].re;
+    let theta = -detect_angle(ss + cc, cs - sc, cc - ss, sc + cs);
+    let expected: Matrix = UnboundGate::RY(theta).into();
+    if matrix.approx_eq(&expected, epsilon, ignore_global_phase) {
+        Some(theta)
+    } else {
+        None
+    }
+}
+
+/// Detector function for RZ gates.
+pub fn detect_rz(matrix: &Matrix, epsilon: f64, ignore_global_phase: bool) -> Option<f64> {
+    let theta = detect_angle(
+        matrix[(0, 0)].re,
+        matrix[(0, 0)].im,
+        matrix[(1, 1)].re,
+        matrix[(1, 1)].im,
+    );
+    let expected: Matrix = UnboundGate::RZ(theta).into();
+    if matrix.approx_eq(&expected, epsilon, ignore_global_phase) {
+        Some(theta)
+    } else {
+        None
+    }
+}
+
+/// Detector function for RK gates.
+pub fn detect_rk(matrix: &Matrix, epsilon: f64, ignore_global_phase: bool) -> Option<usize> {
+    let theta = detect_angle(
+        matrix[(0, 0)].re,
+        matrix[(0, 0)].im,
+        matrix[(1, 1)].re,
+        matrix[(1, 1)].im,
+    );
+    let k = if theta <= 0.0 {
+        0usize
+    } else {
+        (-(theta / PI).log(2.0).round()) as usize
+    };
+    let expected: Matrix = UnboundGate::RK(k).into();
+    if matrix.approx_eq(&expected, epsilon, ignore_global_phase) {
+        Some(k)
+    } else {
+        None
+    }
+}
+
+/// Detector function for R (= IBM U) gates.
+pub fn detect_r(
+    matrix: &Matrix,
+    epsilon: f64,
+    ignore_global_phase: bool,
+) -> Option<(f64, f64, f64)> {
+    let m00 = matrix[(0, 0)];
+    let m01 = matrix[(0, 1)];
+    let m10 = matrix[(1, 0)];
+    let m11 = matrix[(1, 1)];
+
+    let theta = Complex64::new(m00.norm() + m11.norm(), m01.norm() + m10.norm()).arg() * 2.0;
+
+    let phi_phase = try_normalize(m10 * m00.conj());
+    let lambda_phase = if theta < 0.5 * PI {
+        try_normalize(m11 * m00.conj()) * phi_phase.conj()
+    } else {
+        try_normalize(-m01 * m10.conj()) * phi_phase
+    };
+    let lambda = lambda_phase.arg();
+    let phi = phi_phase.arg();
+
+    let theta = if (m10 * m00.conj() * phi_phase.conj()).re < 0.0 {
+        -theta
+    } else {
+        theta
+    };
+
+    let expected: Matrix = UnboundGate::R(theta, phi, lambda).into();
+    if matrix.approx_eq(&expected, epsilon, ignore_global_phase) {
+        Some((theta, phi, lambda))
+    } else {
+        None
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::common::gates::UnboundGate;
+    use crate::common::{gates::UnboundGate, util::log_2};
     use std::convert::TryInto;
 
     #[test]
@@ -300,5 +428,87 @@ mod test {
         let detect = matrix_map.detect(&matrix);
         assert!(detect.is_ok());
         assert!(detect.as_ref().unwrap().is_none());
+    }
+
+    fn unitary(theta: f64, phi: f64, lambda: f64, alpha: f64) -> Matrix {
+        let a = (theta / 2.).cos();
+        let b = (theta / 2.).sin();
+        let c = (phi + lambda) / 2.;
+        let d = (phi - lambda) / 2.;
+        vec![
+            Complex64::new(0., -c + alpha).exp() * a,
+            -Complex64::new(0., -d + alpha).exp() * b,
+            Complex64::new(0., d + alpha).exp() * b,
+            Complex64::new(0., c + alpha).exp() * a,
+        ]
+        .into()
+    }
+
+    #[test]
+    fn detectors() {
+        // must be power of two, 2 or more
+        let steps = 8i32;
+
+        let l2steps = log_2(steps as usize).unwrap();
+        for th in -steps + 1..steps {
+            let theta: f64 = th as f64 * PI / steps as f64;
+            for ph in -steps + 1..steps {
+                let phi: f64 = ph as f64 * PI / steps as f64;
+                for lm in -steps + 1..steps {
+                    let lambda: f64 = lm as f64 * PI / steps as f64;
+                    for al in -steps + 1..steps {
+                        let alpha: f64 = al as f64 * PI / steps as f64;
+                        let matrix = unitary(theta, phi, lambda, alpha);
+
+                        // Test RX detection
+                        let rx = detect_rx(&matrix, 0.0001, true);
+                        if ph == -steps / 2 && lm == steps / 2 {
+                            assert_eq!((rx.unwrap() * steps as f64 / PI).round() as i32, th);
+                        } else if ph == steps / 2 && lm == -steps / 2 {
+                            assert_eq!((rx.unwrap() * steps as f64 / PI).round() as i32, -th);
+                        } else if th == 0 && ph == -lm {
+                            assert_eq!((rx.unwrap() * steps as f64 / PI).round() as i32, 0);
+                        } else if !rx.is_none() {
+                            panic!("{} {} {} {} = rx?", th, ph, lm, al);
+                        }
+
+                        // Test RY detection
+                        let ry = detect_ry(&matrix, 0.0001, true);
+                        if ph == 0 && lm == 0 {
+                            assert_eq!((ry.unwrap() * steps as f64 / PI).round() as i32, th);
+                        } else if th == 0 && ph == -lm {
+                            assert_eq!((ry.unwrap() * steps as f64 / PI).round() as i32, 0);
+                        } else if !ry.is_none() {
+                            panic!("{} {} {} {} = ry?", th, ph, lm, al);
+                        }
+
+                        // Test RZ detection
+                        let rz = detect_rz(&matrix, 0.0001, true);
+                        if th == 0 {
+                            let x = lm + ph - (rz.unwrap() * steps as f64 / PI).round() as i32;
+                            assert_eq!(x % (steps * 2), 0);
+                        } else if !rz.is_none() {
+                            panic!("{} {} {} {} = rz?", th, ph, lm, al);
+                        }
+
+                        // Test RK detection
+                        let rk = detect_rk(&matrix, 0.0001, true);
+                        if th == 0 {
+                            let x = ((lm + ph).rem_euclid(steps * 2)) as usize;
+                            let k = log_2(x).map(|x| l2steps - x);
+                            assert_eq!(k, rk);
+                        } else if !rk.is_none() {
+                            panic!("{} {} {} {} = rk?", th, ph, lm, al);
+                        }
+
+                        // Test R detection
+                        let r = detect_r(&matrix, 0.1, true);
+                        if r.is_none() {
+                            panic!("{} {} {} {} != r?", th, ph, lm, al);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
