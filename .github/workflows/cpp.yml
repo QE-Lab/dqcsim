@@ -1,0 +1,41 @@
+name: C++
+
+on:
+  push:
+    paths:
+    - 'rust/**'
+    - '**/Cargo.toml'
+    - '**/Cargo.lock'
+    - 'cpp/**'
+    - '**/CMakeLists.txt'
+  pull_request:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+        - ubuntu-latest
+        - macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - name: Install CMake
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        mkdir -p $HOME/cmake
+        curl -L https://github.com/Kitware/CMake/releases/download/v3.15.5/cmake-3.15.5-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C $HOME/cmake
+        echo "::add-path::${HOME}/cmake/bin"
+    - name: CMake
+      run: |
+        cmake . -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+    - name: Build
+      run: |
+        make -j
+    - name: Test
+      run: |
+        make test
