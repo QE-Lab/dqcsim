@@ -211,7 +211,7 @@ pub struct PluginState<'a> {
 
 impl<'a> PluginState<'a> {
     /// Handles a SimulatorToPlugin::Initialize RPC.
-    fn handle_init(&mut self, req: PluginInitializeRequest) -> Result<(PluginInitializeResponse)> {
+    fn handle_init(&mut self, req: PluginInitializeRequest) -> Result<PluginInitializeResponse> {
         let typ = self.definition.get_type();
         let seed = req.seed;
 
@@ -603,7 +603,7 @@ impl<'a> PluginState<'a> {
                             Err(e) => {
                                 let e = e.to_string();
                                 error!("{}", e);
-                                PluginToSimulator::Failure(e.to_string())
+                                PluginToSimulator::Failure(e)
                             }
                         },
                         SimulatorToPlugin::AcceptUpstream => match self.handle_accept_upstream() {
@@ -611,7 +611,7 @@ impl<'a> PluginState<'a> {
                             Err(e) => {
                                 let e = e.to_string();
                                 error!("{}", e);
-                                PluginToSimulator::Failure(e.to_string())
+                                PluginToSimulator::Failure(e)
                             }
                         },
                         SimulatorToPlugin::UserInitialize(req) => {
@@ -620,7 +620,7 @@ impl<'a> PluginState<'a> {
                                 Err(e) => {
                                     let e = e.to_string();
                                     error!("{}", e);
-                                    PluginToSimulator::Failure(e.to_string())
+                                    PluginToSimulator::Failure(e)
                                 }
                             }
                         }
@@ -631,7 +631,7 @@ impl<'a> PluginState<'a> {
                                 Err(e) => {
                                     let e = e.to_string();
                                     error!("{}", e);
-                                    PluginToSimulator::Failure(e.to_string())
+                                    PluginToSimulator::Failure(e)
                                 }
                             }
                         }
@@ -640,7 +640,7 @@ impl<'a> PluginState<'a> {
                             Err(e) => {
                                 let e = e.to_string();
                                 error!("{}", e);
-                                PluginToSimulator::Failure(e.to_string())
+                                PluginToSimulator::Failure(e)
                             }
                         },
                         SimulatorToPlugin::ArbRequest(req) => {
@@ -649,7 +649,7 @@ impl<'a> PluginState<'a> {
                                 Err(e) => {
                                     let e = e.to_string();
                                     error!("{}", e);
-                                    PluginToSimulator::Failure(e.to_string())
+                                    PluginToSimulator::Failure(e)
                                 }
                             }
                         }
