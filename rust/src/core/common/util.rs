@@ -255,6 +255,30 @@ mod tests {
     }
 
     #[test]
+    fn num_bits_check() {
+        assert_eq!(num_bits::<u8>(), 8);
+        assert_eq!(num_bits::<u16>(), 16);
+        assert_eq!(num_bits::<u32>(), 32);
+        assert_eq!(num_bits::<u64>(), 64);
+        assert_eq!(num_bits::<u128>(), 128);
+        assert_eq!(num_bits::<TestEnum>(), 8);
+        assert_eq!(num_bits::<Option<TestEnum>>(), 8);
+        assert_eq!(num_bits::<Option<Option<TestEnum>>>(), 8);
+    }
+
+    #[test]
+    fn log2_check() {
+        assert_eq!(log_2(1), Some(0));
+        assert_eq!(log_2(2), Some(1));
+        assert_eq!(log_2(3), None);
+        assert_eq!(log_2(4), Some(2));
+        assert_eq!(log_2(5), None);
+        assert_eq!(log_2(6), None);
+        assert_eq!(log_2(7), None);
+        assert_eq!(log_2(8), Some(3));
+    }
+
+    #[test]
     fn parse_error() {
         assert_eq!(TestEnum::from_str("Foo"), Ok(TestEnum::Foo));
         assert_eq!(TestEnum::from_str("f"), Ok(TestEnum::Foo));

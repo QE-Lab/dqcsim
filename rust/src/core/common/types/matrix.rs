@@ -1,12 +1,13 @@
 use crate::common::util::log_2;
 use num_complex::Complex64;
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "bindings")]
+use std::os::raw::c_double;
 use std::{
     collections::HashSet,
     hash::{Hash, Hasher},
     iter::FromIterator,
     ops::{Index, IndexMut},
-    os::raw::c_double,
 };
 
 /// Matrix wrapper for `Gate` matrices.
@@ -213,6 +214,11 @@ impl Matrix {
     /// Returns `None` for out of bound indices.
     pub fn get(&self, row: usize, column: usize) -> Option<&Complex64> {
         self.data.get(row * self.dimension + column)
+    }
+
+    #[cfg(feature = "bindings")]
+    pub(crate) fn as_ptr(&self) -> *const c_double {
+        self.data.as_ptr() as *const c_double
     }
 }
 
