@@ -1,0 +1,56 @@
+name: Python
+
+on:
+  push:
+    paths:
+    - 'rust/**'
+    - '**/Cargo.toml'
+    - '**/Cargo.lock'
+    - 'python/**'
+    - '**/setup.py'
+  pull_request:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+        - ubuntu-latest
+        - macos-latest
+        python:
+        - '3.5'
+        - '3.6'
+        - '3.7'
+        - '3.8'
+    env:
+      DQCSIM_DEBUG: ''
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Install Swig (ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get install -y swig
+    - name: Install Swig (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install swig
+    - name: Install dependencies
+      run: |
+        python -m pip install setuptools wheel
+    - name: Build
+      run: |
+        python setup.py build
+    - name: Test
+      run: |
+        python setup.py test
+    - name: Wheel
+      run: |
+        python setup.py bdist_wheel
