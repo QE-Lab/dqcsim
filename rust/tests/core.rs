@@ -1225,7 +1225,7 @@ fn host_arb_sync_with_gatestream() {
         state.gate(gate.clone()).unwrap();
         state.gate(gate.clone()).unwrap();
         state.gate(gate.clone()).unwrap();
-        state.gate(gate.clone()).unwrap();
+        state.gate(gate).unwrap();
 
         // To work around issue #90;
         //state.arb(ArbCmd::new("a", "b", ArbData::default())).unwrap();
