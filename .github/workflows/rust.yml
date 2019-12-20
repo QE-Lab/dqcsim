@@ -51,7 +51,7 @@ jobs:
 
   rustfmt:
     name: Rustfmt
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
@@ -65,12 +65,7 @@ jobs:
 
   clippy:
     name: Clippy
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-        - ubuntu-latest
-        - macos-latest
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
@@ -81,4 +76,3 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         args: --all-features --all-targets -- -Dwarnings
-        name: clippy-${{ matrix.os}}
