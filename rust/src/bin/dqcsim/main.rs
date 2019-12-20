@@ -118,6 +118,7 @@ mod tests {
     static FRONTEND: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../target/debug/dqcsfenull");
     static BACKEND: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../target/debug/dqcsbenull");
     static OPERATOR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../target/debug/dqcsopnull");
+    static LICENSE: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../LICENSE");
 
     #[test]
     fn no_arguments() {
@@ -312,7 +313,7 @@ mod tests {
 
     #[test]
     fn not_executable() {
-        assert!(err!(cli!("../LICENSE", "../LICENSE")).contains("Failed to spawn plugin(s)"));
+        assert!(err!(cli!(LICENSE, LICENSE)).contains("Failed to spawn plugin(s)"));
     }
 
     #[test]
