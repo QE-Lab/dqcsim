@@ -2539,7 +2539,6 @@ namespace wrap {
 
   };
 
-  // TODO: copy the names used within GateMatrix from the Rust API
   /**
    * Contains shorthand methods for a variety of commonly used gate matrices.
    *
@@ -2568,8 +2567,10 @@ namespace wrap {
      * 0 & 1
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for the Pauli I gate.
      */
-    static const Matrix &I() {
+    static const Matrix &I() noexcept {
       const double values[8] = {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    1.0,  0.0,
@@ -2589,8 +2590,10 @@ namespace wrap {
      * 1 & 0
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for the Pauli X gate.
      */
-    static const Matrix &X() {
+    static const Matrix &X() noexcept {
       const double values[8] = {
         0.0,  0.0,    1.0,  0.0,
         1.0,  0.0,    0.0,  0.0,
@@ -2610,8 +2613,10 @@ namespace wrap {
      * i & 0
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for the Pauli Y gate.
      */
-    static const Matrix &Y() {
+    static const Matrix &Y() noexcept {
       const double values[8] = {
         0.0,  0.0,    0.0,  -1.0,
         0.0,  1.0,    0.0,  0.0,
@@ -2631,8 +2636,10 @@ namespace wrap {
      * 0 & -1
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for the Pauli Z gate.
      */
-    static const Matrix &Z() {
+    static const Matrix &Z() noexcept {
       const double values[8] = {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    -1.0, 0.0,
@@ -2653,8 +2660,10 @@ namespace wrap {
      * 1 & -1
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for the Hadamard gate.
      */
-    static const Matrix &H() {
+    static const Matrix &H() noexcept {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  0.0,    IR2,  0.0,
@@ -2675,8 +2684,10 @@ namespace wrap {
      * 0 & i
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for the S gate.
      */
-    static const Matrix &S() {
+    static const Matrix &S() noexcept {
       const double values[8] = {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    0.0,  1.0,
@@ -2697,8 +2708,10 @@ namespace wrap {
      * 0 & -i
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for the S-dagger gate.
      */
-    static const Matrix &Sdag() {
+    static const Matrix &SDAG() noexcept {
       const double values[8] = {
         1.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    0.0,  -1.0,
@@ -2718,8 +2731,10 @@ namespace wrap {
      * 0 & e^{i\frac{\pi}{4}}
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for the T gate.
      */
-    static const Matrix &T() {
+    static const Matrix &T() noexcept {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         1.0,  0.0,    0.0,  0.0,
@@ -2740,8 +2755,10 @@ namespace wrap {
      * 0 & e^{-i\frac{\pi}{4}}
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for the T-dagger gate.
      */
-    static const Matrix &Tdag() {
+    static const Matrix &TDAG() noexcept {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         1.0,  0.0,    0.0,  0.0,
@@ -2763,9 +2780,10 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      *
-     * The rotation angle is specified in radians.
+     * \param theta The rotation angle in radians.
+     * \returns The matrix for an X rotation gate with angle theta.
      */
-    static Matrix RX(double theta) {
+    static Matrix RX(double theta) noexcept {
       double co = std::cos(0.5 * theta);
       double si = std::sin(0.5 * theta);
       double values[8] = {
@@ -2786,8 +2804,10 @@ namespace wrap {
      * -i & 1
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for a postive 90-degree X rotation.
      */
-    static const Matrix &X90() {
+    static const Matrix &RX90() noexcept {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  0.0,    0.0,  -IR2,
@@ -2808,8 +2828,10 @@ namespace wrap {
      * i & 1
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for a negative 90-degree X rotation.
      */
-    static const Matrix &Xm90() {
+    static const Matrix &RXM90() noexcept {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  0.0,    0.0,  IR2,
@@ -2833,8 +2855,10 @@ namespace wrap {
      *
      * This matrix is equivalent to the Pauli X gate, but differs in global
      * phase.
+     *
+     * \returns The matrix for a positive 180-degree X rotation.
      */
-    static const Matrix &X180() {
+    static const Matrix &RX180() noexcept {
       const double values[8] = {
         0.0,  0.0,    0.0,  -1.0,
         0.0,  -1.0,   0.0,  0.0,
@@ -2855,9 +2879,10 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      *
-     * The rotation angle is specified in radians.
+     * \param theta The rotation angle in radians.
+     * \returns The matrix for an Y rotation gate with angle theta.
      */
-    static Matrix RY(double theta) {
+    static Matrix RY(double theta) noexcept {
       double co = std::cos(0.5 * theta);
       double si = std::sin(0.5 * theta);
       double values[8] = {
@@ -2878,8 +2903,10 @@ namespace wrap {
      * 1 & 1
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for a positive 90-degree Y rotation.
      */
-    static const Matrix &Y90() {
+    static const Matrix &RY90() noexcept {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  0.0,    -IR2, 0.0,
@@ -2900,8 +2927,10 @@ namespace wrap {
      * -1 & 1
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for a negative 90-degree Y rotation.
      */
-    static const Matrix &Ym90() {
+    static const Matrix &RYM90() noexcept {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  0.0,    IR2,  0.0,
@@ -2925,8 +2954,10 @@ namespace wrap {
      *
      * This matrix is equivalent to the Pauli Y gate, but differs in global
      * phase.
+     *
+     * \returns The matrix for a positive 180-degree Y rotation.
      */
-    static const Matrix &Y180() {
+    static const Matrix &RY180() noexcept {
       const double values[8] = {
         0.0,  0.0,    -1.0, 0.0,
         1.0,  0.0,    0.0,  0.0,
@@ -2947,9 +2978,10 @@ namespace wrap {
      * \end{bmatrix}
      * \f]
      *
-     * The rotation angle is specified in radians.
+     * \param theta The rotation angle in radians.
+     * \returns The matrix for a Z rotation gate with angle theta.
      */
-    static Matrix RZ(double theta) {
+    static Matrix RZ(double theta) noexcept {
       double co = std::cos(0.5 * theta);
       double si = std::sin(0.5 * theta);
       double values[8] = {
@@ -2972,8 +3004,10 @@ namespace wrap {
      * \f]
      *
      * This matrix is equivalent to the S gate, but differs in global phase.
+     *
+     * \returns The matrix for a positive 90-degree Z rotation.
      */
-    static const Matrix &Z90() {
+    static const Matrix &RZ90() noexcept {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  -IR2,   0.0,  0.0,
@@ -2997,8 +3031,10 @@ namespace wrap {
      *
      * This matrix is equivalent to the S-dagger gate, but differs in global
      * phase.
+     *
+     * \returns The matrix for a negative 90-degree Z rotation.
      */
-    static const Matrix &Zm90() {
+    static const Matrix &RZM90() noexcept {
       const double IR2 = M_SQRT1_2;
       const double values[8] = {
         IR2,  IR2,    0.0,  0.0,
@@ -3022,8 +3058,10 @@ namespace wrap {
      *
      * This matrix is equivalent to the Pauli Z gate, but differs in global
      * phase.
+     *
+     * \returns The matrix for a positive 180-degree Z rotation.
      */
-    static const Matrix &Z180() {
+    static const Matrix &RZ180() noexcept {
       const double values[8] = {
         0.0,  -1.0,   0.0,  0.0,
         0.0,  0.0,    0.0,  1.0,
@@ -3050,9 +3088,17 @@ namespace wrap {
      * U(\theta, \phi, \lambda) = R_z(\phi) \cdot R_y(\theta) \cdot R_z(\lambda)
      * \f]
      *
+     * The rotation order is taken from Qiskit's U3 gate, but the global phase
+     * is defined differently.
+     *
      * The rotation angles are specified in radians.
+     *
+     * \param theta The rotation angle in radians for the Y rotation.
+     * \param phi The rotation angle in radians for the pre-Y Z rotation.
+     * \param lambda The rotation angle in radians for the post-Y Z rotation.
+     * \returns The matrix for a Z rotation gate with angle theta.
      */
-    static Matrix R(double theta, double phi, double lambda) {
+    static Matrix R(double theta, double phi, double lambda) noexcept {
       Matrix matrix = RY(theta);
       matrix(0, 0) *= std::exp(std::complex<double>(0.0, 0.5 * (- lambda - phi)));
       matrix(0, 1) *= std::exp(std::complex<double>(0.0, 0.5 * (+ lambda - phi)));
@@ -3074,8 +3120,10 @@ namespace wrap {
      * 0 & 0 & 0 & 1
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for a swap gate.
      */
-    static const Matrix &Swap() {
+    static const Matrix &SWAP() noexcept {
       const double values[32] = {
         1.0,  0.0,    0.0,  0.0,    0.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    0.0,  0.0,    1.0,  0.0,    0.0,  0.0,
@@ -3099,8 +3147,10 @@ namespace wrap {
      * 0 & 0 & 0 & 1
      * \end{bmatrix}
      * \f]
+     *
+     * \returns The matrix for a square-root-of-swap gate.
      */
-    static const Matrix &SqSwap() {
+    static const Matrix &SQSWAP() noexcept {
       const double values[32] = {
         1.0,  0.0,    0.0,  0.0,    0.0,  0.0,    0.0,  0.0,
         0.0,  0.0,    0.5,  0.5,    0.5,  -0.5,   0.0,  0.0,
@@ -3187,8 +3237,12 @@ namespace wrap {
     /**
      * Constructs a new unitary gate.
      *
-     * The matrix must be appropriately sized for the number of qubits in the
-     * `targets` qubit set (2^n by 2^n).
+     * \param targets A qubit reference set with the target qubits.
+     * \param matrix The matrix to be applied to the target qubits. It must be
+     * appropriately sized for the number of target qubits (2^n by 2^n).
+     * \returns The requested unitary gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate unitary(QubitSet &&targets, const Matrix &matrix) {
       return Gate(check(raw::dqcs_gate_new_unitary(
@@ -3202,8 +3256,13 @@ namespace wrap {
     /**
      * Constructs a new unitary gate.
      *
-     * The matrix must be appropriately sized for the number of qubits in the
-     * `targets` qubit set (2^n by 2^n).
+     * \param targets A qubit reference set with the target qubits, passed by
+     * copy.
+     * \param matrix The matrix to be applied to the target qubits. It must be
+     * appropriately sized for the number of target qubits (2^n by 2^n).
+     * \returns The requested unitary gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate unitary(const QubitSet &targets, const Matrix &matrix) {
       return unitary(std::move(QubitSet(targets)), matrix);
@@ -3212,10 +3271,16 @@ namespace wrap {
     /**
      * Constructs a new unitary gate with control qubits.
      *
-     * The matrix must be appropriately sized for the number of qubits in the
-     * `targets` qubit set (2^n by 2^n). The control qubits do not count toward
-     * n; the backend will supplement the gate matrix as needed. The `targets`
-     * and `controls` qubit sets must be disjoint.
+     * \param targets A qubit reference set with the target qubits.
+     * \param controls A qubit reference set with the target qubits. The
+     * control qubits are not represented in the matrix; the backend will
+     * supplement it as needed. The `targets` and `controls` qubit sets must be
+     * disjoint.
+     * \param matrix The matrix to be applied to the target qubits. It must be
+     * appropriately sized for the number of target qubits (2^n by 2^n).
+     * \returns The requested unitary gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate unitary(QubitSet &&targets, QubitSet &&controls, const Matrix &matrix) {
       return Gate(check(raw::dqcs_gate_new_unitary(
@@ -3229,10 +3294,17 @@ namespace wrap {
     /**
      * Constructs a new unitary gate with control qubits.
      *
-     * The matrix must be appropriately sized for the number of qubits in the
-     * `targets` qubit set (2^n by 2^n). The control qubits do not count toward
-     * n; the backend will supplement the gate matrix as needed. The `targets`
-     * and `controls` qubit sets must be disjoint.
+     * \param targets A qubit reference set with the target qubits, passed by
+     * copy.
+     * \param controls A qubit reference set with the target qubits, passed by
+     * copy. The control qubits are not represented in the matrix; the backend
+     * will supplement it as needed. The `targets` and `controls` qubit sets
+     * must be disjoint.
+     * \param matrix The matrix to be applied to the target qubits. It must be
+     * appropriately sized for the number of target qubits (2^n by 2^n).
+     * \returns The requested unitary gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate unitary(const QubitSet &targets, const QubitSet &controls, const Matrix &matrix) {
       return unitary(std::move(QubitSet(targets)), std::move(QubitSet(controls)), matrix);
@@ -3241,9 +3313,13 @@ namespace wrap {
     /**
      * Constructs a new Z-axis measurement gate.
      *
-     * Exactly those qubits in the `measures` set must be measured. The results
-     * can be queried from `PluginState` after the gate is executed. Any
-     * previous measurement results for those qubits will be overridden.
+     * \param measures A qubit reference set with the to-be-measured qubits.
+     * The measurement results can be queried from `PluginState` after the gate
+     * is executed. Any previous measurement results for those qubits will be
+     * overridden.
+     * \returns The requested measurement gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate measure(QubitSet &&measures) {
       return Gate(check(raw::dqcs_gate_new_measurement(measures.get_handle())));
@@ -3252,9 +3328,13 @@ namespace wrap {
     /**
      * Constructs a new Z-axis measurement gate.
      *
-     * Exactly those qubits in the `measures` set must be measured. The results
-     * can be queried from `PluginState` after the gate is executed. Any
-     * previous measurement results for those qubits will be overridden.
+     * \param measures A qubit reference set with the to-be-measured qubits,
+     * passed by copy. The measurement results can be queried from
+     * `PluginState` after the gate is executed. Any previous measurement
+     * results for those qubits will be overridden.
+     * \returns The requested measurement gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate measure(const QubitSet &measures) {
       return measure(std::move(QubitSet(measures)));
@@ -3264,15 +3344,22 @@ namespace wrap {
      * Constructs a new custom gate with target qubits, control qubits,
      * measured qubits, and a matrix.
      *
-     * The `targets` and `controls` qubit sets must be disjoint.
-     *
-     * Exactly those qubits in the `measures` set must be measured. The results
-     * can be queried from `PluginState` after the gate is executed. Any
-     * previous measurement results for those qubits will be overridden.
-     *
-     * The matrix must be appropriately sized for the number of qubits in the
-     * `targets` qubit set (2^n by 2^n). The control qubits do not count toward
-     * n.
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \param targets A qubit reference set with the target qubits.
+     * \param controls A qubit reference set with the target qubits. The
+     * control qubits are not represented in the matrix; the backend will
+     * supplement it as needed. The `targets` and `controls` qubit sets must be
+     * disjoint.
+     * \param measures A qubit reference set with to-be-measured qubits. The
+     * measurement results can be queried from `PluginState` after the gate
+     * is executed. Any previous measurement results for those qubits will be
+     * overridden.
+     * \param matrix The matrix to be applied to the target qubits. It must be
+     * appropriately sized for the number of target qubits (2^n by 2^n).
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name,
@@ -3295,15 +3382,23 @@ namespace wrap {
      * Constructs a new custom gate with target qubits, control qubits,
      * measured qubits, and a matrix.
      *
-     * The `targets` and `controls` qubit sets must be disjoint.
-     *
-     * Exactly those qubits in the `measures` set must be measured. The results
-     * can be queried from `PluginState` after the gate is executed. Any
-     * previous measurement results for those qubits will be overridden.
-     *
-     * The matrix must be appropriately sized for the number of qubits in the
-     * `targets` qubit set (2^n by 2^n). The control qubits do not count toward
-     * n.
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \param targets A qubit reference set with the target qubits, passed by
+     * copy.
+     * \param controls A qubit reference set with the target qubits, passed by
+     * copy. The control qubits are not represented in the matrix; the backend
+     * will supplement it as needed. The `targets` and `controls` qubit sets
+     * must be disjoint.
+     * \param measures A qubit reference set with to-be-measured qubits, passed
+     * by copy. The measurement results can be queried from `PluginState` after
+     * the gate is executed. Any previous measurement results for those qubits
+     * will be overridden.
+     * \param matrix The matrix to be applied to the target qubits. It must be
+     * appropriately sized for the number of target qubits (2^n by 2^n).
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name,
@@ -3325,11 +3420,18 @@ namespace wrap {
      * Constructs a new custom gate with target qubits, control qubits, and
      * measured qubits.
      *
-     * The `targets` and `controls` qubit sets must be disjoint.
-     *
-     * Exactly those qubits in the `measures` set must be measured. The results
-     * can be queried from `PluginState` after the gate is executed. Any
-     * previous measurement results for those qubits will be overridden.
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \param targets A qubit reference set with the target qubits.
+     * \param controls A qubit reference set with the target qubits. The
+     * `targets` and `controls` qubit sets must be disjoint.
+     * \param measures A qubit reference set with to-be-measured qubits. The
+     * measurement results can be queried from `PluginState` after the gate
+     * is executed. Any previous measurement results for those qubits will be
+     * overridden.
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name,
@@ -3351,11 +3453,19 @@ namespace wrap {
      * Constructs a new custom gate with target qubits, control qubits, and
      * measured qubits.
      *
-     * The `targets` and `controls` qubit sets must be disjoint.
-     *
-     * Exactly those qubits in the `measures` set must be measured. The results
-     * can be queried from `PluginState` after the gate is executed. Any
-     * previous measurement results for those qubits will be overridden.
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \param targets A qubit reference set with the target qubits, passed by
+     * copy.
+     * \param controls A qubit reference set with the target qubits, passed by
+     * copy. The `targets` and `controls` qubit sets must be disjoint.
+     * \param measures A qubit reference set with to-be-measured qubits, passed
+     * by copy. The measurement results can be queried from `PluginState` after
+     * the gate is executed. Any previous measurement results for those qubits
+     * will be overridden.
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name,
@@ -3375,11 +3485,18 @@ namespace wrap {
      * Constructs a new custom gate with target qubits, control qubits,
      * and a matrix.
      *
-     * The `targets` and `controls` qubit sets must be disjoint.
-     *
-     * The matrix must be appropriately sized for the number of qubits in the
-     * `targets` qubit set (2^n by 2^n). The control qubits do not count toward
-     * n.
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \param targets A qubit reference set with the target qubits.
+     * \param controls A qubit reference set with the target qubits. The
+     * control qubits are not represented in the matrix; the backend will
+     * supplement it as needed. The `targets` and `controls` qubit sets must be
+     * disjoint.
+     * \param matrix The matrix to be applied to the target qubits. It must be
+     * appropriately sized for the number of target qubits (2^n by 2^n).
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name,
@@ -3401,11 +3518,19 @@ namespace wrap {
      * Constructs a new custom gate with target qubits, control qubits,
      * and a matrix.
      *
-     * The `targets` and `controls` qubit sets must be disjoint.
-     *
-     * The matrix must be appropriately sized for the number of qubits in the
-     * `targets` qubit set (2^n by 2^n). The control qubits do not count toward
-     * n.
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \param targets A qubit reference set with the target qubits, passed by
+     * copy.
+     * \param controls A qubit reference set with the target qubits, passed by
+     * copy. The control qubits are not represented in the matrix; the backend
+     * will supplement it as needed. The `targets` and `controls` qubit sets
+     * must be disjoint.
+     * \param matrix The matrix to be applied to the target qubits. It must be
+     * appropriately sized for the number of target qubits (2^n by 2^n).
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name,
@@ -3424,7 +3549,14 @@ namespace wrap {
     /**
      * Constructs a new custom gate with target qubits and control qubits.
      *
-     * The `targets` and `controls` qubit sets must be disjoint.
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \param targets A qubit reference set with the target qubits.
+     * \param controls A qubit reference set with the target qubits. The
+     * `targets` and `controls` qubit sets must be disjoint.
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name,
@@ -3444,7 +3576,15 @@ namespace wrap {
     /**
      * Constructs a new custom gate with target qubits and control qubits.
      *
-     * The `targets` and `controls` qubit sets must be disjoint.
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \param targets A qubit reference set with the target qubits, passed by
+     * copy.
+     * \param controls A qubit reference set with the target qubits, passed by
+     * copy. The `targets` and `controls` qubit sets must be disjoint.
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name,
@@ -3461,8 +3601,14 @@ namespace wrap {
     /**
      * Constructs a new custom gate with target qubits and a matrix.
      *
-     * The matrix must be appropriately sized for the number of qubits in the
-     * `targets` qubit set (2^n by 2^n).
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \param targets A qubit reference set with the target qubits.
+     * \param matrix The matrix to be applied to the target qubits. It must be
+     * appropriately sized for the number of target qubits (2^n by 2^n).
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name,
@@ -3482,8 +3628,15 @@ namespace wrap {
     /**
      * Constructs a new custom gate with target qubits and a matrix.
      *
-     * The matrix must be appropriately sized for the number of qubits in the
-     * `targets` qubit set (2^n by 2^n).
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \param targets A qubit reference set with the target qubits, passed by
+     * copy.
+     * \param matrix The matrix to be applied to the target qubits. It must be
+     * appropriately sized for the number of target qubits (2^n by 2^n).
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name,
@@ -3499,6 +3652,13 @@ namespace wrap {
 
     /**
      * Constructs a new custom gate with only target qubits.
+     *
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \param targets A qubit reference set with the target qubits.
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name,
@@ -3516,6 +3676,14 @@ namespace wrap {
 
     /**
      * Constructs a new custom gate with only target qubits.
+     *
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \param targets A qubit reference set with the target qubits, passed by
+     * copy.
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name,
@@ -3529,6 +3697,12 @@ namespace wrap {
 
     /**
      * Constructs a new custom gate without qubit operands.
+     *
+     * \param name A name identifying the custom gate. Which gates are
+     * available is determined by the backend.
+     * \returns The requested custom gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     static Gate custom(
       const std::string &name
@@ -3545,6 +3719,10 @@ namespace wrap {
 
     /**
      * Returns a new qubit reference set with the target qubits for this gate.
+     *
+     * \returns A new qubit reference set with the target qubits for this gate.
+     * \throws std::runtime_error When construction of the new qubit set (handle)
+     * failed for some reason or the current handle is invalid.
      */
     QubitSet get_targets() const {
       return QubitSet(check(raw::dqcs_gate_targets(handle)));
@@ -3552,6 +3730,9 @@ namespace wrap {
 
     /**
      * Returns whether this gate has target qubits.
+     *
+     * \returns Whether this gate has target qubits.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     bool has_targets() const {
       return check(raw::dqcs_gate_has_targets(handle));
@@ -3559,6 +3740,10 @@ namespace wrap {
 
     /**
      * Returns a new qubit reference set with the control qubits for this gate.
+     *
+     * \returns A new qubit reference set with the control qubits for this gate.
+     * \throws std::runtime_error When construction of the new qubit set (handle)
+     * failed for some reason or the current handle is invalid.
      */
     QubitSet get_controls() const {
       return QubitSet(check(raw::dqcs_gate_controls(handle)));
@@ -3566,6 +3751,9 @@ namespace wrap {
 
     /**
      * Returns whether this gate has control qubits.
+     *
+     * \returns Whether this gate has control qubits.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     bool has_controls() const {
       return check(raw::dqcs_gate_has_controls(handle));
@@ -3574,6 +3762,11 @@ namespace wrap {
     /**
      * Returns a new qubit reference set with the measurement qubits for this
      * gate.
+     *
+     * \returns A new qubit reference set with the measurement qubits for this
+     * gate.
+     * \throws std::runtime_error When construction of the new qubit set (handle)
+     * failed for some reason or the current handle is invalid.
      */
     QubitSet get_measures() const {
       return QubitSet(check(raw::dqcs_gate_measures(handle)));
@@ -3581,6 +3774,9 @@ namespace wrap {
 
     /**
      * Returns whether this gate has measurement qubits.
+     *
+     * \returns Whether this gate has measurement qubits.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     bool has_measures() const {
       return check(raw::dqcs_gate_has_measures(handle));
@@ -3588,6 +3784,9 @@ namespace wrap {
 
     /**
      * Returns the matrix that belongs to this gate.
+     *
+     * \returns The matrix that belongs to this gate.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     Matrix get_matrix() const {
       double *data = check(raw::dqcs_gate_matrix(handle));
@@ -3598,6 +3797,9 @@ namespace wrap {
 
     /**
      * Returns whether this gate has a matrix.
+     *
+     * \returns Whether this gate has a matrix.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     bool has_matrix() const {
       return check(raw::dqcs_gate_has_matrix(handle));
@@ -3605,6 +3807,9 @@ namespace wrap {
 
     /**
      * Returns the name of a custom gate.
+     *
+     * \returns The name of a custom gate.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     std::string get_name() const {
       char *data = check(raw::dqcs_gate_name(handle));
@@ -3615,6 +3820,9 @@ namespace wrap {
 
     /**
      * Returns whether this gate is a custom gate.
+     *
+     * \returns Whether this gate is a custom gate.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     bool is_custom() const {
       return check(raw::dqcs_gate_is_custom(handle));
@@ -3664,6 +3872,11 @@ namespace wrap {
 
     /**
      * Constructs a measurement object.
+     *
+     * \param qubit The qubit reference that this measurement belongs to.
+     * \param value The measurement value.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
      */
     Measurement(const QubitRef &qubit, MeasurementValue value) : Arb(check(
       raw::dqcs_meas_new(qubit.get_index(), to_raw(value))
@@ -3672,6 +3885,10 @@ namespace wrap {
 
     /**
      * Copy-constructs a `Measurement` object.
+     *
+     * \param src The measurement object to copy from.
+     * \throws std::runtime_error When the source handle is invalid or
+     * construction of the new handle failed for some reason.
      */
     Measurement(const Measurement &src) : Arb(check(
       raw::dqcs_meas_new(src.get_qubit().get_index(), to_raw(src.get_value()))
@@ -3681,6 +3898,10 @@ namespace wrap {
 
     /**
      * Copy assignment operator for `Measurement` objects.
+     *
+     * \param src The measurement object to copy from.
+     * \throws std::runtime_error When the source handle is invalid or
+     * construction of the new handle failed for some reason.
      */
     void operator=(const Measurement &src) {
       set_qubit(src.get_qubit());
@@ -3700,6 +3921,9 @@ namespace wrap {
 
     /**
      * Returns the measurement value.
+     *
+     * \returns The measurement value.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     MeasurementValue get_value() const {
       return check(raw::dqcs_meas_value_get(handle));
@@ -3707,6 +3931,9 @@ namespace wrap {
 
     /**
      * Sets the measurement value.
+     *
+     * \param value The new measurement value.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     void set_value(MeasurementValue value) {
       check(raw::dqcs_meas_value_set(handle, to_raw(value)));
@@ -3714,6 +3941,9 @@ namespace wrap {
 
     /**
      * Returns the qubit reference associated with this measurement.
+     *
+     * \returns The qubit reference associated with this measurement.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     QubitRef get_qubit() const {
       return QubitRef(check(raw::dqcs_meas_qubit_get(handle)));
@@ -3721,6 +3951,9 @@ namespace wrap {
 
     /**
      * Sets the qubit reference associated with this measurement.
+     *
+     * \param qubit The new qubit reference.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     void set_qubit(QubitRef qubit) {
       check(raw::dqcs_meas_qubit_set(handle, qubit.get_index()));
@@ -3762,6 +3995,13 @@ namespace wrap {
 
     /**
      * Constructs a measurement set object from an iterable of measurements.
+     *
+     * \param measurements An object that can be iterated over, capable of
+     * yielding `const Measurement&`s.
+     * \returns The new measurement set.
+     * \throws std::runtime_error When construction of the measurement set
+     * (handle) failed for some reason or any measurement handle within the
+     * `measurements` iterable is invalid.
      */
     template <class T>
     static MeasurementSet from_iter(const T &measurements) {
@@ -3776,6 +4016,10 @@ namespace wrap {
      * Moves the given measurement object into the set. If the set already
      * contained measurement data for the qubit associated with the measurement
      * object, the previous measurement data is overwritten.
+     *
+     * \param measurement The measurement object to move into the set.
+     * \throws std::runtime_error When the measurement handle or the current
+     * handle is invalid.
      */
     void set(Measurement &&measurement) {
       check(raw::dqcs_mset_set(handle, measurement.get_handle()));
@@ -3785,6 +4029,10 @@ namespace wrap {
      * Copies the given measurement object into the set. If the set already
      * contained measurement data for the qubit associated with the measurement
      * object, the previous measurement data is overwritten.
+     *
+     * \param measurement The measurement object to copy into the set.
+     * \throws std::runtime_error When the measurement handle or the current
+     * handle is invalid.
      */
     void set(const Measurement &measurement) {
       set(std::move(Measurement(measurement)));
@@ -3794,6 +4042,10 @@ namespace wrap {
      * Moves the given measurement object into the set (builder pattern). If
      * the set already contained measurement data for the qubit associated with
      * the measurement object, the previous measurement data is overwritten.
+     *
+     * \param measurement The measurement object to move into the set.
+     * \throws std::runtime_error When the measurement handle or the current
+     * handle is invalid.
      */
     MeasurementSet &with(Measurement &&measurement) {
       set(std::move(measurement));
@@ -3803,14 +4055,24 @@ namespace wrap {
      * Copies the given measurement object into the set (builder pattern). If
      * the set already contained measurement data for the qubit associated with
      * the measurement object, the previous measurement data is overwritten.
+     *
+     * \param measurement The measurement object to copy into the set.
+     * \throws std::runtime_error When the measurement handle or the current
+     * handle is invalid.
      */
     MeasurementSet &with(const Measurement &measurement) {
       set(measurement);
     }
 
     /**
-     * Returns a copy of the measurement object for the given qubit. An
-     * exception is thrown if no data is available for this qubit.
+     * Returns a copy of the measurement object for the given qubit.
+     *
+     * \param qubit A reference to the qubit to query the measurement result
+     * for.
+     * \returns The measurement result.
+     * \throws std::runtime_error When the current handle is invalid,
+     * construction of the new measurement handle failed, or no measurement
+     * data is available for the requested qubit.
      */
     Measurement get(const QubitRef &qubit) const {
       return Measurement(check(raw::dqcs_mset_get(handle, qubit.get_index())));
@@ -3819,6 +4081,13 @@ namespace wrap {
     /**
      * Moves the measurement object for the given qubit out of the set. An
      * exception is thrown if no data is available for this qubit.
+     *
+     * \param qubit A reference to the qubit to query the measurement result
+     * for.
+     * \returns The measurement result.
+     * \throws std::runtime_error When the current handle is invalid,
+     * construction of the new measurement handle failed, or no measurement
+     * data is available for the requested qubit.
      */
     Measurement take(const QubitRef &qubit) {
       return Measurement(check(raw::dqcs_mset_take(handle, qubit.get_index())));
@@ -3827,6 +4096,11 @@ namespace wrap {
     /**
      * Moves any measurement object out of the set. An exception is thrown if
      * the set is empty.
+     *
+     * \returns The measurement result for any qubit in the measurement result
+     * set.
+     * \throws std::runtime_error When the current handle is invalid, it is
+     * empty, or construction of the new measurement handle failed.
      */
     Measurement take_any() {
       return Measurement(check(raw::dqcs_mset_take_any(handle)));
@@ -3834,6 +4108,11 @@ namespace wrap {
 
     /**
      * Removes the measurement object for the given qubit from the set.
+     *
+     * \param qubit A reference to the qubit to query the measurement result
+     * for.
+     * \throws std::runtime_error When the current handle is invalid, or no
+     * measurement data was available for the requested qubit.
      */
     void remove(const QubitRef &qubit) {
       check(raw::dqcs_mset_remove(handle, qubit.get_index()));
@@ -3841,6 +4120,9 @@ namespace wrap {
 
     /**
      * Returns the number of measurements in the set.
+     *
+     * \returns The number of measurements in the set.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     size_t size() const {
       return check(raw::dqcs_mset_len(handle));
@@ -3848,6 +4130,11 @@ namespace wrap {
 
     /**
      * Returns whether the set contains measurement data for the given qubit.
+     *
+     * \param qubit A reference to the qubit to query the measurement result
+     * for.
+     * \returns Whether the set contains measurement data for the given qubit.
+     * \throws std::runtime_error When the current handle is invalid.
      */
     bool contains(const QubitRef &qubit) const {
       return check(raw::dqcs_mset_contains(handle, qubit.get_index()));
@@ -3855,6 +4142,15 @@ namespace wrap {
 
     /**
      * Drains the measurement set into a vector.
+     *
+     * That is, the measurement set object remains valid, but is emptied after
+     * this call.
+     *
+     * \returns A `std::vector` containing the individual measurement objects
+     * in arbitrary order.
+     * \throws std::runtime_error When the current handle is invalid or
+     * construction of any of the individual measurement objects fails for some
+     * reason.
      */
     std::vector<Measurement> drain_into_vector() {
       std::vector<Measurement> measurements;
@@ -3865,9 +4161,16 @@ namespace wrap {
     }
 
     /**
-     * Copies the qubit set into a vector. This requires destructive iteration,
-     * so the function is not const; if an exception occurs, the state of the
-     * measurement set may be changed.
+     * Copies the qubit set into a vector.
+     *
+     * \note This requires destructive iteration, so the function is not const;
+     * if an exception occurs, the state of the measurement set may be changed.
+     *
+     * \returns A `std::vector` containing the individual measurement objects
+     * in arbitrary order.
+     * \throws std::runtime_error When the current handle is invalid or
+     * construction of any of the individual measurement objects fails for some
+     * reason.
      */
     std::vector<Measurement> copy_into_vector() {
       std::vector<Measurement> vector = drain_into_vector();
@@ -3878,18 +4181,29 @@ namespace wrap {
     }
 
     /**
-     * Copy-constructs a measurement set object. This requires destructive
-     * iteration of the source object, so it isn't not const; if an exception
-     * occurs, the state of the source object may be changed.
+     * Copy-constructs a measurement set object.
+     *
+     * \note This requires destructive iteration, so the function is not const;
+     * if an exception occurs, the state of the measurement set may be changed.
+     *
+     * \param src The object to be copied.
+     * \throws std::runtime_error When the `src` handle is invalid or
+     * construction of the new measurement set object fails for some reason.
+     *
      */
     MeasurementSet(MeasurementSet &src) : Handle(0) {
       handle = MeasurementSet::from_iter(src.copy_into_vector()).take_handle();
     }
 
     /**
-     * Copy-assigns a measurement set object. This requires destructive
-     * iteration of the source object, so it isn't not const; if an exception
-     * occurs, the state of the source object may be changed.
+     * Copy-assigns a measurement set object.
+     *
+     * \note This requires destructive iteration, so the function is not const;
+     * if an exception occurs, the state of the measurement set may be changed.
+     *
+     * \param src The object to be copied.
+     * \throws std::runtime_error When the `src` handle or the current handle
+     * is invalid.
      */
     MeasurementSet &operator=(MeasurementSet &src) {
       free();
@@ -3915,6 +4229,7 @@ namespace wrap {
  */
 namespace callback {
 
+  //! \cond Doxygen_Suppress
   /**
    * Helper macro to prevent code repetition; not visible outside of the header.
    */
@@ -3986,6 +4301,7 @@ namespace callback {
       uint32_t pid,                                           \
       uint64_t tid                                            \
     );
+  //! \endcond
 
   /**
    * Wrapper for DQCsim's internal plugin state within the context of
@@ -4024,26 +4340,35 @@ namespace callback {
 
     /**
      * Generates a random floating point number using the simulator random
-     * seed. The generated numbers are uniformly distributed between 0
+     * seed.
+     *
+     * \returns A uniformly distributed floating-point number between 0
      * (inclusive) and 1 (exclusive).
      */
-    double random_f64() {
+    double random_f64() noexcept {
       return raw::dqcs_plugin_random_f64(state);
     }
 
     /**
      * Generates a random integer using the simulator random seed.
+     *
+     * \returns A uniformly distributed unsigned 64-bit integer.
      */
-    unsigned long long random_u64() {
+    unsigned long long random_u64() noexcept {
       return raw::dqcs_plugin_random_u64(state);
     }
 
     /**
-     * Generates a random value using the simulator random seed. All bits are
-     * randomized with a 50/50 probability.
+     * Generates a random value using the simulator random seed.
+     *
+     * \returns A randomized value of the given type. All bits are randomized
+     * with a 50/50 probability.
+     *
+     * \warning This function is not sensible for every kind of type, but will
+     * probably "work" regardless; use with care.
      */
     template <typename T>
-    T random() {
+    T random() noexcept {
       unsigned long long data[(sizeof(T) + 7) / 8];
       for (size_t i = 0; i < (sizeof(T) + 7) / 8; i++) {
         data = random_u64();
@@ -4087,29 +4412,56 @@ namespace callback {
      * Allocates a number of downstream qubits, copying in the given command
      * queue as arbitrary additional data for the qubits.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param num_qubits The number of qubits to allocate.
+     * \param cmds A command queue with zero or more commands to apply to the
+     * qubits during their initialization. The significance of these commands
+     * is dependent on the downstream plugin.
+     * \returns A qubit set with references to the newly allocated qubits.
+     * \throws std::runtime_error When the command queue is invalid,
+     * construction of the qubit set fails for some reason, an asynchronous
+     * exception is received, or this is called by a backend plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
-    wrap::QubitSet allocate(size_t num_qubits, wrap::ArbCmdQueue &&queue) {
-      return wrap::QubitSet(wrap::check(raw::dqcs_plugin_allocate(state, num_qubits, queue.get_handle())));
+    wrap::QubitSet allocate(size_t num_qubits, wrap::ArbCmdQueue &&cmds) {
+      return wrap::QubitSet(wrap::check(raw::dqcs_plugin_allocate(state, num_qubits, cmds.get_handle())));
     }
 
     /**
      * Allocates a number of downstream qubits, moving in the given command
      * queue as arbitrary additional data for the qubits.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param num_qubits The number of qubits to allocate.
+     * \param cmds A command queue with zero or more commands to apply to the
+     * qubits during their initialization. The significance of these commands
+     * is dependent on the downstream plugin.
+     * \returns A qubit set with references to the newly allocated qubits.
+     * \throws std::runtime_error When the command queue is invalid,
+     * construction of the qubit set fails for some reason, an asynchronous
+     * exception is received, or this is called by a backend plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
-    wrap::QubitSet allocate(size_t num_qubits, wrap::ArbCmdQueue &queue) {
-      return allocate(num_qubits, std::move(wrap::ArbCmdQueue(queue)));
+    wrap::QubitSet allocate(size_t num_qubits, wrap::ArbCmdQueue &cmds) {
+      return allocate(num_qubits, std::move(wrap::ArbCmdQueue(cmds)));
     }
 
     /**
      * Allocates a number of default downstream qubits.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param num_qubits The number of qubits to allocate.
+     * \returns A qubit set with references to the newly allocated qubits.
+     * \throws std::runtime_error When construction of the qubit set fails for
+     * some reason, an asynchronous exception is received, or this is called by
+     * a backend plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     wrap::QubitSet allocate(size_t num_qubits) {
       return wrap::QubitSet(wrap::check(raw::dqcs_plugin_allocate(state, num_qubits, 0)));
@@ -4119,29 +4471,52 @@ namespace callback {
      * Allocates a single downstream qubit, copying in the given command queue
      * as arbitrary additional data for the qubits.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param cmds A command queue with zero or more commands to apply to the
+     * qubit during its initialization. The significance of these commands
+     * is dependent on the downstream plugin.
+     * \returns A reference to the newly allocated qubit.
+     * \throws std::runtime_error When the command queue is invalid, an
+     * asynchronous exception is received, or this is called by a backend
+     * plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
-    wrap::QubitRef allocate(wrap::ArbCmdQueue &&queue) {
-      return allocate(1, std::move(queue)).pop();
+    wrap::QubitRef allocate(wrap::ArbCmdQueue &&cmds) {
+      return allocate(1, std::move(cmds)).pop();
     }
 
     /**
      * Allocates a single downstream qubit, moving in the given command queue
      * as arbitrary additional data for the qubits.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param cmds A command queue with zero or more commands to apply to the
+     * qubit during its initialization. The significance of these commands
+     * is dependent on the downstream plugin.
+     * \returns A reference to the newly allocated qubit.
+     * \throws std::runtime_error When the command queue is invalid, an
+     * asynchronous exception is received, or this is called by a backend
+     * plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
-    wrap::QubitRef allocate(wrap::ArbCmdQueue &queue) {
-      return allocate(std::move(wrap::ArbCmdQueue(queue)));
+    wrap::QubitRef allocate(wrap::ArbCmdQueue &cmds) {
+      return allocate(std::move(wrap::ArbCmdQueue(cmds)));
     }
 
     /**
      * Allocates a single downstream qubit.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \returns A reference to the newly allocated qubit.
+     * \throws std::runtime_error When an asynchronous exception is received
+     * or this is called by a backend plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     wrap::QubitRef allocate() {
       return allocate(1).pop();
@@ -4150,8 +4525,14 @@ namespace callback {
     /**
      * Frees the given downstream qubits.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param qubits The list of qubits to free, passed by move.
+     * \throws std::runtime_error When the qubit set handle is invalid, an
+     * asynchronous exception is received, or this is called by a backend
+     * plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void free(wrap::QubitSet &&qubits) {
       wrap::check(raw::dqcs_plugin_free(state, qubits.get_handle()));
@@ -4160,8 +4541,14 @@ namespace callback {
     /**
      * Frees the given downstream qubits.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param qubits The list of qubits to free, passed by copy.
+     * \throws std::runtime_error When the qubit set handle is invalid, an
+     * asynchronous exception is received, or this is called by a backend
+     * plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void free(const wrap::QubitSet &qubits) {
       free(std::move(wrap::QubitSet(qubits)));
@@ -4170,8 +4557,13 @@ namespace callback {
     /**
      * Frees the given downstream qubit.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param qubit The qubit to free.
+     * \throws std::runtime_error When an asynchronous exception is received
+     * or this is called by a backend plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void free(const wrap::QubitRef &qubit) {
       free(std::move(wrap::QubitRef(qubit)));
@@ -4180,8 +4572,14 @@ namespace callback {
     /**
      * Sends a gate to the downstream plugin.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param gate The gate to send.
+     * \throws std::runtime_error When the gate handle is invalid, an
+     * asynchronous exception is received, or this is called by a backend
+     * plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void gate(wrap::Gate &&gate) {
       wrap::check(raw::dqcs_plugin_gate(state, gate.get_handle()));
@@ -4190,10 +4588,14 @@ namespace callback {
     /**
      * Shorthand for sending a single-qubit gate to the downstream plugin.
      *
-     * The matrix must be 2x2 in size.
+     * \param matrix The gate matrix. Must be 2x2 in size.
+     * \param q The qubit to operate on.
+     * \throws std::runtime_error When an asynchronous exception is received
+     * or this is called by a backend plugin.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void gate(const wrap::Matrix &matrix, const wrap::QubitRef &q) {
       if (matrix.size() == 2) {
@@ -4206,11 +4608,18 @@ namespace callback {
     /**
      * Shorthand for sending a two-qubit gate to the downstream plugin.
      *
-     * The matrix may be 2x2 (one-qubit gate) or 4x4 (two-qubit gate) in size.
-     * If it is 2x2, `qa` is used as a control qubit and `qb` is the target.
+     * \param matrix The gate matrix. It may be 2x2 (one-qubit gate) or 4x4
+     * (two-qubit gate) in size. If it is 2x2, `qa` is used as an implicit
+     * control qubit while `qb` is the target; for instance, `gate(X, a, b)`
+     * represents a CNOT with `a` as control and `b` as target.
+     * \param qa The first qubit argument.
+     * \param qb The second qubit argument.
+     * \throws std::runtime_error When an asynchronous exception is received
+     * or this is called by a backend plugin.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void gate(const wrap::Matrix &matrix, const wrap::QubitRef &qa, const wrap::QubitRef &qb) {
       if (matrix.size() == 2) {
@@ -4230,8 +4639,23 @@ namespace callback {
      * control qubits and `qc` is the target. If it is 4x4, `qa` is used as
      * a control qubit and `qb` and `qc` are the targets.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param matrix The gate matrix. It may be 2x2 (one-qubit gate), 4x4
+     * (two-qubit gate), or 8x8 (three-qubit gate) in size. If it is 2x2,
+     * `qa` and `qb` are used as control qubits and `qc` is the target. If it
+     * is 4x4, `qa` is used as a control qubit and `qb` and `qc` are the
+     * targets. For instance, `gate(X, a, b, c)` represents a Toffoli gate with
+     * `a` and `b` as controls and `c` as target, and `gate(SWAP, a, b, c)`
+     * represents a Fredkin gate with `a` as control and `b` and `c` as
+     * targets.
+     * \param qa The first qubit argument.
+     * \param qb The second qubit argument.
+     * \param qc The third qubit argument.
+     * \throws std::runtime_error When an asynchronous exception is received
+     * or this is called by a backend plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void gate(const wrap::Matrix &matrix, const wrap::QubitRef &qa, const wrap::QubitRef &qb, const wrap::QubitRef &qc) {
       if (matrix.size() == 2) {
@@ -4258,8 +4682,13 @@ namespace callback {
      * gate(wrap::GateMatrix::H(), q);
      * ```
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param q The qubit to measure.
+     * \throws std::runtime_error When an asynchronous exception is received
+     * or this is called by a backend plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void measure_x(const wrap::QubitRef &q) {
       gate(wrap::GateMatrix::H(), q);
@@ -4280,8 +4709,14 @@ namespace callback {
      * for (q : qs) gate(wrap::GateMatrix::H(), q);
      * ```
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param qs The qubits to measure.
+     * \throws std::runtime_error When the qubit set handle is invalid, an
+     * asynchronous exception is received, or this is called by a backend
+     * plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void measure_x(const wrap::QubitSet &qs) {
       auto qs_vec = qs.copy_into_vector();
@@ -4304,8 +4739,13 @@ namespace callback {
      * gate(wrap::GateMatrix::S(), q);
      * ```
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param q The qubit to measure.
+     * \throws std::runtime_error When an asynchronous exception is received
+     * or this is called by a backend plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void measure_y(const wrap::QubitRef &q) {
       gate(wrap::GateMatrix::S(), q);
@@ -4328,8 +4768,14 @@ namespace callback {
      * for (q : qs) gate(wrap::GateMatrix::S(), q);
      * ```
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param qs The qubits to measure.
+     * \throws std::runtime_error When the qubit set handle is invalid, an
+     * asynchronous exception is received, or this is called by a backend
+     * plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void measure_y(const wrap::QubitSet &qs) {
       auto qs_vec = qs.copy_into_vector();
@@ -4340,22 +4786,16 @@ namespace callback {
     }
 
     /**
-     * Shorthand for sending a multi-qubit Z-axis measurement to the downstream
-     * plugin.
-     *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
-     */
-    void measure_z(wrap::QubitSet &&qs) {
-      gate(wrap::Gate::measure(std::move(qs)));
-    }
-
-    /**
      * Shorthand for sending a single-qubit Z-axis measurement to the
      * downstream plugin.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param q The qubit to measure.
+     * \throws std::runtime_error When an asynchronous exception is received,
+     * or this is called by a backend plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void measure_z(const wrap::QubitRef &q) {
       measure_z(std::move(wrap::QubitSet().with(q)));
@@ -4365,20 +4805,47 @@ namespace callback {
      * Shorthand for sending a multi-qubit Z-axis measurement to the downstream
      * plugin.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param qs The qubits to measure.
+     * \throws std::runtime_error When the qubit set handle is invalid, an
+     * asynchronous exception is received, or this is called by a backend
+     * plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
+     */
+    void measure_z(wrap::QubitSet &&qs) {
+      gate(wrap::Gate::measure(std::move(qs)));
+    }
+
+    /**
+     * Shorthand for sending a multi-qubit Z-axis measurement to the downstream
+     * plugin.
+     *
+     * \param qs The qubits to measure.
+     * \throws std::runtime_error When the qubit set handle is invalid, an
+     * asynchronous exception is received, or this is called by a backend
+     * plugin.
+     *
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     void measure_z(const wrap::QubitSet &qs) {
-      measure_z(std::move(qs));
+      measure_z(std::move(wrap::QubitSet(qs)));
     }
 
     /**
      * Tells the downstream plugin to run for the specified number of cycles.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param cycles The number of cycles to advance by. Must be positive.
+     * \returns The return value is the new cycle counter.
+     * \throws std::runtime_error When number of cycles is negative, an
+     * asynchronous exception is received, or this is called by a backend plugin.
      *
-     * The return value is the new cycle counter.
+     * \note This function is implemented asynchronously for multiprocessing
+     * performance reasons. Therefore, any exception thrown by the downstream
+     * plugin will not be (immediately) visible.
      */
     wrap::Cycle advance(wrap::Cycle cycles) {
       return wrap::check(raw::dqcs_plugin_advance(state, cycles));
@@ -4387,10 +4854,10 @@ namespace callback {
     /**
      * Sends an arbitrary command downstream.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
-     *
-     * This function returns the `ArbData` object resulting from the command.
+     * \param cmd The command to send to the downstream plugin.
+     * \returns The `ArbData` object returned by the downstream plugin.
+     * \throws std::runtime_error When the command fails, an asynchronous
+     * exception is received, or this is called by a backend plugin.
      */
     wrap::ArbData arb(wrap::ArbCmd &&cmd) {
       return wrap::ArbData(wrap::check(raw::dqcs_plugin_arb(state, cmd.get_handle())));
@@ -4399,10 +4866,10 @@ namespace callback {
     /**
      * Sends an arbitrary command downstream.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
-     *
-     * This function returns the `ArbData` object resulting from the command.
+     * \param cmd The command to send to the downstream plugin.
+     * \returns The `ArbData` object returned by the downstream plugin.
+     * \throws std::runtime_error When the command fails, an asynchronous
+     * exception is received, or this is called by a backend plugin.
      */
     wrap::ArbData arb(const wrap::ArbCmd &cmd) {
       arb(std::move(wrap::ArbCmd(cmd)));
@@ -4411,8 +4878,11 @@ namespace callback {
     /**
      * Returns the latest measurement of the given downstream qubit.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param qubit The qubit to return the latest measurement for.
+     * \returns The latest measurement result.
+     * \throws std::runtime_error When no data is known for the given qubit,
+     * measurement object construction fails, or this is called by a backend
+     * plugin.
      */
     wrap::Measurement get_measurement(const wrap::QubitRef &qubit) {
       return wrap::Measurement(wrap::check(raw::dqcs_plugin_get_measurement(state, qubit.get_index())));
@@ -4422,8 +4892,10 @@ namespace callback {
      * Returns the number of downstream cycles since the latest measurement of
      * the given downstream qubit.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param qubit The qubit to return the cycle count for.
+     * \returns The number of downstream cycles since the latest measurement.
+     * \throws std::runtime_error When no data is known for the given qubit or
+     * this is called by a backend plugin.
      */
     wrap::Cycle get_cycles_since_measure(const wrap::QubitRef &qubit) {
       return wrap::check(raw::dqcs_plugin_get_cycles_since_measure(state, qubit.get_index()));
@@ -4433,8 +4905,11 @@ namespace callback {
      * Returns the number of downstream cycles between the last two
      * measurements of the given downstream qubit.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \param qubit The qubit to return the cycle count for.
+     * \returns The number of downstream cycles between the previous
+     * measurement and the one before.
+     * \throws std::runtime_error When no data is known for the given qubit or
+     * this is called by a backend plugin.
      */
     wrap::Cycle get_cycles_between_measures(const wrap::QubitRef &qubit) {
       return wrap::check(raw::dqcs_plugin_get_cycles_between_measures(state, qubit.get_index()));
@@ -4443,8 +4918,8 @@ namespace callback {
     /**
      * Returns the current value of the downstream cycle counter.
      *
-     * Backend plugins are not allowed to call this. Doing so will result in an
-     * error.
+     * \returns The number downstream simulation cycle counter value.
+     * \throws std::runtime_error When this is called by a backend plugin.
      */
     wrap::Cycle get_cycle() {
       return wrap::check(raw::dqcs_plugin_get_cycle(state));
@@ -4482,6 +4957,14 @@ namespace callback {
 
     /**
      * Sends a message to the host.
+     *
+     * The host must do an accompanying `receive()` call, which returns the
+     * data sent here. Failure to do so will result in a deadlock error to
+     * the host.
+     *
+     * \param message The message to send.
+     * \throws std::runtime_error When the message handle is invalid or
+     * delivery fails for some reason.
      */
     void send(wrap::ArbData &&message) {
       wrap::check(raw::dqcs_plugin_send(state, message.get_handle()));
@@ -4489,6 +4972,14 @@ namespace callback {
 
     /**
      * Sends a message to the host.
+     *
+     * The host must do an accompanying `receive()` call, which returns the
+     * data sent here. Failure to do so will result in a deadlock error to
+     * the host.
+     *
+     * \param message The message to send.
+     * \throws std::runtime_error When the message handle is invalid or
+     * delivery fails for some reason.
      */
     void send(const wrap::ArbData &message) {
       send(std::move(wrap::ArbData(message)));
@@ -4496,6 +4987,14 @@ namespace callback {
 
     /**
      * Receives a message from the host.
+     *
+     * The host must do an accompanying `send()` call. The data passed to
+     * this call is returned by this function. Failure to do so will result
+     * in a deadlock error to the host.
+     *
+     * \returns The message sent by the host.
+     * \throws std::runtime_error When no handle could be constructed for the
+     * message or reception fails for some reason.
      */
     wrap::ArbData receive() {
       return wrap::ArbData(wrap::check(raw::dqcs_plugin_recv(state)));
@@ -4504,71 +5003,71 @@ namespace callback {
   };
 
   /**
-   * `std::bind` helper function for the `Callback` template class; one
-   * argument, C-style user data.
-   */
-  template <class T, class R, class A>
-  std::function<R(A)> bind_first(R (*cb)(T, A), T user) {
-    using namespace std::placeholders;
-    return std::bind(cb, user, _1);
-  }
-
-  /**
-   * `std::bind` helper function for the `Callback` template class; two
-   * arguments, C-style user data.
-   */
-  template <class T, class R, class A, class B>
-  std::function<R(A, B)> bind_first(R (*cb)(T, A, B), T user) {
-    using namespace std::placeholders;
-    return std::bind(cb, user, _1, _2);
-  }
-
-  /**
-   * `std::bind` helper function for the `Callback` template class; three
-   * arguments, C-style user data.
-   */
-  template <class T, class R, class A, class B, class C>
-  std::function<R(A, B, C)> bind_first(R (*cb)(T, A, B, C), T user) {
-    using namespace std::placeholders;
-    return std::bind(cb, user, _1, _2, _3);
-  }
-
-  /**
-   * `std::bind` helper function for the `Callback` template class; one
-   * argument, member function.
-   */
-  template <class T, class R, class A>
-  std::function<R(A)> bind_instance(T *instance, R (T::*cb)(A)) {
-    using namespace std::placeholders;
-    return std::bind(cb, instance, _1);
-  }
-
-  /**
-   * `std::bind` helper function for the `Callback` template class; two
-   * arguments, member function.
-   */
-  template <class T, class R, class A, class B>
-  std::function<R(A, B)> bind_instance(T *instance, R (T::*cb)(A, B)) {
-    using namespace std::placeholders;
-    return std::bind(cb, instance, _1, _2);
-  }
-
-  /**
-   * `std::bind` helper function for the `Callback` template class; three
-   * arguments, member function.
-   */
-  template <class T, class R, class A, class B, class C>
-  std::function<R(A, B, C)> bind_instance(T *instance, R (T::*cb)(A, B, C)) {
-    using namespace std::placeholders;
-    return std::bind(cb, instance, _1, _2, _3);
-  }
-
-  /**
    * Class template shared between all callback functions.
    */
   template <class R, class... Args>
   class Callback {
   private:
+
+    /**
+     * `std::bind` helper function for the `Callback` template class; one
+     * argument, C-style user data.
+     */
+    template <class T, class S, class A>
+    static std::function<S(A)> bind_first(S (*cb)(T, A), T user) {
+      using namespace std::placeholders;
+      return std::bind(cb, user, _1);
+    }
+
+    /**
+     * `std::bind` helper function for the `Callback` template class; two
+     * arguments, C-style user data.
+     */
+    template <class T, class S, class A, class B>
+    static std::function<S(A, B)> bind_first(S (*cb)(T, A, B), T user) {
+      using namespace std::placeholders;
+      return std::bind(cb, user, _1, _2);
+    }
+
+    /**
+     * `std::bind` helper function for the `Callback` template class; three
+     * arguments, C-style user data.
+     */
+    template <class T, class S, class A, class B, class C>
+    static std::function<S(A, B, C)> bind_first(S (*cb)(T, A, B, C), T user) {
+      using namespace std::placeholders;
+      return std::bind(cb, user, _1, _2, _3);
+    }
+
+    /**
+     * `std::bind` helper function for the `Callback` template class; one
+     * argument, member function.
+     */
+    template <class T, class S, class A>
+    static std::function<S(A)> bind_instance(T *instance, S (T::*cb)(A)) {
+      using namespace std::placeholders;
+      return std::bind(cb, instance, _1);
+    }
+
+    /**
+     * `std::bind` helper function for the `Callback` template class; two
+     * arguments, member function.
+     */
+    template <class T, class S, class A, class B>
+    static std::function<S(A, B)> bind_instance(T *instance, S (T::*cb)(A, B)) {
+      using namespace std::placeholders;
+      return std::bind(cb, instance, _1, _2);
+    }
+
+    /**
+     * `std::bind` helper function for the `Callback` template class; three
+     * arguments, member function.
+     */
+    template <class T, class S, class A, class B, class C>
+    static std::function<S(A, B, C)> bind_instance(T *instance, S (T::*cb)(A, B, C)) {
+      using namespace std::placeholders;
+      return std::bind(cb, instance, _1, _2, _3);
+    }
 
     /**
      * The stored callback.
@@ -4582,8 +5081,10 @@ namespace callback {
 
     /**
      * Constructs the callback wrapper from a regular C-style function.
+     *
+     * \param cb The C function pointer to wrap.
      */
-    Callback(R (*cb)(Args...))
+    Callback(R (*cb)(Args...)) noexcept
       : cb(std::make_shared<std::function<R(Args...)>>(cb))
     {}
 
@@ -4591,46 +5092,62 @@ namespace callback {
      * Constructs the callback wrapper from a regular C-style function with a
      * user argument bound to it. Usually this would be a pointer to some
      * shared data structure containing the user's plugin state.
+     *
+     * \param cb The C function pointer to wrap. When it is called, the first
+     * argument is always set to whatever is passed to `user` here.
+     * \param user The data to pass to the first argument of `cb`.
      */
     template <class T>
-    Callback(R (*cb)(T, Args...), T user)
+    Callback(R (*cb)(T, Args...), T user) noexcept
       : cb(std::make_shared<std::function<R(Args...)>>(bind_first<T, R, Args...>(cb, user)))
     {}
 
     /**
      * Constructs the callback wrapper from a member function.
+     *
+     * \param instance The class instance whose member function is to be
+     * wrapped.
+     * \param cb The pointer to the member function that is to be wrapped.
      */
     template <class T>
-    Callback(T *instance, R (T::*cb)(Args...))
+    Callback(T *instance, R (T::*cb)(Args...)) noexcept
       : cb(std::make_shared<std::function<R(Args...)>>(bind_instance<T, R, Args...>(instance, cb)))
     {}
 
     /**
      * Constructs the callback wrapper by moving a `std::function`.
+     *
+     * \param cb The C++11 `std::function` to wrap.
      */
-    Callback(std::function<R(Args...)> &&cb)
+    Callback(std::function<R(Args...)> &&cb) noexcept
       : cb(std::make_shared<std::function<R(Args...)>>(std::move(cb)))
     {}
 
     /**
      * Constructs the callback wrapper by copying a `std::function`.
+     *
+     * \param cb The C++11 `std::function` to wrap.
      */
-    Callback(const std::function<R(Args...)> &cb)
+    Callback(const std::function<R(Args...)> &cb) noexcept
       : cb(std::make_shared<std::function<R(Args...)>>(cb))
     {}
 
     /**
      * Constructs the callback wrapper by means of moving a `shared_ptr`
      * to a `std::function`.
+     *
+     * \param cb A C++11 `std::shared_ptr` to the `std::function` to wrap.
      */
-    Callback(std::shared_ptr<std::function<R(Args...)>> &&cb) : cb(cb) {
+    Callback(std::shared_ptr<std::function<R(Args...)>> &&cb) noexcept : cb(cb) {
     }
 
     /**
      * Constructs the callback wrapper by means of a copying a `shared_ptr`
      * to a `std::function`.
+     *
+     * \param cb A C++11 `std::shared_ptr` to the `std::function` to wrap.
      */
-    Callback(const std::shared_ptr<std::function<R(Args...)>> &cb) : cb(cb) {
+    Callback(const std::shared_ptr<std::function<R(Args...)>> &cb) noexcept : cb(cb) {
     }
 
   };
@@ -4642,6 +5159,7 @@ namespace callback {
    */
   typedef Callback<void, PluginState&, wrap::ArbCmdQueue&&> Initialize;
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for the `initialize` callback.
    */
@@ -4666,12 +5184,14 @@ namespace callback {
     }
     return raw::dqcs_return_t::DQCS_FAILURE;
   }
+  //! \endcond
 
   /**
    * Callback wrapper specialized for the `drop` callback.
    */
   typedef Callback<void, PluginState&> Drop;
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for the `drop` callback.
    */
@@ -4694,12 +5214,14 @@ namespace callback {
     }
     return raw::dqcs_return_t::DQCS_FAILURE;
   }
+  //! \endcond
 
   /**
    * Callback wrapper specialized for the `run` callback.
    */
   typedef Callback<wrap::ArbData, RunningPluginState&, wrap::ArbData&&> Run;
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for the `run` callback.
    */
@@ -4723,12 +5245,14 @@ namespace callback {
     }
     return 0;
   }
+  //! \endcond
 
   /**
    * Callback wrapper specialized for the `allocate` callback.
    */
   typedef Callback<void, PluginState&, wrap::QubitSet&&, wrap::ArbCmdQueue&&> Allocate;
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for the `allocate` callback.
    */
@@ -4755,12 +5279,14 @@ namespace callback {
     }
     return raw::dqcs_return_t::DQCS_FAILURE;
   }
+  //! \endcond
 
   /**
    * Callback wrapper specialized for the `allocate` callback.
    */
   typedef Callback<void, PluginState&, wrap::QubitSet&&> Free;
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for the `free` callback.
    */
@@ -4785,12 +5311,14 @@ namespace callback {
     }
     return raw::dqcs_return_t::DQCS_FAILURE;
   }
+  //! \endcond
 
   /**
    * Callback wrapper specialized for the `gate` callback.
    */
   typedef Callback<wrap::MeasurementSet, PluginState&, wrap::Gate&&> Gate;
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for the `gate` callback.
    */
@@ -4814,12 +5342,14 @@ namespace callback {
     }
     return 0;
   }
+  //! \endcond
 
   /**
    * Callback wrapper specialized for the `modify_measurement` callback.
    */
   typedef Callback<wrap::MeasurementSet, UpstreamPluginState&, wrap::Measurement&&> ModifyMeasurement;
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for the `modify_measurement` callback.
    */
@@ -4843,12 +5373,14 @@ namespace callback {
     }
     return 0;
   }
+  //! \endcond
 
   /**
    * Callback wrapper specialized for the `advance` callback.
    */
   typedef Callback<void, PluginState&, wrap::Cycle> Advance;
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for the `advance` callback.
    */
@@ -4872,12 +5404,14 @@ namespace callback {
     }
     return raw::dqcs_return_t::DQCS_FAILURE;
   }
+  //! \endcond
 
   /**
    * Callback wrapper specialized for the `*_arb` callbacks.
    */
   typedef Callback<wrap::ArbData, PluginState&, wrap::ArbCmd> Arb;
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for the `upstream_arb` callback.
    */
@@ -4901,7 +5435,9 @@ namespace callback {
     }
     return 0;
   }
+  //! \endcond
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for the `host_arb` callback.
    */
@@ -4925,12 +5461,14 @@ namespace callback {
     }
     return 0;
   }
+  //! \endcond
 
   /**
    * Callback wrapper specialized for the manual plugin spawning callback.
    */
   typedef Callback<void, std::string&&> SpawnPlugin;
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for the manual plugin spawning callback.
    */
@@ -4951,6 +5489,7 @@ namespace callback {
       DQCSIM_FATAL("DQCsim caught std::exception in plugin thread: %s", e.what());
     }
   }
+  //! \endcond
 
   /**
    * Callback wrapper specialized for the simulation logging callback.
@@ -4988,6 +5527,7 @@ namespace callback {
     uint64_t                                  // thread ID
   > Log;
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for the simulation logging callback.
    */
@@ -5029,7 +5569,9 @@ namespace callback {
       std::cerr << "DQCsim caught std::exception in log callback: " << e.what() << std::endl;
     }
   }
+  //! \endcond
 
+  //! \cond Doxygen_Suppress
   /**
    * Entry point for freeing callback data structures.
    */
@@ -5038,6 +5580,7 @@ namespace callback {
     T *cb_wrapper = reinterpret_cast<T*>(user_data);
     delete cb_wrapper;
   }
+  //! \endcond
 
 } // namespace callback
 
