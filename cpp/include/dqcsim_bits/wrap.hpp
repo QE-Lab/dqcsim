@@ -4044,6 +4044,7 @@ namespace wrap {
      * the measurement object, the previous measurement data is overwritten.
      *
      * \param measurement The measurement object to move into the set.
+     * \returns `&self`, to continue building.
      * \throws std::runtime_error When the measurement handle or the current
      * handle is invalid.
      */
@@ -4057,6 +4058,7 @@ namespace wrap {
      * the measurement object, the previous measurement data is overwritten.
      *
      * \param measurement The measurement object to copy into the set.
+     * \returns `&self`, to continue building.
      * \throws std::runtime_error When the measurement handle or the current
      * handle is invalid.
      */
@@ -5540,6 +5542,8 @@ namespace wrap {
 
     /**
      * Waits for the plugin to terminate.
+     *
+     * \throws std::runtime_error When plugin execution failed.
      */
     void wait() {
       if (handle) {
@@ -5784,7 +5788,15 @@ namespace wrap {
     }
 
     /**
-     * Constructs a new plugin object.
+     * Constructs a new plugin definition object.
+     *
+     * \param type The type of the plugin being defined.
+     * \param name Name with which the plugin class can be identified, not to
+     * be confused with the instance name later.
+     * \param author Name of the plugin author.
+     * \param version Version information for the plugin.
+     * \throws std::runtime_error When plugin definition handle construction
+     * fails.
      */
     Plugin(
       PluginType type,
@@ -5794,6 +5806,63 @@ namespace wrap {
     ) : Handle(raw::dqcs_pdef_new(
       to_raw(type), name.c_str(), author.c_str(), version.c_str()
     )) {
+    }
+
+    /**
+     * Shorthand for constructing a new frontend plugin.
+     *
+     * \param name Name with which the plugin class can be identified, not to
+     * be confused with the instance name later.
+     * \param author Name of the plugin author.
+     * \param version Version information for the plugin.
+     * \returns The constructed plugin definition object.
+     * \throws std::runtime_error When plugin definition handle construction
+     * fails.
+     */
+    static Plugin Frontend(
+      const std::string &name,
+      const std::string &author,
+      const std::string &version
+    ) {
+      return Plugin(PluginType::Frontend, name, author, version);
+    }
+
+    /**
+     * Shorthand for constructing a new operator plugin.
+     *
+     * \param name Name with which the plugin class can be identified, not to
+     * be confused with the instance name later.
+     * \param author Name of the plugin author.
+     * \param version Version information for the plugin.
+     * \returns The constructed plugin definition object.
+     * \throws std::runtime_error When plugin definition handle construction
+     * fails.
+     */
+    static Plugin Operator(
+      const std::string &name,
+      const std::string &author,
+      const std::string &version
+    ) {
+      return Plugin(PluginType::Operator, name, author, version);
+    }
+
+    /**
+     * Shorthand for constructing a new backend plugin.
+     *
+     * \param name Name with which the plugin class can be identified, not to
+     * be confused with the instance name later.
+     * \param author Name of the plugin author.
+     * \param version Version information for the plugin.
+     * \returns The constructed plugin definition object.
+     * \throws std::runtime_error When plugin definition handle construction
+     * fails.
+     */
+    static Plugin Backend(
+      const std::string &name,
+      const std::string &author,
+      const std::string &version
+    ) {
+      return Plugin(PluginType::Backend, name, author, version);
     }
 
     // Delete copy construct/assign.
@@ -5812,6 +5881,9 @@ namespace wrap {
 
     /**
      * Returns the plugin type described by this object.
+     *
+     * \returns The plugin type described by this object.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginType get_type() const {
       return check(raw::dqcs_pdef_type(handle));
@@ -5819,56 +5891,41 @@ namespace wrap {
 
     /**
      * Returns the name of the described plugin.
+     *
+     * \returns The name of the described plugin class.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     std::string get_name() const {
-      return std::string(check(raw::dqcs_pdef_name(handle)));
+      char *cstr = check(raw::dqcs_pdef_name(handle));
+      std::string str(cstr);
+      std::free(cstr);
+      return str;
     }
 
     /**
      * Returns the author of the described plugin.
+     *
+     * \returns The author of the described plugin.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     std::string get_author() const {
-      return std::string(check(raw::dqcs_pdef_author(handle)));
+      char *cstr = check(raw::dqcs_pdef_author(handle));
+      std::string str(cstr);
+      std::free(cstr);
+      return str;
     }
 
     /**
      * Returns the version of the described plugin.
+     *
+     * \returns The version of the described plugin.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     std::string get_version() const {
-      return std::string(check(raw::dqcs_pdef_version(handle)));
-    }
-
-    /**
-     * Constructs a new frontend.
-     */
-    static Plugin Frontend(
-      const std::string &name,
-      const std::string &author,
-      const std::string &version
-    ) {
-      return Plugin(PluginType::Frontend, name, author, version);
-    }
-
-    /**
-     * Constructs a new operator.
-     */
-    static Plugin Operator(
-      const std::string &name,
-      const std::string &author,
-      const std::string &version
-    ) {
-      return Plugin(PluginType::Operator, name, author, version);
-    }
-
-    /**
-     * Constructs a new backend.
-     */
-    static Plugin Backend(
-      const std::string &name,
-      const std::string &author,
-      const std::string &version
-    ) {
-      return Plugin(PluginType::Backend, name, author, version);
+      char *cstr = check(raw::dqcs_pdef_version(handle));
+      std::string str(cstr);
+      std::free(cstr);
+      return str;
     }
 
     // Code below is generated using the following Python script:
@@ -5884,15 +5941,15 @@ namespace wrap {
     //      * raw pointer to a `callback::{0[2]}` object. Callee will ensure that
     //      * `delete` is called.
     //      */
-    //     void set_{0[1]}(callback::{0[2]} *data) {{
+    //     void set_{0[1]}(callback::{0[2]} *cb) {{
     //       try {{
     //         check(raw::dqcs_pdef_set_{0[1]}_cb(
     //           handle,
     //           CallbackEntryPoints::{0[1]},
     //           CallbackEntryPoints::user_free<callback::{0[2]}>,
-    //           data));
+    //           cb));
     //       }} catch (...) {{
-    //         delete data;
+    //         delete cb;
     //         throw;
     //       }}
     //     }}
@@ -5902,24 +5959,38 @@ namespace wrap {
     //     /**
     //      * Assigns the {0[0]} callback function from a pre-existing
     //      * `callback::{0[2]}` object by copy.
+    //      *
+    //      * \\param cb The callback object.
+    //      * \\returns `&self`, to continue building.
+    //      * \\throws std::runtime_error When the current handle is invalid or of an
+    //      * unsupported plugin type, or when the callback object is invalid.
     //      */
-    //     Plugin &with_{0[1]}(const callback::{0[2]} &data) {{
-    //       set_{0[1]}(new callback::{0[2]}(data));
+    //     Plugin &with_{0[1]}(const callback::{0[2]} &cb) {{
+    //       set_{0[1]}(new callback::{0[2]}(cb));
     //       return *this;
     //     }}
     //
     //     /**
     //      * Assigns the {0[0]} callback function from a pre-existing
     //      * `callback::{0[2]}` object by move.
+    //      *
+    //      * \\param cb The callback object.
+    //      * \\returns `&self`, to continue building.
+    //      * \\throws std::runtime_error When the current handle is invalid or of an
+    //      * unsupported plugin type, or when the callback object is invalid.
     //      */
-    //     Plugin &with_{0[1]}(callback::{0[2]} &&data) {{
-    //       set_{0[1]}(new callback::{0[2]}(std::move(data)));
+    //     Plugin &with_{0[1]}(callback::{0[2]} &&cb) {{
+    //       set_{0[1]}(new callback::{0[2]}(std::move(cb)));
     //       return *this;
     //     }}
     //
     //     /**
     //      * Assigns the {0[0]} callback function by constructing the
     //      * callback object implicitly.
+    //      *
+    //      * \\returns `&self`, to continue building.
+    //      * \\throws std::runtime_error When the current handle is invalid or of an
+    //      * unsupported plugin type, or when the callback object is invalid.
     //      */
     //     template<typename... Args>
     //     Plugin &with_{0[1]}(Args... args) {{
@@ -5950,15 +6021,15 @@ namespace wrap {
      * raw pointer to a `callback::Initialize` object. Callee will ensure that
      * `delete` is called.
      */
-    void set_initialize(callback::Initialize *data) {
+    void set_initialize(callback::Initialize *cb) {
       try {
         check(raw::dqcs_pdef_set_initialize_cb(
           handle,
           CallbackEntryPoints::initialize,
           CallbackEntryPoints::user_free<callback::Initialize>,
-          data));
+          cb));
       } catch (...) {
-        delete data;
+        delete cb;
         throw;
       }
     }
@@ -5968,24 +6039,38 @@ namespace wrap {
     /**
      * Assigns the initialize callback function from a pre-existing
      * `callback::Initialize` object by copy.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_initialize(const callback::Initialize &data) {
-      set_initialize(new callback::Initialize(data));
+    Plugin &with_initialize(const callback::Initialize &cb) {
+      set_initialize(new callback::Initialize(cb));
       return *this;
     }
 
     /**
      * Assigns the initialize callback function from a pre-existing
      * `callback::Initialize` object by move.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_initialize(callback::Initialize &&data) {
-      set_initialize(new callback::Initialize(std::move(data)));
+    Plugin &with_initialize(callback::Initialize &&cb) {
+      set_initialize(new callback::Initialize(std::move(cb)));
       return *this;
     }
 
     /**
      * Assigns the initialize callback function by constructing the
      * callback object implicitly.
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
     Plugin &with_initialize(Args... args) {
@@ -6000,15 +6085,15 @@ namespace wrap {
      * raw pointer to a `callback::Drop` object. Callee will ensure that
      * `delete` is called.
      */
-    void set_drop(callback::Drop *data) {
+    void set_drop(callback::Drop *cb) {
       try {
         check(raw::dqcs_pdef_set_drop_cb(
           handle,
           CallbackEntryPoints::drop,
           CallbackEntryPoints::user_free<callback::Drop>,
-          data));
+          cb));
       } catch (...) {
-        delete data;
+        delete cb;
         throw;
       }
     }
@@ -6018,24 +6103,38 @@ namespace wrap {
     /**
      * Assigns the drop callback function from a pre-existing
      * `callback::Drop` object by copy.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_drop(const callback::Drop &data) {
-      set_drop(new callback::Drop(data));
+    Plugin &with_drop(const callback::Drop &cb) {
+      set_drop(new callback::Drop(cb));
       return *this;
     }
 
     /**
      * Assigns the drop callback function from a pre-existing
      * `callback::Drop` object by move.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_drop(callback::Drop &&data) {
-      set_drop(new callback::Drop(std::move(data)));
+    Plugin &with_drop(callback::Drop &&cb) {
+      set_drop(new callback::Drop(std::move(cb)));
       return *this;
     }
 
     /**
      * Assigns the drop callback function by constructing the
      * callback object implicitly.
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
     Plugin &with_drop(Args... args) {
@@ -6050,15 +6149,15 @@ namespace wrap {
      * raw pointer to a `callback::Run` object. Callee will ensure that
      * `delete` is called.
      */
-    void set_run(callback::Run *data) {
+    void set_run(callback::Run *cb) {
       try {
         check(raw::dqcs_pdef_set_run_cb(
           handle,
           CallbackEntryPoints::run,
           CallbackEntryPoints::user_free<callback::Run>,
-          data));
+          cb));
       } catch (...) {
-        delete data;
+        delete cb;
         throw;
       }
     }
@@ -6068,24 +6167,38 @@ namespace wrap {
     /**
      * Assigns the run callback function from a pre-existing
      * `callback::Run` object by copy.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_run(const callback::Run &data) {
-      set_run(new callback::Run(data));
+    Plugin &with_run(const callback::Run &cb) {
+      set_run(new callback::Run(cb));
       return *this;
     }
 
     /**
      * Assigns the run callback function from a pre-existing
      * `callback::Run` object by move.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_run(callback::Run &&data) {
-      set_run(new callback::Run(std::move(data)));
+    Plugin &with_run(callback::Run &&cb) {
+      set_run(new callback::Run(std::move(cb)));
       return *this;
     }
 
     /**
      * Assigns the run callback function by constructing the
      * callback object implicitly.
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
     Plugin &with_run(Args... args) {
@@ -6100,15 +6213,15 @@ namespace wrap {
      * raw pointer to a `callback::Allocate` object. Callee will ensure that
      * `delete` is called.
      */
-    void set_allocate(callback::Allocate *data) {
+    void set_allocate(callback::Allocate *cb) {
       try {
         check(raw::dqcs_pdef_set_allocate_cb(
           handle,
           CallbackEntryPoints::allocate,
           CallbackEntryPoints::user_free<callback::Allocate>,
-          data));
+          cb));
       } catch (...) {
-        delete data;
+        delete cb;
         throw;
       }
     }
@@ -6118,24 +6231,38 @@ namespace wrap {
     /**
      * Assigns the allocate callback function from a pre-existing
      * `callback::Allocate` object by copy.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_allocate(const callback::Allocate &data) {
-      set_allocate(new callback::Allocate(data));
+    Plugin &with_allocate(const callback::Allocate &cb) {
+      set_allocate(new callback::Allocate(cb));
       return *this;
     }
 
     /**
      * Assigns the allocate callback function from a pre-existing
      * `callback::Allocate` object by move.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_allocate(callback::Allocate &&data) {
-      set_allocate(new callback::Allocate(std::move(data)));
+    Plugin &with_allocate(callback::Allocate &&cb) {
+      set_allocate(new callback::Allocate(std::move(cb)));
       return *this;
     }
 
     /**
      * Assigns the allocate callback function by constructing the
      * callback object implicitly.
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
     Plugin &with_allocate(Args... args) {
@@ -6150,15 +6277,15 @@ namespace wrap {
      * raw pointer to a `callback::Free` object. Callee will ensure that
      * `delete` is called.
      */
-    void set_free(callback::Free *data) {
+    void set_free(callback::Free *cb) {
       try {
         check(raw::dqcs_pdef_set_free_cb(
           handle,
           CallbackEntryPoints::free,
           CallbackEntryPoints::user_free<callback::Free>,
-          data));
+          cb));
       } catch (...) {
-        delete data;
+        delete cb;
         throw;
       }
     }
@@ -6168,24 +6295,38 @@ namespace wrap {
     /**
      * Assigns the free callback function from a pre-existing
      * `callback::Free` object by copy.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_free(const callback::Free &data) {
-      set_free(new callback::Free(data));
+    Plugin &with_free(const callback::Free &cb) {
+      set_free(new callback::Free(cb));
       return *this;
     }
 
     /**
      * Assigns the free callback function from a pre-existing
      * `callback::Free` object by move.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_free(callback::Free &&data) {
-      set_free(new callback::Free(std::move(data)));
+    Plugin &with_free(callback::Free &&cb) {
+      set_free(new callback::Free(std::move(cb)));
       return *this;
     }
 
     /**
      * Assigns the free callback function by constructing the
      * callback object implicitly.
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
     Plugin &with_free(Args... args) {
@@ -6200,15 +6341,15 @@ namespace wrap {
      * raw pointer to a `callback::Gate` object. Callee will ensure that
      * `delete` is called.
      */
-    void set_gate(callback::Gate *data) {
+    void set_gate(callback::Gate *cb) {
       try {
         check(raw::dqcs_pdef_set_gate_cb(
           handle,
           CallbackEntryPoints::gate,
           CallbackEntryPoints::user_free<callback::Gate>,
-          data));
+          cb));
       } catch (...) {
-        delete data;
+        delete cb;
         throw;
       }
     }
@@ -6218,24 +6359,38 @@ namespace wrap {
     /**
      * Assigns the gate callback function from a pre-existing
      * `callback::Gate` object by copy.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_gate(const callback::Gate &data) {
-      set_gate(new callback::Gate(data));
+    Plugin &with_gate(const callback::Gate &cb) {
+      set_gate(new callback::Gate(cb));
       return *this;
     }
 
     /**
      * Assigns the gate callback function from a pre-existing
      * `callback::Gate` object by move.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_gate(callback::Gate &&data) {
-      set_gate(new callback::Gate(std::move(data)));
+    Plugin &with_gate(callback::Gate &&cb) {
+      set_gate(new callback::Gate(std::move(cb)));
       return *this;
     }
 
     /**
      * Assigns the gate callback function by constructing the
      * callback object implicitly.
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
     Plugin &with_gate(Args... args) {
@@ -6250,15 +6405,15 @@ namespace wrap {
      * raw pointer to a `callback::ModifyMeasurement` object. Callee will ensure that
      * `delete` is called.
      */
-    void set_modify_measurement(callback::ModifyMeasurement *data) {
+    void set_modify_measurement(callback::ModifyMeasurement *cb) {
       try {
         check(raw::dqcs_pdef_set_modify_measurement_cb(
           handle,
           CallbackEntryPoints::modify_measurement,
           CallbackEntryPoints::user_free<callback::ModifyMeasurement>,
-          data));
+          cb));
       } catch (...) {
-        delete data;
+        delete cb;
         throw;
       }
     }
@@ -6268,24 +6423,38 @@ namespace wrap {
     /**
      * Assigns the modify-measurement callback function from a pre-existing
      * `callback::ModifyMeasurement` object by copy.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_modify_measurement(const callback::ModifyMeasurement &data) {
-      set_modify_measurement(new callback::ModifyMeasurement(data));
+    Plugin &with_modify_measurement(const callback::ModifyMeasurement &cb) {
+      set_modify_measurement(new callback::ModifyMeasurement(cb));
       return *this;
     }
 
     /**
      * Assigns the modify-measurement callback function from a pre-existing
      * `callback::ModifyMeasurement` object by move.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_modify_measurement(callback::ModifyMeasurement &&data) {
-      set_modify_measurement(new callback::ModifyMeasurement(std::move(data)));
+    Plugin &with_modify_measurement(callback::ModifyMeasurement &&cb) {
+      set_modify_measurement(new callback::ModifyMeasurement(std::move(cb)));
       return *this;
     }
 
     /**
      * Assigns the modify-measurement callback function by constructing the
      * callback object implicitly.
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
     Plugin &with_modify_measurement(Args... args) {
@@ -6300,15 +6469,15 @@ namespace wrap {
      * raw pointer to a `callback::Advance` object. Callee will ensure that
      * `delete` is called.
      */
-    void set_advance(callback::Advance *data) {
+    void set_advance(callback::Advance *cb) {
       try {
         check(raw::dqcs_pdef_set_advance_cb(
           handle,
           CallbackEntryPoints::advance,
           CallbackEntryPoints::user_free<callback::Advance>,
-          data));
+          cb));
       } catch (...) {
-        delete data;
+        delete cb;
         throw;
       }
     }
@@ -6318,24 +6487,38 @@ namespace wrap {
     /**
      * Assigns the advance callback function from a pre-existing
      * `callback::Advance` object by copy.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_advance(const callback::Advance &data) {
-      set_advance(new callback::Advance(data));
+    Plugin &with_advance(const callback::Advance &cb) {
+      set_advance(new callback::Advance(cb));
       return *this;
     }
 
     /**
      * Assigns the advance callback function from a pre-existing
      * `callback::Advance` object by move.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_advance(callback::Advance &&data) {
-      set_advance(new callback::Advance(std::move(data)));
+    Plugin &with_advance(callback::Advance &&cb) {
+      set_advance(new callback::Advance(std::move(cb)));
       return *this;
     }
 
     /**
      * Assigns the advance callback function by constructing the
      * callback object implicitly.
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
     Plugin &with_advance(Args... args) {
@@ -6350,15 +6533,15 @@ namespace wrap {
      * raw pointer to a `callback::Arb` object. Callee will ensure that
      * `delete` is called.
      */
-    void set_upstream_arb(callback::Arb *data) {
+    void set_upstream_arb(callback::Arb *cb) {
       try {
         check(raw::dqcs_pdef_set_upstream_arb_cb(
           handle,
           CallbackEntryPoints::upstream_arb,
           CallbackEntryPoints::user_free<callback::Arb>,
-          data));
+          cb));
       } catch (...) {
-        delete data;
+        delete cb;
         throw;
       }
     }
@@ -6368,24 +6551,38 @@ namespace wrap {
     /**
      * Assigns the upstream-arb callback function from a pre-existing
      * `callback::Arb` object by copy.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_upstream_arb(const callback::Arb &data) {
-      set_upstream_arb(new callback::Arb(data));
+    Plugin &with_upstream_arb(const callback::Arb &cb) {
+      set_upstream_arb(new callback::Arb(cb));
       return *this;
     }
 
     /**
      * Assigns the upstream-arb callback function from a pre-existing
      * `callback::Arb` object by move.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_upstream_arb(callback::Arb &&data) {
-      set_upstream_arb(new callback::Arb(std::move(data)));
+    Plugin &with_upstream_arb(callback::Arb &&cb) {
+      set_upstream_arb(new callback::Arb(std::move(cb)));
       return *this;
     }
 
     /**
      * Assigns the upstream-arb callback function by constructing the
      * callback object implicitly.
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
     Plugin &with_upstream_arb(Args... args) {
@@ -6400,15 +6597,15 @@ namespace wrap {
      * raw pointer to a `callback::Arb` object. Callee will ensure that
      * `delete` is called.
      */
-    void set_host_arb(callback::Arb *data) {
+    void set_host_arb(callback::Arb *cb) {
       try {
         check(raw::dqcs_pdef_set_host_arb_cb(
           handle,
           CallbackEntryPoints::host_arb,
           CallbackEntryPoints::user_free<callback::Arb>,
-          data));
+          cb));
       } catch (...) {
-        delete data;
+        delete cb;
         throw;
       }
     }
@@ -6418,24 +6615,38 @@ namespace wrap {
     /**
      * Assigns the host-arb callback function from a pre-existing
      * `callback::Arb` object by copy.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_host_arb(const callback::Arb &data) {
-      set_host_arb(new callback::Arb(data));
+    Plugin &with_host_arb(const callback::Arb &cb) {
+      set_host_arb(new callback::Arb(cb));
       return *this;
     }
 
     /**
      * Assigns the host-arb callback function from a pre-existing
      * `callback::Arb` object by move.
+     *
+     * \param cb The callback object.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_host_arb(callback::Arb &&data) {
-      set_host_arb(new callback::Arb(std::move(data)));
+    Plugin &with_host_arb(callback::Arb &&cb) {
+      set_host_arb(new callback::Arb(std::move(cb)));
       return *this;
     }
 
     /**
      * Assigns the host-arb callback function by constructing the
      * callback object implicitly.
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the current handle is invalid or of an
+     * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
     Plugin &with_host_arb(Args... args) {
@@ -6446,13 +6657,15 @@ namespace wrap {
     // End of generated code.
 
     /**
-     * Runs the defined plugin in the current thread. Throws an exception on
-     * failure. This is normally the last statement executed in a plugin
-     * executable.
+     * Runs the defined plugin in the current thread.
      *
-     * The `simulator` argument should come from the first (for normal plugins)
-     * or second (for script-interpreting plugins) command line argument. In
-     * the latter case, the first argument is the script filename.
+     * This is normally the last statement executed in a plugin executable.
+     *
+     * \param simulator Simulator connection descriptor. This should come from
+     * the first (for normal plugins) or second (for script-interpreting
+     * plugins) command-line argument of the plugin executable (in the latter
+     * case, the first argument is the script filename).
+     * \throws std::runtime_error When plugin execution fails.
      */
     void run(const char *simulator) {
       check(raw::dqcs_plugin_run(handle, simulator));
@@ -6460,13 +6673,15 @@ namespace wrap {
     }
 
     /**
-     * Starts the defined plugin in the current thread. Throws an exception on
-     * failure. Returns a `PluginJoinHandle` object that allows the plugin to
-     * be waited on.
+     * Starts the defined plugin in the current thread.
      *
-     * The `simulator` argument should come from the first (for normal plugins)
-     * or second (for script-interpreting plugins) command line argument. In
-     * the latter case, the first argument is the script filename.
+     * \param simulator Simulator connection descriptor. This should come from
+     * the first (for normal plugins) or second (for script-interpreting
+     * plugins) command-line argument of the plugin executable (in the latter
+     * case, the first argument is the script filename).
+     * \returns A `PluginJoinHandle` object that allows the plugin to be waited
+     * on.
+     * \throws std::runtime_error When the plugin could not be started.
      */
     PluginJoinHandle start(const char *simulator) {
       PluginJoinHandle join_handle(check(raw::dqcs_plugin_start(handle, simulator)));
@@ -6509,21 +6724,38 @@ namespace wrap {
 
     /**
      * Returns the plugin type.
+     *
+     * \returns The plugin type.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     virtual PluginType get_plugin_type() const = 0;
 
     /**
      * Returns the name given to the plugin.
+     *
+     * \note This returns the instance name, not the class name. The latter can
+     * only be queried once the plugin thread or process has been started.
+     *
+     * \returns the name given to the plugin instance.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     virtual std::string get_name() const = 0;
 
     /**
      * Attaches an arbitrary initialization command to the plugin.
+     *
+     * \param cmd The initialization command to attach.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     virtual void add_init_cmd(ArbCmd &&cmd) = 0;
 
     /**
      * Attaches an arbitrary initialization command to the plugin.
+     *
+     * \param cmd The initialization command to attach.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     void add_init_cmd(const ArbCmd &cmd) {
       add_init_cmd(std::move(ArbCmd(cmd)));
@@ -6531,18 +6763,27 @@ namespace wrap {
 
     /**
      * Sets the logging verbosity level of the plugin.
+     *
+     * \param level The desired logging verbosity for the plugin instance.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     virtual void set_verbosity(Loglevel level) = 0;
 
     /**
      * Returns the current logging verbosity level of the plugin.
+     *
+     * \returns The current logging verbosity level of the plugin.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     virtual Loglevel get_verbosity() const = 0;
 
     /**
      * Configures a plugin thread to also output its log messages to a file.
      *
-     * `verbosity` configures the verbosity level for the file only.
+     * \param verbosity Configures the verbosity level for the tee'd output
+     * file only.
+     * \param filename The path to the file to tee log messages to.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     virtual void log_tee(Loglevel verbosity, const std::string &filename) = 0;
 
@@ -6577,14 +6818,14 @@ namespace wrap {
     /**
      * Returns the plugin type.
      */
-    virtual PluginType get_plugin_type() const {
+    PluginType get_plugin_type() const override {
       return check(raw::dqcs_pcfg_type(handle));
     }
 
     /**
      * Returns the name given to the plugin.
      */
-    virtual std::string get_name() const {
+    std::string get_name() const override {
       char *ptr = check(raw::dqcs_pcfg_name(handle));
       std::string retval(ptr);
       std::free(ptr);
@@ -6614,7 +6855,7 @@ namespace wrap {
     /**
      * Attaches an arbitrary initialization command to the plugin.
      */
-    virtual void add_init_cmd(ArbCmd &&cmd) {
+    void add_init_cmd(ArbCmd &&cmd) override {
       check(raw::dqcs_pcfg_init_cmd(handle, cmd.get_handle()));
     }
 
@@ -6700,7 +6941,7 @@ namespace wrap {
     /**
      * Sets the logging verbosity level of the plugin.
      */
-    virtual void set_verbosity(Loglevel level) {
+    void set_verbosity(Loglevel level) override {
       check(raw::dqcs_pcfg_verbosity_set(handle, to_raw(level)));
     }
 
@@ -6715,7 +6956,7 @@ namespace wrap {
     /**
      * Returns the current logging verbosity level of the plugin.
      */
-    virtual Loglevel get_verbosity() const {
+    Loglevel get_verbosity() const override {
       return check(raw::dqcs_pcfg_verbosity_get(handle));
     }
 
@@ -6724,7 +6965,7 @@ namespace wrap {
      *
      * `verbosity` configures the verbosity level for the file only.
      */
-    virtual void log_tee(Loglevel verbosity, const std::string &filename) {
+    void log_tee(Loglevel verbosity, const std::string &filename) override {
       return check(raw::dqcs_pcfg_tee(handle, to_raw(verbosity), filename.c_str()));
     }
 
@@ -6910,14 +7151,14 @@ namespace wrap {
     /**
      * Returns the plugin type.
      */
-    virtual PluginType get_plugin_type() const {
+    PluginType get_plugin_type() const override {
       return check(raw::dqcs_tcfg_type(handle));
     }
 
     /**
      * Returns the name given to the plugin.
      */
-    virtual std::string get_name() const {
+    std::string get_name() const override {
       char *ptr = check(raw::dqcs_tcfg_name(handle));
       std::string retval(ptr);
       std::free(ptr);
@@ -6927,7 +7168,7 @@ namespace wrap {
     /**
      * Attaches an arbitrary initialization command to the plugin.
      */
-    virtual void add_init_cmd(ArbCmd &&cmd) {
+    void add_init_cmd(ArbCmd &&cmd) override {
       check(raw::dqcs_tcfg_init_cmd(handle, cmd.get_handle()));
     }
 
@@ -6943,7 +7184,7 @@ namespace wrap {
     /**
      * Sets the logging verbosity level of the plugin.
      */
-    virtual void set_verbosity(Loglevel level) {
+    void set_verbosity(Loglevel level) override {
       check(raw::dqcs_tcfg_verbosity_set(handle, to_raw(level)));
     }
 
@@ -6958,7 +7199,7 @@ namespace wrap {
     /**
      * Returns the current logging verbosity level of the plugin.
      */
-    virtual Loglevel get_verbosity() const {
+    Loglevel get_verbosity() const override {
       return check(raw::dqcs_tcfg_verbosity_get(handle));
     }
 
@@ -6967,7 +7208,7 @@ namespace wrap {
      *
      * `verbosity` configures the verbosity level for the file only.
      */
-    virtual void log_tee(Loglevel verbosity, const std::string &filename) {
+    void log_tee(Loglevel verbosity, const std::string &filename) override {
       return check(raw::dqcs_tcfg_tee(handle, to_raw(verbosity), filename.c_str()));
     }
 
