@@ -1,0 +1,57 @@
+name: Documentation
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+    - name: Install dependencies
+      run: |
+        brew install swig
+        python -m pip install pdoc3 setuptools wheel
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        default: true
+    - name: Install mdbook
+      run: |
+        mkdir -p $HOME/mdbook
+        curl -L https://github.com/rust-lang/mdBook/releases/download/v0.3.5/mdbook-v0.3.5-x86_64-apple-darwin.tar.gz | tar xz -C $HOME/mdbook
+        echo "::add-path::${HOME}/mdbook/"
+    - name: Install dqcsim
+      env:
+        DQCSIM_DEBUG: ''
+      run: |
+        python setup.py bdist_wheel
+        python -m pip install target/python/dist/*.whl
+    - name: Build
+      working-directory: ./doc
+      run: |
+        make all
+    - uses: actions/upload-artifact@v1
+      with:
+        name: book
+        path: target/book
+
+  deploy:
+    name: Deploy
+    runs-on: macos-latest
+    needs: [build]
+    if: github.event_name == 'push' && github.ref == 'master'
+    steps:
+    - uses: actions/download-artifact@v1
+      with:
+        name: book
+    - uses: alex-page/blazing-fast-gh-pages-deploy@v1.1.0
+      with:
+        repo-token: ${{ secrets.GH_PAT }}
+        site-directory: ./book
+        commit-message: Deploy to GitHub Pages
