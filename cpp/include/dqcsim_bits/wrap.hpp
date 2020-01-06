@@ -4222,87 +4222,6 @@ namespace wrap {
 
   };
 
-} // namespace wrap
-
-/**
- * Namespace for the plugin callback function wrappers.
- */
-namespace callback {
-
-  //! \cond Doxygen_Suppress
-  /**
-   * Helper macro to prevent code repetition; not visible outside of the header.
-   */
-  #define DQCSIM_CALLBACK_FRIENDS                             \
-    friend raw::dqcs_return_t cb_entry_initialize(            \
-      void *user_data,                                        \
-      raw::dqcs_plugin_state_t state,                         \
-      raw::dqcs_handle_t init_cmds                            \
-    );                                                        \
-    friend raw::dqcs_return_t cb_entry_drop(                  \
-      void *user_data,                                        \
-      raw::dqcs_plugin_state_t state                          \
-    );                                                        \
-    friend raw::dqcs_handle_t cb_entry_run(                   \
-      void *user_data,                                        \
-      raw::dqcs_plugin_state_t state,                         \
-      raw::dqcs_handle_t args                                 \
-    );                                                        \
-    friend raw::dqcs_return_t cb_entry_allocate(              \
-      void *user_data,                                        \
-      raw::dqcs_plugin_state_t state,                         \
-      raw::dqcs_handle_t qubits,                              \
-      raw::dqcs_handle_t alloc_cmds                           \
-    );                                                        \
-    friend raw::dqcs_return_t cb_entry_free(                  \
-      void *user_data,                                        \
-      raw::dqcs_plugin_state_t state,                         \
-      raw::dqcs_handle_t qubits                               \
-    );                                                        \
-    friend raw::dqcs_handle_t cb_entry_gate(                  \
-      void *user_data,                                        \
-      raw::dqcs_plugin_state_t state,                         \
-      raw::dqcs_handle_t gate                                 \
-    );                                                        \
-    friend raw::dqcs_handle_t cb_entry_modify_measurement(    \
-      void *user_data,                                        \
-      raw::dqcs_plugin_state_t state,                         \
-      raw::dqcs_handle_t meas                                 \
-    );                                                        \
-    friend raw::dqcs_return_t cb_entry_advance(               \
-      void *user_data,                                        \
-      raw::dqcs_plugin_state_t state,                         \
-      wrap::Cycle cycles                                      \
-    );                                                        \
-    friend raw::dqcs_handle_t cb_entry_upstream_arb(          \
-      void *user_data,                                        \
-      raw::dqcs_plugin_state_t state,                         \
-      raw::dqcs_handle_t cmd                                  \
-    );                                                        \
-    friend raw::dqcs_handle_t cb_entry_host_arb(              \
-      void *user_data,                                        \
-      raw::dqcs_plugin_state_t state,                         \
-      raw::dqcs_handle_t cmd                                  \
-    );                                                        \
-    friend void cb_entry_spawn_plugin(                        \
-      void *user_data,                                        \
-      const char *simulator                                   \
-    );                                                        \
-    friend void cb_entry_log(                                 \
-      void *user_data,                                        \
-      const char *message,                                    \
-      const char *logger,                                     \
-      raw::dqcs_loglevel_t level,                             \
-      const char *module,                                     \
-      const char *file,                                       \
-      uint32_t line,                                          \
-      uint64_t time_s,                                        \
-      uint32_t time_ns,                                       \
-      uint32_t pid,                                           \
-      uint64_t tid                                            \
-    );
-  //! \endcond
-
   /**
    * Wrapper for DQCsim's internal plugin state within the context of
    * upstream-synchronous plugin callbacks (that is, the `modify_measurement`
@@ -4328,7 +4247,7 @@ namespace callback {
     }
 
     // Allow the C-style callbacks to construct the plugin state wrapper.
-    DQCSIM_CALLBACK_FRIENDS
+    friend class CallbackEntryPoints;
 
   public:
 
@@ -4398,7 +4317,7 @@ namespace callback {
     }
 
     // Allow the C-style callbacks to construct the plugin state wrapper.
-    DQCSIM_CALLBACK_FRIENDS
+    friend class CallbackEntryPoints;
 
   public:
 
@@ -4425,8 +4344,8 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    wrap::QubitSet allocate(size_t num_qubits, wrap::ArbCmdQueue &&cmds) {
-      return wrap::QubitSet(wrap::check(raw::dqcs_plugin_allocate(state, num_qubits, cmds.get_handle())));
+    QubitSet allocate(size_t num_qubits, ArbCmdQueue &&cmds) {
+      return QubitSet(check(raw::dqcs_plugin_allocate(state, num_qubits, cmds.get_handle())));
     }
 
     /**
@@ -4446,8 +4365,8 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    wrap::QubitSet allocate(size_t num_qubits, wrap::ArbCmdQueue &cmds) {
-      return allocate(num_qubits, std::move(wrap::ArbCmdQueue(cmds)));
+    QubitSet allocate(size_t num_qubits, ArbCmdQueue &cmds) {
+      return allocate(num_qubits, std::move(ArbCmdQueue(cmds)));
     }
 
     /**
@@ -4463,8 +4382,8 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    wrap::QubitSet allocate(size_t num_qubits) {
-      return wrap::QubitSet(wrap::check(raw::dqcs_plugin_allocate(state, num_qubits, 0)));
+    QubitSet allocate(size_t num_qubits) {
+      return QubitSet(check(raw::dqcs_plugin_allocate(state, num_qubits, 0)));
     }
 
     /**
@@ -4483,7 +4402,7 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    wrap::QubitRef allocate(wrap::ArbCmdQueue &&cmds) {
+    QubitRef allocate(ArbCmdQueue &&cmds) {
       return allocate(1, std::move(cmds)).pop();
     }
 
@@ -4503,8 +4422,8 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    wrap::QubitRef allocate(wrap::ArbCmdQueue &cmds) {
-      return allocate(std::move(wrap::ArbCmdQueue(cmds)));
+    QubitRef allocate(ArbCmdQueue &cmds) {
+      return allocate(std::move(ArbCmdQueue(cmds)));
     }
 
     /**
@@ -4518,7 +4437,7 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    wrap::QubitRef allocate() {
+    QubitRef allocate() {
       return allocate(1).pop();
     }
 
@@ -4534,8 +4453,8 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void free(wrap::QubitSet &&qubits) {
-      wrap::check(raw::dqcs_plugin_free(state, qubits.get_handle()));
+    void free(QubitSet &&qubits) {
+      check(raw::dqcs_plugin_free(state, qubits.get_handle()));
     }
 
     /**
@@ -4550,8 +4469,8 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void free(const wrap::QubitSet &qubits) {
-      free(std::move(wrap::QubitSet(qubits)));
+    void free(const QubitSet &qubits) {
+      free(std::move(QubitSet(qubits)));
     }
 
     /**
@@ -4565,8 +4484,8 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void free(const wrap::QubitRef &qubit) {
-      free(std::move(wrap::QubitRef(qubit)));
+    void free(const QubitRef &qubit) {
+      free(std::move(QubitRef(qubit)));
     }
 
     /**
@@ -4581,8 +4500,8 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void gate(wrap::Gate &&gate) {
-      wrap::check(raw::dqcs_plugin_gate(state, gate.get_handle()));
+    void gate(Gate &&gate) {
+      check(raw::dqcs_plugin_gate(state, gate.get_handle()));
     }
 
     /**
@@ -4597,9 +4516,9 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void gate(const wrap::Matrix &matrix, const wrap::QubitRef &q) {
+    void gate(const Matrix &matrix, const QubitRef &q) {
       if (matrix.size() == 2) {
-        gate(wrap::Gate::unitary(wrap::QubitSet().with(q), matrix));
+        gate(Gate::unitary(QubitSet().with(q), matrix));
       } else {
         throw std::invalid_argument("matrix has incorrect size");
       }
@@ -4621,11 +4540,11 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void gate(const wrap::Matrix &matrix, const wrap::QubitRef &qa, const wrap::QubitRef &qb) {
+    void gate(const Matrix &matrix, const QubitRef &qa, const QubitRef &qb) {
       if (matrix.size() == 2) {
-        gate(wrap::Gate::unitary(wrap::QubitSet().with(qb), wrap::QubitSet().with(qa), matrix));
+        gate(Gate::unitary(QubitSet().with(qb), QubitSet().with(qa), matrix));
       } else if (matrix.size() == 4) {
-        gate(wrap::Gate::unitary(wrap::QubitSet().with(qa).with(qb), matrix));
+        gate(Gate::unitary(QubitSet().with(qa).with(qb), matrix));
       } else {
         throw std::invalid_argument("matrix has incorrect size");
       }
@@ -4657,13 +4576,13 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void gate(const wrap::Matrix &matrix, const wrap::QubitRef &qa, const wrap::QubitRef &qb, const wrap::QubitRef &qc) {
+    void gate(const Matrix &matrix, const QubitRef &qa, const QubitRef &qb, const QubitRef &qc) {
       if (matrix.size() == 2) {
-        gate(wrap::Gate::unitary(wrap::QubitSet().with(qc), wrap::QubitSet().with(qa).with(qb), matrix));
+        gate(Gate::unitary(QubitSet().with(qc), QubitSet().with(qa).with(qb), matrix));
       } else if (matrix.size() == 4) {
-        gate(wrap::Gate::unitary(wrap::QubitSet().with(qb).with(qc), wrap::QubitSet().with(qa), matrix));
+        gate(Gate::unitary(QubitSet().with(qb).with(qc), QubitSet().with(qa), matrix));
       } else if (matrix.size() == 8) {
-        gate(wrap::Gate::unitary(wrap::QubitSet().with(qa).with(qb).with(qc), matrix));
+        gate(Gate::unitary(QubitSet().with(qa).with(qb).with(qc), matrix));
       } else {
         throw std::invalid_argument("matrix has incorrect size");
       }
@@ -4677,9 +4596,9 @@ namespace callback {
      * each qubit:
      *
      * ```C++
-     * gate(wrap::GateMatrix::H(), q);
+     * gate(GateMatrix::H(), q);
      * measure_z(q);
-     * gate(wrap::GateMatrix::H(), q);
+     * gate(GateMatrix::H(), q);
      * ```
      *
      * \param q The qubit to measure.
@@ -4690,10 +4609,10 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void measure_x(const wrap::QubitRef &q) {
-      gate(wrap::GateMatrix::H(), q);
+    void measure_x(const QubitRef &q) {
+      gate(GateMatrix::H(), q);
       measure_z(q);
-      gate(wrap::GateMatrix::H(), q);
+      gate(GateMatrix::H(), q);
     }
 
     /**
@@ -4704,9 +4623,9 @@ namespace callback {
      * each qubit:
      *
      * ```C++
-     * for (q : qs) gate(wrap::GateMatrix::H(), q);
+     * for (q : qs) gate(GateMatrix::H(), q);
      * measure_z(qs);
-     * for (q : qs) gate(wrap::GateMatrix::H(), q);
+     * for (q : qs) gate(GateMatrix::H(), q);
      * ```
      *
      * \param qs The qubits to measure.
@@ -4718,11 +4637,11 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void measure_x(const wrap::QubitSet &qs) {
+    void measure_x(const QubitSet &qs) {
       auto qs_vec = qs.copy_into_vector();
-      for (auto &q : qs_vec) gate(wrap::GateMatrix::H(), q);
+      for (auto &q : qs_vec) gate(GateMatrix::H(), q);
       measure_z(qs);
-      for (auto &q : qs_vec) gate(wrap::GateMatrix::H(), q);
+      for (auto &q : qs_vec) gate(GateMatrix::H(), q);
     }
 
     /**
@@ -4733,10 +4652,10 @@ namespace callback {
      * each qubit:
      *
      * ```C++
-     * gate(wrap::GateMatrix::S(), q);
-     * gate(wrap::GateMatrix::Z(), q);
+     * gate(GateMatrix::S(), q);
+     * gate(GateMatrix::Z(), q);
      * measure_z(q);
-     * gate(wrap::GateMatrix::S(), q);
+     * gate(GateMatrix::S(), q);
      * ```
      *
      * \param q The qubit to measure.
@@ -4747,11 +4666,11 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void measure_y(const wrap::QubitRef &q) {
-      gate(wrap::GateMatrix::S(), q);
-      gate(wrap::GateMatrix::Z(), q);
+    void measure_y(const QubitRef &q) {
+      gate(GateMatrix::S(), q);
+      gate(GateMatrix::Z(), q);
       measure_z(q);
-      gate(wrap::GateMatrix::S(), q);
+      gate(GateMatrix::S(), q);
     }
 
     /**
@@ -4762,10 +4681,10 @@ namespace callback {
      * each qubit:
      *
      * ```C++
-     * for (q : qs) gate(wrap::GateMatrix::S(), q);
-     * for (q : qs) gate(wrap::GateMatrix::Z(), q);
+     * for (q : qs) gate(GateMatrix::S(), q);
+     * for (q : qs) gate(GateMatrix::Z(), q);
      * measure_z(qs);
-     * for (q : qs) gate(wrap::GateMatrix::S(), q);
+     * for (q : qs) gate(GateMatrix::S(), q);
      * ```
      *
      * \param qs The qubits to measure.
@@ -4777,12 +4696,12 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void measure_y(const wrap::QubitSet &qs) {
+    void measure_y(const QubitSet &qs) {
       auto qs_vec = qs.copy_into_vector();
-      for (auto &q : qs_vec) gate(wrap::GateMatrix::S(), q);
-      for (auto &q : qs_vec) gate(wrap::GateMatrix::Z(), q);
+      for (auto &q : qs_vec) gate(GateMatrix::S(), q);
+      for (auto &q : qs_vec) gate(GateMatrix::Z(), q);
       measure_z(qs);
-      for (auto &q : qs_vec) gate(wrap::GateMatrix::S(), q);
+      for (auto &q : qs_vec) gate(GateMatrix::S(), q);
     }
 
     /**
@@ -4797,8 +4716,8 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void measure_z(const wrap::QubitRef &q) {
-      measure_z(std::move(wrap::QubitSet().with(q)));
+    void measure_z(const QubitRef &q) {
+      measure_z(std::move(QubitSet().with(q)));
     }
 
     /**
@@ -4814,8 +4733,8 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void measure_z(wrap::QubitSet &&qs) {
-      gate(wrap::Gate::measure(std::move(qs)));
+    void measure_z(QubitSet &&qs) {
+      gate(Gate::measure(std::move(qs)));
     }
 
     /**
@@ -4831,8 +4750,8 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    void measure_z(const wrap::QubitSet &qs) {
-      measure_z(std::move(wrap::QubitSet(qs)));
+    void measure_z(const QubitSet &qs) {
+      measure_z(std::move(QubitSet(qs)));
     }
 
     /**
@@ -4847,8 +4766,8 @@ namespace callback {
      * performance reasons. Therefore, any exception thrown by the downstream
      * plugin will not be (immediately) visible.
      */
-    wrap::Cycle advance(wrap::Cycle cycles) {
-      return wrap::check(raw::dqcs_plugin_advance(state, cycles));
+    Cycle advance(Cycle cycles) {
+      return check(raw::dqcs_plugin_advance(state, cycles));
     }
 
     /**
@@ -4859,8 +4778,8 @@ namespace callback {
      * \throws std::runtime_error When the command fails, an asynchronous
      * exception is received, or this is called by a backend plugin.
      */
-    wrap::ArbData arb(wrap::ArbCmd &&cmd) {
-      return wrap::ArbData(wrap::check(raw::dqcs_plugin_arb(state, cmd.get_handle())));
+    ArbData arb(ArbCmd &&cmd) {
+      return ArbData(check(raw::dqcs_plugin_arb(state, cmd.get_handle())));
     }
 
     /**
@@ -4871,8 +4790,8 @@ namespace callback {
      * \throws std::runtime_error When the command fails, an asynchronous
      * exception is received, or this is called by a backend plugin.
      */
-    wrap::ArbData arb(const wrap::ArbCmd &cmd) {
-      arb(std::move(wrap::ArbCmd(cmd)));
+    ArbData arb(const ArbCmd &cmd) {
+      arb(std::move(ArbCmd(cmd)));
     }
 
     /**
@@ -4884,8 +4803,8 @@ namespace callback {
      * measurement object construction fails, or this is called by a backend
      * plugin.
      */
-    wrap::Measurement get_measurement(const wrap::QubitRef &qubit) {
-      return wrap::Measurement(wrap::check(raw::dqcs_plugin_get_measurement(state, qubit.get_index())));
+    Measurement get_measurement(const QubitRef &qubit) {
+      return Measurement(check(raw::dqcs_plugin_get_measurement(state, qubit.get_index())));
     }
 
     /**
@@ -4897,8 +4816,8 @@ namespace callback {
      * \throws std::runtime_error When no data is known for the given qubit or
      * this is called by a backend plugin.
      */
-    wrap::Cycle get_cycles_since_measure(const wrap::QubitRef &qubit) {
-      return wrap::check(raw::dqcs_plugin_get_cycles_since_measure(state, qubit.get_index()));
+    Cycle get_cycles_since_measure(const QubitRef &qubit) {
+      return check(raw::dqcs_plugin_get_cycles_since_measure(state, qubit.get_index()));
     }
 
     /**
@@ -4911,8 +4830,8 @@ namespace callback {
      * \throws std::runtime_error When no data is known for the given qubit or
      * this is called by a backend plugin.
      */
-    wrap::Cycle get_cycles_between_measures(const wrap::QubitRef &qubit) {
-      return wrap::check(raw::dqcs_plugin_get_cycles_between_measures(state, qubit.get_index()));
+    Cycle get_cycles_between_measures(const QubitRef &qubit) {
+      return check(raw::dqcs_plugin_get_cycles_between_measures(state, qubit.get_index()));
     }
 
     /**
@@ -4921,8 +4840,8 @@ namespace callback {
      * \returns The number downstream simulation cycle counter value.
      * \throws std::runtime_error When this is called by a backend plugin.
      */
-    wrap::Cycle get_cycle() {
-      return wrap::check(raw::dqcs_plugin_get_cycle(state));
+    Cycle get_cycle() {
+      return check(raw::dqcs_plugin_get_cycle(state));
     }
 
   };
@@ -4945,7 +4864,7 @@ namespace callback {
     }
 
     // Allow the C-style callbacks to construct the plugin state wrapper.
-    DQCSIM_CALLBACK_FRIENDS
+    friend class CallbackEntryPoints;
 
   public:
 
@@ -4966,8 +4885,8 @@ namespace callback {
      * \throws std::runtime_error When the message handle is invalid or
      * delivery fails for some reason.
      */
-    void send(wrap::ArbData &&message) {
-      wrap::check(raw::dqcs_plugin_send(state, message.get_handle()));
+    void send(ArbData &&message) {
+      check(raw::dqcs_plugin_send(state, message.get_handle()));
     }
 
     /**
@@ -4981,8 +4900,8 @@ namespace callback {
      * \throws std::runtime_error When the message handle is invalid or
      * delivery fails for some reason.
      */
-    void send(const wrap::ArbData &message) {
-      send(std::move(wrap::ArbData(message)));
+    void send(const ArbData &message) {
+      send(std::move(ArbData(message)));
     }
 
     /**
@@ -4996,14 +4915,17 @@ namespace callback {
      * \throws std::runtime_error When no handle could be constructed for the
      * message or reception fails for some reason.
      */
-    wrap::ArbData receive() {
-      return wrap::ArbData(wrap::check(raw::dqcs_plugin_recv(state)));
+    ArbData receive() {
+      return ArbData(check(raw::dqcs_plugin_recv(state)));
     }
 
   };
 
   /**
    * Class template shared between all callback functions.
+   *
+   * This class is specialized for all the callbacks supported by DQCsim in the
+   * `callback` namespace.
    */
   template <class R, class... Args>
   class Callback {
@@ -5075,7 +4997,7 @@ namespace callback {
     std::shared_ptr<std::function<R(Args...)>> cb;
 
     // Allow the C-style callbacks access to this class.
-    DQCSIM_CALLBACK_FRIENDS
+    friend class CallbackEntryPoints;
 
   public:
 
@@ -5152,446 +5074,433 @@ namespace callback {
 
   };
 
-  #undef DQCSIM_CALLBACK_FRIENDS
-
   /**
-   * Callback wrapper specialized for the `initialize` callback.
+   * Namespace containing all necessarily specializations of `Callback` as
+   * typedefs.
    */
-  typedef Callback<void, PluginState&, wrap::ArbCmdQueue&&> Initialize;
+  namespace callback {
+
+    /**
+     * Callback wrapper specialized for the `initialize` callback.
+     */
+    typedef Callback<void, PluginState&, ArbCmdQueue&&> Initialize;
+
+    /**
+     * Callback wrapper specialized for the `drop` callback.
+     */
+    typedef Callback<void, PluginState&> Drop;
+
+    /**
+     * Callback wrapper specialized for the `run` callback.
+     */
+    typedef Callback<ArbData, RunningPluginState&, ArbData&&> Run;
+
+    /**
+     * Callback wrapper specialized for the `allocate` callback.
+     */
+    typedef Callback<void, PluginState&, QubitSet&&, ArbCmdQueue&&> Allocate;
+
+    /**
+     * Callback wrapper specialized for the `allocate` callback.
+     */
+    typedef Callback<void, PluginState&, QubitSet&&> Free;
+
+    /**
+     * Callback wrapper specialized for the `gate` callback.
+     */
+    typedef Callback<MeasurementSet, PluginState&, Gate&&> Gate;
+
+    /**
+     * Callback wrapper specialized for the `modify_measurement` callback.
+     */
+    typedef Callback<MeasurementSet, UpstreamPluginState&, Measurement&&> ModifyMeasurement;
+
+    /**
+     * Callback wrapper specialized for the `advance` callback.
+     */
+    typedef Callback<void, PluginState&, Cycle> Advance;
+
+    /**
+     * Callback wrapper specialized for the `*_arb` callbacks.
+     */
+    typedef Callback<ArbData, PluginState&, ArbCmd> Arb;
+
+    /**
+     * Callback wrapper specialized for the manual plugin spawning callback.
+     */
+    typedef Callback<void, std::string&&> SpawnPlugin;
+
+    /**
+     * Callback wrapper specialized for the simulation logging callback.
+     *
+     * This callback takes the following arguments:
+     *
+     *  - `std::string&&`: log message string, excluding metadata.
+     *  - `std::string&&`: name assigned to the logger that was used to produce
+     *     the message (= "dqcsim" or a plugin name).
+     *  - `Loglevel`: the severity of the log message.
+     *  - `std::string&&`: string representing the source of the log message, or
+     *    empty when no source is known.
+     *  - `std::string&&`: string containing the filename of the source that
+     *     generated the message, or empty when no source is known.
+     *  - `uint32_t`: line number within the aforementioned file, or 0 if not
+     *    known.
+     *  - `std::chrono::system_clock::time_point&&`: timestamp for the message.
+     *  - `uint32_t`: PID of the generating process.
+     *  - `uint64_t`: TID of the generating thread.
+     *
+     * If an internal log record is particularly malformed and cannot be coerced
+     * into the C equivalents of the above (nul bytes in the strings, invalid
+     * timestamp, whatever) the message is silently ignored.
+     */
+    typedef Callback<
+      void,
+      std::string&&,                            // message
+      std::string&&,                            // logger
+      Loglevel,                                 // severity
+      std::string&&,                            // module
+      std::string&&,                            // file
+      uint32_t,                                 // line number
+      std::chrono::system_clock::time_point&&,  // timestamp
+      uint32_t,                                 // process ID
+      uint64_t                                  // thread ID
+    > Log;
+
+  } // namespace callback
 
   //! \cond Doxygen_Suppress
   /**
-   * Entry point for the `initialize` callback.
-   */
-  raw::dqcs_return_t cb_entry_initialize(
-    void *user_data,
-    raw::dqcs_plugin_state_t state,
-    raw::dqcs_handle_t init_cmds
-  ) {
-
-    // Wrap inputs.
-    Initialize *cb_wrapper = reinterpret_cast<Initialize*>(user_data);
-    PluginState state_wrapper(state);
-    wrap::ArbCmdQueue init_cmds_wrapper(init_cmds);
-
-    // Catch exceptions thrown in the user function to convert them to
-    // DQCsim's error reporting protocol.
-    try {
-      (*(cb_wrapper->cb))(state_wrapper, std::move(init_cmds_wrapper));
-      return raw::dqcs_return_t::DQCS_SUCCESS;
-    } catch (const std::exception &e) {
-      raw::dqcs_error_set(e.what());
-    }
-    return raw::dqcs_return_t::DQCS_FAILURE;
-  }
-  //! \endcond
-
-  /**
-   * Callback wrapper specialized for the `drop` callback.
-   */
-  typedef Callback<void, PluginState&> Drop;
-
-  //! \cond Doxygen_Suppress
-  /**
-   * Entry point for the `drop` callback.
-   */
-  raw::dqcs_return_t cb_entry_drop(
-    void *user_data,
-    raw::dqcs_plugin_state_t state
-  ) {
-
-    // Wrap inputs.
-    Drop *cb_wrapper = reinterpret_cast<Drop*>(user_data);
-    PluginState state_wrapper(state);
-
-    // Catch exceptions thrown in the user function to convert them to
-    // DQCsim's error reporting protocol.
-    try {
-      (*(cb_wrapper->cb))(state_wrapper);
-      return raw::dqcs_return_t::DQCS_SUCCESS;
-    } catch (const std::exception &e) {
-      raw::dqcs_error_set(e.what());
-    }
-    return raw::dqcs_return_t::DQCS_FAILURE;
-  }
-  //! \endcond
-
-  /**
-   * Callback wrapper specialized for the `run` callback.
-   */
-  typedef Callback<wrap::ArbData, RunningPluginState&, wrap::ArbData&&> Run;
-
-  //! \cond Doxygen_Suppress
-  /**
-   * Entry point for the `run` callback.
-   */
-  raw::dqcs_handle_t cb_entry_run(
-    void *user_data,
-    raw::dqcs_plugin_state_t state,
-    raw::dqcs_handle_t args
-  ) {
-
-    // Wrap inputs.
-    Run *cb_wrapper = reinterpret_cast<Run*>(user_data);
-    RunningPluginState state_wrapper(state);
-    wrap::ArbData args_wrapper(args);
-
-    // Catch exceptions thrown in the user function to convert them to
-    // DQCsim's error reporting protocol.
-    try {
-      return (*(cb_wrapper->cb))(state_wrapper, std::move(args_wrapper)).take_handle();
-    } catch (const std::exception &e) {
-      raw::dqcs_error_set(e.what());
-    }
-    return 0;
-  }
-  //! \endcond
-
-  /**
-   * Callback wrapper specialized for the `allocate` callback.
-   */
-  typedef Callback<void, PluginState&, wrap::QubitSet&&, wrap::ArbCmdQueue&&> Allocate;
-
-  //! \cond Doxygen_Suppress
-  /**
-   * Entry point for the `allocate` callback.
-   */
-  raw::dqcs_return_t cb_entry_allocate(
-    void *user_data,
-    raw::dqcs_plugin_state_t state,
-    raw::dqcs_handle_t qubits,
-    raw::dqcs_handle_t alloc_cmds
-  ) {
-
-    // Wrap inputs.
-    Allocate *cb_wrapper = reinterpret_cast<Allocate*>(user_data);
-    PluginState state_wrapper(state);
-    wrap::QubitSet qubits_wrapper(qubits);
-    wrap::ArbCmdQueue alloc_cmds_wrapper(alloc_cmds);
-
-    // Catch exceptions thrown in the user function to convert them to
-    // DQCsim's error reporting protocol.
-    try {
-      (*(cb_wrapper->cb))(state_wrapper, std::move(qubits_wrapper), std::move(alloc_cmds_wrapper));
-      return raw::dqcs_return_t::DQCS_SUCCESS;
-    } catch (const std::exception &e) {
-      raw::dqcs_error_set(e.what());
-    }
-    return raw::dqcs_return_t::DQCS_FAILURE;
-  }
-  //! \endcond
-
-  /**
-   * Callback wrapper specialized for the `allocate` callback.
-   */
-  typedef Callback<void, PluginState&, wrap::QubitSet&&> Free;
-
-  //! \cond Doxygen_Suppress
-  /**
-   * Entry point for the `free` callback.
-   */
-  raw::dqcs_return_t cb_entry_free(
-    void *user_data,
-    raw::dqcs_plugin_state_t state,
-    raw::dqcs_handle_t qubits
-  ) {
-
-    // Wrap inputs.
-    Free *cb_wrapper = reinterpret_cast<Free*>(user_data);
-    PluginState state_wrapper(state);
-    wrap::QubitSet qubits_wrapper(qubits);
-
-    // Catch exceptions thrown in the user function to convert them to
-    // DQCsim's error reporting protocol.
-    try {
-      (*(cb_wrapper->cb))(state_wrapper, std::move(qubits_wrapper));
-      return raw::dqcs_return_t::DQCS_SUCCESS;
-    } catch (const std::exception &e) {
-      raw::dqcs_error_set(e.what());
-    }
-    return raw::dqcs_return_t::DQCS_FAILURE;
-  }
-  //! \endcond
-
-  /**
-   * Callback wrapper specialized for the `gate` callback.
-   */
-  typedef Callback<wrap::MeasurementSet, PluginState&, wrap::Gate&&> Gate;
-
-  //! \cond Doxygen_Suppress
-  /**
-   * Entry point for the `gate` callback.
-   */
-  raw::dqcs_handle_t cb_entry_gate(
-    void *user_data,
-    raw::dqcs_plugin_state_t state,
-    raw::dqcs_handle_t gate
-  ) {
-
-    // Wrap inputs.
-    Gate *cb_wrapper = reinterpret_cast<Gate*>(user_data);
-    PluginState state_wrapper(state);
-    wrap::Gate gate_wrapper(gate);
-
-    // Catch exceptions thrown in the user function to convert them to
-    // DQCsim's error reporting protocol.
-    try {
-      return (*(cb_wrapper->cb))(state_wrapper, std::move(gate_wrapper)).take_handle();
-    } catch (const std::exception &e) {
-      raw::dqcs_error_set(e.what());
-    }
-    return 0;
-  }
-  //! \endcond
-
-  /**
-   * Callback wrapper specialized for the `modify_measurement` callback.
-   */
-  typedef Callback<wrap::MeasurementSet, UpstreamPluginState&, wrap::Measurement&&> ModifyMeasurement;
-
-  //! \cond Doxygen_Suppress
-  /**
-   * Entry point for the `modify_measurement` callback.
-   */
-  raw::dqcs_handle_t cb_entry_modify_measurement(
-    void *user_data,
-    raw::dqcs_plugin_state_t state,
-    raw::dqcs_handle_t meas
-  ) {
-
-    // Wrap inputs.
-    ModifyMeasurement *cb_wrapper = reinterpret_cast<ModifyMeasurement*>(user_data);
-    UpstreamPluginState state_wrapper(state);
-    wrap::Measurement meas_wrapper(meas);
-
-    // Catch exceptions thrown in the user function to convert them to
-    // DQCsim's error reporting protocol.
-    try {
-      return (*(cb_wrapper->cb))(state_wrapper, std::move(meas_wrapper)).take_handle();
-    } catch (const std::exception &e) {
-      raw::dqcs_error_set(e.what());
-    }
-    return 0;
-  }
-  //! \endcond
-
-  /**
-   * Callback wrapper specialized for the `advance` callback.
-   */
-  typedef Callback<void, PluginState&, wrap::Cycle> Advance;
-
-  //! \cond Doxygen_Suppress
-  /**
-   * Entry point for the `advance` callback.
-   */
-  raw::dqcs_return_t cb_entry_advance(
-    void *user_data,
-    raw::dqcs_plugin_state_t state,
-    wrap::Cycle cycles
-  ) {
-
-    // Wrap inputs.
-    Advance *cb_wrapper = reinterpret_cast<Advance*>(user_data);
-    PluginState state_wrapper(state);
-
-    // Catch exceptions thrown in the user function to convert them to
-    // DQCsim's error reporting protocol.
-    try {
-      (*(cb_wrapper->cb))(state_wrapper, cycles);
-      return raw::dqcs_return_t::DQCS_SUCCESS;
-    } catch (const std::exception &e) {
-      raw::dqcs_error_set(e.what());
-    }
-    return raw::dqcs_return_t::DQCS_FAILURE;
-  }
-  //! \endcond
-
-  /**
-   * Callback wrapper specialized for the `*_arb` callbacks.
-   */
-  typedef Callback<wrap::ArbData, PluginState&, wrap::ArbCmd> Arb;
-
-  //! \cond Doxygen_Suppress
-  /**
-   * Entry point for the `upstream_arb` callback.
-   */
-  raw::dqcs_handle_t cb_entry_upstream_arb(
-    void *user_data,
-    raw::dqcs_plugin_state_t state,
-    raw::dqcs_handle_t cmd
-  ) {
-
-    // Wrap inputs.
-    Arb *cb_wrapper = reinterpret_cast<Arb*>(user_data);
-    PluginState state_wrapper(state);
-    wrap::ArbCmd cmd_wrapper(cmd);
-
-    // Catch exceptions thrown in the user function to convert them to
-    // DQCsim's error reporting protocol.
-    try {
-      return (*(cb_wrapper->cb))(state_wrapper, std::move(cmd_wrapper)).take_handle();
-    } catch (const std::exception &e) {
-      raw::dqcs_error_set(e.what());
-    }
-    return 0;
-  }
-  //! \endcond
-
-  //! \cond Doxygen_Suppress
-  /**
-   * Entry point for the `host_arb` callback.
-   */
-  raw::dqcs_handle_t cb_entry_host_arb(
-    void *user_data,
-    raw::dqcs_plugin_state_t state,
-    raw::dqcs_handle_t cmd
-  ) {
-
-    // Wrap inputs.
-    Arb *cb_wrapper = reinterpret_cast<Arb*>(user_data);
-    PluginState state_wrapper(state);
-    wrap::ArbCmd cmd_wrapper(cmd);
-
-    // Catch exceptions thrown in the user function to convert them to
-    // DQCsim's error reporting protocol.
-    try {
-      return (*(cb_wrapper->cb))(state_wrapper, std::move(cmd_wrapper)).take_handle();
-    } catch (const std::exception &e) {
-      raw::dqcs_error_set(e.what());
-    }
-    return 0;
-  }
-  //! \endcond
-
-  /**
-   * Callback wrapper specialized for the manual plugin spawning callback.
-   */
-  typedef Callback<void, std::string&&> SpawnPlugin;
-
-  //! \cond Doxygen_Suppress
-  /**
-   * Entry point for the manual plugin spawning callback.
-   */
-  void cb_entry_spawn_plugin(
-    void *user_data,
-    const char *simulator
-  ) {
-
-    // Wrap inputs.
-    SpawnPlugin *cb_wrapper = reinterpret_cast<SpawnPlugin*>(user_data);
-    std::string simulator_wrapper(simulator);
-
-    // Catch exceptions thrown in the user function to convert them to
-    // DQCsim's error reporting protocol.
-    try {
-      (*(cb_wrapper->cb))(std::move(simulator_wrapper));
-    } catch (const std::exception &e) {
-      DQCSIM_FATAL("DQCsim caught std::exception in plugin thread: %s", e.what());
-    }
-  }
-  //! \endcond
-
-  /**
-   * Callback wrapper specialized for the simulation logging callback.
+   * Class containing the static C-style entry points for all callbacks, that
+   * simply defer to the generic, user-definable C++ callbacks and manage their
+   * memory.
    *
-   * This callback takes the following arguments:
-   *
-   *  - `std::string&&`: log message string, excluding metadata.
-   *  - `std::string&&`: name assigned to the logger that was used to produce
-   *     the message (= "dqcsim" or a plugin name).
-   *  - `Loglevel`: the severity of the log message.
-   *  - `std::string&&`: string representing the source of the log message, or
-   *    empty when no source is known.
-   *  - `std::string&&`: string containing the filename of the source that
-   *     generated the message, or empty when no source is known.
-   *  - `uint32_t`: line number within the aforementioned file, or 0 if not
-   *    known.
-   *  - `std::chrono::system_clock::time_point&&`: timestamp for the message.
-   *  - `uint32_t`: PID of the generating process.
-   *  - `uint64_t`: TID of the generating thread.
-   *
-   * If an internal log record is particularly malformed and cannot be coerced
-   * into the C equivalents of the above (nul bytes in the strings, invalid
-   * timestamp, whatever) the message is silently ignored.
+   * The library user should never do anything with these functions directly,
+   * therefore they are hidden.
    */
-  typedef Callback<
-    void,
-    std::string&&,                            // message
-    std::string&&,                            // logger
-    wrap::Loglevel,                           // severity
-    std::string&&,                            // module
-    std::string&&,                            // file
-    uint32_t,                                 // line number
-    std::chrono::system_clock::time_point&&,  // timestamp
-    uint32_t,                                 // process ID
-    uint64_t                                  // thread ID
-  > Log;
+  class CallbackEntryPoints {
+  private:
+    friend class Plugin;
+    friend class SimulationConfiguration;
+    friend class PluginConfigurationBuilder;
 
-  //! \cond Doxygen_Suppress
-  /**
-   * Entry point for the simulation logging callback.
-   */
-  void cb_entry_log(
-    void *user_data,
-    const char *message,
-    const char *logger,
-    raw::dqcs_loglevel_t level,
-    const char *module,
-    const char *file,
-    uint32_t line,
-    uint64_t time_s,
-    uint32_t time_ns,
-    uint32_t pid,
-    uint64_t tid
-  ) {
+    /**
+     * Entry point for the `initialize` callback.
+     */
+    static raw::dqcs_return_t initialize(
+      void *user_data,
+      raw::dqcs_plugin_state_t state,
+      raw::dqcs_handle_t init_cmds
+    ) noexcept {
 
-    // Wrap inputs.
-    Log *cb_wrapper = reinterpret_cast<Log*>(user_data);
+      // Wrap inputs.
+      callback::Initialize *cb_wrapper = reinterpret_cast<callback::Initialize*>(user_data);
+      PluginState state_wrapper(state);
+      ArbCmdQueue init_cmds_wrapper(init_cmds);
 
-    // Catch exceptions thrown in the user function to convert them to
-    // DQCsim's error reporting protocol.
-    try {
-      (*(cb_wrapper->cb))(
-        std::string(message ? message : ""),
-        std::string(logger ? logger : ""),
-        wrap::check(level),
-        std::string(module ? module : ""),
-        std::string(file ? file : ""),
-        line,
-        std::chrono::system_clock::time_point(
-          std::chrono::seconds(time_s)
-          + std::chrono::nanoseconds(time_ns)
-        ),
-        pid,
-        tid
-      );
-    } catch (const std::exception &e) {
-      std::cerr << "DQCsim caught std::exception in log callback: " << e.what() << std::endl;
+      // Catch exceptions thrown in the user function to convert them to
+      // DQCsim's error reporting protocol.
+      try {
+        (*(cb_wrapper->cb))(state_wrapper, std::move(init_cmds_wrapper));
+        return raw::dqcs_return_t::DQCS_SUCCESS;
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return raw::dqcs_return_t::DQCS_FAILURE;
     }
-  }
+
+    /**
+     * Entry point for the `drop` callback.
+     */
+    static raw::dqcs_return_t drop(
+      void *user_data,
+      raw::dqcs_plugin_state_t state
+    ) noexcept {
+
+      // Wrap inputs.
+      callback::Drop *cb_wrapper = reinterpret_cast<callback::Drop*>(user_data);
+      PluginState state_wrapper(state);
+
+      // Catch exceptions thrown in the user function to convert them to
+      // DQCsim's error reporting protocol.
+      try {
+        (*(cb_wrapper->cb))(state_wrapper);
+        return raw::dqcs_return_t::DQCS_SUCCESS;
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return raw::dqcs_return_t::DQCS_FAILURE;
+    }
+
+    /**
+     * Entry point for the `run` callback.
+     */
+    static raw::dqcs_handle_t run(
+      void *user_data,
+      raw::dqcs_plugin_state_t state,
+      raw::dqcs_handle_t args
+    ) noexcept {
+
+      // Wrap inputs.
+      callback::Run *cb_wrapper = reinterpret_cast<callback::Run*>(user_data);
+      RunningPluginState state_wrapper(state);
+      ArbData args_wrapper(args);
+
+      // Catch exceptions thrown in the user function to convert them to
+      // DQCsim's error reporting protocol.
+      try {
+        return (*(cb_wrapper->cb))(state_wrapper, std::move(args_wrapper)).take_handle();
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return 0;
+    }
+
+    /**
+     * Entry point for the `allocate` callback.
+     */
+    static raw::dqcs_return_t allocate(
+      void *user_data,
+      raw::dqcs_plugin_state_t state,
+      raw::dqcs_handle_t qubits,
+      raw::dqcs_handle_t alloc_cmds
+    ) noexcept {
+
+      // Wrap inputs.
+      callback::Allocate *cb_wrapper = reinterpret_cast<callback::Allocate*>(user_data);
+      PluginState state_wrapper(state);
+      QubitSet qubits_wrapper(qubits);
+      ArbCmdQueue alloc_cmds_wrapper(alloc_cmds);
+
+      // Catch exceptions thrown in the user function to convert them to
+      // DQCsim's error reporting protocol.
+      try {
+        (*(cb_wrapper->cb))(state_wrapper, std::move(qubits_wrapper), std::move(alloc_cmds_wrapper));
+        return raw::dqcs_return_t::DQCS_SUCCESS;
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return raw::dqcs_return_t::DQCS_FAILURE;
+    }
+
+    /**
+     * Entry point for the `free` callback.
+     */
+    static raw::dqcs_return_t free(
+      void *user_data,
+      raw::dqcs_plugin_state_t state,
+      raw::dqcs_handle_t qubits
+    ) noexcept {
+
+      // Wrap inputs.
+      callback::Free *cb_wrapper = reinterpret_cast<callback::Free*>(user_data);
+      PluginState state_wrapper(state);
+      QubitSet qubits_wrapper(qubits);
+
+      // Catch exceptions thrown in the user function to convert them to
+      // DQCsim's error reporting protocol.
+      try {
+        (*(cb_wrapper->cb))(state_wrapper, std::move(qubits_wrapper));
+        return raw::dqcs_return_t::DQCS_SUCCESS;
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return raw::dqcs_return_t::DQCS_FAILURE;
+    }
+
+    /**
+     * Entry point for the `gate` callback.
+     */
+    static raw::dqcs_handle_t gate(
+      void *user_data,
+      raw::dqcs_plugin_state_t state,
+      raw::dqcs_handle_t gate
+    ) noexcept {
+
+      // Wrap inputs.
+      callback::Gate *cb_wrapper = reinterpret_cast<callback::Gate*>(user_data);
+      PluginState state_wrapper(state);
+      Gate gate_wrapper(gate);
+
+      // Catch exceptions thrown in the user function to convert them to
+      // DQCsim's error reporting protocol.
+      try {
+        return (*(cb_wrapper->cb))(state_wrapper, std::move(gate_wrapper)).take_handle();
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return 0;
+    }
+
+    /**
+     * Entry point for the `modify_measurement` callback.
+     */
+    static raw::dqcs_handle_t modify_measurement(
+      void *user_data,
+      raw::dqcs_plugin_state_t state,
+      raw::dqcs_handle_t meas
+    ) noexcept {
+
+      // Wrap inputs.
+      callback::ModifyMeasurement *cb_wrapper = reinterpret_cast<callback::ModifyMeasurement*>(user_data);
+      UpstreamPluginState state_wrapper(state);
+      Measurement meas_wrapper(meas);
+
+      // Catch exceptions thrown in the user function to convert them to
+      // DQCsim's error reporting protocol.
+      try {
+        return (*(cb_wrapper->cb))(state_wrapper, std::move(meas_wrapper)).take_handle();
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return 0;
+    }
+
+    /**
+     * Entry point for the `advance` callback.
+     */
+    static raw::dqcs_return_t advance(
+      void *user_data,
+      raw::dqcs_plugin_state_t state,
+      Cycle cycles
+    ) noexcept {
+
+      // Wrap inputs.
+      callback::Advance *cb_wrapper = reinterpret_cast<callback::Advance*>(user_data);
+      PluginState state_wrapper(state);
+
+      // Catch exceptions thrown in the user function to convert them to
+      // DQCsim's error reporting protocol.
+      try {
+        (*(cb_wrapper->cb))(state_wrapper, cycles);
+        return raw::dqcs_return_t::DQCS_SUCCESS;
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return raw::dqcs_return_t::DQCS_FAILURE;
+    }
+
+    /**
+     * Entry point for the `upstream_arb` callback.
+     */
+    static raw::dqcs_handle_t upstream_arb(
+      void *user_data,
+      raw::dqcs_plugin_state_t state,
+      raw::dqcs_handle_t cmd
+    ) noexcept {
+
+      // Wrap inputs.
+      callback::Arb *cb_wrapper = reinterpret_cast<callback::Arb*>(user_data);
+      PluginState state_wrapper(state);
+      ArbCmd cmd_wrapper(cmd);
+
+      // Catch exceptions thrown in the user function to convert them to
+      // DQCsim's error reporting protocol.
+      try {
+        return (*(cb_wrapper->cb))(state_wrapper, std::move(cmd_wrapper)).take_handle();
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return 0;
+    }
+
+    /**
+     * Entry point for the `host_arb` callback.
+     */
+    static raw::dqcs_handle_t host_arb(
+      void *user_data,
+      raw::dqcs_plugin_state_t state,
+      raw::dqcs_handle_t cmd
+    ) noexcept {
+
+      // Wrap inputs.
+      callback::Arb *cb_wrapper = reinterpret_cast<callback::Arb*>(user_data);
+      PluginState state_wrapper(state);
+      ArbCmd cmd_wrapper(cmd);
+
+      // Catch exceptions thrown in the user function to convert them to
+      // DQCsim's error reporting protocol.
+      try {
+        return (*(cb_wrapper->cb))(state_wrapper, std::move(cmd_wrapper)).take_handle();
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return 0;
+    }
+
+    /**
+     * Entry point for the manual plugin spawning callback.
+     */
+    static void spawn_plugin(
+      void *user_data,
+      const char *simulator
+    ) noexcept {
+
+      // Wrap inputs.
+      callback::SpawnPlugin *cb_wrapper = reinterpret_cast<callback::SpawnPlugin*>(user_data);
+      std::string simulator_wrapper(simulator);
+
+      // Catch exceptions thrown in the user function to convert them to
+      // DQCsim's error reporting protocol.
+      try {
+        (*(cb_wrapper->cb))(std::move(simulator_wrapper));
+      } catch (const std::exception &e) {
+        DQCSIM_FATAL("DQCsim caught std::exception in plugin thread: %s", e.what());
+      }
+    }
+
+    /**
+     * Entry point for the simulation logging callback.
+     */
+    static void log(
+      void *user_data,
+      const char *message,
+      const char *logger,
+      raw::dqcs_loglevel_t level,
+      const char *module,
+      const char *file,
+      uint32_t line,
+      uint64_t time_s,
+      uint32_t time_ns,
+      uint32_t pid,
+      uint64_t tid
+    ) noexcept {
+
+      // Wrap inputs.
+      callback::Log *cb_wrapper = reinterpret_cast<callback::Log*>(user_data);
+
+      // Catch exceptions thrown in the user function to convert them to
+      // DQCsim's error reporting protocol.
+      try {
+        (*(cb_wrapper->cb))(
+          std::string(message ? message : ""),
+          std::string(logger ? logger : ""),
+          check(level),
+          std::string(module ? module : ""),
+          std::string(file ? file : ""),
+          line,
+          std::chrono::system_clock::time_point(
+            std::chrono::seconds(time_s)
+            + std::chrono::nanoseconds(time_ns)
+          ),
+          pid,
+          tid
+        );
+      } catch (const std::exception &e) {
+        std::cerr << "DQCsim caught std::exception in log callback: " << e.what() << std::endl;
+      }
+    }
+
+    /**
+     * Entry point for freeing callback data structures.
+     */
+    template <class T>
+    static void user_free(void *user_data) noexcept {
+      T *cb_wrapper = reinterpret_cast<T*>(user_data);
+      delete cb_wrapper;
+    }
+
+  };
   //! \endcond
-
-  //! \cond Doxygen_Suppress
-  /**
-   * Entry point for freeing callback data structures.
-   */
-  template <class T>
-  void cb_entry_user_free(void *user_data) {
-    T *cb_wrapper = reinterpret_cast<T*>(user_data);
-    delete cb_wrapper;
-  }
-  //! \endcond
-
-} // namespace callback
-
-namespace wrap {
-
-  /**
-   * Expose `PluginState` outside of the `callback` namespace. The only reason
-   * it's in there is because otherwise I can't get the callback entry point
-   * `friend` semantics to work right.
-   */
-  using PluginState = callback::PluginState;
 
   /**
    * Class wrapper for plugin join handles.
@@ -5760,7 +5669,7 @@ namespace wrap {
    * allocate 9 downstream qubits for each upstream qubit with the intent of
    * applying surface-9 error correction, the upstream and downstream qubit
    * indices will diverge. It is up to the operator to track the mapping
-   * between these qubits, and override the free, gate, and modify-measurement
+   * between these qubits, and virtual the free, gate, and modify-measurement
    * callbacks accordingly to translate between them.
    *
    * # Free
@@ -5798,11 +5707,11 @@ namespace wrap {
    * The default implementation for this callback for operators is to pass the
    * gate through to the downstream plugin and return an empty set of
    * measurements. Combined with the default implementation of
-   * modify-measurement, this behavior is correct. Backends must override this
+   * modify-measurement, this behavior is correct. Backends must virtual this
    * callback, and frontends do not support it.
    *
    * Note that for our silly example operator, the default behavior for this
-   * function is actually sufficient; you'd only have to override the
+   * function is actually sufficient; you'd only have to virtual the
    * modify-measurement callback in that case.
    *
    * # Modify-measurement
@@ -5848,7 +5757,7 @@ namespace wrap {
    * turn returned through the upstream plugin's `arb` function.
    *
    * The default behavior for operators is to forward the command to the
-   * downstream plugin. Even if you override this callback, you should maintain
+   * downstream plugin. Even if you virtual this callback, you should maintain
    * this behavior for any interface identifiers unknown to you. The default
    * for backends is to ignore it. Frontends don't support it.
    *
@@ -5963,7 +5872,6 @@ namespace wrap {
     }
 
     // Code below is generated using the following Python script:
-    //
     // print('    // Code below is generated using the following Python script:')
     // with open(__file__, 'r') as f:
     //     print(''.join(map(lambda x: '    // ' + x, f.readlines())), end='')
@@ -5973,15 +5881,15 @@ namespace wrap {
     //
     //     /**
     //      * Assigns the {0[0]} callback function from a `new`-initialized
-    //      * raw pointer to a `{0[2]}` object. Callee will ensure that
+    //      * raw pointer to a `callback::{0[2]}` object. Callee will ensure that
     //      * `delete` is called.
     //      */
-    //     void set_{0[1]}({0[2]} *data) {{
+    //     void set_{0[1]}(callback::{0[2]} *data) {{
     //       try {{
     //         check(raw::dqcs_pdef_set_{0[1]}_cb(
     //           handle,
-    //           callback::cb_entry_{0[1]},
-    //           callback::cb_entry_user_free<{0[2]}>,
+    //           CallbackEntryPoints::{0[1]},
+    //           CallbackEntryPoints::user_free<callback::{0[2]}>,
     //           data));
     //       }} catch (...) {{
     //         delete data;
@@ -5993,19 +5901,19 @@ namespace wrap {
     //
     //     /**
     //      * Assigns the {0[0]} callback function from a pre-existing
-    //      * `{0[2]}` object by copy.
+    //      * `callback::{0[2]}` object by copy.
     //      */
-    //     Plugin &with_{0[1]}(const {0[2]} &data) {{
-    //       set_{0[1]}(new {0[2]}(data));
+    //     Plugin &with_{0[1]}(const callback::{0[2]} &data) {{
+    //       set_{0[1]}(new callback::{0[2]}(data));
     //       return *this;
     //     }}
     //
     //     /**
     //      * Assigns the {0[0]} callback function from a pre-existing
-    //      * `{0[2]}` object by move.
+    //      * `callback::{0[2]}` object by move.
     //      */
-    //     Plugin &with_{0[1]}({0[2]} &&data) {{
-    //       set_{0[1]}(new {0[2]}(std::move(data)));
+    //     Plugin &with_{0[1]}(callback::{0[2]} &&data) {{
+    //       set_{0[1]}(new callback::{0[2]}(std::move(data)));
     //       return *this;
     //     }}
     //
@@ -6015,22 +5923,22 @@ namespace wrap {
     //      */
     //     template<typename... Args>
     //     Plugin &with_{0[1]}(Args... args) {{
-    //       set_{0[1]}(new {0[2]}(args...));
+    //       set_{0[1]}(new callback::{0[2]}(args...));
     //       return *this;
     //     }}
     // """
     //
     // print(''.join(map(template.format, [
-    //     ('initialize',          'initialize',           'callback::Initialize'),
-    //     ('drop',                'drop',                 'callback::Drop'),
-    //     ('run',                 'run',                  'callback::Run'),
-    //     ('allocate',            'allocate',             'callback::Allocate'),
-    //     ('free',                'free',                 'callback::Free'),
-    //     ('gate',                'gate',                 'callback::Gate'),
-    //     ('modify-measurement',  'modify_measurement',   'callback::ModifyMeasurement'),
-    //     ('advance',             'advance',              'callback::Advance'),
-    //     ('upstream-arb',        'upstream_arb',         'callback::Arb'),
-    //     ('host-arb',            'host_arb',             'callback::Arb'),
+    //     ('initialize',          'initialize',           'Initialize'),
+    //     ('drop',                'drop',                 'Drop'),
+    //     ('run',                 'run',                  'Run'),
+    //     ('allocate',            'allocate',             'Allocate'),
+    //     ('free',                'free',                 'Free'),
+    //     ('gate',                'gate',                 'Gate'),
+    //     ('modify-measurement',  'modify_measurement',   'ModifyMeasurement'),
+    //     ('advance',             'advance',              'Advance'),
+    //     ('upstream-arb',        'upstream_arb',         'Arb'),
+    //     ('host-arb',            'host_arb',             'Arb'),
     // ])))
     //
     // print('    // End of generated code.')
@@ -6046,8 +5954,8 @@ namespace wrap {
       try {
         check(raw::dqcs_pdef_set_initialize_cb(
           handle,
-          callback::cb_entry_initialize,
-          callback::cb_entry_user_free<callback::Initialize>,
+          CallbackEntryPoints::initialize,
+          CallbackEntryPoints::user_free<callback::Initialize>,
           data));
       } catch (...) {
         delete data;
@@ -6096,8 +6004,8 @@ namespace wrap {
       try {
         check(raw::dqcs_pdef_set_drop_cb(
           handle,
-          callback::cb_entry_drop,
-          callback::cb_entry_user_free<callback::Drop>,
+          CallbackEntryPoints::drop,
+          CallbackEntryPoints::user_free<callback::Drop>,
           data));
       } catch (...) {
         delete data;
@@ -6146,8 +6054,8 @@ namespace wrap {
       try {
         check(raw::dqcs_pdef_set_run_cb(
           handle,
-          callback::cb_entry_run,
-          callback::cb_entry_user_free<callback::Run>,
+          CallbackEntryPoints::run,
+          CallbackEntryPoints::user_free<callback::Run>,
           data));
       } catch (...) {
         delete data;
@@ -6196,8 +6104,8 @@ namespace wrap {
       try {
         check(raw::dqcs_pdef_set_allocate_cb(
           handle,
-          callback::cb_entry_allocate,
-          callback::cb_entry_user_free<callback::Allocate>,
+          CallbackEntryPoints::allocate,
+          CallbackEntryPoints::user_free<callback::Allocate>,
           data));
       } catch (...) {
         delete data;
@@ -6246,8 +6154,8 @@ namespace wrap {
       try {
         check(raw::dqcs_pdef_set_free_cb(
           handle,
-          callback::cb_entry_free,
-          callback::cb_entry_user_free<callback::Free>,
+          CallbackEntryPoints::free,
+          CallbackEntryPoints::user_free<callback::Free>,
           data));
       } catch (...) {
         delete data;
@@ -6296,8 +6204,8 @@ namespace wrap {
       try {
         check(raw::dqcs_pdef_set_gate_cb(
           handle,
-          callback::cb_entry_gate,
-          callback::cb_entry_user_free<callback::Gate>,
+          CallbackEntryPoints::gate,
+          CallbackEntryPoints::user_free<callback::Gate>,
           data));
       } catch (...) {
         delete data;
@@ -6346,8 +6254,8 @@ namespace wrap {
       try {
         check(raw::dqcs_pdef_set_modify_measurement_cb(
           handle,
-          callback::cb_entry_modify_measurement,
-          callback::cb_entry_user_free<callback::ModifyMeasurement>,
+          CallbackEntryPoints::modify_measurement,
+          CallbackEntryPoints::user_free<callback::ModifyMeasurement>,
           data));
       } catch (...) {
         delete data;
@@ -6396,8 +6304,8 @@ namespace wrap {
       try {
         check(raw::dqcs_pdef_set_advance_cb(
           handle,
-          callback::cb_entry_advance,
-          callback::cb_entry_user_free<callback::Advance>,
+          CallbackEntryPoints::advance,
+          CallbackEntryPoints::user_free<callback::Advance>,
           data));
       } catch (...) {
         delete data;
@@ -6446,8 +6354,8 @@ namespace wrap {
       try {
         check(raw::dqcs_pdef_set_upstream_arb_cb(
           handle,
-          callback::cb_entry_upstream_arb,
-          callback::cb_entry_user_free<callback::Arb>,
+          CallbackEntryPoints::upstream_arb,
+          CallbackEntryPoints::user_free<callback::Arb>,
           data));
       } catch (...) {
         delete data;
@@ -6496,8 +6404,8 @@ namespace wrap {
       try {
         check(raw::dqcs_pdef_set_host_arb_cb(
           handle,
-          callback::cb_entry_host_arb,
-          callback::cb_entry_user_free<callback::Arb>,
+          CallbackEntryPoints::host_arb,
+          CallbackEntryPoints::user_free<callback::Arb>,
           data));
       } catch (...) {
         delete data;
@@ -7161,8 +7069,8 @@ namespace wrap {
       return PluginThreadConfiguration(check(raw::dqcs_tcfg_new_raw(
         to_raw(type),
         name.c_str(),
-        callback::cb_entry_spawn_plugin,
-        callback::cb_entry_user_free<callback::SpawnPlugin>,
+        CallbackEntryPoints::spawn_plugin,
+        CallbackEntryPoints::user_free<callback::SpawnPlugin>,
         data
       )));
     }
@@ -7819,8 +7727,8 @@ namespace wrap {
       check(raw::dqcs_scfg_log_callback(
         handle,
         to_raw(verbosity),
-        callback::cb_entry_log,
-        callback::cb_entry_user_free<callback::Log>,
+        CallbackEntryPoints::log,
+        CallbackEntryPoints::user_free<callback::Log>,
         data
       ));
     }
