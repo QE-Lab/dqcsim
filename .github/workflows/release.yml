@@ -121,12 +121,13 @@ jobs:
       with:
         name: dqcsim-py3.7-macos
     - name: Move
-      run: mv dqcsim-py*/*.whl .
+      run: |
+        mkdir -p dist/
+        mv dqcsim-py*/*.whl dist/
     - uses: pypa/gh-action-pypi-publish@v1.0.0a0
       with:
         user: __token__
         password: ${{ secrets.PYPI_TOKEN }}
-        packages_dir: ./
 
   # assets:
   #   name: Upload assets
