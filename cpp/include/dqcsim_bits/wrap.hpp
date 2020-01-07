@@ -3,6 +3,56 @@
 #define _DQCSIM_INCLUDED_
 //! \endcond
 
+/*! \mainpage
+ *
+ * \section Introduction
+ *
+ * This is the documentation for the C++ interface of
+ * <a href="../index.html">DQCsim</a>.
+ *
+ * If this is the first time you're looking at DQCsim's API, you may find it
+ * helpful to skim through the <a href="../c-api/index.html">C documentation</a>
+ * first. It is written in a more tutorial-esque fashion, and most concepts are
+ * the same, as the C++ API is built on top of the C API. In fact, you can mix
+ * the raw C functions (`dqcsim::raw`) and the C++ wrappers in (`dqcsim::wrap`)
+ * if you like. The primary advantages of the C++ interface over the C interface
+ * are:
+ *
+ *  - DQCsim's error handling is abstracted through exceptions.
+ *  - Handles are wrapped by classes with appropriate inheritance.
+ *  - Handle construction and deletion is more-or-less abstracted away by RAII,
+ *    so you never have to worry about calling `dqcs_handle_delete()`.
+ *  - All strings are wrapped using `std::string`, so you don't need to worry
+ *    about malloc/free when dealing with DQCsim's string functions.
+ *  - All callbacks support C-style callbacks with a template for the user data
+ *    argument type, class member functions, and `std::function` objects, so
+ *    you don't have to deal with `void*` casts.
+ *  - Many function/method overloads are provided to help you make your code
+ *    more succinct.
+ *  - Basic support for `nlohmann::json` for the `ArbData` JSON/CBOR object.
+ *
+ * \section Linking
+ *
+ * The C++ wrappers around the C library are header-only. Assuming you've
+ * <a href="../install/index.html">installed</a> DQCsim already, all you have
+ * to do to use the library is add
+ *
+ * ```
+ * #include <dqcsim>
+ *
+ * // Optionally:
+ * using namespace dqcsim::wrap;
+ * ```
+ *
+ * to the top of your sources, and link to DQCsim by adding `-ldqcsim` to your
+ * compiler (linker) command line. If you didn't install DQCsim as root, you
+ * may need to add to add `-L /path/to/dqcsim/lib -I /path/to/dqcsim/include`.
+ * You may also need to add `-std=c++11` (or newer) if you haven't already, as
+ * DQCsim uses features from C++11.
+ *
+ * TODO: examples
+ */
+
 /*!
  * \file dqcsim
  * \brief Provides DQCsim's entire C++ API.
@@ -4275,7 +4325,7 @@ namespace wrap {
      *
      * \returns A uniformly distributed unsigned 64-bit integer.
      */
-    unsigned long long random_u64() noexcept {
+    uint64_t random_u64() noexcept {
       return raw::dqcs_plugin_random_u64(state);
     }
 
@@ -4290,7 +4340,7 @@ namespace wrap {
      */
     template <typename T>
     T random() noexcept {
-      unsigned long long data[(sizeof(T) + 7) / 8];
+      uint64_t data[(sizeof(T) + 7) / 8];
       for (size_t i = 0; i < (sizeof(T) + 7) / 8; i++) {
         data = random_u64();
       }
@@ -6797,8 +6847,13 @@ namespace wrap {
 
     /**
      * Wraps the given plugin process configuration handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    PluginProcessConfiguration(HandleIndex handle) : PluginConfiguration(handle) {
+    PluginProcessConfiguration(HandleIndex handle) noexcept : PluginConfiguration(handle) {
     }
 
     // Delete copy construct/assign.
@@ -6817,6 +6872,9 @@ namespace wrap {
 
     /**
      * Returns the plugin type.
+     *
+     * \returns The plugin type.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginType get_plugin_type() const override {
       return check(raw::dqcs_pcfg_type(handle));
@@ -6824,6 +6882,12 @@ namespace wrap {
 
     /**
      * Returns the name given to the plugin.
+     *
+     * \note This returns the instance name, not the class name. The latter can
+     * only be queried once the plugin thread or process has been started.
+     *
+     * \returns the name given to the plugin instance.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     std::string get_name() const override {
       char *ptr = check(raw::dqcs_pcfg_name(handle));
@@ -6833,7 +6897,10 @@ namespace wrap {
     }
 
     /**
-     * Returns the configured executable path for the given plugin process.
+     * Returns the configured executable path for the plugin.
+     *
+     * \returns The configured executable path for the plugin.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     std::string get_executable() const {
       char *ptr = check(raw::dqcs_pcfg_executable(handle));
@@ -6843,7 +6910,10 @@ namespace wrap {
     }
 
     /**
-     * Returns the configured script path for the given plugin process.
+     * Returns the configured script path for the plugin.
+     *
+     * \returns The configured script path for the plugin.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     std::string get_script() const {
       char *ptr = check(raw::dqcs_pcfg_script(handle));
@@ -6854,6 +6924,10 @@ namespace wrap {
 
     /**
      * Attaches an arbitrary initialization command to the plugin.
+     *
+     * \param cmd The initialization command to attach.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     void add_init_cmd(ArbCmd &&cmd) override {
       check(raw::dqcs_pcfg_init_cmd(handle, cmd.get_handle()));
@@ -6862,6 +6936,11 @@ namespace wrap {
     /**
      * Attaches an arbitrary initialization command to the plugin (builder
      * pattern).
+     *
+     * \param cmd The initialization command to attach.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     PluginProcessConfiguration &with_init_cmd(ArbCmd &&cmd) {
       add_init_cmd(std::move(cmd));
@@ -6873,6 +6952,11 @@ namespace wrap {
      *
      * The environment variable `key` is set to `value` regardless of whether
      * it exists in the parent environment variable scope.
+     *
+     * \param key The environment variable to set.
+     * \param value The value to set it to.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     void set_env_var(const std::string &key, const std::string &value) {
       check(raw::dqcs_pcfg_env_set(handle, key.c_str(), value.c_str()));
@@ -6884,6 +6968,12 @@ namespace wrap {
      *
      * The environment variable `key` is set to `value` regardless of whether
      * it exists in the parent environment variable scope.
+     *
+     * \param key The environment variable to set.
+     * \param value The value to set it to.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     PluginProcessConfiguration &with_env_var(const std::string &key, const std::string &value) {
       set_env_var(key, value);
@@ -6895,6 +6985,10 @@ namespace wrap {
      *
      * The environment variable key is unset regardless of whether it exists
      * in the parent environment variable scope.
+     *
+     * \param key The environment variable to unset.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     void unset_env_var(const std::string &key) {
       check(raw::dqcs_pcfg_env_unset(handle, key.c_str()));
@@ -6906,6 +7000,11 @@ namespace wrap {
      *
      * The environment variable key is unset regardless of whether it exists
      * in the parent environment variable scope.
+     *
+     * \param key The environment variable to unset.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     PluginProcessConfiguration &without_env_var(const std::string &key) {
       unset_env_var(key);
@@ -6914,6 +7013,10 @@ namespace wrap {
 
     /**
      * Overrides the working directory for the plugin process.
+     *
+     * \param dir The working directory for the plugin process.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     void set_work_dir(const std::string &dir) {
       check(raw::dqcs_pcfg_work_set(handle, dir.c_str()));
@@ -6922,6 +7025,11 @@ namespace wrap {
     /**
      * Overrides the working directory for the plugin process (builder
      * pattern).
+     *
+     * \param dir The working directory for the plugin process.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     PluginProcessConfiguration &with_work_dir(const std::string &dir) {
       set_work_dir(dir);
@@ -6930,6 +7038,10 @@ namespace wrap {
 
     /**
      * Returns the configured working directory for the given plugin process.
+     *
+     * \returns Tthe configured working directory for the given plugin process.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     std::string get_work_dir() const {
       char *ptr = check(raw::dqcs_pcfg_work_get(handle));
@@ -6940,6 +7052,9 @@ namespace wrap {
 
     /**
      * Sets the logging verbosity level of the plugin.
+     *
+     * \param level The desired logging verbosity for the plugin instance.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     void set_verbosity(Loglevel level) override {
       check(raw::dqcs_pcfg_verbosity_set(handle, to_raw(level)));
@@ -6947,6 +7062,10 @@ namespace wrap {
 
     /**
      * Sets the logging verbosity level of the plugin (builder pattern).
+     *
+     * \param level The desired logging verbosity for the plugin instance.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginProcessConfiguration &with_verbosity(Loglevel level) {
       set_verbosity(level);
@@ -6955,6 +7074,9 @@ namespace wrap {
 
     /**
      * Returns the current logging verbosity level of the plugin.
+     *
+     * \returns The current logging verbosity level of the plugin.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     Loglevel get_verbosity() const override {
       return check(raw::dqcs_pcfg_verbosity_get(handle));
@@ -6963,7 +7085,10 @@ namespace wrap {
     /**
      * Configures a plugin thread to also output its log messages to a file.
      *
-     * `verbosity` configures the verbosity level for the file only.
+     * \param verbosity Configures the verbosity level for the tee'd output
+     * file only.
+     * \param filename The path to the file to tee log messages to.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     void log_tee(Loglevel verbosity, const std::string &filename) override {
       return check(raw::dqcs_pcfg_tee(handle, to_raw(verbosity), filename.c_str()));
@@ -6973,7 +7098,11 @@ namespace wrap {
      * Configures a plugin thread to also output its log messages to a file
      * (builder pattern).
      *
-     * `verbosity` configures the verbosity level for the file only.
+     * \param verbosity Configures the verbosity level for the tee'd output
+     * file only.
+     * \param filename The path to the file to tee log messages to.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginProcessConfiguration &with_log_tee(Loglevel verbosity, const std::string &filename) {
       log_tee(verbosity, filename);
@@ -6983,6 +7112,11 @@ namespace wrap {
     /**
      * Configures the capture mode for the stdout stream of the specified
      * plugin process.
+     *
+     * \param level The loglevel with which stdout is captured.
+     * `Loglevel::Pass` instructs the logging thread to not capture stdout at
+     * all.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     void set_stdout_loglevel(Loglevel level) {
       check(raw::dqcs_pcfg_stdout_mode_set(handle, to_raw(level)));
@@ -6991,6 +7125,12 @@ namespace wrap {
     /**
      * Configures the capture mode for the stdout stream of the specified
      * plugin process (builder pattern).
+     *
+     * \param level The loglevel with which stdout is captured.
+     * `Loglevel::Pass` instructs the logging thread to not capture stdout at
+     * all.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginProcessConfiguration &with_stdout_loglevel(Loglevel level) {
       set_stdout_loglevel(level);
@@ -7000,6 +7140,9 @@ namespace wrap {
     /**
      * Returns the configured stdout capture mode for the specified plugin
      * process.
+     *
+     * \returns The configured stdout capture mode.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     Loglevel get_stdout_loglevel() const {
       return check(raw::dqcs_pcfg_stdout_mode_get(handle));
@@ -7008,6 +7151,11 @@ namespace wrap {
     /**
      * Configures the capture mode for the stderr stream of the specified
      * plugin process.
+     *
+     * \param level The loglevel with which stderr is captured.
+     * `Loglevel::Pass` instructs the logging thread to not capture stderr at
+     * all.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     void set_stderr_loglevel(Loglevel level) {
       check(raw::dqcs_pcfg_stderr_mode_set(handle, to_raw(level)));
@@ -7016,6 +7164,12 @@ namespace wrap {
     /**
      * Configures the capture mode for the stderr stream of the specified
      * plugin process (builder pattern).
+     *
+     * \param level The loglevel with which stderr is captured.
+     * `Loglevel::Pass` instructs the logging thread to not capture stderr at
+     * all.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginProcessConfiguration &with_stderr_loglevel(Loglevel level) {
       set_stderr_loglevel(level);
@@ -7025,6 +7179,9 @@ namespace wrap {
     /**
      * Returns the configured stderr capture mode for the specified plugin
      * process.
+     *
+     * \returns The configured stderr capture mode.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     Loglevel get_stderr_loglevel() const {
       return check(raw::dqcs_pcfg_stderr_mode_get(handle));
@@ -7036,8 +7193,9 @@ namespace wrap {
      * The default is 5 seconds, so you should normally be able to leave this
      * alone.
      *
-     * The time unit is seconds. Use IEEE positive infinity from `<limits>` to
-     * specify an infinite timeout.
+     * \param timeout The timeout in seconds. You can use IEEE positive
+     * infinity from `<limits>` to specify an infinite timeout.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     void set_accept_timeout(double timeout) {
       check(raw::dqcs_pcfg_accept_timeout_set(handle, timeout));
@@ -7050,8 +7208,10 @@ namespace wrap {
      * The default is 5 seconds, so you should normally be able to leave this
      * alone.
      *
-     * The time unit is seconds. Use IEEE positive infinity from `<limits>` to
-     * specify an infinite timeout.
+     * \param timeout The timeout in seconds. You can use IEEE positive
+     * infinity from `<limits>` to specify an infinite timeout.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginProcessConfiguration &with_accept_timeout(double timeout) {
       set_accept_timeout(timeout);
@@ -7061,6 +7221,9 @@ namespace wrap {
     /**
      * Disables the timeout for the plugin process to connect to DQCsim
      * (builder pattern).
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginProcessConfiguration &without_accept_timeout() {
       set_accept_timeout(std::numeric_limits<double>::infinity());
@@ -7070,8 +7233,11 @@ namespace wrap {
     /**
      * Returns the configured timeout for the plugin process to connect to
      * DQCsim.
+     *
+     * \returns The configured timeout in seconds.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
-    double get_accept_timeout() {
+    double get_accept_timeout() const {
       return check(raw::dqcs_pcfg_accept_timeout_get(handle));
     }
 
@@ -7081,8 +7247,9 @@ namespace wrap {
      * The default is 5 seconds, so you should normally be able to leave this
      * alone.
      *
-     * The time unit is seconds. Use IEEE positive infinity from `<limits>` to
-     * specify an infinite timeout.
+     * \param timeout The timeout in seconds. You can use IEEE positive
+     * infinity from `<limits>` to specify an infinite timeout.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     void set_shutdown_timeout(double timeout) {
       check(raw::dqcs_pcfg_shutdown_timeout_set(handle, timeout));
@@ -7095,8 +7262,10 @@ namespace wrap {
      * The default is 5 seconds, so you should normally be able to leave this
      * alone.
      *
-     * The time unit is seconds. Use IEEE positive infinity from `<limits>` to
-     * specify an infinite timeout.
+     * \param timeout The timeout in seconds. You can use IEEE positive
+     * infinity from `<limits>` to specify an infinite timeout.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginProcessConfiguration &with_shutdown_timeout(double timeout) {
       set_shutdown_timeout(timeout);
@@ -7106,6 +7275,9 @@ namespace wrap {
     /**
      * Disables the timeout for the plugin process to shut down gracefully
      * (builder pattern).
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginProcessConfiguration &without_shutdown_timeout() {
       set_shutdown_timeout(std::numeric_limits<double>::infinity());
@@ -7115,8 +7287,11 @@ namespace wrap {
     /**
      * Returns the configured timeout for the plugin process to shut down
      * gracefully.
+     *
+     * \returns The configured timeout in seconds.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
-    double get_shutdown_timeout() {
+    double get_shutdown_timeout() const {
       return check(raw::dqcs_pcfg_shutdown_timeout_get(handle));
     }
 
@@ -7130,8 +7305,13 @@ namespace wrap {
 
     /**
      * Wraps the given plugin thread configuration handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    PluginThreadConfiguration(HandleIndex handle) : PluginConfiguration(handle) {
+    PluginThreadConfiguration(HandleIndex handle) noexcept : PluginConfiguration(handle) {
     }
 
     // Delete copy construct/assign.
@@ -7150,6 +7330,9 @@ namespace wrap {
 
     /**
      * Returns the plugin type.
+     *
+     * \returns The plugin type.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginType get_plugin_type() const override {
       return check(raw::dqcs_tcfg_type(handle));
@@ -7157,6 +7340,12 @@ namespace wrap {
 
     /**
      * Returns the name given to the plugin.
+     *
+     * \note This returns the instance name, not the class name. The latter can
+     * only be queried once the plugin thread or process has been started.
+     *
+     * \returns the name given to the plugin instance.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     std::string get_name() const override {
       char *ptr = check(raw::dqcs_tcfg_name(handle));
@@ -7167,6 +7356,10 @@ namespace wrap {
 
     /**
      * Attaches an arbitrary initialization command to the plugin.
+     *
+     * \param cmd The initialization command to attach.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     void add_init_cmd(ArbCmd &&cmd) override {
       check(raw::dqcs_tcfg_init_cmd(handle, cmd.get_handle()));
@@ -7175,6 +7368,11 @@ namespace wrap {
     /**
      * Attaches an arbitrary initialization command to the plugin (builder
      * pattern).
+     *
+     * \param cmd The initialization command to attach.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition or command handle
+     * is invalid.
      */
     PluginThreadConfiguration &with_init_cmd(ArbCmd &&cmd) {
       add_init_cmd(std::move(cmd));
@@ -7183,6 +7381,9 @@ namespace wrap {
 
     /**
      * Sets the logging verbosity level of the plugin.
+     *
+     * \param level The desired logging verbosity for the plugin instance.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     void set_verbosity(Loglevel level) override {
       check(raw::dqcs_tcfg_verbosity_set(handle, to_raw(level)));
@@ -7190,6 +7391,10 @@ namespace wrap {
 
     /**
      * Sets the logging verbosity level of the plugin (builder pattern).
+     *
+     * \param level The desired logging verbosity for the plugin instance.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginThreadConfiguration &with_verbosity(Loglevel level) {
       set_verbosity(level);
@@ -7198,6 +7403,9 @@ namespace wrap {
 
     /**
      * Returns the current logging verbosity level of the plugin.
+     *
+     * \returns The current logging verbosity level of the plugin.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     Loglevel get_verbosity() const override {
       return check(raw::dqcs_tcfg_verbosity_get(handle));
@@ -7206,7 +7414,10 @@ namespace wrap {
     /**
      * Configures a plugin thread to also output its log messages to a file.
      *
-     * `verbosity` configures the verbosity level for the file only.
+     * \param verbosity Configures the verbosity level for the tee'd output
+     * file only.
+     * \param filename The path to the file to tee log messages to.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     void log_tee(Loglevel verbosity, const std::string &filename) override {
       return check(raw::dqcs_tcfg_tee(handle, to_raw(verbosity), filename.c_str()));
@@ -7216,7 +7427,11 @@ namespace wrap {
      * Configures a plugin thread to also output its log messages to a file
      * (builder pattern).
      *
-     * `verbosity` configures the verbosity level for the file only.
+     * \param verbosity Configures the verbosity level for the tee'd output
+     * file only.
+     * \param filename The path to the file to tee log messages to.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the plugin definition handle is invalid.
      */
     PluginThreadConfiguration &with_log_tee(Loglevel verbosity, const std::string &filename) {
       log_tee(verbosity, filename);
@@ -7237,13 +7452,16 @@ namespace wrap {
     /**
      * Constructs a plugin configuration builder for the given plugin type.
      *
-     * You can use the `Frontend`, `Operator`, and `Backend` functions as
-     * shorthands for this constructor.
+     * You can use the `dqcsim::wrap::Frontend()`, `dqcsim::wrap::Operator()`,
+     * and `dqcsim::wrap::Backend()` functions as shorthands for this
+     * constructor.
+     *
+     * \param type The type of the to-be-configured plugin.
      */
-    PluginConfigurationBuilder(PluginType type) : type(type), name() {}
+    PluginConfigurationBuilder(PluginType type) noexcept : type(type), name() {}
 
     /**
-     * Builder function for naming the plugin.
+     * Builder function for naming the plugin instance.
      *
      * The name must be unique within the simulation. It is used, among other
      * things, by the logging system.
@@ -7252,8 +7470,11 @@ namespace wrap {
      * will be performed: "front" for the frontend, "oper[i]" for the operators
      * (indices starting at 1 from frontend to backend), and "back" for the
      * backend.
+     *
+     * \param name The name for the plugin.
+     * \returns `&self`, to continue building.
      */
-    PluginConfigurationBuilder &with_name(const std::string &name) {
+    PluginConfigurationBuilder &with_name(const std::string &name) noexcept {
       this->name = name;
       return *this;
     }
@@ -7262,6 +7483,12 @@ namespace wrap {
      * Builds a plugin process configuration object from a "sugared" plugin
      * specification string, using the same syntax that the `dqcsim` command
      * line interface uses.
+     *
+     * \param spec The command-line interface specification string for the
+     * desired plugin.
+     * \returns A `PluginProcessConfiguration` object to continue building.
+     * \throws std::runtime_error When the specified plugin could not be found,
+     * or construction of the configuration handle fails for some reason.
      */
     PluginProcessConfiguration with_spec(const std::string &spec) {
       return PluginProcessConfiguration(check(raw::dqcs_pcfg_new(
@@ -7274,6 +7501,13 @@ namespace wrap {
      * executable and an optional path to a script for it to run.
      *
      * Note that not all plugins will use the optional `script` parameter.
+     *
+     * \param executable The path to the plugin executable to load.
+     * \param script The optional first command-line argument passed to the
+     * plugin executable.
+     * \returns A `PluginProcessConfiguration` object to continue building.
+     * \throws std::runtime_error When the specified plugin could not be found,
+     * or construction of the configuration handle fails for some reason.
      */
     PluginProcessConfiguration with_executable(const std::string &executable, const std::string &script = "") {
       return PluginProcessConfiguration(check(raw::dqcs_pcfg_new_raw(
@@ -7284,6 +7518,12 @@ namespace wrap {
     /**
      * Builds a plugin thread configuration object from a plugin definition
      * object, containing a bunch of callback functions.
+     *
+     * \param plugin The plugin definition object to wrap. Note that this must
+     * be `std::move()`d in if it is not constructed in-place.
+     * \returns A `PluginThreadConfiguration` object to continue building.
+     * \throws std::runtime_error When the specified plugin could not be found,
+     * or construction of the configuration handle fails for some reason.
      */
     PluginThreadConfiguration with_callbacks(Plugin &&plugin) {
       if (plugin.get_type() != type) {
@@ -7305,6 +7545,11 @@ namespace wrap {
      * DQCsim wants to start the plugin. The callback must then in some way
      * spawn a plugin process that connects to the provided simulator string.
      * The callback should return only when the process terminates.
+     *
+     * \param data The wrapper object for the plugin spawning callback.
+     * \returns A `PluginThreadConfiguration` object to continue building.
+     * \throws std::runtime_error When construction of the configuration handle
+     * fails for some reason.
      */
     PluginThreadConfiguration with_spawner_ptr(callback::SpawnPlugin *data) {
       return PluginThreadConfiguration(check(raw::dqcs_tcfg_new_raw(
@@ -7327,6 +7572,11 @@ namespace wrap {
      * the plugin. The callback must then in some way spawn a plugin process
      * that connects to the provided simulator string. The callback should
      * return only when the process terminates.
+     *
+     * \param data The wrapper object for the plugin spawning callback.
+     * \returns A `PluginThreadConfiguration` object to continue building.
+     * \throws std::runtime_error When construction of the configuration handle
+     * fails for some reason.
      */
     PluginThreadConfiguration with_spawner(const callback::SpawnPlugin &data) {
       return with_spawner_ptr(new callback::SpawnPlugin(data));
@@ -7341,6 +7591,11 @@ namespace wrap {
      * the plugin. The callback must then in some way spawn a plugin process
      * that connects to the provided simulator string. The callback should
      * return only when the process terminates.
+     *
+     * \param data The wrapper object for the plugin spawning callback.
+     * \returns A `PluginThreadConfiguration` object to continue building.
+     * \throws std::runtime_error When construction of the configuration handle
+     * fails for some reason.
      */
     PluginThreadConfiguration with_spawner(callback::SpawnPlugin &&data) {
       return with_spawner_ptr(new callback::SpawnPlugin(std::move(data)));
@@ -7355,6 +7610,12 @@ namespace wrap {
      * DQCsim wants to start the plugin. The callback must then in some way
      * spawn a plugin process that connects to the provided simulator string.
      * The callback should return only when the process terminates.
+     *
+     * \param args Any legal set of arguments for one of
+     * `callback::SpawnPlugin`'s constructors.
+     * \returns A `PluginThreadConfiguration` object to continue building.
+     * \throws std::runtime_error When construction of the configuration handle
+     * fails for some reason.
      */
     template<typename... Args>
     PluginThreadConfiguration with_spawner(Args... args) {
@@ -7365,23 +7626,38 @@ namespace wrap {
 
   /**
    * Shorthand for constructing a frontend plugin configuration builder.
+   *
+   * \param name An optional name for the plugin. See
+   * `PluginConfigurationBuilder::with_name()`.
+   * \returns A `PluginConfigurationBuilder` for a frontend plugin with the
+   * given name.
    */
-  static inline PluginConfigurationBuilder Frontend() {
-    return PluginConfigurationBuilder(PluginType::Frontend);
+  inline PluginConfigurationBuilder Frontend(const std::string &name = "") noexcept {
+    return PluginConfigurationBuilder(PluginType::Frontend).with_name(name);
   }
 
   /**
    * Shorthand for constructing an operator plugin configuration builder.
+   *
+   * \param name An optional name for the plugin. See
+   * `PluginConfigurationBuilder::with_name()`.
+   * \returns A `PluginConfigurationBuilder` for an operator plugin with the
+   * given name.
    */
-  static inline PluginConfigurationBuilder Operator() {
-    return PluginConfigurationBuilder(PluginType::Operator);
+  inline PluginConfigurationBuilder Operator(const std::string &name = "") noexcept {
+    return PluginConfigurationBuilder(PluginType::Operator).with_name(name);
   }
 
   /**
-   * Shorthand for constructing a frontend plugin configuration builder.
+   * Shorthand for constructing a backend plugin configuration builder.
+   *
+   * \param name An optional name for the plugin. See
+   * `PluginConfigurationBuilder::with_name()`.
+   * \returns A `PluginConfigurationBuilder` for a backend plugin with the
+   * given name.
    */
-  static inline PluginConfigurationBuilder Backend() {
-    return PluginConfigurationBuilder(PluginType::Backend);
+  inline PluginConfigurationBuilder Backend(const std::string &name = "") noexcept {
+    return PluginConfigurationBuilder(PluginType::Backend).with_name(name);
   }
 
   /**
@@ -7420,8 +7696,10 @@ namespace wrap {
      *
      * What constitutes "running a program" depends on the frontend plugin.
      *
-     * This is an asynchronous call: nothing happens until `yield()`, `recv()`,
-     * or `wait()` is called.
+     * \note This is an asynchronous call: nothing happens until `yield()`,
+     * `recv()`, `wait()`, or `run()` is called.
+     *
+     * \throws std::runtime_error When the simulation is in an invalid state.
      */
     void start() {
       check(raw::dqcs_sim_start(handle, 0));
@@ -7433,8 +7711,11 @@ namespace wrap {
      *
      * What constitutes "running a program" depends on the frontend plugin.
      *
-     * This is an asynchronous call: nothing happens until `yield()`, `recv()`,
-     * or `wait()` is called.
+     * \note This is an asynchronous call: nothing happens until `yield()`,
+     * `recv()`, `wait()`, or `run()` is called.
+     *
+     * \param data An `ArbData` object to pass to the plugin's `run` callback.
+     * \throws std::runtime_error When the simulation is in an invalid state.
      */
     void start(ArbData &&data) {
       check(raw::dqcs_sim_start(handle, data.get_handle()));
@@ -7446,8 +7727,11 @@ namespace wrap {
      *
      * What constitutes "running a program" depends on the frontend plugin.
      *
-     * This is an asynchronous call: nothing happens until `yield()`, `recv()`,
-     * or `wait()` is called.
+     * \note This is an asynchronous call: nothing happens until `yield()`,
+     * `recv()`, `wait()`, or `run()` is called.
+     *
+     * \param data An `ArbData` object to pass to the plugin's `run` callback.
+     * \throws std::runtime_error When the simulation is in an invalid state.
      */
     void start(const ArbData &data) {
       start(std::move(ArbData(data)));
@@ -7456,10 +7740,11 @@ namespace wrap {
     /**
      * Waits for the simulated accelerator to finish its current program.
      *
-     * This function returns the `ArbData` object that was returned by the
-     * frontend plugin's implementation of the `run` callback.
-     *
-     * Deadlocks are detected and prevented by returning an error.
+     * \returns The `ArbData` object that was returned by the frontend plugin's
+     * implementation of the `run` callback.
+     * \throws std::runtime_error When the simulation is in an invalid state or
+     * a deadlock occurs because the frontend is waiting for a call to
+     * `send()`.
      */
     ArbData wait() {
       return ArbData(check(raw::dqcs_sim_wait(handle)));
@@ -7468,10 +7753,13 @@ namespace wrap {
     /**
      * Runs a program on the simulated accelerator without an argument.
      *
-     * This function returns the `ArbData` object that was returned by the
-     * frontend plugin's implementation of the `run` callback.
+     * This is just a shorthand for `start()` followed by `wait()`.
      *
-     * Deadlocks are detected and prevented by returning an error.
+     * \returns The `ArbData` object that was returned by the frontend plugin's
+     * implementation of the `run` callback.
+     * \throws std::runtime_error When the simulation is in an invalid state or
+     * a deadlock occurs because the frontend is waiting for a call to
+     * `send()`.
      */
     ArbData run() {
       start();
@@ -7482,10 +7770,14 @@ namespace wrap {
      * Runs a program on the simulated accelerator using the given `ArbData`
      * object as an argument (passed by move).
      *
-     * This function returns the `ArbData` object that was returned by the
-     * frontend plugin's implementation of the `run` callback.
+     * This is just a shorthand for `start()` followed by `wait()`.
      *
-     * Deadlocks are detected and prevented by returning an error.
+     * \param data An `ArbData` object to pass to the plugin's `run` callback.
+     * \returns The `ArbData` object that was returned by the frontend plugin's
+     * implementation of the `run` callback.
+     * \throws std::runtime_error When the simulation is in an invalid state or
+     * a deadlock occurs because the frontend is waiting for a call to
+     * `send()`.
      */
     ArbData run(ArbData &&data) {
       start(std::move(data));
@@ -7496,10 +7788,14 @@ namespace wrap {
      * Runs a program on the simulated accelerator using the given `ArbData`
      * object as an argument (passed by copy).
      *
-     * This function returns the `ArbData` object that was returned by the
-     * frontend plugin's implementation of the `run` callback.
+     * This is just a shorthand for `start()` followed by `wait()`.
      *
-     * Deadlocks are detected and prevented by returning an error.
+     * \param data An `ArbData` object to pass to the plugin's `run` callback.
+     * \returns The `ArbData` object that was returned by the frontend plugin's
+     * implementation of the `run` callback.
+     * \throws std::runtime_error When the simulation is in an invalid state or
+     * a deadlock occurs because the frontend is waiting for a call to
+     * `send()`.
      */
     ArbData run(const ArbData &data) {
       start(data);
@@ -7509,8 +7805,10 @@ namespace wrap {
     /**
      * Sends an empty message to the simulated accelerator.
      *
-     * This is an asynchronous call: nothing happens until `yield()`, `recv()`,
-     * or `wait()` is called.
+     * \note This is an asynchronous call: nothing happens until `yield()`,
+     * `recv()`, `wait()`, or `run()` is called.
+     *
+     * \throws std::runtime_error When the simulation is in an invalid state.
      */
     void send() {
       check(raw::dqcs_sim_send(handle, 0));
@@ -7520,8 +7818,11 @@ namespace wrap {
      * Sends the given `ArbData` message to the simulated accelerator (passed
      * by move).
      *
-     * This is an asynchronous call: nothing happens until `yield()`, `recv()`,
-     * or `wait()` is called.
+     * \note This is an asynchronous call: nothing happens until `yield()`,
+     * `recv()`, `wait()`, or `run()` is called.
+     *
+     * \param data The `ArbData` object to send to the plugin.
+     * \throws std::runtime_error When the simulation is in an invalid state.
      */
     void send(ArbData &&data) {
       check(raw::dqcs_sim_send(handle, data.get_handle()));
@@ -7531,8 +7832,11 @@ namespace wrap {
      * Sends the given `ArbData` message to the simulated accelerator (passed
      * by copy).
      *
-     * This is an asynchronous call: nothing happens until `yield()`, `recv()`,
-     * or `wait()` is called.
+     * \note This is an asynchronous call: nothing happens until `yield()`,
+     * `recv()`, `wait()`, or `run()` is called.
+     *
+     * \param data The `ArbData` object to send to the plugin.
+     * \throws std::runtime_error When the simulation is in an invalid state.
      */
     void send(const ArbData &data) {
       send(std::move(ArbData(data)));
@@ -7541,9 +7845,9 @@ namespace wrap {
     /**
      * Waits for the simulated accelerator to send a message to us.
      *
-     * This function returns the `ArbData` object that was sent.
-     *
-     * Deadlocks are detected and prevented by returning an error.
+     * \returns The `ArbData` sent to us.
+     * \throws std::runtime_error When the simulation is in an invalid state
+     * or when the plugin's `run` callback returned before sending (more) data.
      */
     ArbData recv() {
       return ArbData(check(raw::dqcs_sim_recv(handle)));
@@ -7559,6 +7863,8 @@ namespace wrap {
      * This function silently returns immediately if no asynchronous data was
      * pending or if the simulator is waiting for something that has not been
      * sent yet.
+     *
+     * \throws std::runtime_error When the simulation is in an invalid state.
      */
     void yield() {
       check(raw::dqcs_sim_yield(handle));
@@ -7571,6 +7877,12 @@ namespace wrap {
      * `ArbCmd`s are executed immediately after yielding to the simulator, so
      * all pending asynchronous calls are flushed and executed *before* the
      * `ArbCmd`.
+     *
+     * \param name The instance name of the plugin to send the command to.
+     * \param cmd The command to send.
+     * \returns The `ArbData` object returned by the command.
+     * \throws std::runtime_error When the given name does not identify a
+     * plugin, the command failed, or the simulation is in an invalid state.
      */
     ArbData arb(const std::string &name, ArbCmd &&cmd) {
       return ArbData(check(raw::dqcs_sim_arb(handle, name.c_str(), cmd.get_handle())));
@@ -7583,6 +7895,12 @@ namespace wrap {
      * `ArbCmd`s are executed immediately after yielding to the simulator, so
      * all pending asynchronous calls are flushed and executed *before* the
      * `ArbCmd`.
+     *
+     * \param name The instance name of the plugin to send the command to.
+     * \param cmd The command to send.
+     * \returns The `ArbData` object returned by the command.
+     * \throws std::runtime_error When the given name does not identify a
+     * plugin, the command failed, or the simulation is in an invalid state.
      */
     ArbData arb(const std::string &name, const ArbCmd &cmd) {
       return arb(name, std::move(ArbCmd(cmd)));
@@ -7592,16 +7910,19 @@ namespace wrap {
      * Sends an `ArbCmd` (passed by move) to the given plugin (referenced by
      * index).
      *
-     * The frontend always has index 0. 1 through N are used for the operators
-     * in front to back order (where N is the number of operators). The backend
-     * is at index N+1.
-     *
-     * Python-style negative indices are supported. That is, -1 can be used to
-     * refer to the backend, -2 to the last operator, and so on.
-     *
      * `ArbCmd`s are executed immediately after yielding to the simulator, so
      * all pending asynchronous calls are flushed and executed *before* the
      * `ArbCmd`.
+     *
+     * \param index The index of the plugin to send the command to. The frontend
+     * always has index 0. 1 through N are used for the operators in front to
+     * back order (where N is the number of operators). The backend is at index
+     * N+1. Python-style negative indices are also supported. That is, -1 can be
+     * used to refer to the backend, -2 to the last operator, and so on.
+     * \param cmd The command to send.
+     * \returns The `ArbData` object returned by the command.
+     * \throws std::runtime_error When the given index is out of range, the
+     * command failed, or the simulation is in an invalid state.
      */
     ArbData arb(ssize_t index, ArbCmd &&cmd) {
       return ArbData(check(raw::dqcs_sim_arb_idx(handle, index, cmd.get_handle())));
@@ -7611,24 +7932,31 @@ namespace wrap {
      * Sends an `ArbCmd` (passed by copy) to the given plugin (referenced by
      * index).
      *
-     * The frontend always has index 0. 1 through N are used for the operators
-     * in front to back order (where N is the number of operators). The backend
-     * is at index N+1.
-     *
-     * Python-style negative indices are supported. That is, -1 can be used to
-     * refer to the backend, -2 to the last operator, and so on.
-     *
      * `ArbCmd`s are executed immediately after yielding to the simulator, so
      * all pending asynchronous calls are flushed and executed *before* the
      * `ArbCmd`.
+     *
+     * \param index The index of the plugin to send the command to. The frontend
+     * always has index 0. 1 through N are used for the operators in front to
+     * back order (where N is the number of operators). The backend is at index
+     * N+1. Python-style negative indices are also supported. That is, -1 can be
+     * used to refer to the backend, -2 to the last operator, and so on.
+     * \param cmd The command to send.
+     * \returns The `ArbData` object returned by the command.
+     * \throws std::runtime_error When the given index is out of range, the
+     * command failed, or the simulation is in an invalid state.
      */
     ArbData arb(ssize_t index, const ArbCmd &cmd) {
       return arb(index, std::move(ArbCmd(cmd)));
     }
 
     /**
-     * Queries the implementation name of a plugin, referenced by instance
-     * name.
+     * Queries the class name of a plugin, referenced by instance name.
+     *
+     * \param name The instance name of the plugin to query.
+     * \returns The class name of the plugin.
+     * \throws std::runtime_error When the given name does not identify a
+     * plugin, or when the simulation is in an invalid state.
      */
     std::string get_name(const std::string &name) {
       char *ptr = check(raw::dqcs_sim_get_name(handle, name.c_str()));
@@ -7638,14 +7966,16 @@ namespace wrap {
     }
 
     /**
-     * Queries the implementation name of a plugin, referenced by index.
+     * Queries the class name of a plugin, referenced by index.
      *
-     * The frontend always has index 0. 1 through N are used for the operators
-     * in front to back order (where N is the number of operators). The backend
-     * is at index N+1.
-     *
-     * Python-style negative indices are supported. That is, -1 can be used to
-     * refer to the backend, -2 to the last operator, and so on.
+     * \param index The index of the plugin to query. The frontend always has
+     * index 0. 1 through N are used for the operators in front to back order
+     * (where N is the number of operators). The backend is at index N+1.
+     * Python-style negative indices are also supported. That is, -1 can be
+     * used to refer to the backend, -2 to the last operator, and so on.
+     * \returns The class name of the plugin.
+     * \throws std::runtime_error When the given index is out of range, or when
+     * the simulation is in an invalid state.
      */
     std::string get_name(ssize_t index) {
       char *ptr = check(raw::dqcs_sim_get_name_idx(handle, index));
@@ -7656,6 +7986,11 @@ namespace wrap {
 
     /**
      * Queries the author of a plugin, referenced by instance name.
+     *
+     * \param name The instance name of the plugin to query.
+     * \returns The plugin author.
+     * \throws std::runtime_error When the given name does not identify a
+     * plugin, or when the simulation is in an invalid state.
      */
     std::string get_author(const std::string &name) {
       char *ptr = check(raw::dqcs_sim_get_author(handle, name.c_str()));
@@ -7667,12 +8002,14 @@ namespace wrap {
     /**
      * Queries the author of a plugin, referenced by index.
      *
-     * The frontend always has index 0. 1 through N are used for the operators
-     * in front to back order (where N is the number of operators). The backend
-     * is at index N+1.
-     *
-     * Python-style negative indices are supported. That is, -1 can be used to
-     * refer to the backend, -2 to the last operator, and so on.
+     * \param index The index of the plugin to query. The frontend always has
+     * index 0. 1 through N are used for the operators in front to back order
+     * (where N is the number of operators). The backend is at index N+1.
+     * Python-style negative indices are also supported. That is, -1 can be
+     * used to refer to the backend, -2 to the last operator, and so on.
+     * \returns The plugin author.
+     * \throws std::runtime_error When the given index is out of range, or when
+     * the simulation is in an invalid state.
      */
     std::string get_author(ssize_t index) {
       char *ptr = check(raw::dqcs_sim_get_author_idx(handle, index));
@@ -7683,6 +8020,11 @@ namespace wrap {
 
     /**
      * Queries the version of a plugin, referenced by instance name.
+     *
+     * \param name The instance name of the plugin to query.
+     * \returns The plugin version.
+     * \throws std::runtime_error When the given name does not identify a
+     * plugin, or when the simulation is in an invalid state.
      */
     std::string get_version(const std::string &name) {
       char *ptr = check(raw::dqcs_sim_get_version(handle, name.c_str()));
@@ -7694,12 +8036,14 @@ namespace wrap {
     /**
      * Queries the version of a plugin, referenced by index.
      *
-     * The frontend always has index 0. 1 through N are used for the operators
-     * in front to back order (where N is the number of operators). The backend
-     * is at index N+1.
-     *
-     * Python-style negative indices are supported. That is, -1 can be used to
-     * refer to the backend, -2 to the last operator, and so on.
+     * \param index The index of the plugin to query. The frontend always has
+     * index 0. 1 through N are used for the operators in front to back order
+     * (where N is the number of operators). The backend is at index N+1.
+     * Python-style negative indices are also supported. That is, -1 can be
+     * used to refer to the backend, -2 to the last operator, and so on.
+     * \returns The plugin version.
+     * \throws std::runtime_error When the given index is out of range, or when
+     * the simulation is in an invalid state.
      */
     std::string get_version(ssize_t index) {
       char *ptr = check(raw::dqcs_sim_get_version_idx(handle, index));
@@ -7710,6 +8054,10 @@ namespace wrap {
 
     /**
      * Writes a reproduction file for the simulation so far.
+     *
+     * \param filename The file to write to.
+     * \throws std::runtime_error When the simulation cannot be reproduced or
+     * when it's in an invalid state.
      */
     void write_reproduction_file(const std::string &filename) {
       check(raw::dqcs_sim_write_reproduction_file(handle, filename.c_str()));
@@ -7757,21 +8105,22 @@ namespace wrap {
     /**
      * Appends a plugin to a simulation configuration.
      *
-     * Plugin configurations are always moved into the simulation (they cannot
-     * be copied). Use `std::move()` if you use a named variable for the
-     * plugin configurations.
-     *
      * Frontend and backend plugins will automatically be inserted at the front
      * and back of the pipeline when the simulation is created. Operators are
      * inserted in front to back order. This function does not provide
      * safeguards against multiple frontends/backends; such errors will only be
      * reported when the simulation is started.
      *
-     * Note that it is not possible to observe or mutate a plugin configuration
+     * \note It is not possible to observe or mutate a plugin configuration
      * once it has been added to a simulator configuration handle. If you want
      * to do this for some reason, you should maintain your own data
      * structures, and only build the DQCsim structures from them when you're
      * done.
+     *
+     * \param plugin The plugin configuration object. If not constructed
+     * in-place, this must be `std::move()`d into this method.
+     * \throws std::runtime_error When the simulation or plugin configuration
+     * handle is invalid for some reason.
      */
     void add_plugin(PluginConfiguration &&plugin) {
       check(raw::dqcs_scfg_push_plugin(handle, plugin.get_handle()));
@@ -7781,6 +8130,12 @@ namespace wrap {
      * Appends a plugin to a simulation configuration (builder pattern).
      *
      * @see add_plugin()
+     *
+     * \param plugin The plugin configuration object. If not constructed
+     * in-place, this must be `std::move()`d into this method.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the simulation or plugin configuration
+     * handle is invalid for some reason.
      */
     SimulationConfiguration &with_plugin(PluginConfiguration &&plugin) {
       add_plugin(std::move(plugin));
@@ -7791,6 +8146,10 @@ namespace wrap {
      * Configures the random seed that the simulation should use.
      *
      * Note that the seed is randomized by default.
+     *
+     * \param seed The random seed to use.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     void set_seed(uint64_t seed) {
       check(raw::dqcs_scfg_seed_set(handle, seed));
@@ -7801,6 +8160,11 @@ namespace wrap {
      * pattern).
      *
      * Note that the seed is randomized by default.
+     *
+     * \param seed The random seed to use.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     SimulationConfiguration &with_seed(uint64_t seed) {
       set_seed(seed);
@@ -7809,9 +8173,14 @@ namespace wrap {
 
     /**
      * Returns the configured random seed.
+     *
+     * \returns The configured random seed.
+     *
+     * \note Due to the C interface layer underneath, this function cannot
+     * distinguish between seed 0 and an exception. Therefore, it is
+     * `noexcept`.
      */
-    uint64_t get_seed() const {
-      // NOTE: no check(), cannot distinguish between seed 0 and exception.
+    uint64_t get_seed() const noexcept {
       return raw::dqcs_scfg_seed_get(handle);
     }
 
@@ -7823,6 +8192,10 @@ namespace wrap {
      * However, depending on how you intend to reproduce the simulation later,
      * you may want purely relative or purely absolute paths instead. This
      * function sets the style used.
+     *
+     * \param style The path style to use.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     void set_reproduction_style(PathStyle style) {
       check(raw::dqcs_scfg_repro_path_style_set(handle, to_raw(style)));
@@ -7837,6 +8210,11 @@ namespace wrap {
      * However, depending on how you intend to reproduce the simulation later,
      * you may want purely relative or purely absolute paths instead. This
      * function sets the style used.
+     *
+     * \param style The path style to use.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     SimulationConfiguration &with_reproduction_style(PathStyle style) {
       set_reproduction_style(style);
@@ -7845,6 +8223,10 @@ namespace wrap {
 
     /**
      * Returns the path style used when writing reproduction files.
+     *
+     * \returns The path style used when writing reproduction files.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     PathStyle get_reproduction_style() const {
       return check(raw::dqcs_scfg_repro_path_style_get(handle));
@@ -7855,6 +8237,9 @@ namespace wrap {
      *
      * Calling this will disable the warnings printed when a simulation that
      * cannot be reproduced is constructed.
+     *
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     void disable_reproduction() {
       check(raw::dqcs_scfg_repro_disable(handle));
@@ -7865,6 +8250,10 @@ namespace wrap {
      *
      * Calling this will disable the warnings printed when a simulation that
      * cannot be reproduced is constructed.
+     *
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     SimulationConfiguration &without_reproduction() {
       check(raw::dqcs_scfg_repro_disable(handle));
@@ -7873,6 +8262,10 @@ namespace wrap {
 
     /**
      * Configures the logging verbosity for DQCsim's own messages.
+     *
+     * \param level The verbosity level for DQCsim's own messages.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     void set_dqcsim_verbosity(Loglevel level) {
       check(raw::dqcs_scfg_dqcsim_verbosity_set(handle, to_raw(level)));
@@ -7881,6 +8274,11 @@ namespace wrap {
     /**
      * Configures the logging verbosity for DQCsim's own messages (builder
      * pattern).
+     *
+     * \param level The verbosity level for DQCsim's own messages.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     SimulationConfiguration &with_dqcsim_verbosity(Loglevel level) {
       set_dqcsim_verbosity(level);
@@ -7889,6 +8287,10 @@ namespace wrap {
 
     /**
      * Returns the configured verbosity for DQCsim's own messages.
+     *
+     * \returns The configured verbosity for DQCsim's own messages.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     Loglevel get_dqcsim_verbosity() const {
       return check(raw::dqcs_scfg_dqcsim_verbosity_get(handle));
@@ -7899,6 +8301,10 @@ namespace wrap {
      *
      * That is, the minimum loglevel that a messages needs to have for it to
      * be printed to stderr.
+     *
+     * \param level The verbosity level to set.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     void set_stderr_verbosity(Loglevel level) {
       check(raw::dqcs_scfg_stderr_verbosity_set(handle, to_raw(level)));
@@ -7909,6 +8315,11 @@ namespace wrap {
      *
      * That is, the minimum loglevel that a messages needs to have for it to
      * be printed to stderr.
+     *
+     * \param level The verbosity level to set.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     SimulationConfiguration &with_stderr_verbosity(Loglevel level) {
       set_stderr_verbosity(level);
@@ -7920,6 +8331,10 @@ namespace wrap {
      *
      * That is, the minimum loglevel that a messages needs to have for it to
      * be printed to stderr.
+     *
+     * \returns The configured stderr sink verbosity for a simulation.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     Loglevel get_stderr_verbosity() const {
       return check(raw::dqcs_scfg_stderr_verbosity_get(handle));
@@ -7928,7 +8343,10 @@ namespace wrap {
     /**
      * Configures DQCsim to also output its log messages to a file.
      *
-     * `verbosity` configures the verbosity level for the file only.
+     * \param verbosity The logging verbosity for the tee file.
+     * \param filename The name of the file to log to.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     void log_tee(Loglevel verbosity, const std::string &filename) {
       return check(raw::dqcs_scfg_tee(handle, to_raw(verbosity), filename.c_str()));
@@ -7938,7 +8356,11 @@ namespace wrap {
      * Configures DQCsim to also output its log messages to a file (builder
      * pattern).
      *
-     * `verbosity` configures the verbosity level for the file only.
+     * \param verbosity The logging verbosity for the tee file.
+     * \param filename The name of the file to log to.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     SimulationConfiguration &with_log_tee(Loglevel verbosity, const std::string &filename) {
       log_tee(verbosity, filename);
@@ -7963,6 +8385,12 @@ namespace wrap {
      * \note This callback may be called from a thread spawned by the
      * simulator. Calling any API calls from the callback is therefore
      * undefined behavior!
+     *
+     * \param verbosity The minimum loglevel needed for a log message for
+     * the callback to be called.
+     * \param data The wrapper object for the log callback.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     void set_log_callback_ptr(Loglevel verbosity, callback::Log *data) {
       check(raw::dqcs_scfg_log_callback(
@@ -7987,6 +8415,12 @@ namespace wrap {
      * \note This callback may be called from a thread spawned by the
      * simulator. Calling any API calls from the callback is therefore
      * undefined behavior!
+     *
+     * \param verbosity The minimum loglevel needed for a log message for
+     * the callback to be called.
+     * \param data The wrapper object for the log callback.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     void set_log_callback(Loglevel verbosity, const callback::Log &data) {
       set_log_callback_ptr(verbosity, new callback::Log(data));
@@ -8003,6 +8437,12 @@ namespace wrap {
      * \note This callback may be called from a thread spawned by the
      * simulator. Calling any API calls from the callback is therefore
      * undefined behavior!
+     *
+     * \param verbosity The minimum loglevel needed for a log message for
+     * the callback to be called.
+     * \param data The wrapper object for the log callback.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     void set_log_callback(Loglevel verbosity, callback::Log &&data) {
       set_log_callback_ptr(verbosity, new callback::Log(std::move(data)));
@@ -8019,6 +8459,12 @@ namespace wrap {
      * \note This callback may be called from a thread spawned by the
      * simulator. Calling any API calls from the callback is therefore
      * undefined behavior!
+     *
+     * \param verbosity The minimum loglevel needed for a log message for
+     * the callback to be called.
+     * \param args Any valid argument list for constructing `callback::Log`.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     template<typename... Args>
     void set_log_callback(Loglevel verbosity, Args... args) {
@@ -8037,6 +8483,13 @@ namespace wrap {
      * \note This callback may be called from a thread spawned by the
      * simulator. Calling any API calls from the callback is therefore
      * undefined behavior!
+     *
+     * \param verbosity The minimum loglevel needed for a log message for
+     * the callback to be called.
+     * \param data The wrapper object for the log callback.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     SimulationConfiguration &with_log_callback(Loglevel verbosity, const callback::Log &data) {
       set_log_callback_ptr(verbosity, new callback::Log(data));
@@ -8055,6 +8508,13 @@ namespace wrap {
      * \note This callback may be called from a thread spawned by the
      * simulator. Calling any API calls from the callback is therefore
      * undefined behavior!
+     *
+     * \param verbosity The minimum loglevel needed for a log message for
+     * the callback to be called.
+     * \param data The wrapper object for the log callback.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     SimulationConfiguration &with_log_callback(Loglevel verbosity, callback::Log &&data) {
       set_log_callback_ptr(verbosity, new callback::Log(std::move(data)));
@@ -8073,6 +8533,13 @@ namespace wrap {
      * \note This callback may be called from a thread spawned by the
      * simulator. Calling any API calls from the callback is therefore
      * undefined behavior!
+     *
+     * \param verbosity The minimum loglevel needed for a log message for
+     * the callback to be called.
+     * \param args Any valid argument list for constructing `callback::Log`.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason.
      */
     template<typename... Args>
     SimulationConfiguration &with_log_callback(Loglevel verbosity, Args... args) {
@@ -8091,6 +8558,10 @@ namespace wrap {
      * DQCsim's log system, which uses thread-local storage to determine where
      * log messages should go. If you want to run multiple simulations in
      * parallel, you'll have to run them from different threads.
+     *
+     * \returns The constructed simulation object.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason, or initializing the simulation fails.
      */
     Simulation build() {
       return Simulation(check(raw::dqcs_sim_new(handle)));
@@ -8100,9 +8571,14 @@ namespace wrap {
      * Constructs the DQCsim simulation from this configuration object, and
      * runs a program on the simulated accelerator without an argument.
      *
-     * This is simply a shorthand for `build().run()`. The accelerator return
-     * value is discarded in favor of returning the simulation object, which
-     * you can then call `write_reproduction_file()` on.
+     * This is simply a shorthand for `build()` followed by
+     * `Simulation::run()`. The accelerator return value is discarded in favor
+     * of returning the simulation object, which you can then call
+     * `write_reproduction_file()` on.
+     *
+     * \returns The constructed simulation object.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason, or running the simulation fails.
      */
     Simulation run() {
       Simulation sim = build();
@@ -8115,9 +8591,16 @@ namespace wrap {
      * runs a program on the simulated accelerator with the given `ArbData`
      * argument (passed by move).
      *
-     * This is simply a shorthand for `build().run()`. The accelerator return
-     * value is discarded in favor of returning the simulation object, which
-     * you can then call `write_reproduction_file()` on.
+     * This is simply a shorthand for `build()` followed by
+     * `Simulation::run()`. The accelerator return value is discarded in favor
+     * of returning the simulation object, which you can then call
+     * `write_reproduction_file()` on.
+     *
+     * \param data The `ArbData` object to pass to the frontend's `run`
+     * callback.
+     * \returns The constructed simulation object.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason, or running the simulation fails.
      */
     Simulation run(ArbData &&data) {
       Simulation sim = build();
@@ -8130,9 +8613,16 @@ namespace wrap {
      * runs a program on the simulated accelerator with the given `ArbData`
      * argument (passed by copy).
      *
-     * This is simply a shorthand for `build().run()`. The accelerator return
-     * value is discarded in favor of returning the simulation object, which
-     * you can then call `write_reproduction_file()` on.
+     * This is simply a shorthand for `build()` followed by
+     * `Simulation::run()`. The accelerator return value is discarded in favor
+     * of returning the simulation object, which you can then call
+     * `write_reproduction_file()` on.
+     *
+     * \param data The `ArbData` object to pass to the frontend's `run`
+     * callback.
+     * \returns The constructed simulation object.
+     * \throws std::runtime_error When the simulation configuration handle is
+     * invalid for some reason, or running the simulation fails.
      */
     Simulation run(const ArbData &data) {
       Simulation sim = build();

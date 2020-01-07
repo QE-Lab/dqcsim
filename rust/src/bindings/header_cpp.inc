@@ -29,3 +29,23 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// For Doxygen:
+namespace dqcsim {
+/**
+ * Namespace containing all the symbols defined by the C API.
+ *
+ * When including `<cdqcsim>` instead of `<dqcsim.h>`, the C API symbols are
+ * placed in this namespace. This behavior mimics the C++ standard library,
+ * like how for instance including `<cstring>` gives you `std::memcpy()`
+ * instead of `memcpy()`.
+ *
+ * Note that the `dqcs_`/`DQCS_` namespacing prefixes of the C API remain,
+ * so the full name of the symbols becomes `dqcsim::raw::dqcs_*` etc. The
+ * `dqcsim::wrap` namespace populated in addition by including `<dqcsim>`
+ * provides more C++-like bindings, similar to `<cstring>` versus `<string>`
+ * in the standard library.
+ */
+namespace raw {
+} // namespace raw
+} // namespace dqcsim
