@@ -1,3 +1,8 @@
+## [0.0.8] - 2020-01-09
+
+-  66e4e6f Fix path to wheels in pypi publish job
+-  b91729d Update Rust in Crates.io publish job
+
 ## [0.0.7] - 2020-01-09
 
 -  1d01a4f Fix documentation deploy condition
