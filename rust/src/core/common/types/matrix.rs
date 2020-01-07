@@ -202,7 +202,17 @@ impl Matrix {
     /// Returns new Matrix with control behavior removed from the Matrix, and
     /// the control indices corresponding to the target qubits acting as
     /// control in the original Matrix.
-    pub fn strip_control(&self) -> (Self, HashSet<usize>) {
+    /// `epsilon` specifies the maximum element-wise deviation from the
+    /// identity matrix for the relevant array elements for a qubit to be
+    /// considered a control qubit. Note that if this is greater than zero, the
+    /// resulting gate may not be exactly equivalent. If `ignore_gphase` is
+    /// set, any global phase in the matrix is ignored, but the global phase of
+    /// the non-control submatrix is not changed.
+    pub fn strip_control(
+        &self,
+        _epsilon: f64,
+        _ignore_global_phase: bool,
+    ) -> (Self, HashSet<usize>) {
         todo!()
     }
 

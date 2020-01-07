@@ -216,7 +216,7 @@ pub enum BoundGate {
     R(f64, f64, f64, QubitRef),
     SWAP(QubitRef, QubitRef),
     SQSWAP(QubitRef, QubitRef),
-    U(Matrix, Vec<QubitRef>), // TODO(mb): ref?
+    U(Matrix, Vec<QubitRef>),
 }
 
 impl From<BoundGate> for Gate {

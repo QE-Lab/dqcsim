@@ -43,7 +43,7 @@ pub fn fe_op_be() -> (PluginDefinition, PluginDefinition, PluginDefinition) {
     (frontend, operator, backend)
 }
 
-// TODO: matthijs
+// TODO(mb): fix this test
 // #[test]
 // // This tests bad initialization by plugin type mismatch.
 // fn bad_plugin_type() {

@@ -16,7 +16,7 @@
 //! [`Simulator`]: ../../host/simulator/struct.Simulator.html
 //! [`protocol`]: ../../common/protocol/index.html
 
-// TODO: add example usage or link to plugin implementation instructions
+// TODO(mb): add example usage or link to plugin implementation instructions
 
 use crate::{
     common::{
