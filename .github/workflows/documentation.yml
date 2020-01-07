@@ -45,7 +45,7 @@ jobs:
     name: Deploy
     runs-on: macos-latest
     needs: [build]
-    if: github.event_name == 'push' && github.ref == 'master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
     - uses: actions/download-artifact@v1
       with:
