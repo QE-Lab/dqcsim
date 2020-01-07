@@ -100,6 +100,7 @@ typedef struct {
 } back_data_t;
 
 dqcs_handle_t back_gate_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t gate) {
+  (void)state;
   back_data_t *data = (back_data_t*)user_data;
   gatestream_op_t op;
   dqcs_handle_t meas_data = dqcs_mset_new();
@@ -138,6 +139,7 @@ dqcs_handle_t back_gate_cb(void *user_data, dqcs_plugin_state_t state, dqcs_hand
 }
 
 dqcs_return_t back_advance_cb(void *user_data, dqcs_plugin_state_t state, dqcs_cycle_t cycles) {
+  (void)state;
   back_data_t *data = (back_data_t*)user_data;
   gatestream_op_t op;
 
@@ -149,12 +151,14 @@ dqcs_return_t back_advance_cb(void *user_data, dqcs_plugin_state_t state, dqcs_c
 }
 
 dqcs_return_t op_allocate_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t qubits, dqcs_handle_t alloc_cmds) {
+  (void)user_data;
   size_t ds_qubits = dqcs_qbset_len(qubits) * 2;
   dqcs_handle_delete(qubits);
   return dqcs_plugin_allocate(state, ds_qubits, alloc_cmds) ? dqcs_return_t::DQCS_SUCCESS : dqcs_return_t::DQCS_FAILURE;
 }
 
 dqcs_return_t op_free_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t qubits) {
+  (void)user_data;
   dqcs_handle_t ds_qubits = dqcs_qbset_new();
   while (dqcs_qubit_t qubit = dqcs_qbset_pop(qubits)) {
     dqcs_qbset_push(ds_qubits, qubit * 2 - 1);
@@ -234,6 +238,8 @@ dqcs_return_t op_advance_cb(void *user_data, dqcs_plugin_state_t state, dqcs_cyc
 }
 
 dqcs_handle_t op_modify_measurement_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t meas) {
+  (void)user_data;
+  (void)state;
   dqcs_qubit_t qubit = dqcs_meas_qubit_get(meas);
   dqcs_handle_t meas_data = dqcs_mset_new();
   if (qubit % 2 == 0) {
@@ -284,6 +290,9 @@ dqcs_handle_t op_modify_measurement_cb(void *user_data, dqcs_plugin_state_t stat
 // Test a stream of gates and advancements without fetching any measurement
 // results.
 dqcs_return_t initialize_cb_no_feedback(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
+  (void)user_data;
+  (void)state;
+  (void)init_cmds;
   ALLOC(10);
   EXPECT_CYCLE(0);
   GATE("MEAS", QUBITS(), QUBITS(), QUBITS(1, 2, 3, 4, 5));
@@ -419,6 +428,7 @@ TEST(plugin_gates, no_feedback_with_broken_operator) {
 // Test a stream of gates and advancements without fetching any measurement
 // results.
 dqcs_return_t initialize_cb_with_feedback(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
+  (void)init_cmds;
   long test = (long)user_data;
 
   // Measure non-existant qubit.

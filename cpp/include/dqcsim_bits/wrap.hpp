@@ -340,6 +340,8 @@ namespace wrap {
       case HandleType::BackendDefinition:     return raw::dqcs_handle_type_t::DQCS_HTYPE_BACK_DEF;
       case HandleType::PluginJoinHandle:      return raw::dqcs_handle_type_t::DQCS_HTYPE_PLUGIN_JOIN;
     }
+    std::cerr << "unknown handle type" << std::endl;
+    std::terminate();
   }
 
   /**
@@ -374,6 +376,7 @@ namespace wrap {
       case raw::dqcs_handle_type_t::DQCS_HTYPE_PLUGIN_JOIN:          return HandleType::PluginJoinHandle;
       case raw::dqcs_handle_type_t::DQCS_HTYPE_INVALID:              throw std::runtime_error(raw::dqcs_error_get());
     }
+    throw std::invalid_argument("unknown handle type");
   }
 
   /**
@@ -476,6 +479,8 @@ namespace wrap {
       case Loglevel::Trace: return raw::dqcs_loglevel_t::DQCS_LOG_TRACE;
       case Loglevel::Pass:  return raw::dqcs_loglevel_t::DQCS_LOG_PASS;
     }
+    std::cerr << "unknown loglevel" << std::endl;
+    std::terminate();
   }
 
   /**
@@ -500,6 +505,7 @@ namespace wrap {
       case raw::dqcs_loglevel_t::DQCS_LOG_PASS:     return Loglevel::Pass;
       case raw::dqcs_loglevel_t::DQCS_LOG_INVALID:  throw std::runtime_error(raw::dqcs_error_get());
     }
+    throw std::invalid_argument("unknown loglevel");
   }
 
   /**
@@ -541,6 +547,8 @@ namespace wrap {
       case MeasurementValue::One:       return raw::dqcs_measurement_t::DQCS_MEAS_ONE;
       case MeasurementValue::Undefined: return raw::dqcs_measurement_t::DQCS_MEAS_UNDEFINED;
     }
+    std::cerr << "unknown measurement value" << std::endl;
+    std::terminate();
   }
 
   /**
@@ -559,6 +567,7 @@ namespace wrap {
       case raw::dqcs_measurement_t::DQCS_MEAS_UNDEFINED: return MeasurementValue::Undefined;
       case raw::dqcs_measurement_t::DQCS_MEAS_INVALID:   throw std::runtime_error(raw::dqcs_error_get());
     }
+    throw std::invalid_argument("unknown measurement value");
   }
 
   /**
@@ -602,6 +611,8 @@ namespace wrap {
       case PathStyle::Relative: return raw::dqcs_path_style_t::DQCS_PATH_STYLE_RELATIVE;
       case PathStyle::Absolute: return raw::dqcs_path_style_t::DQCS_PATH_STYLE_ABSOLUTE;
     }
+    std::cerr << "unknown path style" << std::endl;
+    std::terminate();
   }
 
   /**
@@ -620,6 +631,7 @@ namespace wrap {
       case raw::dqcs_path_style_t::DQCS_PATH_STYLE_ABSOLUTE:  return PathStyle::Absolute;
       case raw::dqcs_path_style_t::DQCS_PATH_STYLE_INVALID:   throw std::runtime_error(raw::dqcs_error_get());
     }
+    throw std::invalid_argument("unknown path style");
   }
 
   /**
@@ -659,6 +671,8 @@ namespace wrap {
       case PluginType::Operator:  return raw::dqcs_plugin_type_t::DQCS_PTYPE_OPER;
       case PluginType::Backend:   return raw::dqcs_plugin_type_t::DQCS_PTYPE_BACK;
     }
+    std::cerr << "unknown plugin type" << std::endl;
+    std::terminate();
   }
 
   /**
@@ -677,6 +691,7 @@ namespace wrap {
       case raw::dqcs_plugin_type_t::DQCS_PTYPE_BACK:    return PluginType::Backend;
       case raw::dqcs_plugin_type_t::DQCS_PTYPE_INVALID: throw std::runtime_error(raw::dqcs_error_get());
     }
+    throw std::invalid_argument("unknown plugin type");
   }
 
   /**
@@ -1946,6 +1961,7 @@ namespace wrap {
     ArbCmdQueue &operator=(ArbCmdQueue &src) {
       free();
       handle = ArbCmdQueue::from_iter(src.copy_into_vector()).take_handle();
+      return *this;
     }
 
     /**
@@ -2550,6 +2566,9 @@ namespace wrap {
     ) const {
       // TODO connect to API when it becomes available with the `gatemap`
       // branch/PR
+      (void)other;
+      (void)epsilon;
+      (void)ignore_gphase;
       throw std::logic_error("not yet implemented");
     }
 
@@ -4066,6 +4085,7 @@ namespace wrap {
      */
     MeasurementSet &&with(Measurement &&measurement) {
       set(std::move(measurement));
+      return std::move(*this);
     }
 
     /**
@@ -4080,6 +4100,7 @@ namespace wrap {
      */
     MeasurementSet &&with(const Measurement &measurement) {
       set(measurement);
+      return std::move(*this);
     }
 
     /**
@@ -4226,6 +4247,7 @@ namespace wrap {
     MeasurementSet &operator=(MeasurementSet &src) {
       free();
       handle = MeasurementSet::from_iter(src.copy_into_vector()).take_handle();
+      return *this;
     }
 
     /**
@@ -4809,7 +4831,7 @@ namespace wrap {
      * exception is received, or this is called by a backend plugin.
      */
     ArbData arb(const ArbCmd &cmd) {
-      arb(std::move(ArbCmd(cmd)));
+      return arb(std::move(ArbCmd(cmd)));
     }
 
     /**

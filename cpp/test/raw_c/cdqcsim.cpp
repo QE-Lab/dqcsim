@@ -40,6 +40,8 @@ typedef struct {
   } while (0)
 
 dqcsim::raw::dqcs_return_t initialize_cb(void *user_data, dqcsim::raw::dqcs_plugin_state_t state, dqcsim::raw::dqcs_handle_t init_cmds) {
+  (void)state;
+  (void)init_cmds;
   dqcsim::raw::dqcs_log_info("!@#$ Initialize: %s", (const char*)user_data);
 
   dqcsim::raw::dqcs_log_trace("!@#$ Trace");
@@ -54,11 +56,15 @@ dqcsim::raw::dqcs_return_t initialize_cb(void *user_data, dqcsim::raw::dqcs_plug
 }
 
 dqcsim::raw::dqcs_return_t initialize_cb_simple(void *user_data, dqcsim::raw::dqcs_plugin_state_t state, dqcsim::raw::dqcs_handle_t init_cmds) {
+  (void)state;
+  (void)init_cmds;
   dqcsim::raw::dqcs_log_info("!@#$ Initialize: %s", (const char*)user_data);
   return dqcsim::raw::dqcs_return_t::DQCS_SUCCESS;
 }
 
 dqcsim::raw::dqcs_return_t initialize_cb_fail(void *user_data, dqcsim::raw::dqcs_plugin_state_t state, dqcsim::raw::dqcs_handle_t init_cmds) {
+  (void)state;
+  (void)init_cmds;
   dqcsim::raw::dqcs_log_info("!@#$ Initialize: %s", (const char*)user_data);
   std::string s = std::string("Here's an error from ") + (const char*)user_data;
   dqcsim::raw::dqcs_error_set(s.c_str());
@@ -66,11 +72,13 @@ dqcsim::raw::dqcs_return_t initialize_cb_fail(void *user_data, dqcsim::raw::dqcs
 }
 
 dqcsim::raw::dqcs_return_t drop_cb(void *user_data, dqcsim::raw::dqcs_plugin_state_t state) {
+  (void)state;
   dqcsim::raw::dqcs_log_info("!@#$ Drop: %s", (const char*)user_data);
   return dqcsim::raw::dqcs_return_t::DQCS_SUCCESS;
 }
 
 dqcsim::raw::dqcs_return_t drop_cb_fail(void *user_data, dqcsim::raw::dqcs_plugin_state_t state) {
+  (void)state;
   dqcsim::raw::dqcs_log_info("!@#$ Drop: %s", (const char*)user_data);
   std::string s = std::string("Here's an error from ") + (const char*)user_data;
   dqcsim::raw::dqcs_error_set(s.c_str());
@@ -90,6 +98,13 @@ void log_cb(
   uint32_t pid,
   uint64_t tid
 ) {
+  (void)module;
+  (void)file;
+  (void)line;
+  (void)time_s;
+  (void)time_ns;
+  (void)pid;
+  (void)tid;
   data_t *data = (data_t*)user;
   if (!strncmp(message, "!@#$ ", 5)) {
     log_msg_t msg = {

@@ -38,12 +38,14 @@ dqcs_return_t free_cb_oper(void *user_data, dqcs_plugin_state_t state, dqcs_hand
 }
 
 dqcs_return_t allocate_cb_back(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t qubits, dqcs_handle_t alloc_cmds) {
+  (void)state;
   log_op(user_data, true, qubits);
   dqcs_handle_delete(alloc_cmds);
   return dqcs_return_t::DQCS_SUCCESS;
 }
 
 dqcs_return_t free_cb_back(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t qubits) {
+  (void)state;
   log_op(user_data, false, qubits);
   return dqcs_return_t::DQCS_SUCCESS;
 }
@@ -94,6 +96,7 @@ dqcs_return_t free_cb_back(void *user_data, dqcs_plugin_state_t state, dqcs_hand
 namespace alloc_free {
 
   dqcs_return_t initialize_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
+    (void)init_cmds;
     ALLOC(2);
     FREE_FAIL("Invalid argument: qubit 3 is not allocated", 1, 2, 3);
     ALLOC(3);

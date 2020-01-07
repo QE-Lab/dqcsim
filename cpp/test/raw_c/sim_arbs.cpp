@@ -37,6 +37,7 @@ TEST(sim_arbs, host_defaults) {
 }
 
 dqcs_handle_t test_arb_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t cmd) {
+  (void)state;
   char *s;
   std::string json = "";
   json += "{\"x\":[\"";
@@ -146,6 +147,7 @@ TEST(sim_arbs, host_nondefault) {
 }
 
 dqcs_handle_t fwd_arb_downstream_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t cmd) {
+  (void)user_data;
   return dqcs_plugin_arb(state, cmd);
 }
 

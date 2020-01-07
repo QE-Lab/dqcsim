@@ -237,6 +237,17 @@ void log_cb(
   uint32_t pid,
   uint64_t tid
 ) {
+  (void)user;
+  (void)message;
+  (void)logger;
+  (void)level;
+  (void)module;
+  (void)file;
+  (void)line;
+  (void)time_s;
+  (void)time_ns;
+  (void)pid;
+  (void)tid;
 }
 
 void free_cb(void *user) {
