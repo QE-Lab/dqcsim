@@ -5,9 +5,9 @@ coverage:
         threshold: 1
       rust:
         paths: rust/
-      cpp:
-        paths: 
-          - cpp/
-          - target/include/
+      # cpp:
+      #   paths:
+      #     - cpp/
+      #     - target/include/
       python:
         paths: python/
