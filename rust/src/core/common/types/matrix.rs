@@ -1,4 +1,5 @@
-use crate::common::util::log_2;
+use crate::common::{error::Result, types::Detector, util::log_2};
+use integer_sqrt::IntegerSquareRoot;
 use num_complex::Complex64;
 use serde::{Deserialize, Serialize};
 #[cfg(feature = "bindings")]
@@ -22,7 +23,7 @@ pub struct Matrix {
     dimension: usize,
 }
 
-/// This mod provides ser/de for Vec<Complex64>
+/// This mod provides ser/de for Vec<Complex64>.
 mod complex_serde {
     use super::Complex64;
     use serde::{
@@ -37,7 +38,7 @@ mod complex_serde {
         im: f64,
     }
 
-    pub fn serialize<S>(value: &[Complex64], serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(value: &[Complex64], serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
@@ -67,9 +68,8 @@ impl Hash for Matrix {
         // However, since Hash here is used to cache results false negatives
         // don't break anything.
         self.data.iter().for_each(|c| {
-            let (a, b) = complex64_as_bytes(c);
-            a.hash(state);
-            b.hash(state);
+            c.re.to_le_bytes().hash(state);
+            c.im.to_le_bytes().hash(state);
         });
     }
 }
@@ -77,13 +77,11 @@ impl Hash for Matrix {
 // Byte-wise PartialEq for Matrix.
 impl PartialEq for Matrix {
     fn eq(&self, other: &Self) -> bool {
-        // This results in an byte-wise comparison to determine Eq.
+        // This is a byte-wise comparison to determine Eq.
         self.len() == other.len()
-            && self
-                .data
-                .iter()
-                .zip(other.data.iter())
-                .all(|(x, y)| complex64_as_bytes(x) == complex64_as_bytes(y))
+            && self.data.iter().zip(other.data.iter()).all(|(x, y)| {
+                x.re.to_le_bytes() == y.re.to_le_bytes() && x.im.to_le_bytes() == y.im.to_le_bytes()
+            })
     }
 }
 
@@ -138,19 +136,37 @@ impl IntoIterator for Matrix {
 }
 
 impl Matrix {
+    /// Returns a Box<Detector<T>> for this Matrix.
+    pub fn into_detector<T: Clone + 'static>(
+        self,
+        epsilon: f64,
+        ignore_global_phase: bool,
+        value: T,
+    ) -> Box<Detector<T>> {
+        Box::new(move |input: &Matrix| -> Result<Option<T>> {
+            Ok(if self.approx_eq(input, epsilon, ignore_global_phase) {
+                Some(value.clone())
+            } else {
+                None
+            })
+        })
+    }
+}
+
+impl Matrix {
     /// Returns a new Matrix with provided elements.
     pub fn new(elements: impl IntoIterator<Item = Complex64>) -> Self {
         let elements = elements.into_iter().collect::<Vec<Complex64>>();
-        // TODO(mb): fix
-        let dimension = (elements.len() as f64).sqrt() as usize;
         Matrix {
+            dimension: elements.len().integer_sqrt(),
             data: elements,
-            dimension,
         }
     }
 
     /// Approximately compares this Matrix with another Matrix.
-    /// TODO(mb): add details about this comparison
+    /// `epsilon` specifies the maximum element-wise root-mean-square error
+    /// between the matrices that results in a positive match. `ignore_phase`
+    /// specifies whether the aforementioned check should ignore global phase.
     pub fn approx_eq(&self, other: &Matrix, epsilon: f64, ignore_global_phase: bool) -> bool {
         // Sizes must match
         if self.len() != other.len() {
@@ -187,7 +203,7 @@ impl Matrix {
     /// the control indices corresponding to the target qubits acting as
     /// control in the original Matrix.
     pub fn strip_control(&self) -> (Self, HashSet<usize>) {
-        unimplemented!()
+        todo!()
     }
 
     /// Returns the number of elements in the Matrix.
@@ -220,11 +236,6 @@ impl Matrix {
     pub(crate) fn as_ptr(&self) -> *const c_double {
         self.data.as_ptr() as *const c_double
     }
-}
-
-// This looks likes nothing to me.
-fn complex64_as_bytes(c: &Complex64) -> (u64, u64) {
-    unsafe { (std::mem::transmute(c.re), std::mem::transmute(c.im)) }
 }
 
 #[cfg(test)]

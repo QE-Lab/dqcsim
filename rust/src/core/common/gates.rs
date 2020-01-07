@@ -1,5 +1,10 @@
 //! Helper functions for common quantum Gates
-use crate::common::types::{matrix_detector, Detector, Gate, Matrix, QubitRef};
+use crate::common::{
+    error,
+    types::{
+        detect_r, detect_rk, detect_rx, detect_ry, detect_rz, Detector, Gate, Matrix, QubitRef,
+    },
+};
 
 use std::{
     convert::{TryFrom, TryInto},
@@ -38,25 +43,53 @@ pub enum GateType {
 }
 
 impl GateType {
-    pub fn into_detector<T: Default>(
+    pub fn into_detector(
         self,
         epsilon: f64,
         ignore_global_phase: bool,
-    ) -> Box<Detector<T>> {
-        let unbound_gate: Result<UnboundGate, _> = self.try_into();
-        if let Ok(unbound_gate) = unbound_gate {
-            matrix_detector(unbound_gate.into(), epsilon, ignore_global_phase)
-        } else {
-            match self {
-                GateType::RX => unimplemented!(),
-                GateType::RY => unimplemented!(),
-                GateType::RK => unimplemented!(),
-                GateType::RZ => unimplemented!(),
-                GateType::R => unimplemented!(),
-                GateType::U(_matrix) => unimplemented!(),
-                _ => unreachable!(),
-            }
+    ) -> Box<Detector<UnboundGate>> {
+        match TryInto::<UnboundGate>::try_into(self) {
+            Ok(gate) => gate.into_detector(epsilon, ignore_global_phase),
+            Err(_) => Box::new(
+                move |input: &Matrix| -> error::Result<Option<UnboundGate>> {
+                    Ok(match self {
+                        GateType::RX => {
+                            detect_rx(input, epsilon, ignore_global_phase).map(UnboundGate::RX)
+                        }
+                        GateType::RY => {
+                            detect_ry(input, epsilon, ignore_global_phase).map(UnboundGate::RY)
+                        }
+                        GateType::RZ => {
+                            detect_rz(input, epsilon, ignore_global_phase).map(UnboundGate::RZ)
+                        }
+                        GateType::RK => {
+                            detect_rk(input, epsilon, ignore_global_phase).map(UnboundGate::RK)
+                        }
+                        GateType::R => detect_r(input, epsilon, ignore_global_phase)
+                            .map(|(theta, phi, lambda)| UnboundGate::R(theta, phi, lambda)),
+                        GateType::U(dim) => {
+                            if input.num_qubits() == Some(dim) {
+                                Some(UnboundGate::U(input.to_owned()))
+                            } else {
+                                None
+                            }
+                        }
+                        _ => None,
+                    })
+                },
+            ),
         }
+    }
+}
+
+impl UnboundGate {
+    pub fn into_detector(
+        self,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> Box<Detector<UnboundGate>> {
+        let matrix: Matrix = self.clone().into();
+        matrix.into_detector(epsilon, ignore_global_phase, self)
     }
 }
 
@@ -127,6 +160,7 @@ impl TryFrom<GateType> for UnboundGate {
 // impl From<BoundGate> for Detector<T> {}
 // impl TryFrom<Gate> for BoundGate {}
 
+#[derive(Clone, Debug, PartialEq)]
 pub enum UnboundGate {
     I,
     X,

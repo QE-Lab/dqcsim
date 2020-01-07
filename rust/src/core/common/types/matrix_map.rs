@@ -13,10 +13,13 @@ use std::{
 };
 
 /// MatrixMap type to detect gates based on their matrices.
-/// Users can add a key for every registered detector and link this to a type
-/// T. A MatrixMap can be constructed using a MatrixMapBuilder.
+/// Users can add a key K for every registered detector and link this to an
+/// instance of type T via the detector function. A MatrixMap is constructed
+/// with a MatrixMapBuilder.
 pub struct MatrixMap<T, K> {
+    /// The set of detector functions.
     detectors: Vec<(K, Box<Detector<T>>)>,
+    /// The inverse map used as a cache.
     map: RefCell<HashMap<Matrix, Option<(K, T)>>>,
 }
 
@@ -26,12 +29,12 @@ impl<T, K> Debug for MatrixMap<T, K> {
     }
 }
 
-/// A Detector is a function which gets a reference to a Matrix and returns an
+/// A Detector is a function that gets a reference to a Matrix and returns an
 /// Result with an Option of T.
 pub type Detector<T> = dyn Fn(&Matrix) -> Result<Option<T>>;
 
 impl<T: Clone, K: Clone> MatrixMap<T, K> {
-    /// Returns a new MatrixMapBuilder to construxt a MatrixMap.
+    /// Returns a new MatrixMapBuilder to construct a MatrixMap.
     pub fn builder() -> MatrixMapBuilder<T, K> {
         MatrixMapBuilder::new()
     }
@@ -47,15 +50,15 @@ impl<T: Clone, K: Clone> MatrixMap<T, K> {
     pub fn detectors(&self) -> &[(K, Box<Detector<T>>)] {
         self.detectors.as_slice()
     }
-    /// Clear the cache.
+    /// Clears the cache.
     pub fn clear_cache(&self) {
         self.map.borrow_mut().clear();
     }
 }
 
-impl<'a, T: 'a + Clone, K: 'a + Clone + PartialEq> MatrixMap<T, K> {
+impl<T: Clone, K: Clone + PartialEq> MatrixMap<T, K> {
     /// Check this MatrixMap for the provided Matrix, using the detectors with
-    /// provided keys. This never uses or updates the internal cache.
+    /// provided keys. This skips the internal cache.
     pub fn detect_with(&self, input: &Matrix, keys: &[K]) -> Result<Option<(K, T)>> {
         self.run_detectors(
             input,
@@ -65,19 +68,20 @@ impl<'a, T: 'a + Clone, K: 'a + Clone + PartialEq> MatrixMap<T, K> {
     }
 }
 
-impl<'a, T: 'a + Clone, K: 'a + Clone> MatrixMap<T, K> {
+impl<T: Clone, K: Clone> MatrixMap<T, K> {
     /// Check this MatrixMap for the provided Matrix.
     pub fn detect(&self, input: &Matrix) -> Result<Option<(K, T)>> {
         {
-            let hit = self.map.borrow().get(input).cloned();
-            if let Some(hit) = hit {
-                // TODO(mb): option_flattening
+            let hit = self.map.borrow().get(input).cloned().flatten();
+            if hit.is_some() {
                 return Ok(hit);
             }
         }
         self.run_detectors(input, self.detectors.iter(), true)
     }
+}
 
+impl<'a, T: 'a + Clone, K: 'a + Clone> MatrixMap<T, K> {
     /// Internal method to run detectors in iterator for the given Matrix.
     /// Caching can be enabled by setting the cache parameter.
     fn run_detectors(
@@ -103,10 +107,10 @@ impl<'a, T: 'a + Clone, K: 'a + Clone> MatrixMap<T, K> {
     }
 }
 
-impl<T: 'static + Clone + Default> Default for MatrixMap<T, GateType> {
+impl Default for MatrixMap<UnboundGate, ()> {
     fn default() -> Self {
         MatrixMap::builder()
-            .with_defaults(0, 1e-6, true)
+            .with_defaults(0, 1e-6, true, ())
             .unwrap()
             .finish()
     }
@@ -122,15 +126,16 @@ impl<T, K> Debug for MatrixMapBuilder<T, K> {
     }
 }
 
-impl<T: 'static + Default> MatrixMapBuilder<T, GateType> {
+impl<K: Clone> MatrixMapBuilder<UnboundGate, K> {
     /// Adds default detectors to this MatrixMapBuilder.
     pub fn with_defaults(
         mut self,
         version: usize,
         epsilon: f64,
         ignore_global_phase: bool,
+        key: K,
     ) -> Result<Self> {
-        self.add_defaults(version, epsilon, ignore_global_phase)?;
+        self.add_defaults(version, epsilon, ignore_global_phase, key)?;
         Ok(self)
     }
 
@@ -140,6 +145,7 @@ impl<T: 'static + Default> MatrixMapBuilder<T, GateType> {
         version: usize,
         epsilon: f64,
         ignore_global_phase: bool,
+        key: K,
     ) -> Result<()> {
         if version != 0 {
             inv_arg("Version should be set to zero.")
@@ -163,11 +169,23 @@ impl<T: 'static + Default> MatrixMapBuilder<T, GateType> {
                 GateType::RZ90,
                 GateType::RZM90,
                 GateType::RZ180,
+                GateType::RX,
+                GateType::RY,
+                GateType::RK,
+                GateType::RZ,
+                GateType::R,
                 GateType::SWAP,
                 GateType::SQSWAP,
+                GateType::U(1),
+                GateType::U(2),
+                GateType::U(3),
+                GateType::U(4),
+                GateType::U(5),
+                GateType::U(6),
+                GateType::U(7),
             ] {
                 self.add_detector(
-                    *gate_type,
+                    key.clone(),
                     gate_type.into_detector(epsilon, ignore_global_phase),
                 );
             }
@@ -224,20 +242,21 @@ impl<T, K> From<MatrixMapBuilder<T, K>> for MatrixMap<T, K> {
     }
 }
 
-/// Returns a detector function which detects the given Matrix.
-pub fn matrix_detector<T: Default>(
-    matrix: Matrix,
-    epsilon: f64,
-    ignore_global_phase: bool,
-) -> Box<dyn Fn(&Matrix) -> Result<Option<T>>> {
-    Box::new(move |input: &Matrix| -> Result<Option<T>> {
-        Ok(if matrix.approx_eq(input, epsilon, ignore_global_phase) {
-            Some(T::default())
-        } else {
-            None
-        })
-    })
-}
+// /// Returns a detector function which detects the given Matrix.
+// pub fn matrix_detector<T: 'static + Clone>(
+//     matrix: Matrix,
+//     epsilon: f64,
+//     ignore_global_phase: bool,
+//     t: T,
+// ) -> Box<Detector<T>> {
+//     Box::new(move |input: &Matrix| -> Result<Option<T>> {
+//         Ok(if matrix.approx_eq(input, epsilon, ignore_global_phase) {
+//             Some(t.clone())
+//         } else {
+//             None
+//         })
+//     })
+// }
 
 /// Assuming that there is an x and y for which the inputs are equal to the
 /// following equations:
@@ -369,14 +388,38 @@ pub fn detect_r(
 mod test {
     use super::*;
     use crate::common::{gates::UnboundGate, util::log_2};
+    use float_cmp::approx_eq;
     use std::convert::TryInto;
 
     #[test]
     fn default() {
-        let mm: MatrixMap<bool, GateType> = MatrixMap::default();
+        let mm: MatrixMap<UnboundGate, ()> = MatrixMap::default();
         let gate = GateType::X;
         let matrix: UnboundGate = gate.try_into().unwrap();
-        assert_eq!(mm.detect(&matrix.into()).unwrap().unwrap().0, GateType::X)
+        assert_eq!(
+            mm.detect(&matrix.into()).unwrap().unwrap().1,
+            UnboundGate::X
+        );
+        let matrix: Matrix = UnboundGate::RX(0.12).into();
+        assert!(approx_eq!(
+            f64,
+            0.12,
+            if let UnboundGate::RX(x) = mm.detect(&matrix).unwrap().unwrap().1 {
+                x
+            } else {
+                panic!()
+            }
+        ));
+        let matrix: Matrix = UnboundGate::RY(1.23).into();
+        assert!(approx_eq!(
+            f64,
+            1.23,
+            if let UnboundGate::RY(x) = mm.detect(&matrix).unwrap().unwrap().1 {
+                x
+            } else {
+                panic!()
+            }
+        ));
     }
 
     #[test]
@@ -468,7 +511,7 @@ mod test {
                             assert_eq!((rx.unwrap() * steps as f64 / PI).round() as i32, -th);
                         } else if th == 0 && ph == -lm {
                             assert_eq!((rx.unwrap() * steps as f64 / PI).round() as i32, 0);
-                        } else if !rx.is_none() {
+                        } else if rx.is_some() {
                             panic!("{} {} {} {} = rx?", th, ph, lm, al);
                         }
 
@@ -478,7 +521,7 @@ mod test {
                             assert_eq!((ry.unwrap() * steps as f64 / PI).round() as i32, th);
                         } else if th == 0 && ph == -lm {
                             assert_eq!((ry.unwrap() * steps as f64 / PI).round() as i32, 0);
-                        } else if !ry.is_none() {
+                        } else if ry.is_some() {
                             panic!("{} {} {} {} = ry?", th, ph, lm, al);
                         }
 
@@ -487,7 +530,7 @@ mod test {
                         if th == 0 {
                             let x = lm + ph - (rz.unwrap() * steps as f64 / PI).round() as i32;
                             assert_eq!(x % (steps * 2), 0);
-                        } else if !rz.is_none() {
+                        } else if rz.is_some() {
                             panic!("{} {} {} {} = rz?", th, ph, lm, al);
                         }
 
@@ -497,7 +540,7 @@ mod test {
                             let x = ((lm + ph).rem_euclid(steps * 2)) as usize;
                             let k = log_2(x).map(|x| l2steps - x);
                             assert_eq!(k, rk);
-                        } else if !rk.is_none() {
+                        } else if rk.is_some() {
                             panic!("{} {} {} {} = rk?", th, ph, lm, al);
                         }
 

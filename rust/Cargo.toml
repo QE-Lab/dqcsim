@@ -71,6 +71,7 @@ num-complex = "0.2"
 is_executable = "0.1"
 backtrace = "0.3"
 float-cmp = "0.6"
+integer-sqrt = "0.1"
 structopt = { version = "0.3", optional = true }
 ansi_term = { version = "0.12", optional = true }
 clap = { version = "2.33", optional = true }

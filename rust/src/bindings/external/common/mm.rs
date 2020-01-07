@@ -1,5 +1,5 @@
 use super::*;
-use crate::common::{gates::GateType, types::matrix_detector};
+use crate::common::gates::{GateType, UnboundGate};
 use std::rc::Rc;
 
 /// Constructs a new matrix map builder.
@@ -33,11 +33,10 @@ pub extern "C" fn dqcs_mmb_new() -> dqcs_handle_t {
 ///> parameterized. The following exceptions exist:
 ///>
 ///>  - `DQCS_GATE_RX`, `DQCS_GATE_RY`, and `DQCS_GATE_RZ` push a 64-bit double
-///>    floating point with the angle in addition to the enum.
-///>  - `DQCS_GATE_RK` pushes a 32-bit integer with the k parameter in addition
-///>    to the enum.
-///>  - `DQCS_GATE_R` pushes a the three double floating point angles in
-///>    addition to the enum (ordered theta, phi, lambda).
+///>    floating point with the angle.
+///>  - `DQCS_GATE_RK` pushes a 32-bit integer with the k parameter.
+///>  - `DQCS_GATE_R` pushes a the three double floating point angles (ordered
+///>    theta, phi, lambda).
 ///>  - `DQCS_GATE_U` pushes the entire matrix as a single argument consisting
 ///>    of 2**N * 2**N * 2 doubles, in real-first row-major format (same as the
 ///>    other matrix definitions in DQCsim).
@@ -54,7 +53,47 @@ pub extern "C" fn dqcs_mmb_add_internal(
         resolve!(mmb as &mut MatrixMapBuilderC);
         let key = Rc::new(UserData::new(key_free, key_data));
         if let Some(gate) = Into::<Option<GateType>>::into(gate) {
-            mmb.add_detector(key, gate.into_detector(epsilon, ignore_gphase));
+            let detector = gate.into_detector(epsilon, ignore_gphase);
+            mmb.add_detector(
+                key,
+                Box::new(move |input: &Matrix| -> Result<Option<ArbData>> {
+                    detector(input).map(|gate| {
+                        gate.map(|gate| match gate {
+                            UnboundGate::RX(theta) => {
+                                ArbData::from_args(vec![theta.to_ne_bytes().to_vec()])
+                            }
+                            UnboundGate::RY(theta) => {
+                                ArbData::from_args(vec![theta.to_ne_bytes().to_vec()])
+                            }
+                            UnboundGate::RK(k) => {
+                                ArbData::from_args(vec![(k as u32).to_ne_bytes().to_vec()])
+                            }
+                            UnboundGate::RZ(theta) => {
+                                ArbData::from_args(vec![theta.to_ne_bytes().to_vec()])
+                            }
+                            UnboundGate::R(theta, phi, lambda) => ArbData::from_args(
+                                vec![
+                                    theta.to_ne_bytes().to_vec(),
+                                    phi.to_ne_bytes().to_vec(),
+                                    lambda.to_ne_bytes().to_vec(),
+                                ]
+                                .to_vec(),
+                            ),
+                            UnboundGate::U(matrix) => ArbData::from_args(
+                                matrix
+                                    .into_iter()
+                                    .map(|c| {
+                                        let mut re = c.re.to_ne_bytes().to_vec();
+                                        re.append(&mut c.im.to_ne_bytes().to_vec());
+                                        re
+                                    })
+                                    .collect::<Vec<Vec<u8>>>(),
+                            ),
+                            _ => ArbData::default(),
+                        })
+                    })
+                }),
+            );
             Ok(())
         } else {
             inv_arg("invalid gate")
@@ -97,7 +136,10 @@ pub extern "C" fn dqcs_mmb_add_fixed(
         let matrix: Matrix = receive_matrix_raw(matrix, matrix_len)?
             .ok_or_else(oe_inv_arg("empty matrix"))?
             .into();
-        mmb.add_detector(key, matrix_detector(matrix, epsilon, ignore_gphase));
+        mmb.add_detector(
+            key,
+            matrix.into_detector(epsilon, ignore_gphase, ArbData::default()),
+        );
         Ok(())
     })
 }
