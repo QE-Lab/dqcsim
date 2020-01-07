@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["Channel","Channel abstraction."],["Receiver","Receiver side of a channel."],["Sender","Sender side of a channel."]],"type":[["CrossbeamChannel",""],["DownstreamChannel",""],["IpcChannel",""],["PluginChannel",""],["SimulatorChannel",""],["UpstreamChannel",""]]});

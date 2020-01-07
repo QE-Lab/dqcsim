@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["HostCall","Represents a host API call."]],"struct":[["PluginModification","Represents a nonfunctional configuration modification for a previously defined plugin."],["PluginReproduction","The contents of a plugin configuration in a reproduction file."],["Reproduction","The contents of a reproduction file."]]});

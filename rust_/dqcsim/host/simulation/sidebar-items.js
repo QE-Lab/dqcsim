@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Simulation","Simulation instance."]],"type":[["Pipeline","Type alias for a pipeline of Plugin trait objects."]]});

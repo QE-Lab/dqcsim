@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `dqcs_pdef_set_gate_cb` fn in crate `dqcsim`."><meta name="keywords" content="rust, rustlang, rust-lang, dqcs_pdef_set_gate_cb"><title>dqcsim::bindings::dqcs_pdef_set_gate_cb - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc fn"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../dqcsim/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a><div class="sidebar-elems"><p class='location'><a href='../index.html'>dqcsim</a>::<wbr><a href='index.html'>bindings</a></p><script>window.sidebarCurrent = {name: 'dqcs_pdef_set_gate_cb', ty: 'fn', relpath: ''};</script><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/dqcsim/bindings/external/plugin/pdef.rs.html#370-407' title='goto source code'>[src]</a></span><span class='in-band'>Function <a href='../index.html'>dqcsim</a>::<wbr><a href='index.html'>bindings</a>::<wbr><a class="fn" href=''>dqcs_pdef_set_gate_cb</a></span></h1><pre class='rust fn'><span class="docblock attributes">#[no_mangle]
+</span>pub extern &quot;C&quot; fn dqcs_pdef_set_gate_cb(<br>&nbsp;&nbsp;&nbsp;&nbsp;pdef: <a class="type" href="../../dqcsim/bindings/type.dqcs_handle_t.html" title="type dqcsim::bindings::dqcs_handle_t">dqcs_handle_t</a>, <br>&nbsp;&nbsp;&nbsp;&nbsp;callback: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;extern &quot;C&quot; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.fn.html">fn</a>(user_data: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html">*mut </a><a class="enum" href="https://doc.rust-lang.org/nightly/core/ffi/enum.c_void.html" title="enum core::ffi::c_void">c_void</a>, state: <a class="struct" href="../../dqcsim/bindings/struct.dqcs_plugin_state_t.html" title="struct dqcsim::bindings::dqcs_plugin_state_t">dqcs_plugin_state_t</a>, gate: <a class="type" href="../../dqcsim/bindings/type.dqcs_handle_t.html" title="type dqcsim::bindings::dqcs_handle_t">dqcs_handle_t</a>) -&gt; <a class="type" href="../../dqcsim/bindings/type.dqcs_handle_t.html" title="type dqcsim::bindings::dqcs_handle_t">dqcs_handle_t</a>&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;user_free: <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;extern &quot;C&quot; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.fn.html">fn</a>(user_data: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html">*mut </a><a class="enum" href="https://doc.rust-lang.org/nightly/core/ffi/enum.c_void.html" title="enum core::ffi::c_void">c_void</a>)&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;user_data: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html">*mut </a><a class="enum" href="https://doc.rust-lang.org/nightly/core/ffi/enum.c_void.html" title="enum core::ffi::c_void">c_void</a><br>) -&gt; <a class="enum" href="../../dqcsim/bindings/enum.dqcs_return_t.html" title="enum dqcsim::bindings::dqcs_return_t">dqcs_return_t</a></pre><div class='docblock'><p>Sets the gate execution callback for operators and backends.
+&gt;</p>
+<blockquote>
+<p>Besides the common arguments, the callback receives a handle to the
+to-be-executed gate. This is a borrowed handle; the caller will delete
+it.</p>
+<p>The callback must return one of the following things:</p>
+<ul>
+<li>a valid handle to a measurement set, created using
+<code>dqcs_mset_new()</code> (this object is automatically deleted after the
+callback returns);</li>
+<li>a valid handle to a single qubit measurement, created using
+<code>dqcs_meas_new()</code> (this object is automatically deleted after the
+callback returns);</li>
+<li>the handle to the supplied gate, a shortcut for not returning any
+measurements (this is less clear than returning an empty measurement
+set, but slightly faster); or</li>
+<li>0 to report an error, after calling the error string using
+<code>dqcs_set_error()</code>.</li>
+</ul>
+<p>Backend plugins must return a measurement result set containing exactly
+those qubits specified in the measurement set. For operators, however,
+the story is more complicated. Let's say we want to make a silly
+operator that inverts all measurements. The trivial way to do
+this would be to forward the gate, query all the measurement results
+using <code>dqcs_plugin_get_measurement()</code>, invert them, stick them in a
+measurement result set, and return that result set. However, this
+approach is not very efficient, because <code>dqcs_plugin_get_measurement()</code>
+has to wait for all downstream plugins to finish executing the gate,
+forcing the OS to switch threads, etc. Instead, operators are allowed
+to return only a subset (or none) of the measured qubits, as long as
+they return the measurements as they arrive through the
+<code>modify_measurement()</code> callback.</p>
+<p>The default implementation for this callback for operators is to pass
+the gate through to the downstream plugin and return an empty set of
+measurements. Combined with the default implementation of
+<code>modify_measurement()</code>, this behavior is sane. Backends must override
+this callback; the default is to return a not-implemented error.</p>
+<p>Note that for our silly example operator, the default behavior for this
+function is sufficient; you'd only have to override
+<code>modify_measurement()</code> to, well, modify the measurements.</p>
+</blockquote>
+</div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "dqcsim";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

@@ -1,0 +1,434 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Logging: dqcs_log_* - DQCsim</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div id="sidebar-scrollbox" class="sidebar-scrollbox">
+                <ol class="chapter"><li class="expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Introduction to DQCsim</a></li><li><ol class="section"><li class="expanded "><a href="../intro/components.html"><strong aria-hidden="true">1.1.</strong> The components of a simulation</a></li><li><ol class="section"><li class="expanded "><a href="../intro/frontend.html"><strong aria-hidden="true">1.1.1.</strong> Frontend use cases</a></li><li class="expanded "><a href="../intro/backend.html"><strong aria-hidden="true">1.1.2.</strong> Backend use cases</a></li><li class="expanded "><a href="../intro/operator.html"><strong aria-hidden="true">1.1.3.</strong> Operator use cases</a></li><li class="expanded "><a href="../intro/host.html"><strong aria-hidden="true">1.1.4.</strong> Host use cases</a></li></ol></li><li class="expanded "><a href="../intro/puzzle.html"><strong aria-hidden="true">1.2.</strong> Jigsaw puzzle analogy</a></li><li class="expanded "><a href="../intro/interfaces.html"><strong aria-hidden="true">1.3.</strong> DQCsim's interfaces</a></li><li><ol class="section"><li class="expanded "><a href="../intro/arbs.html"><strong aria-hidden="true">1.3.1.</strong> ArbData and ArbCmds</a></li><li class="expanded "><a href="../intro/gatestream.html"><strong aria-hidden="true">1.3.2.</strong> Gate- and measurement streams</a></li><li class="expanded "><a href="../intro/host-iface.html"><strong aria-hidden="true">1.3.3.</strong> The host interface</a></li><li class="expanded "><a href="../intro/misc-iface.html"><strong aria-hidden="true">1.3.4.</strong> Miscellaneous interfaces</a></li></ol></li><li class="expanded "><a href="../intro/reproducibility.html"><strong aria-hidden="true">1.4.</strong> Reproducibility</a></li></ol></li><li class="expanded "><a href="../install/index.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="expanded "><a href="../install/plugins.html"><strong aria-hidden="true">2.1.</strong> Plugin distribution</a></li></ol></li><li class="expanded "><a href="../cli/index.html"><strong aria-hidden="true">3.</strong> The command-line interface</a></li><li class="expanded "><a href="../python-api/index.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li><ol class="section"><li class="expanded "><a href="../python-api/hello-world.html"><strong aria-hidden="true">4.1.</strong> Hello, world!</a></li><li class="expanded "><a href="../python-api/debugging.html"><strong aria-hidden="true">4.2.</strong> Debugging</a></li><li class="expanded "><a href="../python-api/sending-gates.html"><strong aria-hidden="true">4.3.</strong> Sending some gates</a></li><li class="expanded "><a href="../python-api/simulations.html"><strong aria-hidden="true">4.4.</strong> Controlling simulations</a></li><li class="expanded "><a href="../python-api/operator.html"><strong aria-hidden="true">4.5.</strong> Inserting an operator</a></li><li class="expanded "><a href="../python-api/reference.html"><strong aria-hidden="true">4.6.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../cpp-api/index.html"><strong aria-hidden="true">5.</strong> C++ API</a></li><li class="expanded "><a href="../c-api/index.html"><strong aria-hidden="true">6.</strong> C API</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/concepts.apigen.html"><strong aria-hidden="true">6.1.</strong> Concepts</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/handle.apigen.html"><strong aria-hidden="true">6.1.1.</strong> Handles: dqcs_handle_*</a></li><li class="expanded "><a href="../c-api/memory-management.apigen.html"><strong aria-hidden="true">6.1.2.</strong> Memory management</a></li><li class="expanded "><a href="../c-api/error.apigen.html"><strong aria-hidden="true">6.1.3.</strong> Error handling: dqcs_error_*</a></li><li class="expanded "><a href="../c-api/callbacks.apigen.html"><strong aria-hidden="true">6.1.4.</strong> Callbacks</a></li></ol></li><li class="expanded "><a href="../c-api/type-definitions.apigen.html"><strong aria-hidden="true">6.2.</strong> Type definitions: dqcs_*_t</a></li><li class="expanded "><a href="../c-api/arb-cmd-cq.apigen.html"><strong aria-hidden="true">6.3.</strong> ArbData and ArbCmd objects</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/arb.apigen.html"><strong aria-hidden="true">6.3.1.</strong> ArbData objects: dqcs_arb_*</a></li><li class="expanded "><a href="../c-api/cmd.apigen.html"><strong aria-hidden="true">6.3.2.</strong> ArbCmd objects: dqcs_cmd_*</a></li><li class="expanded "><a href="../c-api/cq.apigen.html"><strong aria-hidden="true">6.3.3.</strong> ArbCmd queues: dqcs_cq_*</a></li></ol></li><li class="expanded "><a href="../c-api/qbset.apigen.html"><strong aria-hidden="true">6.4.</strong> Qubits: dqcs_qbset_*</a></li><li class="expanded "><a href="../c-api/gate.apigen.html"><strong aria-hidden="true">6.5.</strong> Gates: dqcs_gate_*</a></li><li class="expanded "><a href="../c-api/measurements.apigen.html"><strong aria-hidden="true">6.6.</strong> Measurements</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/meas.apigen.html"><strong aria-hidden="true">6.6.1.</strong> Singular measurements: dqcs_meas_*</a></li><li class="expanded "><a href="../c-api/mset.apigen.html"><strong aria-hidden="true">6.6.2.</strong> Measurement sets: dqcs_mset_*</a></li></ol></li><li class="expanded "><a href="../c-api/plugins.apigen.html"><strong aria-hidden="true">6.7.</strong> Plugins</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pdef.apigen.html"><strong aria-hidden="true">6.7.1.</strong> Defining a plugin: dqcs_pdef_*</a></li><li class="expanded "><a href="../c-api/plugin-run.apigen.html"><strong aria-hidden="true">6.7.2.</strong> Running a plugin: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/plugin-interact.apigen.html"><strong aria-hidden="true">6.7.3.</strong> Interacting with DQCsim: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/log.apigen.html" class="active"><strong aria-hidden="true">6.7.4.</strong> Logging: dqcs_log_*</a></li></ol></li><li class="expanded "><a href="../c-api/simulations.apigen.html"><strong aria-hidden="true">6.8.</strong> Simulations</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pcfg.apigen.html"><strong aria-hidden="true">6.8.1.</strong> Configuring plugins: dqcs_pcfg_*</a></li><li class="expanded "><a href="../c-api/tcfg.apigen.html"><strong aria-hidden="true">6.8.2.</strong> Running local plugins: dqcs_tcfg_*</a></li><li class="expanded "><a href="../c-api/scfg.apigen.html"><strong aria-hidden="true">6.8.3.</strong> Configuring a simulation: dqcs_scfg_*</a></li><li class="expanded "><a href="../c-api/sim.apigen.html"><strong aria-hidden="true">6.8.4.</strong> Running a simulation: dqcs_sim_*</a></li></ol></li><li class="expanded "><a href="../c-api/reference.apigen.html"><strong aria-hidden="true">6.9.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../rust-api/index.html"><strong aria-hidden="true">7.</strong> Rust API</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">DQCsim</h1>
+
+                        <div class="right-buttons">
+                            <a href="../print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#logging" id="logging">Logging</a></h1>
+<p>DQCsim provides a centralized logging interface for plugins. This ensures that
+log messages are processed in a consistent way among different plugins. It also
+makes sure that messages don't print &quot;through&quot; each other, as they would when
+stdout/stderr were used directly (these are not thread-safe).</p>
+<p>The logging interface is only available from within threads that are hosting a
+plugin (or the main thread of a plugin process) and the thread which started
+the simulation.</p>
+<h2><a class="header" href="#log-levels" id="log-levels">Log levels</a></h2>
+<p>Every message has a severity level associated with it. These severities should
+be interpreted as follows:</p>
+<ul>
+<li><code>trace</code> is intended for reporting debugging information useful for debugging
+the internals of the originating plugin, but not necessarily for debugging
+the plugins around it. Such messages would normally only be generated by
+debug builds, to prevent them from impacting performance under normal
+circumstances.</li>
+<li><code>debug</code> is intended for reporting debugging information which may also be
+useful when debugging the plugins around it, such as the arguments with
+which a public API function was called.</li>
+<li><code>info</code> is intended for reporting information that was <em>not</em> explicitly
+requested by the user, such as a plugin starting up or shutting down.</li>
+<li><code>note</code> is intended for reporting information that <em>was</em> explicitly requested
+by the user/API caller, such as the result of an API function requested
+through the command line, or an explicitly captured stdout/stderr stream. It
+may also be used for reporting events that the user may not be expecting,
+but are not exceptional enough to warrent issuing a warning.</li>
+<li><code>warn</code> is intended for reporting that a third party did something
+unexpected, but that an attempt will be made to work around the problem,
+such as a failed connection attempt that we're going to retry.</li>
+<li><code>error</code> is intended for reporting or propagating a non-fatal error, such as
+a third party requesting usage of an unimplemented function.</li>
+<li><code>fatal</code> is intended for reporting fatal errors, such as a third party
+reporting an error for something that we really needed.</li>
+</ul>
+<h2><a class="header" href="#sending-log-messages" id="sending-log-messages">Sending log messages</a></h2>
+<p>The preferred way for C programs to submit log messages is through the
+following macros. These automatically add information such as line number and
+source filename through the C preprocessor. They also fall back to writing to
+<code>stderr</code> if logging fails for some reason. Their interface is just like
+<code>printf</code>, but the final newline is implicit.</p>
+<details><summary><font color="green"><tt>dqcs_log_trace()</tt></font><div style="margin-left: 16px">
+<p>Convenience macro for calling <code>dqcs_log_format()</code> with trace loglevel and
+automatically determined function name, filename, and line number.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">#define dqcs_log_trace(fmt, ...)          \
+  dqcs_log_format(                        \
+    DQCS_LOGLEVEL_PREFIX DQCS_LOG_TRACE,  \
+    DQCS_LANGUAGE,                        \
+    __FILE__,                             \
+    __LINE__,                             \
+    fmt,                                  \
+    ##__VA_ARGS__                         \
+  )
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_log_debug()</tt></font><div style="margin-left: 16px">
+<p>Convenience macro for calling <code>dqcs_log_format()</code> with debug loglevel and
+automatically determined function name, filename, and line number.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">#define dqcs_log_debug(fmt, ...)          \
+  dqcs_log_format(                        \
+    DQCS_LOGLEVEL_PREFIX DQCS_LOG_DEBUG,  \
+    DQCS_LANGUAGE,                        \
+    __FILE__,                             \
+    __LINE__,                             \
+    fmt,                                  \
+    ##__VA_ARGS__                         \
+  )
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_log_info()</tt></font><div style="margin-left: 16px">
+<p>Convenience macro for calling <code>dqcs_log_format()</code> with info loglevel and
+automatically determined function name, filename, and line number.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">#define dqcs_log_info(fmt, ...)           \
+  dqcs_log_format(                        \
+    DQCS_LOGLEVEL_PREFIX DQCS_LOG_INFO,   \
+    DQCS_LANGUAGE,                        \
+    __FILE__,                             \
+    __LINE__,                             \
+    fmt,                                  \
+    ##__VA_ARGS__                         \
+  )
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_log_note()</tt></font><div style="margin-left: 16px">
+<p>Convenience macro for calling <code>dqcs_log_format()</code> with note loglevel and
+automatically determined function name, filename, and line number.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">#define dqcs_log_note(fmt, ...)           \
+  dqcs_log_format(                        \
+    DQCS_LOGLEVEL_PREFIX DQCS_LOG_NOTE,   \
+    DQCS_LANGUAGE,                        \
+    __FILE__,                             \
+    __LINE__,                             \
+    fmt,                                  \
+    ##__VA_ARGS__                         \
+  )
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_log_warn()</tt></font><div style="margin-left: 16px">
+<p>Convenience macro for calling <code>dqcs_log_format()</code> with warn loglevel and
+automatically determined function name, filename, and line number.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">#define dqcs_log_warn(fmt, ...)           \
+  dqcs_log_format(                        \
+    DQCS_LOGLEVEL_PREFIX DQCS_LOG_WARN,   \
+    DQCS_LANGUAGE,                        \
+    __FILE__,                             \
+    __LINE__,                             \
+    fmt,                                  \
+    ##__VA_ARGS__                         \
+  )
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_log_error()</tt></font><div style="margin-left: 16px">
+<p>Convenience macro for calling <code>dqcs_log_format()</code> with error loglevel and
+automatically determined function name, filename, and line number.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">#define dqcs_log_error(fmt, ...)          \
+  dqcs_log_format(                        \
+    DQCS_LOGLEVEL_PREFIX DQCS_LOG_ERROR,  \
+    DQCS_LANGUAGE,                        \
+    __FILE__,                             \
+    __LINE__,                             \
+    fmt,                                  \
+    ##__VA_ARGS__                         \
+  )
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_log_fatal()</tt></font><div style="margin-left: 16px">
+<p>Convenience macro for calling <code>dqcs_log_format()</code> with fatal loglevel and
+automatically determined function name, filename, and line number.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">#define dqcs_log_fatal(fmt, ...)          \
+  dqcs_log_format(                        \
+    DQCS_LOGLEVEL_PREFIX DQCS_LOG_FATAL,  \
+    DQCS_LANGUAGE,                        \
+    __FILE__,                             \
+    __LINE__,                             \
+    fmt,                                  \
+    ##__VA_ARGS__                         \
+  )
+</code></pre>
+</div></details>
+<p>To get more control over the metadata or to set the loglevel programmatically,
+you can use the following function.</p>
+<details><summary><font color="green"><tt>dqcs_log_format()</tt></font><div style="margin-left: 16px">
+<p>Sends a log message using the current logger using printf-like formatting.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">void dqcs_log_format(
+    dqcs_loglevel_t level,
+    const char *module,
+    const char *file,
+    uint32_t line,
+    const char *fmt,
+    ...
+)
+</code></pre>
+<p>This function is identical to <code>dqcs_log_raw()</code>, except instead of a single
+string it takes a printf-like format string and varargs to compose the
+message.</p>
+</div></details>
+<p>The above macros and functions ultimately call <code>dqcs_log_raw()</code>. This function
+does not fall back to <code>stderr</code> if logging fails, and does not support
+<code>printf</code>-style format strings. The latter may be useful for interfacing with
+languages that don't support calling variadic functions.</p>
+<details><summary><font color="green"><tt>dqcs_log_raw()</tt></font><div style="margin-left: 16px">
+<p>Primitive API for sending a log message using the current logger.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_return_t dqcs_log_raw(
+    dqcs_loglevel_t level,
+    const char *module,
+    const char *file,
+    uint32_t line_nr,
+    const char *message
+)
+</code></pre>
+<p>Returns <code>DQCS_SUCCESS</code> if logging was successful, or <code>DQCS_FAILURE</code> if no
+logger is available in the current thread or one of the arguments could not
+be converted. Loggers are available in the simulation host thread and in
+threads running plugins.</p>
+<h2><a class="header" href="#formatting-and-fallback-to-stderr" id="formatting-and-fallback-to-stderr">Formatting and fallback to stderr</a></h2>
+<p>As an alternative to this function, you can also use <code>dqcs_log_format()</code>.
+This function differs from <code>dqcs_log_raw()</code> in two ways:</p>
+<ul>
+<li>Instead of the <code>message</code> string, a printf-style format string and
+associated varargs are passed to construct the message.</li>
+<li>When logging fails, this function falls back to writing to <code>stderr</code>
+instead of returning the errors.</li>
+</ul>
+<h2><a class="header" href="#macros" id="macros">Macros</a></h2>
+<p>From C and C++, these functions are normally not called directly. Instead,
+the following macros are used:</p>
+<pre><code class="language-C">dqcs_log_trace(&quot;trace message!&quot;);
+dqcs_log_debug(&quot;debug message!&quot;);
+dqcs_log_info(&quot;info message!&quot;);
+dqcs_log_note(&quot;notice!&quot;);
+dqcs_log_warn(&quot;warning!&quot;);
+dqcs_log_error(&quot;error!&quot;);
+dqcs_log_fatal(&quot;fatal error!&quot;);
+</code></pre>
+<p>These macros automatically set <code>file</code> to the C source filename and <code>line</code>
+to the line number. <code>module</code> is hardcoded to &quot;C&quot; or &quot;CPP&quot; depending on
+source file language. They use <code>dqcs_log_format()</code>, so they also support
+printf-style formatting. For instance:</p>
+<pre><code class="language-C">dqcs_note(&quot;answer to %s: %d&quot;, &quot;ultimate question&quot;, 42);
+</code></pre>
+</div></details>
+<h2><a class="header" href="#stdout-and-stderr" id="stdout-and-stderr">stdout and stderr</a></h2>
+<p>By default, DQCsim will capture the stdout and stderr streams of the plugin
+processes it launches. Each received line will simply be turned into a log
+message. This is particularly useful for logging problems related to
+connecting to DQCsim.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="../c-api/plugin-interact.apigen.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="../c-api/simulations.apigen.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a href="../c-api/plugin-interact.apigen.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="../c-api/simulations.apigen.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>

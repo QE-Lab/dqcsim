@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["process","Implementation of the plugin trait for running the plugin within a separate process."],["thread","Implementation of the plugin trait for running the plugin within a thread inside DQCsim."]],"trait":[["Plugin","The Plugin trait, implemented by all Plugins used in a Simulation."]]});

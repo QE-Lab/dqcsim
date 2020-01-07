@@ -1,0 +1,96 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `log` mod in crate `dqcsim`."><meta name="keywords" content="rust, rustlang, rust-lang, log"><title>dqcsim::common::log - Rust</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../dqcsim/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a><p class='location'>Module log</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#constants">Constants</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li></ul></div><p class='location'><a href='../../index.html'>dqcsim</a>::<wbr><a href='../index.html'>common</a></p><script>window.sidebarCurrent = {name: 'log', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../../src/dqcsim/core/common/log/mod.rs.html#1-645' title='goto source code'>[src]</a></span><span class='in-band'>Module <a href='../../index.html'>dqcsim</a>::<wbr><a href='../index.html'>common</a>::<wbr><a class="mod" href=''>log</a></span></h1><div class='docblock'><p>A log thread and thread-local log proxy combination.</p>
+<p>This module provides logging functionality to run a dedicated log thread in
+combination with one or more thread-local log proxy instances. The log
+thread provides the endpoint used by the log proxy instances to send their
+log records. Log proxy instances run in different threads or child
+processes.</p>
+<h1 id="usage" class="section-header"><a href="#usage">Usage</a></h1>
+<p>Start by spawning a <a href="./thread/struct.LogThread.html"><code>LogThread</code></a> from the main thread. Next, initialize a
+<a href="./proxy/struct.LogProxy.html"><code>LogProxy</code></a> instance per thread or child process. A log <a href="./struct.LogRecord.html"><code>LogRecord</code></a> can be
+generated using the provided <a href="../index.html#macros"><code>macros</code></a>. The thread-local <a href="./proxy/struct.LogProxy.html"><code>LogProxy</code></a>
+forwards the records to the <a href="./thread/struct.LogThread.html"><code>LogThread</code></a> for logging.</p>
+<h2 id="logthread" class="section-header"><a href="#logthread">LogThread</a></h2>
+<p>The <a href="./thread/struct.LogThread.html"><code>LogThread</code></a> is the sink for all log <a href="./struct.LogRecord.html"><code>Records</code></a>. It can output log
+records to Standard Error output and invoke a <a href="../configuration/struct.LogCallback.html"><code>LogCallback</code></a> function.
+Both these options can be enabled by setting the corresponding
+<a href="./enum.LoglevelFilter.html"><code>LogLevelFilter</code></a> above <a href="./enum.LogLevelFilter.html"><code>LogLevelFilter::Off</code></a>. Incoming log <a href="./struct.LogRecord.html"><code>Records</code></a>
+are forwarded to Standard Error output or to the <a href="../configuration/struct.LogCallback.html"><code>LogCallback</code></a> function
+if their <a href="./enum.Loglevel.html"><code>Loglevel</code></a> is equal or below the configured <a href="./enum.LoglevelFilter.html"><code>LogLevelFilter</code></a>.</p>
+<h2 id="logcallback" class="section-header"><a href="#logcallback">LogCallback</a></h2>
+<p>A <a href="./thread/struct.LogThread.html"><code>LogThread</code></a> can invoke a <a href="../configuration/struct.LogCallback.html"><code>LogCallback</code></a> function for incoming records.
+This is enabled by passing a <a href="../configuration/struct.LogCallback.html"><code>LogCallback</code></a> (with a <a href="./enum.LoglevelFilter.html"><code>LoglevelFilter</code></a>
+bigger than <a href="./enum.LogLevelFilter.html"><code>LogLevelFilter::Off</code></a>) to the [<code>callback</code>] argument of the
+<a href="./thread/struct.LogThread.html#method.spawn"><code>spawn</code></a> method of <a href="./thread/struct.LogThread.html"><code>LogThread</code></a>.</p>
+<h2 id="logproxy" class="section-header"><a href="#logproxy">LogProxy</a></h2>
+<p>A <a href="./proxy/struct.LogProxy.html"><code>LogProxy</code></a> forwards log <a href="./struct.LogRecord.html"><code>Records</code></a> to a <a href="./thread/struct.LogThread.html"><code>LogThread</code></a>. It logs records
+with it's logger name if the generated log <a href="./struct.LogRecord.html"><code>LogRecord</code></a> <a href="./enum.Loglevel.html"><code>Loglevel</code></a> is
+smaller or equal than the configured <a href="./enum.LoglevelFilter.html"><code>LoglevelFilter</code></a> of the
+<a href="./proxy/struct.LogProxy.html"><code>LogProxy</code></a>.</p>
+<h2 id="teefile" class="section-header"><a href="#teefile">TeeFile</a></h2>
+<p>A <a href="./tee_file/struct.TeeFile.html"><code>TeeFile</code></a> forwards log <a href="./struct.LogRecord.html"><code>Records</code></a> to a file. It logs records with it's
+logger name if the generated log <a href="./struct.LogRecord.html"><code>LogRecord</code></a> <a href="./enum.Loglevel.html"><code>Loglevel</code></a> is smaller or
+equal than the configured <a href="./enum.LoglevelFilter.html"><code>LoglevelFilter</code></a> of the <a href="./tee_file/struct.TeeFile.html"><code>TeeFile</code></a>.</p>
+<h1 id="basic-example" class="section-header"><a href="#basic-example">Basic Example</a></h1>
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">dqcsim</span>::{
+    <span class="ident">debug</span>,
+    <span class="ident">common</span>::<span class="ident">log</span>::{<span class="ident">init</span>, <span class="ident">proxy</span>::<span class="ident">LogProxy</span>, <span class="ident">thread</span>::<span class="ident">LogThread</span>, <span class="ident">LoglevelFilter</span>},
+    <span class="ident">note</span>,
+};
+
+<span class="comment">// Spawn the log thread. This starts a thread-local log proxy in the main</span>
+<span class="comment">// thread with a Note level filter and &quot;main_thread&quot; as name. This example</span>
+<span class="comment">// enables Standard Error output at Debug level filter.</span>
+<span class="kw">let</span> <span class="ident">log_thread</span> <span class="op">=</span> <span class="ident">LogThread</span>::<span class="ident">spawn</span>(
+    <span class="string">&quot;main_thread&quot;</span>,
+    <span class="ident">LoglevelFilter</span>::<span class="ident">Note</span>,
+    <span class="ident">LoglevelFilter</span>::<span class="ident">Debug</span>,
+    <span class="prelude-val">None</span>,
+    <span class="macro">vec</span><span class="macro">!</span>[]
+)
+.<span class="ident">unwrap</span>();
+
+<span class="comment">// Grab a copy of the log thread sender to use in the log proxy.</span>
+<span class="kw">let</span> <span class="ident">log_endpoint</span> <span class="op">=</span> <span class="ident">log_thread</span>.<span class="ident">get_sender</span>();
+
+<span class="comment">// Spawn an other thread.</span>
+<span class="ident">std</span>::<span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
+    <span class="comment">// Construct a log proxy instance which connects to the log thread endpoint.</span>
+    <span class="kw">let</span> <span class="ident">log_proxy</span> <span class="op">=</span> <span class="ident">LogProxy</span>::<span class="ident">boxed</span>(<span class="string">&quot;other_thread&quot;</span>, <span class="ident">LoglevelFilter</span>::<span class="ident">Trace</span>, <span class="ident">log_endpoint</span>);
+
+    <span class="comment">// Initialize the thread-local logger to enable forwarding of log records to</span>
+    <span class="comment">// the log thread.</span>
+    <span class="ident">init</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="ident">log_proxy</span>]);
+
+    <span class="comment">// Generate a log record</span>
+    <span class="macro">note</span><span class="macro">!</span>(<span class="string">&quot;Note from thread via proxy&quot;</span>);
+})
+.<span class="ident">join</span>();
+
+<span class="comment">// This log records is also forwarded to the log thread by the log proxy running</span>
+<span class="comment">// in the main thread.</span>
+<span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;Note from main thread via proxy started by log_thread spawn function&quot;</span>);
+</pre></div>
+<h1 id="inspired-by" class="section-header"><a href="#inspired-by">Inspired by</a></h1>
+<ul>
+<li><a href="https://github.com/rust-lang-nursery/log"><code>log</code></a></li>
+<li>sfackler's <a href="https://github.com/rust-lang-nursery/log/issues/57#issuecomment-143383896">comment</a></li>
+</ul>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table><tr class='module-item'><td><a class="mod" href="callback/index.html" title='dqcsim::common::log::callback mod'>callback</a></td><td class='docblock-short'></td></tr><tr class='module-item'><td><a class="mod" href="proxy/index.html" title='dqcsim::common::log::proxy mod'>proxy</a></td><td class='docblock-short'><p>A generic log proxy implementation.</p>
+</td></tr><tr class='module-item'><td><a class="mod" href="stdio/index.html" title='dqcsim::common::log::stdio mod'>stdio</a></td><td class='docblock-short'><p>Utility function to spawn a log proxy implementation to forward standard i/o streams.</p>
+</td></tr><tr class='module-item'><td><a class="mod" href="tee_file/index.html" title='dqcsim::common::log::tee_file mod'>tee_file</a></td><td class='docblock-short'></td></tr><tr class='module-item'><td><a class="mod" href="thread/index.html" title='dqcsim::common::log::thread mod'>thread</a></td><td class='docblock-short'><p>A log thread implementation.</p>
+</td></tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table><tr class='module-item'><td><a class="struct" href="struct.LogRecord.html" title='dqcsim::common::log::LogRecord struct'>LogRecord</a></td><td class='docblock-short'><p>A log record.</p>
+</td></tr><tr class='module-item'><td><a class="struct" href="struct.LoglevelFilterIter.html" title='dqcsim::common::log::LoglevelFilterIter struct'>LoglevelFilterIter</a></td><td class='docblock-short'></td></tr><tr class='module-item'><td><a class="struct" href="struct.LoglevelIter.html" title='dqcsim::common::log::LoglevelIter struct'>LoglevelIter</a></td><td class='docblock-short'></td></tr><tr class='module-item'><td><a class="struct" href="struct.Metadata.html" title='dqcsim::common::log::Metadata struct'>Metadata</a></td><td class='docblock-short'><p>Log record metadata.</p>
+</td></tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table><tr class='module-item'><td><a class="enum" href="enum.Loglevel.html" title='dqcsim::common::log::Loglevel enum'>Loglevel</a></td><td class='docblock-short'><p>Loglevel for log records.</p>
+</td></tr><tr class='module-item'><td><a class="enum" href="enum.LoglevelFilter.html" title='dqcsim::common::log::LoglevelFilter enum'>LoglevelFilter</a></td><td class='docblock-short'><p>LoglevelFilter for implementors of the Log trait.</p>
+</td></tr></table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
+<table><tr class='module-item'><td><a class="constant" href="constant.LOGGERS.html" title='dqcsim::common::log::LOGGERS constant'>LOGGERS</a></td><td class='docblock-short'><p>The thread-local loggers.</p>
+</td></tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table><tr class='module-item'><td><a class="trait" href="trait.Log.html" title='dqcsim::common::log::Log trait'>Log</a></td><td class='docblock-short'><p>The Log trait.</p>
+</td></tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table><tr class='module-item'><td><a class="fn" href="fn.deinit.html" title='dqcsim::common::log::deinit fn'>deinit</a></td><td class='docblock-short'><p>Deinitialize the thread-local loggers.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.init.html" title='dqcsim::common::log::init fn'>init</a></td><td class='docblock-short'><p>Initialize the thread-local loggers.</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "dqcsim";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script defer src="../../../search-index.js"></script></body></html>

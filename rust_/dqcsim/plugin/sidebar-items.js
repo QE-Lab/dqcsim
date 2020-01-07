@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["connection","Plugin to simulator connection wrapper."],["definition","Module containing the structures used to define a plugin prior to its construction (callbacks etc.)."],["log","Utility function to setup logging for a Plugin instance."],["state","Module containing the runtime structures of a plugin."]]});

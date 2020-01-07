@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.2" />
+<title>dqcsim.common API documentation</title>
+<meta name="description" content="Contains wrappers for various DQCsim API handles." />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>dqcsim.common</code></h1>
+</header>
+<section id="section-intro">
+<p>Contains wrappers for various DQCsim API handles.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Contains wrappers for various DQCsim API handles.&#34;&#34;&#34;
+
+__all__ = [ #@
+    &#39;ArbData&#39;,
+    &#39;ArbCmd&#39;,
+    &#39;ArbCmdQueue&#39;,
+    &#39;Handle&#39;,
+    &#39;Measurement&#39;,
+    &#39;MeasurementSet&#39;,
+    &#39;QubitSet&#39;,
+    &#39;Loglevel&#39;,
+]
+
+__pdoc__ = { #@
+    # Don&#39;t output documentation for objects that the user shouldn&#39;t need.
+    &#39;cq&#39;: False,
+    &#39;ArbCmdQueue&#39;: False,
+    &#39;handle&#39;: False,
+    &#39;Handle&#39;: False,
+    &#39;mset&#39;: False,
+    &#39;MeasurementSet&#39;: False,
+    &#39;qbset&#39;: False,
+    &#39;QubitSet&#39;: False,
+
+    # Override documentation for the re-exports.
+    &#39;ArbData&#39;: &#34;Re-export of `dqcsim.common.arb.ArbData`.&#34;,
+    &#39;ArbCmd&#39;: &#34;Re-export of `dqcsim.common.cmd.ArbCmd`.&#34;,
+    &#39;Measurement&#39;: &#34;Re-export of `dqcsim.common.meas.Measurement`.&#34;,
+}
+
+from enum import IntEnum
+import dqcsim._dqcsim as raw
+
+from dqcsim.common.arb import ArbData
+from dqcsim.common.cmd import ArbCmd
+from dqcsim.common.cq import ArbCmdQueue
+from dqcsim.common.handle import Handle
+from dqcsim.common.meas import Measurement
+from dqcsim.common.mset import MeasurementSet
+from dqcsim.common.qbset import QubitSet
+
+class Loglevel(IntEnum):
+    &#34;&#34;&#34;Enumeration of the loglevels available in DQCsim.&#34;&#34;&#34;
+
+    TRACE = raw.DQCS_LOG_TRACE
+    DEBUG = raw.DQCS_LOG_DEBUG
+    INFO = raw.DQCS_LOG_INFO
+    NOTE = raw.DQCS_LOG_NOTE
+    WARN = raw.DQCS_LOG_WARN
+    ERROR = raw.DQCS_LOG_ERROR
+    FATAL = raw.DQCS_LOG_FATAL
+    OFF = raw.DQCS_LOG_OFF</code></pre>
+</details>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="dqcsim.common.arb" href="arb.html">dqcsim.common.arb</a></code></dt>
+<dd>
+<section class="desc"><p>Contains a class wrapper for <a title="dqcsim.common.ArbData" href="#dqcsim.common.ArbData"><code>ArbData</code></a> objects.</p></section>
+</dd>
+<dt><code class="name"><a title="dqcsim.common.cmd" href="cmd.html">dqcsim.common.cmd</a></code></dt>
+<dd>
+<section class="desc"><p>Contains a class wrapper for <a title="dqcsim.common.ArbCmd" href="#dqcsim.common.ArbCmd"><code>ArbCmd</code></a> objects.</p></section>
+</dd>
+<dt><code class="name"><a title="dqcsim.common.meas" href="meas.html">dqcsim.common.meas</a></code></dt>
+<dd>
+<section class="desc"><p>Contains a class wrapper for <a title="dqcsim.common.Measurement" href="#dqcsim.common.Measurement"><code>Measurement</code></a> objects.</p></section>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="dqcsim.common.ArbCmd"><code class="flex name class">
+<span>class <span class="ident">ArbCmd</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Re-export of <a title="dqcsim.common.cmd.ArbCmd" href="cmd.html#dqcsim.common.cmd.ArbCmd"><code>ArbCmd</code></a>.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ArbCmd(ArbData):
+    &#34;&#34;&#34;Represents an ArbCmd object.
+
+    ArbData objects are used to transfer user-specified instructions from one
+    DQCsim plugin to another. They consist of two identifying strings and an
+    ArbData argument. In Python, the contained ArbData argument is represented
+    using subclassing (so all ArbData operations also work on an ArbCmd).
+
+    The two identifying strings are called the interface identifier and the
+    operation identifier. Both strings must match exactly (case-sensitive) when
+    matching an incoming ArbCmd against a handler. The difference between the
+    two is that if the interface identifier is unrecognized the ArbCmd should
+    be treated as no-op, whereas an error should be raised when the interface
+    identifier is matched but the operation identifier is not.
+    &#34;&#34;&#34;
+
+    def __init__(self, *args, **kwargs):
+        &#34;&#34;&#34;Constructs an ArbCmd object.
+
+        The first two positional arguments are the interface identifier and the
+        operation identifier. They must be valid identifiers, i.e. matching the
+        regex /[a-zA-Z_0-9]+/. The remaining positional arguments and the
+        keyword arguments are used to construct the `ArbData` argument.
+        Alternatively, another `ArbCmd` object can be specified as the sole
+        argument to make a copy.
+        &#34;&#34;&#34;
+        super().__init__()
+        if len(args) == 1 and not kwargs and isinstance(args[0], ArbCmd):
+            super().__init__(args[0])
+            self._iface = args[0]._iface
+            self._oper = args[0]._oper
+        elif len(args) &gt;= 2:
+            iface, oper, *args = args
+            iface = str(iface)
+            if not _ident_re.match(iface):
+                raise ValueError(&#39;iface is not a valid identifier: {!r}&#39;.format(iface))
+            oper = str(oper)
+            if not _ident_re.match(oper):
+                raise ValueError(&#39;oper is not a valid identifier: {!r}&#39;.format(oper))
+            super().__init__(*args, **kwargs)
+            self._iface = iface
+            self._oper = oper
+        else:
+            raise TypeError(&#39;Invalid arguments passed to ArbCmd constructor&#39;)
+
+    @property
+    def iface(self): #@
+        &#34;&#34;&#34;The interface identifier.&#34;&#34;&#34;
+        return self._iface
+
+    @property
+    def oper(self): #@
+        &#34;&#34;&#34;The operation identifier.&#34;&#34;&#34;
+        return self._oper
+
+    def __eq__(self, other):
+        if isinstance(other, ArbCmd):
+            return super().__eq__(other) and self._iface == other._iface and self._oper == other._oper
+        return False
+
+    @classmethod
+    def _from_raw(cls, handle): #@
+        &#34;&#34;&#34;Constructs an ArbCmd object from a raw API handle.&#34;&#34;&#34;
+        arg = ArbData._from_raw(handle)
+        with handle as hndl:
+            cmd = ArbCmd(raw.dqcs_cmd_iface_get(hndl), raw.dqcs_cmd_oper_get(hndl))
+        cmd._args = arg._args
+        cmd._json = arg._json
+        return cmd
+
+    def _to_raw(self):
+        &#34;&#34;&#34;Makes an API handle for this ArbCmd object.&#34;&#34;&#34;
+        handle = Handle(raw.dqcs_cmd_new(self._iface, self._oper))
+        super()._to_raw(handle)
+        return handle
+
+    def __repr__(self):
+        e = [repr(self._iface), repr(self._oper)]
+        for arg in self._args:
+            e.append(repr(arg))
+        for key, value in sorted(self._json.items()):
+            e.append(&#34;{!s}={!r}&#34;.format(key, value))
+        return &#34;ArbCmd({})&#34;.format(&#39;, &#39;.join(e))
+
+    __str__ = __repr__</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dqcsim.common.arb.ArbData" href="arb.html#dqcsim.common.arb.ArbData">ArbData</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="dqcsim.common.ArbCmd.iface"><code class="name">var <span class="ident">iface</span></code></dt>
+<dd>
+<section class="desc"><p>The interface identifier.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def iface(self): #@
+    &#34;&#34;&#34;The interface identifier.&#34;&#34;&#34;
+    return self._iface</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.common.ArbCmd.oper"><code class="name">var <span class="ident">oper</span></code></dt>
+<dd>
+<section class="desc"><p>The operation identifier.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def oper(self): #@
+    &#34;&#34;&#34;The operation identifier.&#34;&#34;&#34;
+    return self._oper</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="dqcsim.common.arb.ArbData" href="arb.html#dqcsim.common.arb.ArbData">ArbData</a></b></code>:
+<ul class="hlist">
+<li><code><a title="dqcsim.common.arb.ArbData.append" href="arb.html#dqcsim.common.arb.ArbData.append">append</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.clear" href="arb.html#dqcsim.common.arb.ArbData.clear">clear</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.clear_args" href="arb.html#dqcsim.common.arb.ArbData.clear_args">clear_args</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.clear_json" href="arb.html#dqcsim.common.arb.ArbData.clear_json">clear_json</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.extend" href="arb.html#dqcsim.common.arb.ArbData.extend">extend</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.insert" href="arb.html#dqcsim.common.arb.ArbData.insert">insert</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.items" href="arb.html#dqcsim.common.arb.ArbData.items">items</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.keys" href="arb.html#dqcsim.common.arb.ArbData.keys">keys</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.values" href="arb.html#dqcsim.common.arb.ArbData.values">values</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="dqcsim.common.ArbData"><code class="flex name class">
+<span>class <span class="ident">ArbData</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Re-export of <a title="dqcsim.common.arb.ArbData" href="arb.html#dqcsim.common.arb.ArbData"><code>ArbData</code></a>.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ArbData(object):
+    &#34;&#34;&#34;Represents an ArbData object.
+
+    ArbData objects are used to transfer user-specified data from one DQCsim
+    plugin to another. They are composed of a CBOR-like object (superset of
+    JSON) and a list of binary strings. The Python interface to DQCsim wraps
+    ArbData objects in a class that behaves like a list and a dict at the same
+    time; the list containing the binary strings and the dict containing the
+    toplevel JSON/CBOR object entries. The class enforces that the binary
+    string list entries implement Python&#39;s buffer protocol (bytes, bytearray,
+    etc.) and that the JSON/CBOR entries are serializable as such using the
+    cbor library.
+    &#34;&#34;&#34;
+
+    def __init__(self, *args, **kwargs):
+        &#34;&#34;&#34;Constructs an ArbData object.
+
+        The positional arguments are used to construct the binary argument
+        list. They must therefore be binary strings or buffers. The keyword
+        arguments are used to construct the JSON data. For instance:
+
+            ArbData(b&#34;test1&#34;, b&#34;test2&#34;, answer=42)
+
+        constructs an ArbData object with JSON `{&#34;answer&#34;: 42}` and arguments
+        `[b&#34;test1&#34;, b&#34;test2&#34;]`. You can also pass an `ArbData` object as the
+        sole argument, in which case a copy will be made.
+        &#34;&#34;&#34;
+        super().__init__()
+        if len(args) == 1 and not kwargs and isinstance(args[0], ArbData):
+            self._args = copy.deepcopy(args[0]._args)
+            self._json = copy.deepcopy(args[0]._json)
+        else:
+            for arg in args:
+                memoryview(arg)
+            self._args = list(args)
+            _check_json(kwargs)
+            self._json = kwargs
+
+    def __bool__(self):
+        &#34;&#34;&#34;Returns whether there is non-default data in this ArbData object.&#34;&#34;&#34;
+        return bool(self._args) or bool(self._json)
+
+    def __len__(self):
+        &#34;&#34;&#34;Returns the number of binary string arguments.&#34;&#34;&#34;
+        return len(self._args)
+
+    def __getitem__(self, key):
+        &#34;&#34;&#34;Returns the binary string at the given index if key is numeric, or
+        the JSON sub-object associated with the given key if key is a
+        string.&#34;&#34;&#34;
+        if isinstance(key, str):
+            return self._json[key]
+        else:
+            return self._args[key]
+
+    def __setitem__(self, key, value):
+        &#34;&#34;&#34;Sets the binary string at the given index if key is numeric, or
+        sets the JSON sub-object associated with the given key if key is a
+        string.&#34;&#34;&#34;
+        if isinstance(key, str):
+            _check_json(value)
+            self._json[key] = value
+        else:
+            memoryview(value)
+            self._args[key] = value
+
+    def __delitem__(self, key):
+        &#34;&#34;&#34;Deletes the binary string at the given index if key is numeric, or
+        deletes the JSON sub-object associated with the given key if key is a
+        string.&#34;&#34;&#34;
+        if isinstance(key, str):
+            del self._json[key]
+        else:
+            del self._args[key]
+
+    def __contains__(self, item):
+        &#34;&#34;&#34;If key is a string, tests existence of the key in the toplevel JSON
+        object. If it is a binary string, tests if it is one of the binary
+        string arguments.&#34;&#34;&#34;
+        if isinstance(item, str):
+            return item in self._json
+        else:
+            return item in self._args
+
+    def __iter__(self):
+        &#34;&#34;&#34;Iterates over the binary arguments.&#34;&#34;&#34;
+        for arg in self._args:
+            yield arg
+
+    def append(self, value):
+        &#34;&#34;&#34;Appends a binary string to the list.&#34;&#34;&#34;
+        memoryview(value)
+        self._args.append(value)
+
+    def insert(self, index, value):
+        &#34;&#34;&#34;Inserts a binary string into the list.&#34;&#34;&#34;
+        memoryview(value)
+        self._args.insert(index, value)
+
+    def extend(self, it):
+        &#34;&#34;&#34;Extends the binary strings with the given iterator.&#34;&#34;&#34;
+        for value in it:
+            self.append(value)
+
+    def keys(self):
+        &#34;&#34;&#34;Iterates over the JSON object entry keys.&#34;&#34;&#34;
+        return self._json.keys()
+
+    def values(self):
+        &#34;&#34;&#34;Iterates over the JSON object values.&#34;&#34;&#34;
+        return self._json.values()
+
+    def items(self):
+        &#34;&#34;&#34;Iterates over the JSON object items.&#34;&#34;&#34;
+        return self._json.items()
+
+    def clear_args(self):
+        &#34;&#34;&#34;Clears the binary argument list.&#34;&#34;&#34;
+        self._args = []
+
+    def clear_json(self):
+        &#34;&#34;&#34;Clears the JSON data.&#34;&#34;&#34;
+        self._json = {}
+
+    def clear(self):
+        &#34;&#34;&#34;Resets the ArbData object.&#34;&#34;&#34;
+        self.clear_args()
+        self.clear_json()
+
+    def __eq__(self, other):
+        if isinstance(other, ArbData):
+            return self._args == other._args and self._json == other._json
+        return False
+
+    @classmethod
+    def _from_raw(cls, handle): #@
+        &#34;&#34;&#34;Constructs an ArbData object from a raw API handle.&#34;&#34;&#34;
+        # Load CBOR.
+        with handle as hndl:
+            cb = bytearray(256)
+            cbl = raw.dqcs_arb_cbor_get(hndl, cb)
+            if cbl &gt; 256:
+                cb = bytearray(cbl)
+                raw.dqcs_arb_cbor_get(hndl, cb)
+            kwargs = cbor.loads(cb)
+
+            # Load binary arguments.
+            args = []
+            for i in range(raw.dqcs_arb_len(hndl)):
+                arg = bytearray(256)
+                argl = raw.dqcs_arb_get_raw(hndl, i, arg)
+                if argl &gt; 256:
+                    arg = bytearray(argl)
+                    raw.dqcs_arb_get_raw(hndl, i, arg)
+                args.append(bytes(arg[:argl]))
+
+        return ArbData(*args, **kwargs)
+
+    def _to_raw(self, handle=None):
+        &#34;&#34;&#34;Makes an API handle for this ArbData object.&#34;&#34;&#34;
+        if handle is None:
+            handle = Handle(raw.dqcs_arb_new())
+        else:
+            raw.dqcs_arb_clear(int(handle))
+        with handle as hndl:
+            raw.dqcs_arb_cbor_set(hndl, cbor.dumps(self._json))
+            for arg in self._args:
+                raw.dqcs_arb_push_raw(hndl, arg)
+        return handle
+
+    def __repr__(self):
+        e = []
+        for arg in self._args:
+            e.append(repr(arg))
+        for key, value in sorted(self._json.items()):
+            e.append(&#34;{!s}={!r}&#34;.format(key, value))
+        return &#34;ArbData({})&#34;.format(&#39;, &#39;.join(e))
+
+    __str__ = __repr__</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="dqcsim.common.cmd.ArbCmd" href="cmd.html#dqcsim.common.cmd.ArbCmd">ArbCmd</a></li>
+<li><a title="dqcsim.common.meas.Measurement" href="meas.html#dqcsim.common.meas.Measurement">Measurement</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="dqcsim.common.ArbData.append"><code class="name flex">
+<span>def <span class="ident">append</span></span>(<span>self, value)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Appends a binary string to the list.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def append(self, value):
+    &#34;&#34;&#34;Appends a binary string to the list.&#34;&#34;&#34;
+    memoryview(value)
+    self._args.append(value)</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.common.ArbData.clear"><code class="name flex">
+<span>def <span class="ident">clear</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Resets the ArbData object.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clear(self):
+    &#34;&#34;&#34;Resets the ArbData object.&#34;&#34;&#34;
+    self.clear_args()
+    self.clear_json()</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.common.ArbData.clear_args"><code class="name flex">
+<span>def <span class="ident">clear_args</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Clears the binary argument list.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clear_args(self):
+    &#34;&#34;&#34;Clears the binary argument list.&#34;&#34;&#34;
+    self._args = []</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.common.ArbData.clear_json"><code class="name flex">
+<span>def <span class="ident">clear_json</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Clears the JSON data.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clear_json(self):
+    &#34;&#34;&#34;Clears the JSON data.&#34;&#34;&#34;
+    self._json = {}</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.common.ArbData.extend"><code class="name flex">
+<span>def <span class="ident">extend</span></span>(<span>self, it)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Extends the binary strings with the given iterator.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def extend(self, it):
+    &#34;&#34;&#34;Extends the binary strings with the given iterator.&#34;&#34;&#34;
+    for value in it:
+        self.append(value)</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.common.ArbData.insert"><code class="name flex">
+<span>def <span class="ident">insert</span></span>(<span>self, index, value)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Inserts a binary string into the list.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def insert(self, index, value):
+    &#34;&#34;&#34;Inserts a binary string into the list.&#34;&#34;&#34;
+    memoryview(value)
+    self._args.insert(index, value)</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.common.ArbData.items"><code class="name flex">
+<span>def <span class="ident">items</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Iterates over the JSON object items.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def items(self):
+    &#34;&#34;&#34;Iterates over the JSON object items.&#34;&#34;&#34;
+    return self._json.items()</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.common.ArbData.keys"><code class="name flex">
+<span>def <span class="ident">keys</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Iterates over the JSON object entry keys.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def keys(self):
+    &#34;&#34;&#34;Iterates over the JSON object entry keys.&#34;&#34;&#34;
+    return self._json.keys()</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.common.ArbData.values"><code class="name flex">
+<span>def <span class="ident">values</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Iterates over the JSON object values.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def values(self):
+    &#34;&#34;&#34;Iterates over the JSON object values.&#34;&#34;&#34;
+    return self._json.values()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="dqcsim.common.Loglevel"><code class="flex name class">
+<span>class <span class="ident">Loglevel</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Enumeration of the loglevels available in DQCsim.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Loglevel(IntEnum):
+    &#34;&#34;&#34;Enumeration of the loglevels available in DQCsim.&#34;&#34;&#34;
+
+    TRACE = raw.DQCS_LOG_TRACE
+    DEBUG = raw.DQCS_LOG_DEBUG
+    INFO = raw.DQCS_LOG_INFO
+    NOTE = raw.DQCS_LOG_NOTE
+    WARN = raw.DQCS_LOG_WARN
+    ERROR = raw.DQCS_LOG_ERROR
+    FATAL = raw.DQCS_LOG_FATAL
+    OFF = raw.DQCS_LOG_OFF</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.IntEnum</li>
+<li>builtins.int</li>
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="dqcsim.common.Loglevel.DEBUG"><code class="name">var <span class="ident">DEBUG</span></code></dt>
+<dd>
+<section class="desc"><p>Enumeration of the loglevels available in DQCsim.</p></section>
+</dd>
+<dt id="dqcsim.common.Loglevel.ERROR"><code class="name">var <span class="ident">ERROR</span></code></dt>
+<dd>
+<section class="desc"><p>Enumeration of the loglevels available in DQCsim.</p></section>
+</dd>
+<dt id="dqcsim.common.Loglevel.FATAL"><code class="name">var <span class="ident">FATAL</span></code></dt>
+<dd>
+<section class="desc"><p>Enumeration of the loglevels available in DQCsim.</p></section>
+</dd>
+<dt id="dqcsim.common.Loglevel.INFO"><code class="name">var <span class="ident">INFO</span></code></dt>
+<dd>
+<section class="desc"><p>Enumeration of the loglevels available in DQCsim.</p></section>
+</dd>
+<dt id="dqcsim.common.Loglevel.NOTE"><code class="name">var <span class="ident">NOTE</span></code></dt>
+<dd>
+<section class="desc"><p>Enumeration of the loglevels available in DQCsim.</p></section>
+</dd>
+<dt id="dqcsim.common.Loglevel.OFF"><code class="name">var <span class="ident">OFF</span></code></dt>
+<dd>
+<section class="desc"><p>Enumeration of the loglevels available in DQCsim.</p></section>
+</dd>
+<dt id="dqcsim.common.Loglevel.TRACE"><code class="name">var <span class="ident">TRACE</span></code></dt>
+<dd>
+<section class="desc"><p>Enumeration of the loglevels available in DQCsim.</p></section>
+</dd>
+<dt id="dqcsim.common.Loglevel.WARN"><code class="name">var <span class="ident">WARN</span></code></dt>
+<dd>
+<section class="desc"><p>Enumeration of the loglevels available in DQCsim.</p></section>
+</dd>
+</dl>
+</dd>
+<dt id="dqcsim.common.Measurement"><code class="flex name class">
+<span>class <span class="ident">Measurement</span></span>
+<span>(</span><span>qubit, value, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Re-export of <a title="dqcsim.common.meas.Measurement" href="meas.html#dqcsim.common.meas.Measurement"><code>Measurement</code></a>.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Measurement(ArbData):
+    &#34;&#34;&#34;Represents a measurement object.
+
+    Measurement objects consist of an integer referencing the qubit that was
+    measured and a measurement value. The value can be 0, 1, or None
+    (= undefined).
+
+    Measurements also have an attached `ArbData` object. This is modelled in
+    Python through inheritance.
+    &#34;&#34;&#34;
+
+    def __init__(self, qubit, value, *args, **kwargs):
+        &#34;&#34;&#34;Constructs a Measurement object.
+
+        The first two positional arguments are the qubit reference and the
+        measurement value. The remaining positional arguments and the keyword
+        arguments are used to construct the attached `ArbData` object.
+        &#34;&#34;&#34;
+        super().__init__(*args, **kwargs)
+        self.qubit = qubit
+        self.value = value
+
+    @property
+    def qubit(self): #@
+        &#34;&#34;&#34;The qubit associated with this measurement.&#34;&#34;&#34;
+        return self.__qubit
+
+    @qubit.setter
+    def qubit(self, qubit): #@
+        qubit = int(qubit)
+        if qubit &lt; 1:
+            raise ValueError(&#39;invalid qubit reference: {!r}&#39;.format(qubit))
+        self.__qubit = qubit
+
+    @property
+    def value(self): #@
+        &#34;&#34;&#34;The measurement value; either 0, 1, or None (= undefined).&#34;&#34;&#34;
+        return self.__value
+
+    @value.setter
+    def value(self, value): #@
+        if value is not None:
+            value = int(bool(value))
+        self.__value = value
+
+    def __eq__(self, other):
+        if isinstance(other, Measurement):
+            return super().__eq__(other) and self.qubit == other.qubit and self.value == other.value
+        return False
+
+    @classmethod
+    def _from_raw(cls, handle): #@
+        &#34;&#34;&#34;Constructs a measurement object from a raw API handle.&#34;&#34;&#34;
+        arg = ArbData._from_raw(handle)
+        with handle as hndl:
+            value = raw.dqcs_meas_value_get(hndl)
+            if value == raw.DQCS_MEAS_UNDEFINED:
+                value = None
+            elif value == raw.DQCS_MEAS_ZERO:
+                value = 0
+            elif value == raw.DQCS_MEAS_ONE:
+                value = 1
+            else:
+                assert(False)
+            meas = Measurement(raw.dqcs_meas_qubit_get(hndl), value)
+        meas._args = arg._args
+        meas._json = arg._json
+        return meas
+
+    def _to_raw(self):
+        &#34;&#34;&#34;Makes an API handle for this measurement object.&#34;&#34;&#34;
+        value = self.value
+        if value is None:
+            value = raw.DQCS_MEAS_UNDEFINED
+        elif value == 0:
+            value = raw.DQCS_MEAS_ZERO
+        elif value == 1:
+            value = raw.DQCS_MEAS_ONE
+        else:
+            assert(False)
+        handle = Handle(raw.dqcs_meas_new(self.qubit, value))
+        super()._to_raw(handle)
+        return handle
+
+    def __repr__(self):
+        e = [repr(self.qubit), repr(self.value)]
+        for arg in self._args:
+            e.append(repr(arg))
+        for key, value in sorted(self._json.items()):
+            e.append(&#34;{!s}={!r}&#34;.format(key, value))
+        return &#34;Measurement({})&#34;.format(&#39;, &#39;.join(e))
+
+    __str__ = __repr__</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="dqcsim.common.arb.ArbData" href="arb.html#dqcsim.common.arb.ArbData">ArbData</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="dqcsim.common.Measurement.qubit"><code class="name">var <span class="ident">qubit</span></code></dt>
+<dd>
+<section class="desc"><p>The qubit associated with this measurement.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def qubit(self): #@
+    &#34;&#34;&#34;The qubit associated with this measurement.&#34;&#34;&#34;
+    return self.__qubit</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.common.Measurement.value"><code class="name">var <span class="ident">value</span></code></dt>
+<dd>
+<section class="desc"><p>The measurement value; either 0, 1, or None (= undefined).</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def value(self): #@
+    &#34;&#34;&#34;The measurement value; either 0, 1, or None (= undefined).&#34;&#34;&#34;
+    return self.__value</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="dqcsim.common.arb.ArbData" href="arb.html#dqcsim.common.arb.ArbData">ArbData</a></b></code>:
+<ul class="hlist">
+<li><code><a title="dqcsim.common.arb.ArbData.append" href="arb.html#dqcsim.common.arb.ArbData.append">append</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.clear" href="arb.html#dqcsim.common.arb.ArbData.clear">clear</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.clear_args" href="arb.html#dqcsim.common.arb.ArbData.clear_args">clear_args</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.clear_json" href="arb.html#dqcsim.common.arb.ArbData.clear_json">clear_json</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.extend" href="arb.html#dqcsim.common.arb.ArbData.extend">extend</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.insert" href="arb.html#dqcsim.common.arb.ArbData.insert">insert</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.items" href="arb.html#dqcsim.common.arb.ArbData.items">items</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.keys" href="arb.html#dqcsim.common.arb.ArbData.keys">keys</a></code></li>
+<li><code><a title="dqcsim.common.arb.ArbData.values" href="arb.html#dqcsim.common.arb.ArbData.values">values</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="dqcsim" href="../index.html">dqcsim</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="dqcsim.common.arb" href="arb.html">dqcsim.common.arb</a></code></li>
+<li><code><a title="dqcsim.common.cmd" href="cmd.html">dqcsim.common.cmd</a></code></li>
+<li><code><a title="dqcsim.common.meas" href="meas.html">dqcsim.common.meas</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="dqcsim.common.ArbCmd" href="#dqcsim.common.ArbCmd">ArbCmd</a></code></h4>
+<ul class="">
+<li><code><a title="dqcsim.common.ArbCmd.iface" href="#dqcsim.common.ArbCmd.iface">iface</a></code></li>
+<li><code><a title="dqcsim.common.ArbCmd.oper" href="#dqcsim.common.ArbCmd.oper">oper</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dqcsim.common.ArbData" href="#dqcsim.common.ArbData">ArbData</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dqcsim.common.ArbData.append" href="#dqcsim.common.ArbData.append">append</a></code></li>
+<li><code><a title="dqcsim.common.ArbData.clear" href="#dqcsim.common.ArbData.clear">clear</a></code></li>
+<li><code><a title="dqcsim.common.ArbData.clear_args" href="#dqcsim.common.ArbData.clear_args">clear_args</a></code></li>
+<li><code><a title="dqcsim.common.ArbData.clear_json" href="#dqcsim.common.ArbData.clear_json">clear_json</a></code></li>
+<li><code><a title="dqcsim.common.ArbData.extend" href="#dqcsim.common.ArbData.extend">extend</a></code></li>
+<li><code><a title="dqcsim.common.ArbData.insert" href="#dqcsim.common.ArbData.insert">insert</a></code></li>
+<li><code><a title="dqcsim.common.ArbData.items" href="#dqcsim.common.ArbData.items">items</a></code></li>
+<li><code><a title="dqcsim.common.ArbData.keys" href="#dqcsim.common.ArbData.keys">keys</a></code></li>
+<li><code><a title="dqcsim.common.ArbData.values" href="#dqcsim.common.ArbData.values">values</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dqcsim.common.Loglevel" href="#dqcsim.common.Loglevel">Loglevel</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dqcsim.common.Loglevel.DEBUG" href="#dqcsim.common.Loglevel.DEBUG">DEBUG</a></code></li>
+<li><code><a title="dqcsim.common.Loglevel.ERROR" href="#dqcsim.common.Loglevel.ERROR">ERROR</a></code></li>
+<li><code><a title="dqcsim.common.Loglevel.FATAL" href="#dqcsim.common.Loglevel.FATAL">FATAL</a></code></li>
+<li><code><a title="dqcsim.common.Loglevel.INFO" href="#dqcsim.common.Loglevel.INFO">INFO</a></code></li>
+<li><code><a title="dqcsim.common.Loglevel.NOTE" href="#dqcsim.common.Loglevel.NOTE">NOTE</a></code></li>
+<li><code><a title="dqcsim.common.Loglevel.OFF" href="#dqcsim.common.Loglevel.OFF">OFF</a></code></li>
+<li><code><a title="dqcsim.common.Loglevel.TRACE" href="#dqcsim.common.Loglevel.TRACE">TRACE</a></code></li>
+<li><code><a title="dqcsim.common.Loglevel.WARN" href="#dqcsim.common.Loglevel.WARN">WARN</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="dqcsim.common.Measurement" href="#dqcsim.common.Measurement">Measurement</a></code></h4>
+<ul class="">
+<li><code><a title="dqcsim.common.Measurement.qubit" href="#dqcsim.common.Measurement.qubit">qubit</a></code></li>
+<li><code><a title="dqcsim.common.Measurement.value" href="#dqcsim.common.Measurement.value">value</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

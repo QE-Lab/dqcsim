@@ -1,0 +1,332 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Qubits: dqcs_qbset_* - DQCsim</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div id="sidebar-scrollbox" class="sidebar-scrollbox">
+                <ol class="chapter"><li class="expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Introduction to DQCsim</a></li><li><ol class="section"><li class="expanded "><a href="../intro/components.html"><strong aria-hidden="true">1.1.</strong> The components of a simulation</a></li><li><ol class="section"><li class="expanded "><a href="../intro/frontend.html"><strong aria-hidden="true">1.1.1.</strong> Frontend use cases</a></li><li class="expanded "><a href="../intro/backend.html"><strong aria-hidden="true">1.1.2.</strong> Backend use cases</a></li><li class="expanded "><a href="../intro/operator.html"><strong aria-hidden="true">1.1.3.</strong> Operator use cases</a></li><li class="expanded "><a href="../intro/host.html"><strong aria-hidden="true">1.1.4.</strong> Host use cases</a></li></ol></li><li class="expanded "><a href="../intro/puzzle.html"><strong aria-hidden="true">1.2.</strong> Jigsaw puzzle analogy</a></li><li class="expanded "><a href="../intro/interfaces.html"><strong aria-hidden="true">1.3.</strong> DQCsim's interfaces</a></li><li><ol class="section"><li class="expanded "><a href="../intro/arbs.html"><strong aria-hidden="true">1.3.1.</strong> ArbData and ArbCmds</a></li><li class="expanded "><a href="../intro/gatestream.html"><strong aria-hidden="true">1.3.2.</strong> Gate- and measurement streams</a></li><li class="expanded "><a href="../intro/host-iface.html"><strong aria-hidden="true">1.3.3.</strong> The host interface</a></li><li class="expanded "><a href="../intro/misc-iface.html"><strong aria-hidden="true">1.3.4.</strong> Miscellaneous interfaces</a></li></ol></li><li class="expanded "><a href="../intro/reproducibility.html"><strong aria-hidden="true">1.4.</strong> Reproducibility</a></li></ol></li><li class="expanded "><a href="../install/index.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="expanded "><a href="../install/plugins.html"><strong aria-hidden="true">2.1.</strong> Plugin distribution</a></li></ol></li><li class="expanded "><a href="../cli/index.html"><strong aria-hidden="true">3.</strong> The command-line interface</a></li><li class="expanded "><a href="../python-api/index.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li><ol class="section"><li class="expanded "><a href="../python-api/hello-world.html"><strong aria-hidden="true">4.1.</strong> Hello, world!</a></li><li class="expanded "><a href="../python-api/debugging.html"><strong aria-hidden="true">4.2.</strong> Debugging</a></li><li class="expanded "><a href="../python-api/sending-gates.html"><strong aria-hidden="true">4.3.</strong> Sending some gates</a></li><li class="expanded "><a href="../python-api/simulations.html"><strong aria-hidden="true">4.4.</strong> Controlling simulations</a></li><li class="expanded "><a href="../python-api/operator.html"><strong aria-hidden="true">4.5.</strong> Inserting an operator</a></li><li class="expanded "><a href="../python-api/reference.html"><strong aria-hidden="true">4.6.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../cpp-api/index.html"><strong aria-hidden="true">5.</strong> C++ API</a></li><li class="expanded "><a href="../c-api/index.html"><strong aria-hidden="true">6.</strong> C API</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/concepts.apigen.html"><strong aria-hidden="true">6.1.</strong> Concepts</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/handle.apigen.html"><strong aria-hidden="true">6.1.1.</strong> Handles: dqcs_handle_*</a></li><li class="expanded "><a href="../c-api/memory-management.apigen.html"><strong aria-hidden="true">6.1.2.</strong> Memory management</a></li><li class="expanded "><a href="../c-api/error.apigen.html"><strong aria-hidden="true">6.1.3.</strong> Error handling: dqcs_error_*</a></li><li class="expanded "><a href="../c-api/callbacks.apigen.html"><strong aria-hidden="true">6.1.4.</strong> Callbacks</a></li></ol></li><li class="expanded "><a href="../c-api/type-definitions.apigen.html"><strong aria-hidden="true">6.2.</strong> Type definitions: dqcs_*_t</a></li><li class="expanded "><a href="../c-api/arb-cmd-cq.apigen.html"><strong aria-hidden="true">6.3.</strong> ArbData and ArbCmd objects</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/arb.apigen.html"><strong aria-hidden="true">6.3.1.</strong> ArbData objects: dqcs_arb_*</a></li><li class="expanded "><a href="../c-api/cmd.apigen.html"><strong aria-hidden="true">6.3.2.</strong> ArbCmd objects: dqcs_cmd_*</a></li><li class="expanded "><a href="../c-api/cq.apigen.html"><strong aria-hidden="true">6.3.3.</strong> ArbCmd queues: dqcs_cq_*</a></li></ol></li><li class="expanded "><a href="../c-api/qbset.apigen.html" class="active"><strong aria-hidden="true">6.4.</strong> Qubits: dqcs_qbset_*</a></li><li class="expanded "><a href="../c-api/gate.apigen.html"><strong aria-hidden="true">6.5.</strong> Gates: dqcs_gate_*</a></li><li class="expanded "><a href="../c-api/measurements.apigen.html"><strong aria-hidden="true">6.6.</strong> Measurements</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/meas.apigen.html"><strong aria-hidden="true">6.6.1.</strong> Singular measurements: dqcs_meas_*</a></li><li class="expanded "><a href="../c-api/mset.apigen.html"><strong aria-hidden="true">6.6.2.</strong> Measurement sets: dqcs_mset_*</a></li></ol></li><li class="expanded "><a href="../c-api/plugins.apigen.html"><strong aria-hidden="true">6.7.</strong> Plugins</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pdef.apigen.html"><strong aria-hidden="true">6.7.1.</strong> Defining a plugin: dqcs_pdef_*</a></li><li class="expanded "><a href="../c-api/plugin-run.apigen.html"><strong aria-hidden="true">6.7.2.</strong> Running a plugin: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/plugin-interact.apigen.html"><strong aria-hidden="true">6.7.3.</strong> Interacting with DQCsim: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/log.apigen.html"><strong aria-hidden="true">6.7.4.</strong> Logging: dqcs_log_*</a></li></ol></li><li class="expanded "><a href="../c-api/simulations.apigen.html"><strong aria-hidden="true">6.8.</strong> Simulations</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pcfg.apigen.html"><strong aria-hidden="true">6.8.1.</strong> Configuring plugins: dqcs_pcfg_*</a></li><li class="expanded "><a href="../c-api/tcfg.apigen.html"><strong aria-hidden="true">6.8.2.</strong> Running local plugins: dqcs_tcfg_*</a></li><li class="expanded "><a href="../c-api/scfg.apigen.html"><strong aria-hidden="true">6.8.3.</strong> Configuring a simulation: dqcs_scfg_*</a></li><li class="expanded "><a href="../c-api/sim.apigen.html"><strong aria-hidden="true">6.8.4.</strong> Running a simulation: dqcs_sim_*</a></li></ol></li><li class="expanded "><a href="../c-api/reference.apigen.html"><strong aria-hidden="true">6.9.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../rust-api/index.html"><strong aria-hidden="true">7.</strong> Rust API</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">DQCsim</h1>
+
+                        <div class="right-buttons">
+                            <a href="../print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#qubits" id="qubits">Qubits</a></h1>
+<p>While DQCsim does not perform any quantum simulation on its own, and therefore
+does not maintain any kind of state space to refer to or measure, it is still
+very important to be able to <em>refer</em> to qubits. This is done using integers,
+specifically of the type <code>dqcs_qubit_t</code>, in a way that is not dissimilar from
+handles. The biggest difference compared to handles is that the entity that is
+referred to is not owned by DQCsim, but rather by the downstream plugin.</p>
+<h2><a class="header" href="#allocating-and-freeing-qubits" id="allocating-and-freeing-qubits">Allocating and freeing qubits</a></h2>
+<p>To be as flexible as possible, DQCsim allows qubits to be allocated and freed
+at any time. There is no physical analogue to this, but then again, a
+conventional computer cannot create and destroy physical bits out of thin air,
+either. This dynamic allocation intends to help solve two problems:</p>
+<ul>
+<li>Operator plugins that perform a logical-to-physical mapping need to know
+which logical qubits are actually in use.</li>
+<li>By doing allocation on-the-fly, a quantum algorithm doesn't need to specify
+how many qubits it's going to need before it's started. It can for instance
+interpret a file first, perform some classical computations, and determine
+the qubit requirements based on that.</li>
+<li>Quantum simulations take up a lot of memory. Depending on the
+implementation, they may be able to use liveness information for
+optimizations.</li>
+</ul>
+<p>The numbers assigned to the qubit references/handles are guaranteed to be
+sequential and unique within a simulation. Zero is reserved, so the first
+allocated qubit is always qubit 1. The second is qubit 2, and so on. Even if
+we free both of those, the next qubit will still be qubit 3. Implementation
+code can rely on this behavior if it wants.</p>
+<p>Since qubits are owned by the downstream plugin, there is no function to ask
+DQCsim itself for a new qubit. Instead, this is done using
+<code>dqcs_plugin_allocate()</code>. Its inverse is <code>dqcs_plugin_free()</code>. These functions
+require a plugin state, which is only available from within plugin callback
+functions. Specifically, the functions can only be called by running frontend
+or operator plugins.</p>
+<h2><a class="header" href="#sets-of-qubits" id="sets-of-qubits">Sets of qubits</a></h2>
+<p>Many things within DQCsim operate not on a single qubit, but on a set of
+qubits. Such a set is represented through a <code>qbset</code> handle.</p>
+<h3><a class="header" href="#constructing-a-qubit-set" id="constructing-a-qubit-set">Constructing a qubit set</a></h3>
+<p>A qubit set can be constructed as follows. It is assumed that the qubits have
+already been allocated.</p>
+<pre><code class="language-C">dqcs_handle_t qbset = dqcs_qbset_new();
+for (qubit = ...; ...; ...) {
+    dqcs_qbset_push(qbset, qubit);
+}
+</code></pre>
+<details><summary><font color="green"><tt>dqcs_qbset_new()</tt></font><div style="margin-left: 16px">
+<p>Creates a new set of qubit references.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_qbset_new(void)
+</code></pre>
+<p>Returns the handle of the newly created set. The set is initially empty.
+Qubit sets are ordered, meaning that the order in which qubits are popped
+from the set equals the order in which they were pushed. To iterate over a
+set, simply make a copy and drain the copy using pop.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_qbset_push()</tt></font><div style="margin-left: 16px">
+<p>Pushes a qubit reference into a qubit reference set.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_return_t dqcs_qbset_push(
+    dqcs_handle_t qbset,
+    dqcs_qubit_t qubit
+)
+</code></pre>
+<p>This function will fail if the specified qubit was already part of the set.</p>
+</div></details>
+<h3><a class="header" href="#iterating-over-a-qubit-set" id="iterating-over-a-qubit-set">Iterating over a qubit set</a></h3>
+<p>Iterating over a qubit set can be done as follows.</p>
+<pre><code class="language-C">dqcs_handle_t qbset = ...;
+dqcs_qubit_t qubit = 0;
+while (qubit = dqcs_qbset_pop(qbset)) {
+    ...
+}
+dqcs_handle_delete(qbset);
+</code></pre>
+<details><summary><font color="green"><tt>dqcs_qbset_pop()</tt></font><div style="margin-left: 16px">
+<p>Pops a qubit reference off of a qubit reference set.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_qubit_t dqcs_qbset_pop(dqcs_handle_t qbset)
+</code></pre>
+<p>Qubits are popped in the same order in which they were pushed. That is,
+they are FIFO-ordered.</p>
+</div></details>
+<p>Note that insertion order is maintained (in FIFO order). This means that qubit
+sets can be used for specifying the target qubits of a multi-qubit gate.</p>
+<p>Note also that iteration is destructive: the set will be empty when iteration
+completes. If you need to iterate over a set multiple times, you can make a
+copy first.</p>
+<details><summary><font color="green"><tt>dqcs_qbset_copy()</tt></font><div style="margin-left: 16px">
+<p>Returns a copy of the given qubit set, intended for non-destructive
+iteration.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_qbset_copy(dqcs_handle_t qbset)
+</code></pre>
+</div></details>
+<h3><a class="header" href="#querying-qubit-sets" id="querying-qubit-sets">Querying qubit sets</a></h3>
+<p>You can also query qubit sets non-destructively using the following two
+functions.</p>
+<details><summary><font color="green"><tt>dqcs_qbset_contains()</tt></font><div style="margin-left: 16px">
+<p>Returns whether the given qubit set contains the given qubit.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_bool_return_t dqcs_qbset_contains(
+    dqcs_handle_t qbset,
+    dqcs_qubit_t qubit
+)
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_qbset_len()</tt></font><div style="margin-left: 16px">
+<p>Returns the number of qubits in the given set.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">ssize_t dqcs_qbset_len(dqcs_handle_t qbset)
+</code></pre>
+<p>This function returns -1 to indicate failure.</p>
+</div></details>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="../c-api/cq.apigen.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="../c-api/gate.apigen.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a href="../c-api/cq.apigen.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="../c-api/gate.apigen.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>

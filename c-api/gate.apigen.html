@@ -1,0 +1,465 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Gates: dqcs_gate_* - DQCsim</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div id="sidebar-scrollbox" class="sidebar-scrollbox">
+                <ol class="chapter"><li class="expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Introduction to DQCsim</a></li><li><ol class="section"><li class="expanded "><a href="../intro/components.html"><strong aria-hidden="true">1.1.</strong> The components of a simulation</a></li><li><ol class="section"><li class="expanded "><a href="../intro/frontend.html"><strong aria-hidden="true">1.1.1.</strong> Frontend use cases</a></li><li class="expanded "><a href="../intro/backend.html"><strong aria-hidden="true">1.1.2.</strong> Backend use cases</a></li><li class="expanded "><a href="../intro/operator.html"><strong aria-hidden="true">1.1.3.</strong> Operator use cases</a></li><li class="expanded "><a href="../intro/host.html"><strong aria-hidden="true">1.1.4.</strong> Host use cases</a></li></ol></li><li class="expanded "><a href="../intro/puzzle.html"><strong aria-hidden="true">1.2.</strong> Jigsaw puzzle analogy</a></li><li class="expanded "><a href="../intro/interfaces.html"><strong aria-hidden="true">1.3.</strong> DQCsim's interfaces</a></li><li><ol class="section"><li class="expanded "><a href="../intro/arbs.html"><strong aria-hidden="true">1.3.1.</strong> ArbData and ArbCmds</a></li><li class="expanded "><a href="../intro/gatestream.html"><strong aria-hidden="true">1.3.2.</strong> Gate- and measurement streams</a></li><li class="expanded "><a href="../intro/host-iface.html"><strong aria-hidden="true">1.3.3.</strong> The host interface</a></li><li class="expanded "><a href="../intro/misc-iface.html"><strong aria-hidden="true">1.3.4.</strong> Miscellaneous interfaces</a></li></ol></li><li class="expanded "><a href="../intro/reproducibility.html"><strong aria-hidden="true">1.4.</strong> Reproducibility</a></li></ol></li><li class="expanded "><a href="../install/index.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="expanded "><a href="../install/plugins.html"><strong aria-hidden="true">2.1.</strong> Plugin distribution</a></li></ol></li><li class="expanded "><a href="../cli/index.html"><strong aria-hidden="true">3.</strong> The command-line interface</a></li><li class="expanded "><a href="../python-api/index.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li><ol class="section"><li class="expanded "><a href="../python-api/hello-world.html"><strong aria-hidden="true">4.1.</strong> Hello, world!</a></li><li class="expanded "><a href="../python-api/debugging.html"><strong aria-hidden="true">4.2.</strong> Debugging</a></li><li class="expanded "><a href="../python-api/sending-gates.html"><strong aria-hidden="true">4.3.</strong> Sending some gates</a></li><li class="expanded "><a href="../python-api/simulations.html"><strong aria-hidden="true">4.4.</strong> Controlling simulations</a></li><li class="expanded "><a href="../python-api/operator.html"><strong aria-hidden="true">4.5.</strong> Inserting an operator</a></li><li class="expanded "><a href="../python-api/reference.html"><strong aria-hidden="true">4.6.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../cpp-api/index.html"><strong aria-hidden="true">5.</strong> C++ API</a></li><li class="expanded "><a href="../c-api/index.html"><strong aria-hidden="true">6.</strong> C API</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/concepts.apigen.html"><strong aria-hidden="true">6.1.</strong> Concepts</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/handle.apigen.html"><strong aria-hidden="true">6.1.1.</strong> Handles: dqcs_handle_*</a></li><li class="expanded "><a href="../c-api/memory-management.apigen.html"><strong aria-hidden="true">6.1.2.</strong> Memory management</a></li><li class="expanded "><a href="../c-api/error.apigen.html"><strong aria-hidden="true">6.1.3.</strong> Error handling: dqcs_error_*</a></li><li class="expanded "><a href="../c-api/callbacks.apigen.html"><strong aria-hidden="true">6.1.4.</strong> Callbacks</a></li></ol></li><li class="expanded "><a href="../c-api/type-definitions.apigen.html"><strong aria-hidden="true">6.2.</strong> Type definitions: dqcs_*_t</a></li><li class="expanded "><a href="../c-api/arb-cmd-cq.apigen.html"><strong aria-hidden="true">6.3.</strong> ArbData and ArbCmd objects</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/arb.apigen.html"><strong aria-hidden="true">6.3.1.</strong> ArbData objects: dqcs_arb_*</a></li><li class="expanded "><a href="../c-api/cmd.apigen.html"><strong aria-hidden="true">6.3.2.</strong> ArbCmd objects: dqcs_cmd_*</a></li><li class="expanded "><a href="../c-api/cq.apigen.html"><strong aria-hidden="true">6.3.3.</strong> ArbCmd queues: dqcs_cq_*</a></li></ol></li><li class="expanded "><a href="../c-api/qbset.apigen.html"><strong aria-hidden="true">6.4.</strong> Qubits: dqcs_qbset_*</a></li><li class="expanded "><a href="../c-api/gate.apigen.html" class="active"><strong aria-hidden="true">6.5.</strong> Gates: dqcs_gate_*</a></li><li class="expanded "><a href="../c-api/measurements.apigen.html"><strong aria-hidden="true">6.6.</strong> Measurements</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/meas.apigen.html"><strong aria-hidden="true">6.6.1.</strong> Singular measurements: dqcs_meas_*</a></li><li class="expanded "><a href="../c-api/mset.apigen.html"><strong aria-hidden="true">6.6.2.</strong> Measurement sets: dqcs_mset_*</a></li></ol></li><li class="expanded "><a href="../c-api/plugins.apigen.html"><strong aria-hidden="true">6.7.</strong> Plugins</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pdef.apigen.html"><strong aria-hidden="true">6.7.1.</strong> Defining a plugin: dqcs_pdef_*</a></li><li class="expanded "><a href="../c-api/plugin-run.apigen.html"><strong aria-hidden="true">6.7.2.</strong> Running a plugin: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/plugin-interact.apigen.html"><strong aria-hidden="true">6.7.3.</strong> Interacting with DQCsim: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/log.apigen.html"><strong aria-hidden="true">6.7.4.</strong> Logging: dqcs_log_*</a></li></ol></li><li class="expanded "><a href="../c-api/simulations.apigen.html"><strong aria-hidden="true">6.8.</strong> Simulations</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pcfg.apigen.html"><strong aria-hidden="true">6.8.1.</strong> Configuring plugins: dqcs_pcfg_*</a></li><li class="expanded "><a href="../c-api/tcfg.apigen.html"><strong aria-hidden="true">6.8.2.</strong> Running local plugins: dqcs_tcfg_*</a></li><li class="expanded "><a href="../c-api/scfg.apigen.html"><strong aria-hidden="true">6.8.3.</strong> Configuring a simulation: dqcs_scfg_*</a></li><li class="expanded "><a href="../c-api/sim.apigen.html"><strong aria-hidden="true">6.8.4.</strong> Running a simulation: dqcs_sim_*</a></li></ol></li><li class="expanded "><a href="../c-api/reference.apigen.html"><strong aria-hidden="true">6.9.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../rust-api/index.html"><strong aria-hidden="true">7.</strong> Rust API</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">DQCsim</h1>
+
+                        <div class="right-buttons">
+                            <a href="../print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#gates" id="gates">Gates</a></h1>
+<p>The state of a quantum system is modified by means of quantum gates.</p>
+<h2><a class="header" href="#constructing-gates" id="constructing-gates">Constructing gates</a></h2>
+<p>DQCsim provides three types of gates:</p>
+<ul>
+<li>Unitary gates: these apply a gate matrix on one or more qubits.</li>
+<li>Measurement gates: these cause the state of a qubit to be collapsed along
+and measured in the Z basis.</li>
+<li>Custom gates: anything else that the downstream plugin supports.</li>
+</ul>
+<p>These are constructed using the following functions.</p>
+<details><summary><font color="green"><tt>dqcs_gate_new_unitary()</tt></font><div style="margin-left: 16px">
+<p>Constructs a new unitary gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_new_unitary(
+    dqcs_handle_t targets,
+    dqcs_handle_t controls,
+    const double *matrix,
+    size_t matrix_len
+)
+</code></pre>
+<p><code>targets</code> must be a handle to a non-empty qubit set. The qubits in this set
+correspond with the supplied unitary matrix.</p>
+<p><code>controls</code> optionally specifies a set of control qubits. You may pass 0 or
+an empty qubit set if you don't need control qubits.</p>
+<p><code>matrix</code> must point to an appropriately sized array of doubles,
+representing the unitary matrix to be applied to the qubits in the
+<code>targets</code> set. The matrix is specified in row-major form, using pairs of
+doubles for the real vs. imaginary component of each entry. The size must
+thus be <code>4**len(targets)</code> complex numbers = <code>2*4**len(targets)</code> doubles =
+<code>16*4**len(targets)</code> bytes. <code>matrix_len</code> must be set to the number of
+complex numbers.</p>
+<p>The supplied matrix is only applied to the target qubits if all the control
+qubits are or will be determined to be set. For instance, to encode a
+CCNOT/Toffoli gate, you can specify one target qubits, two control qubits,
+and [0, 1; 1, 0] (X) for the matrix. This is equivalent to extending the
+matrix to the full Toffoli matrix and specifying all three qubits in the
+targets set, or the midway solution using a CNOT matrix, but these
+solutions may be less efficient depending on whether the simulator can
+optimize its calculations for controlled gates.</p>
+<p>Simulators are not required to apply the (hidden) global phase component of
+the gate matrix in the same way it is specified; that is, if the simulator
+can optimize its calculations by altering the global phase it is allowed
+to.</p>
+<p>If is up to the user to ensure that the specified matrix is unitary. This
+is NOT checked by DQCsim. The simulator backend may or may not check this.</p>
+<p>This function returns the handle to the gate, or 0 to indicate failure.
+The <code>targets</code> qubit set and (if specified) the <code>controls</code> qubit set are
+consumed/deleted by this function if and only if it succeeds.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_new_measurement()</tt></font><div style="margin-left: 16px">
+<p>Constructs a new measurement gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_new_measurement(dqcs_handle_t measures)
+</code></pre>
+<p><code>measures</code> must be a handle to a qubit set. The qubits in this set are
+measured in the Z-basis. To measure in other bases, first apply the
+respective rotation, or use a custom gate.</p>
+<p>This function returns the handle to the gate, or 0 to indicate failure.
+The <code>measures</code> qubit set is consumed/deleted by this function if and only
+if it succeeds.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_new_custom()</tt></font><div style="margin-left: 16px">
+<p>Constructs a new custom gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_new_custom(
+    const char *name,
+    dqcs_handle_t targets,
+    dqcs_handle_t controls,
+    dqcs_handle_t measures,
+    const double *matrix,
+    size_t matrix_len
+)
+</code></pre>
+<p>The functionality of custom gates is not specified by DQCsim. Instead, this
+is left up to the plugins. Of course, for this to work, plugins that are
+connected to each other must agree on the format used.</p>
+<p><code>name</code> specifies the name of the gate. The name is used to indicate which
+custom operation is to be applied.</p>
+<p><code>targets</code> optionally specifies the set of target qubits. You may pass 0 or
+an empty qubit set if you don't need target qubits.</p>
+<p><code>controls</code> optionally specifies the set of control qubits. You may pass 0
+or an empty qubit set if you don't need control qubits.</p>
+<p><code>measures</code> optionally specifies the set of measured qubits. You may pass 0
+or an empty qubit set if no qubits are measured. Note that the upstream
+plugin expects exactly one measurement result for each qubit specified in
+this set; anything else results in a warning and the measurement result
+being set to undefined.</p>
+<p><code>matrix</code> can point to an appropriately sized array of doubles, or be <code>NULL</code>
+if no matrix is required. If a matrix is specified, at least one target
+qubit is required, and the matrix must be appropriately sized for the
+number of target qubits. The matrix is specified in row-major form, using
+pairs of doubles for the real vs. imaginary component of each entry. The
+size must thus be <code>4**len(targets)</code> complex numbers = <code>2*4**len(targets)</code>
+doubles = <code>16*4**len(targets)</code> bytes. <code>matrix_len</code> must be set to the
+number of complex numbers.</p>
+<p>In addition to the above data, gate objects implement the <code>arb</code> interface
+to allow user-specified classical information to be attached.</p>
+<p>This function returns the handle to the gate, or 0 to indicate failure.
+The specified qubit sets are consumed/deleted by this function if and only
+if it succeeds.</p>
+</div></details>
+<h2><a class="header" href="#attached-classical-data" id="attached-classical-data">Attached classical data</a></h2>
+<p>Classical information can be attached to any gate using the <code>ArbData</code>
+protocol: gate handles support all the <code>dqcs_arb_*()</code> API calls. This is
+primarily intended for custom gates.</p>
+<h2><a class="header" href="#interpreting-gates" id="interpreting-gates">Interpreting gates</a></h2>
+<p>Backend and operator plugins have to process incoming gates using the following
+algorithm to be compliant with DQCsim's interface.</p>
+<ul>
+<li>
+<p>If the gate has a name (equivalent to it being a custom gate), defer to the
+custom gate logic identified by this name. Name matching should be
+case-sensitive. If an unsupported/unknown gate is requested, an error must
+be generated. The custom gate logic may make use of the <code>ArbData</code> attached
+to the gate object.</p>
+</li>
+<li>
+<p>If the gate doesn't have a name and doesn't have any <code>ArbData</code> attached:</p>
+<ul>
+<li>
+<p>If the gate has target qubits, no control qubits, and a gate matrix,
+apply the gate matrix to the target qubits.</p>
+</li>
+<li>
+<p>If the gate has target qubits, control qubits, and a gate matrix,
+convert the gate matrix into a controlled gate with the appropriate
+number of control qubits, and then apply it to the concatenation of the
+control and target qubit sets.</p>
+</li>
+<li>
+<p>If the gate has measurement qubits, collapse the state of these qubits in
+the Z basis and return the measurements. The random number generator
+provided by DQCsim (or another PRNG seeded by DQCsim's RNG) should be
+used to collapse the state.</p>
+</li>
+</ul>
+</li>
+<li>
+<p>If the gate has no name but does have <code>ArbData</code>, the gate <em>may</em> be
+interpreted in a customized way. For instance, this data can be used to
+apply random errors to the gate. However, it is recommended to not change
+the functionality too much; that's what custom gates are for.</p>
+</li>
+</ul>
+<p>Note that the above implies that a gate can consist of both a unitary gate and
+one or more measurements, to be applied in that order. It is currently however
+impossible to construct such a gate using the C API.</p>
+<p>The following functions can be used to read the data associated with a gate.</p>
+<details><summary><font color="green"><tt>dqcs_gate_controls()</tt></font><div style="margin-left: 16px">
+<p>Returns a handle to a new qubit reference set containing the qubits
+that control this gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_controls(dqcs_handle_t gate)
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_has_controls()</tt></font><div style="margin-left: 16px">
+<p>Returns whether the specified gate has control qubits.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_bool_return_t dqcs_gate_has_controls(dqcs_handle_t gate)
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_has_matrix()</tt></font><div style="margin-left: 16px">
+<p>Returns whether a unitary matrix is associated with this gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_bool_return_t dqcs_gate_has_matrix(dqcs_handle_t gate)
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_has_measures()</tt></font><div style="margin-left: 16px">
+<p>Returns whether the specified gate measures any qubits.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_bool_return_t dqcs_gate_has_measures(dqcs_handle_t gate)
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_has_targets()</tt></font><div style="margin-left: 16px">
+<p>Returns whether the specified gate has target qubits.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_bool_return_t dqcs_gate_has_targets(dqcs_handle_t gate)
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_is_custom()</tt></font><div style="margin-left: 16px">
+<p>Returns whether the specified gate is a custom gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_bool_return_t dqcs_gate_is_custom(dqcs_handle_t gate)
+</code></pre>
+<p>If this returns true, the type of gate is to be determined by matching its
+name against a set of known gate types. If this returns false, the gate is
+expected to be executed as follows, in this order:</p>
+<ul>
+<li>if there are target qubits, extend the supplied unitary matrix to
+include the control qubits (if any), then apply it to the control +
+target qubits;</li>
+<li>measure each measured qubit (if any) in the Z basis.</li>
+</ul>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_matrix()</tt></font><div style="margin-left: 16px">
+<p>Returns a copy of the unitary matrix associated with this gate, if one
+exists.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">double *dqcs_gate_matrix(dqcs_handle_t gate)
+</code></pre>
+<p>If this function succeeds, the matrix is returned in row-major form, using
+pairs of doubles for the real vs. imaginary component of each entry. The
+size will be <code>4**len(targets)</code> complex numbers = <code>2*4**len(targets)</code>
+doubles = <code>16*4**len(targets)</code> bytes.</p>
+<p>On success, this <strong>returns a newly allocated array containing the matrix.
+Free it with <code>free()</code> when you're done with it to avoid memory leaks.</strong> On
+failure, or if no matrix is associated with this gate, this returns <code>NULL</code>.
+Use <code>dqcs_gate_has_matrix()</code> to disambiguate.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_matrix_len()</tt></font><div style="margin-left: 16px">
+<p>Returns the size of the gate matrix associated with this gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">ssize_t dqcs_gate_matrix_len(dqcs_handle_t gate)
+</code></pre>
+<p>The size is returned in the form of the number of complex entries. That is,
+the number of doubles is two times the return value, and the size in bytes
+is 8 times the return value. 0 is returned when there is no matrix. -1 is
+used to report errors.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_measures()</tt></font><div style="margin-left: 16px">
+<p>Returns a handle to a new qubit reference set containing the qubits
+measured by this gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_measures(dqcs_handle_t gate)
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_name()</tt></font><div style="margin-left: 16px">
+<p>Returns the name of a custom gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">char *dqcs_gate_name(dqcs_handle_t gate)
+</code></pre>
+<p>This function fails if the gate is not a custom gate. Query
+<code>dqcs_gate_is_custom()</code> to disambiguate between a non-custom gate and a
+different error.</p>
+<p>On success, this <strong>returns a newly allocated string containing the gate
+name. Free it with <code>free()</code> when you're done with it to avoid memory
+leaks.</strong> On failure, this returns <code>NULL</code>.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_targets()</tt></font><div style="margin-left: 16px">
+<p>Returns a handle to a new qubit reference set containing the qubits
+targetted by this gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_targets(dqcs_handle_t gate)
+</code></pre>
+</div></details>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="../c-api/qbset.apigen.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="../c-api/measurements.apigen.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a href="../c-api/qbset.apigen.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="../c-api/measurements.apigen.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["LogCallback","Log callback function structure."]]});

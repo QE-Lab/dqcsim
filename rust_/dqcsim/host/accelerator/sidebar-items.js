@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["Accelerator","Trait containing the primitive operations for an accelerator."]]});

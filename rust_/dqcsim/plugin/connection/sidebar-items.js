@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["IncomingMessage","Incoming messages variants."],["OutgoingMessage","Outgoing messages variants."]],"struct":[["Connection","Plugin to Simulator connection wrapper."]]});

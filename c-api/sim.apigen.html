@@ -1,0 +1,450 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Running a simulation: dqcs_sim_* - DQCsim</title>
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+
+        
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div id="sidebar-scrollbox" class="sidebar-scrollbox">
+                <ol class="chapter"><li class="expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Introduction to DQCsim</a></li><li><ol class="section"><li class="expanded "><a href="../intro/components.html"><strong aria-hidden="true">1.1.</strong> The components of a simulation</a></li><li><ol class="section"><li class="expanded "><a href="../intro/frontend.html"><strong aria-hidden="true">1.1.1.</strong> Frontend use cases</a></li><li class="expanded "><a href="../intro/backend.html"><strong aria-hidden="true">1.1.2.</strong> Backend use cases</a></li><li class="expanded "><a href="../intro/operator.html"><strong aria-hidden="true">1.1.3.</strong> Operator use cases</a></li><li class="expanded "><a href="../intro/host.html"><strong aria-hidden="true">1.1.4.</strong> Host use cases</a></li></ol></li><li class="expanded "><a href="../intro/puzzle.html"><strong aria-hidden="true">1.2.</strong> Jigsaw puzzle analogy</a></li><li class="expanded "><a href="../intro/interfaces.html"><strong aria-hidden="true">1.3.</strong> DQCsim's interfaces</a></li><li><ol class="section"><li class="expanded "><a href="../intro/arbs.html"><strong aria-hidden="true">1.3.1.</strong> ArbData and ArbCmds</a></li><li class="expanded "><a href="../intro/gatestream.html"><strong aria-hidden="true">1.3.2.</strong> Gate- and measurement streams</a></li><li class="expanded "><a href="../intro/host-iface.html"><strong aria-hidden="true">1.3.3.</strong> The host interface</a></li><li class="expanded "><a href="../intro/misc-iface.html"><strong aria-hidden="true">1.3.4.</strong> Miscellaneous interfaces</a></li></ol></li><li class="expanded "><a href="../intro/reproducibility.html"><strong aria-hidden="true">1.4.</strong> Reproducibility</a></li></ol></li><li class="expanded "><a href="../install/index.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="expanded "><a href="../install/plugins.html"><strong aria-hidden="true">2.1.</strong> Plugin distribution</a></li></ol></li><li class="expanded "><a href="../cli/index.html"><strong aria-hidden="true">3.</strong> The command-line interface</a></li><li class="expanded "><a href="../python-api/index.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li><ol class="section"><li class="expanded "><a href="../python-api/hello-world.html"><strong aria-hidden="true">4.1.</strong> Hello, world!</a></li><li class="expanded "><a href="../python-api/debugging.html"><strong aria-hidden="true">4.2.</strong> Debugging</a></li><li class="expanded "><a href="../python-api/sending-gates.html"><strong aria-hidden="true">4.3.</strong> Sending some gates</a></li><li class="expanded "><a href="../python-api/simulations.html"><strong aria-hidden="true">4.4.</strong> Controlling simulations</a></li><li class="expanded "><a href="../python-api/operator.html"><strong aria-hidden="true">4.5.</strong> Inserting an operator</a></li><li class="expanded "><a href="../python-api/reference.html"><strong aria-hidden="true">4.6.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../cpp-api/index.html"><strong aria-hidden="true">5.</strong> C++ API</a></li><li class="expanded "><a href="../c-api/index.html"><strong aria-hidden="true">6.</strong> C API</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/concepts.apigen.html"><strong aria-hidden="true">6.1.</strong> Concepts</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/handle.apigen.html"><strong aria-hidden="true">6.1.1.</strong> Handles: dqcs_handle_*</a></li><li class="expanded "><a href="../c-api/memory-management.apigen.html"><strong aria-hidden="true">6.1.2.</strong> Memory management</a></li><li class="expanded "><a href="../c-api/error.apigen.html"><strong aria-hidden="true">6.1.3.</strong> Error handling: dqcs_error_*</a></li><li class="expanded "><a href="../c-api/callbacks.apigen.html"><strong aria-hidden="true">6.1.4.</strong> Callbacks</a></li></ol></li><li class="expanded "><a href="../c-api/type-definitions.apigen.html"><strong aria-hidden="true">6.2.</strong> Type definitions: dqcs_*_t</a></li><li class="expanded "><a href="../c-api/arb-cmd-cq.apigen.html"><strong aria-hidden="true">6.3.</strong> ArbData and ArbCmd objects</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/arb.apigen.html"><strong aria-hidden="true">6.3.1.</strong> ArbData objects: dqcs_arb_*</a></li><li class="expanded "><a href="../c-api/cmd.apigen.html"><strong aria-hidden="true">6.3.2.</strong> ArbCmd objects: dqcs_cmd_*</a></li><li class="expanded "><a href="../c-api/cq.apigen.html"><strong aria-hidden="true">6.3.3.</strong> ArbCmd queues: dqcs_cq_*</a></li></ol></li><li class="expanded "><a href="../c-api/qbset.apigen.html"><strong aria-hidden="true">6.4.</strong> Qubits: dqcs_qbset_*</a></li><li class="expanded "><a href="../c-api/gate.apigen.html"><strong aria-hidden="true">6.5.</strong> Gates: dqcs_gate_*</a></li><li class="expanded "><a href="../c-api/measurements.apigen.html"><strong aria-hidden="true">6.6.</strong> Measurements</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/meas.apigen.html"><strong aria-hidden="true">6.6.1.</strong> Singular measurements: dqcs_meas_*</a></li><li class="expanded "><a href="../c-api/mset.apigen.html"><strong aria-hidden="true">6.6.2.</strong> Measurement sets: dqcs_mset_*</a></li></ol></li><li class="expanded "><a href="../c-api/plugins.apigen.html"><strong aria-hidden="true">6.7.</strong> Plugins</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pdef.apigen.html"><strong aria-hidden="true">6.7.1.</strong> Defining a plugin: dqcs_pdef_*</a></li><li class="expanded "><a href="../c-api/plugin-run.apigen.html"><strong aria-hidden="true">6.7.2.</strong> Running a plugin: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/plugin-interact.apigen.html"><strong aria-hidden="true">6.7.3.</strong> Interacting with DQCsim: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/log.apigen.html"><strong aria-hidden="true">6.7.4.</strong> Logging: dqcs_log_*</a></li></ol></li><li class="expanded "><a href="../c-api/simulations.apigen.html"><strong aria-hidden="true">6.8.</strong> Simulations</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pcfg.apigen.html"><strong aria-hidden="true">6.8.1.</strong> Configuring plugins: dqcs_pcfg_*</a></li><li class="expanded "><a href="../c-api/tcfg.apigen.html"><strong aria-hidden="true">6.8.2.</strong> Running local plugins: dqcs_tcfg_*</a></li><li class="expanded "><a href="../c-api/scfg.apigen.html"><strong aria-hidden="true">6.8.3.</strong> Configuring a simulation: dqcs_scfg_*</a></li><li class="expanded "><a href="../c-api/sim.apigen.html" class="active"><strong aria-hidden="true">6.8.4.</strong> Running a simulation: dqcs_sim_*</a></li></ol></li><li class="expanded "><a href="../c-api/reference.apigen.html"><strong aria-hidden="true">6.9.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../rust-api/index.html"><strong aria-hidden="true">7.</strong> Rust API</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                                <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                            
+                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                                <i class="fa fa-search"></i>
+                            </button>
+                            
+                        </div>
+
+                        <h1 class="menu-title">DQCsim</h1>
+
+                        <div class="right-buttons">
+                            <a href="../print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" name="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1><a class="header" href="#running-a-simulation" id="running-a-simulation">Running a simulation</a></h1>
+<p>When you've finished building a simulation configuration object, you can turn
+it into a real simulation as described in this section.</p>
+<h2><a class="header" href="#constructing-a-simulation" id="constructing-a-simulation">Constructing a simulation</a></h2>
+<p>To run the simulation, all you have to do is pass the simulation configuration
+object to <code>dqcs_sim_new()</code>. This function will return when all the plugins have
+finished initializing as configured in the configuration object, and return a
+handle to the simulation.</p>
+<details><summary><font color="green"><tt>dqcs_sim_new()</tt></font><div style="margin-left: 16px">
+<p>Constructs a DQCsim simulation.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_sim_new(dqcs_handle_t scfg)
+</code></pre>
+<p>The provided handle is consumed if it is a simulation configuration,
+regardless of whether simulation construction succeeds.</p>
+</div></details>
+<p>Note that it is currently not possible to have more than one simulation handle
+within a single thread at the same time. This has to do with DQCsim's log
+system, which uses thread-local storage to determine where log messages should
+go. If you want to run multiple simulations in parallel, you'll have to run
+them from different threads.</p>
+<h2><a class="header" href="#interacting-with-a-simulation" id="interacting-with-a-simulation">Interacting with a simulation</a></h2>
+<p>After constructing the simulation, you have to explicitly tell the frontend
+plugin to start executing a quantum algorithm. This is done using
+<code>dqcs_sim_start()</code>. This function is asynchronous: the simulation request is
+only sent to the frontend when a blocking function is called. To get the
+result/return value of a previously started quantum algorithm, you can use
+<code>dqcs_sim_stop()</code>. In fact, you <em>have</em> to do this for every call to
+<code>dqcs_sim_start()</code>, and you can't have more than one quantum algorithm running
+at a time within the context of a single simulation.</p>
+<details><summary><font color="green"><tt>dqcs_sim_start()</tt></font><div style="margin-left: 16px">
+<p>Starts a program on the simulated accelerator.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_return_t dqcs_sim_start(
+    dqcs_handle_t sim,
+    dqcs_handle_t data
+)
+</code></pre>
+<p>This is an asynchronous call: nothing happens until <code>yield()</code>,
+<code>recv()</code>, or <code>wait()</code> is called.</p>
+<p>The <code>ArbData</code> handle is optional; if 0 is passed, an empty data object is
+used. If a handle is passed, it is consumed if and only if the API call
+succeeds.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_sim_wait()</tt></font><div style="margin-left: 16px">
+<p>Waits for the simulated accelerator to finish its current program.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_sim_wait(dqcs_handle_t sim)
+</code></pre>
+<p>When this succeeds, the return value of the accelerator's <code>run()</code>
+function is returned in the form of a new handle. When it fails, 0 is
+returned.</p>
+<p>Deadlocks are detected and prevented by returning an error.</p>
+</div></details>
+<p>While a quantum algorithm is running, you can interact with it using <code>ArbData</code>
+message queues. You can send and receive data to and from these queues using
+the following functions. The send function is asynchronous, while the receive
+function will block if no messages are available.</p>
+<details><summary><font color="green"><tt>dqcs_sim_send()</tt></font><div style="margin-left: 16px">
+<p>Sends a message to the simulated accelerator.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_return_t dqcs_sim_send(
+    dqcs_handle_t sim,
+    dqcs_handle_t data
+)
+</code></pre>
+<p>This is an asynchronous call: nothing happens until <code>yield()</code>,
+<code>recv()</code>, or <code>wait()</code> is called.</p>
+<p>The <code>ArbData</code> handle is optional; if 0 is passed, an empty data object is
+used. If a handle is passed, it is consumed if and only if the API call
+succeeds.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_sim_recv()</tt></font><div style="margin-left: 16px">
+<p>Waits for the simulated accelerator to send a message to us.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_sim_recv(dqcs_handle_t sim)
+</code></pre>
+<p>When this succeeds, the received data is returned in the form of a new
+handle. When it fails, 0 is returned.</p>
+<p>Deadlocks are detected and prevented by returning an error.</p>
+</div></details>
+<p>At any time, you can force DQCsim to pass control to the frontend plugin using
+the following function. This is primarily useful for debugging, when you for
+instance want to see the results of a single sent message in the log message
+stream without calling a blocking function that actually does something.</p>
+<details><summary><font color="green"><tt>dqcs_sim_yield()</tt></font><div style="margin-left: 16px">
+<p>Yields to the simulator.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_return_t dqcs_sim_yield(dqcs_handle_t sim)
+</code></pre>
+<p>The simulation runs until it blocks again. This is useful if you want an
+immediate response to an otherwise asynchronous call through the logging
+system or some communication channel outside of DQCsim's control.</p>
+<p>This function silently returns immediately if no asynchronous data was
+pending or if the simulator is waiting for something that has not been
+sent yet.</p>
+</div></details>
+<p>You can also send <code>ArbCmd</code>s to plugins at any time. This corresponds to calling
+the <code>host_arb</code> callback within a plugin. This is always synchronous; any
+requests queued through <code>dqcs_sim_start()</code> and <code>dqcs_sim_send()</code> are processed
+before the <code>ArbCmd</code>, and the function waits for the <code>ArbCmd</code> to finish
+executing in order for it to return its result.</p>
+<details><summary><font color="green"><tt>dqcs_sim_arb()</tt></font><div style="margin-left: 16px">
+<p>Sends an <code>ArbCmd</code> message to one of the plugins, referenced by name.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_sim_arb(
+    dqcs_handle_t sim,
+    const char *name,
+    dqcs_handle_t cmd
+)
+</code></pre>
+<p><code>ArbCmd</code>s are executed immediately after yielding to the simulator, so
+all pending asynchronous calls are flushed and executed <em>before</em> the
+<code>ArbCmd</code>.</p>
+<p>When this succeeds, the received data is returned in the form of a new
+handle. When it fails, 0 is returned.</p>
+<p>The <code>ArbCmd</code> handle is consumed if and only if the API call succeeds.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_sim_arb_idx()</tt></font><div style="margin-left: 16px">
+<p>Sends an <code>ArbCmd</code> message to one of the plugins, referenced by index.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_sim_arb_idx(
+    dqcs_handle_t sim,
+    ssize_t index,
+    dqcs_handle_t cmd
+)
+</code></pre>
+<p>The frontend always has index 0. 1 through N are used for the operators
+in front to back order (where N is the number of operators). The
+backend is at index N+1.</p>
+<p>Python-style negative indices are supported. That is, -1 can be used to
+refer to the backend, -2 to the last operator, and so on.</p>
+<p><code>ArbCmd</code>s are executed immediately after yielding to the simulator, so
+all pending asynchronous calls are flushed and executed <em>before</em> the
+<code>ArbCmd</code>.</p>
+<p>When this succeeds, the received data is returned in the form of a new
+handle. When it fails, 0 is returned.</p>
+<p>The <code>ArbCmd</code> handle is consumed if and only if the API call succeeds.</p>
+</div></details>
+<h2><a class="header" href="#querying-plugin-information" id="querying-plugin-information">Querying plugin information</a></h2>
+<p>You can query the metadata associated with the plugins that make up a
+simulation using the following functions.</p>
+<details><summary><font color="green"><tt>dqcs_sim_get_name()</tt></font><div style="margin-left: 16px">
+<p>Queries the implementation name of a plugin, referenced by instance
+name.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">char *dqcs_sim_get_name(
+    dqcs_handle_t sim,
+    const char *name
+)
+</code></pre>
+<p>On success, this <strong>returns a newly allocated string containing the
+name. Free it with <code>free()</code> when you're done with it to avoid memory
+leaks.</strong> On failure (i.e., the handle is invalid) this returns <code>NULL</code>.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_sim_get_name_idx()</tt></font><div style="margin-left: 16px">
+<p>Queries the implementation name of a plugin, referenced by index.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">char *dqcs_sim_get_name_idx(
+    dqcs_handle_t sim,
+    ssize_t index
+)
+</code></pre>
+<p>On success, this <strong>returns a newly allocated string containing the
+name. Free it with <code>free()</code> when you're done with it to avoid memory
+leaks.</strong> On failure (i.e., the handle is invalid) this returns <code>NULL</code>.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_sim_get_author()</tt></font><div style="margin-left: 16px">
+<p>Queries the author of a plugin, referenced by instance name.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">char *dqcs_sim_get_author(
+    dqcs_handle_t sim,
+    const char *name
+)
+</code></pre>
+<p>On success, this <strong>returns a newly allocated string containing the
+author. Free it with <code>free()</code> when you're done with it to avoid memory
+leaks.</strong> On failure (i.e., the handle is invalid) this returns <code>NULL</code>.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_sim_get_author_idx()</tt></font><div style="margin-left: 16px">
+<p>Queries the author of a plugin, referenced by index.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">char *dqcs_sim_get_author_idx(
+    dqcs_handle_t sim,
+    ssize_t index
+)
+</code></pre>
+<p>On success, this <strong>returns a newly allocated string containing the
+author. Free it with <code>free()</code> when you're done with it to avoid memory
+leaks.</strong> On failure (i.e., the handle is invalid) this returns <code>NULL</code>.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_sim_get_version()</tt></font><div style="margin-left: 16px">
+<p>Queries the version of a plugin, referenced by instance name.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">char *dqcs_sim_get_version(
+    dqcs_handle_t sim,
+    const char *name
+)
+</code></pre>
+<p>On success, this <strong>returns a newly allocated string containing the
+version. Free it with <code>free()</code> when you're done with it to avoid memory
+leaks.</strong> On failure (i.e., the handle is invalid) this returns <code>NULL</code>.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_sim_get_version_idx()</tt></font><div style="margin-left: 16px">
+<p>Queries the version of a plugin, referenced by index.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">char *dqcs_sim_get_version_idx(
+    dqcs_handle_t sim,
+    ssize_t index
+)
+</code></pre>
+<p>On success, this <strong>returns a newly allocated string containing the
+version. Free it with <code>free()</code> when you're done with it to avoid memory
+leaks.</strong> On failure (i.e., the handle is invalid) this returns <code>NULL</code>.</p>
+</div></details>
+<h2><a class="header" href="#shutting-a-simulation-down" id="shutting-a-simulation-down">Shutting a simulation down</a></h2>
+<p>When you're done with a simulation, you can just use <code>dqcs_handle_delete()</code> to
+shut it down. Before doing that, though, it is strongly recommended to output a
+reproduction file. This file lets you reproduce the simulation exactly without
+needing the host executable (or needing it to be deterministic) with just
+DQCsim's command-line interface. You never know when you might need this for
+debugging!</p>
+<details><summary><font color="green"><tt>dqcs_sim_write_reproduction_file()</tt></font><div style="margin-left: 16px">
+<p>Writes a reproduction file for the simulation so far.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_return_t dqcs_sim_write_reproduction_file(
+    dqcs_handle_t sim,
+    const char *filename
+)
+</code></pre>
+</div></details>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="../c-api/scfg.apigen.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="../c-api/reference.apigen.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a href="../c-api/scfg.apigen.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="../c-api/reference.apigen.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+        
+
+        
+
+        
+        
+        
+        <script type="text/javascript">
+            window.playpen_copyable = true;
+        </script>
+        
+
+        
+
+        
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+
+        
+
+    </body>
+</html>

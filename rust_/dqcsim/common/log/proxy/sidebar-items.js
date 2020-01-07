@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["LogProxy","A [`LogProxy`] is a logger implementation (`Log`) which sends log records using its Sender side of a Channel."]]});

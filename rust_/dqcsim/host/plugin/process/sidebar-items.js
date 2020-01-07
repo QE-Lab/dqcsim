@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["PluginProcess","A Plugin running in a child process."]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["TeeFileError","Error structure used for reporting TeeFile errors."]],"struct":[["TeeFile","TeeFile is the combination of a TeeFileConfiguration and a handle to the tee file. TeeFile implements the Log trait and can write log records to the file."],["TeeFileConfiguration","Represents a tee file configuration for the logging system."]]});

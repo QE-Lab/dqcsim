@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["setup_logging","Setup logging for a Plugin instance."]]});

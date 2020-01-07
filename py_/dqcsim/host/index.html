@@ -1,0 +1,2471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.2" />
+<title>dqcsim.host API documentation</title>
+<meta name="description" content="Contains the base classes for configuring and running simulations." />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>dqcsim.host</code></h1>
+</header>
+<section id="section-intro">
+<p>Contains the base classes for configuring and running simulations.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Contains the base classes for configuring and running simulations.&#34;&#34;&#34;
+
+import dqcsim._dqcsim as raw
+from dqcsim.common import *
+from dqcsim.plugin import *
+import sys
+import os
+import zlib
+
+class Simulator(object):
+    &#34;&#34;&#34;Represents a DQCsim simulator managed by Python.
+
+    The constructor (`__init__()`), `with_frontend()`, `with_operator()`, and
+    `with_backend()` may be used to configure the simulation. After that, it
+    may be started with `simulate()` and stopped with `stop()` as many times as
+    desired.
+
+    Between invocations of `simulate()` and `stop()`, the calling Python script
+    functions as the host process. It can call `start()`, `wait()`, `send()`,
+    `recv()`, `yeeld()`, and `arb()` to communicate with the simulated quantum
+    accelerator formed by the plugins.
+
+    For simple simulations, `run()` may also be used for convenience. It
+    combines `simulate()`, `start()`, `wait()`, and `stop()`.
+    &#34;&#34;&#34;
+
+    def __init__(self, *args, **kwargs):
+        &#34;&#34;&#34;Constructs a simulation configuration.
+
+        Each positional argument represents a plugin that the constructor will
+        add for you, ordered from frontend to backend. You may also not specify
+        any positional arguments if you would rather add them later using
+        `with_frontend()`, `with_operator()`, and/or `with_backend()`. You can
+        specify the plugins using the following types of values:
+
+          - `str`: constructs the plugin in the same way that the command-line
+            interface does it.
+          - `(str, None)`: specifies the path to the plugin executable
+            directly.
+          - `(str, str)`: specifies the path to the plugin executable and the
+            script it must run directly.
+          - `Frontend`/`Operator`/`Backend`: constructs a DQCsim-managed thread
+            that runs the given plugin definition instead of launching an
+            external process for it.
+          - `(str) -&gt; None`: the specified callback is used to spawn the
+            plugin.
+          - `(&lt;any of the above&gt;, {key: value})`: the last entry of the tuple,
+            which must be a dictionary, is used to configure the plugin (it is
+            sent to `**kwargs` when the plugin is added).
+
+        For more information, refer to `with_frontend()`.
+
+        Besides the positional arguments, you can provide a number of keyword
+        arguments to configure the behavior of the simulator:
+
+          - `repro = &#34;keep&#34;, &#34;absolute&#34;, &#34;relative&#34;, or None` (default: `&#34;keep&#34;`)
+
+            Configures whether logging for the purpose of generating a
+            reproduction file is enabled, and if it is, what style to use for
+            storing filesystem paths.
+
+          - `dqcsim_verbosity = Loglevel` (default: `Loglevel.TRACE`)
+
+            Sets the minimum loglevel that a message generated by DQCsim itself
+            must have for it to be logged anywhere, analogous to the
+            plugin-specific verbosities. This defaults to `Loglevel.TRACE` to
+            effectively disable the filter.
+
+          - `stderr_verbosity = Loglevel` (default: `Loglevel.INFO`)
+
+            Sets the minimum loglevel needed for a message to be logged to
+            `stderr`.
+
+          - `log_capture = callback, str, or None` (default: `None`)
+
+            Specifies an alternative destination for log messages. If a
+            callback is specified, it is called for every log message passing
+            all the filters. If a string is specified, the messages are
+            forwarded to Python&#39;s `logging` module using the specified string
+            for the logger name. Note that this adds DQCsim&#39;s trace and note
+            loglevels to `logging` using severities 5 and 25 respectively. If
+            `None` is specified, forwarding is disabled.
+
+            The user-defined callback is called with the following positional
+            arguments:
+
+              - `str`: the log message, without any metadata added to it.
+              - `str`: the name of the logger that produced the message.
+              - `Loglevel`: the loglevel assigned to the message.
+              - `str`: string describing the logical source of the log message.
+                Its significance depends on the programming language of the
+                plugin that produced it. It is set to the Rust crate/module
+                path for Rust programs, the Python module for Python scripts,
+                and is left blank for C(++) programs.
+              - `str`: string specifying the filename of the source that
+                produced the message (`*.rs`, `*.cpp`, `*.py`, etc.)
+              - `int`: the line number within the aforementioned source.
+              - `int`: message timestamp, in nanoseconds since the Unix epoch.
+              - `int`: process ID of the generating process.
+              - `int`: thread ID of the generating thread.
+
+          - `log_capture_verbosity = Loglevel` (default: `Loglevel.TRACE`)
+
+            Sets the minimum loglevel needed for a message to be sent to the
+            sink specified by `log_capture` (if any). This defaults to
+            `Loglevel.TRACE` to effectively disable the filter.
+
+          - `tee = {str: Loglevel}` (default: `{}`)
+
+            Each entry in the dictionary consists of a log output filename as
+            key and a loglevel filter as the value. It causes log messages
+            generated by this plugin (though not including any captured
+            streams) that pass the specified filter to be logged to the given
+            log file, in addition to their normal handling.
+        &#34;&#34;&#34;
+        super().__init__()
+        self._sim_handle = None
+        self._front = None
+        self._opers = []
+        self._back = None
+
+        # Check the keyword arguments.
+        self._repro = kwargs.pop(&#39;repro&#39;, &#39;keep&#39;)
+        if self._repro not in {&#39;keep&#39;, &#39;absolute&#39;, &#39;relative&#39;, None}:
+            raise TypeError(&#34;repro must be &#39;keep&#39;, &#39;absolute&#39;, &#39;relative&#39;, or None&#34;)
+
+        self._dqcsim_verbosity = kwargs.pop(&#39;dqcsim_verbosity&#39;, Loglevel.TRACE)
+        if not isinstance(self._dqcsim_verbosity, Loglevel):
+            raise TypeError(&#34;dqcsim_verbosity must be a Loglevel&#34;)
+
+        self._stderr_verbosity = kwargs.pop(&#39;stderr_verbosity&#39;, Loglevel.INFO)
+        if not isinstance(self._stderr_verbosity, Loglevel):
+            raise TypeError(&#34;stderr_verbosity must be a Loglevel&#34;)
+
+        self._log_capture = kwargs.pop(&#39;log_capture&#39;, None)
+        if self._log_capture is not None:
+            if isinstance(self._log_capture, str):
+                import logging
+                logging.addLevelName(25, &#34;NOTE&#34;)
+                logging.addLevelName(5, &#34;TRACE&#34;)
+                logger = logging.getLogger(self._log_capture)
+                def to_logging(message, name, level, source, filename, lineno, nanotime, tid, pid):
+                    if level == Loglevel.TRACE:
+                        level = 5
+                    elif level == Loglevel.DEBUG:
+                        level = logging.DEBUG
+                    elif level == Loglevel.INFO:
+                        level = logging.INFO
+                    elif level == Loglevel.NOTE:
+                        level = 25
+                    elif level == Loglevel.WARN:
+                        level = logging.WARNING
+                    elif level == Loglevel.ERROR:
+                        level = logging.ERROR
+                    elif level == Loglevel.FATAL:
+                        level = logging.CRITICAL
+                    else:
+                        level = logging.NOTSET
+                    rec = logger.makeRecord(name, level, filename, lineno, message, (), None, source)
+                    logger.handle(rec)
+                self._log_capture = to_logging
+            elif not callable(self._log_capture):
+                raise TypeError(&#34;log_capture must be callable or a string identifying a logger from the logging library&#34;)
+            cb = self._log_capture
+            def transmute(message, name, level, source, filename, lineno, time_s, time_ns, tid, pid):
+                cb(message, name, Loglevel(level), source, filename, lineno, time_s * 1000000000 + time_ns, tid, pid)
+            # Handle trace functions.
+            trace_fn = sys.gettrace()
+            if trace_fn is None:
+                self._log_capture = transmute # no_kcoverage
+            else:
+                # We have a trace function, probably set by kcov for getting
+                # coverage data. Callbacks from the C API run from a new
+                # context every time, so we need to set the trace function
+                # before calling into the callback.
+                def traced(*args):
+                    sys.settrace(trace_fn) # no_kcoverage
+                    transmute(*args) # no_kcoverage
+                self._log_capture = traced
+
+        self._log_capture_verbosity = kwargs.pop(&#39;log_capture_verbosity&#39;, Loglevel.TRACE)
+        if not isinstance(self._log_capture_verbosity, Loglevel):
+            raise TypeError(&#34;log_capture_verbosity must be a Loglevel&#34;)
+
+        self._tee = dict(kwargs.pop(&#39;tee&#39;, {}))
+        for key, value in self._tee.items():
+            if not isinstance(key, str):
+                raise TypeError(&#34;tee file key must be a string&#34;)
+            if not isinstance(value, Loglevel):
+                raise TypeError(&#34;tee file value must be a Loglevel&#34;)
+
+        if kwargs:
+            raise TypeError(&#34;unexpected keyword argument {!r}&#34;.format(next(iter(kwargs.keys()))))
+
+        # Add the plugins.
+        if args:
+            def add(fn, args):
+                if not isinstance(args, tuple):
+                    args = [args]
+                else:
+                    args = list(args)
+                if args and isinstance(args[-1], dict):
+                    kwargs = args[-1]
+                    del args[-1]
+                else:
+                    kwargs = {}
+                return fn(*args, **kwargs)
+
+            add(self.with_frontend, args[0])
+            if len(args) &gt;= 2:
+                add(self.with_backend, args[-1])
+                for arg in args[1:-1]:
+                    add(self.with_operator, arg)
+
+    def _plugin_factory(self, plugin_type, *args, **kwargs):
+        &#34;&#34;&#34;Makes a function that constructs an &#34;`xcfg`&#34; handle for the
+        specified plugin.
+
+        `plugin_type` must be set to the expected plugin type code, taken from
+        `raw.DQCS_PTYPE_*`. `*args` and `**kwargs` follow the formats described
+        in the docs for `Simulator.with_frontend()`. These should be
+        typechecked as much as possible during construction of the function vs.
+        execution.
+        &#34;&#34;&#34;
+        if self._sim_handle is not None:
+            raise RuntimeError(&#34;Cannot reconfigure simulation while it is running&#34;)
+
+        # Check plugin type argument.
+        if plugin_type not in {raw.DQCS_PTYPE_FRONT, raw.DQCS_PTYPE_OPER, raw.DQCS_PTYPE_BACK}:
+            raise TypeError(&#34;plugin_type is not set to a valid plugin type code&#34;)
+
+        # Check *args.
+        arg_mode = None
+        if len(args) == 1:
+            if isinstance(args[0], str):
+                arg_mode = 1
+                specification = str(args[0])
+            elif isinstance(args[0], Frontend) and plugin_type == raw.DQCS_PTYPE_FRONT:
+                arg_mode = 3
+                definition = args[0]
+            elif isinstance(args[0], Operator) and plugin_type == raw.DQCS_PTYPE_OPER:
+                arg_mode = 3
+                definition = args[0]
+            elif isinstance(args[0], Backend) and plugin_type == raw.DQCS_PTYPE_BACK:
+                arg_mode = 3
+                definition = args[0]
+            elif callable(args[0]):
+                arg_mode = 4
+                callback = args[0]
+        elif len(args) == 2 and isinstance(args[0], str) and (args[1] is None or isinstance(args[1], str)):
+            arg_mode = 2
+            executable = os.path.realpath(args[0])
+            script = os.path.realpath(args[1])
+        if arg_mode is None:
+            raise TypeError(&#34;invalid combination of positional arguments&#34;)
+
+        # Check **kwargs.
+        name = kwargs.pop(&#39;name&#39;, None)
+        if name is None:
+            name = &#34;&#34;
+        else:
+            name = str(name)
+
+        init = kwargs.pop(&#39;init&#39;, [])
+        if isinstance(init, ArbCmd):
+            init = [init]
+        init = list(init)
+        for cmd in init:
+            if not isinstance(cmd, ArbCmd):
+                raise TypeError(&#34;init must be a single ArbCmd or a list/tuple of ArbCmds&#34;)
+
+        verbosity = kwargs.pop(&#39;verbosity&#39;, Loglevel.TRACE)
+        if not isinstance(verbosity, Loglevel):
+            raise TypeError(&#34;verbosity must be a Loglevel&#34;)
+
+        tee = dict(kwargs.pop(&#39;tee&#39;, {}))
+        for key, value in tee.items():
+            if not isinstance(key, str):
+                raise TypeError(&#34;tee file key must be a string&#34;)
+            if not isinstance(value, Loglevel):
+                raise TypeError(&#34;tee file value must be a Loglevel&#34;)
+
+        if arg_mode == 1 or arg_mode == 2:
+            # Pop kwargs that are only available for processes.
+            env = dict(kwargs.pop(&#39;env&#39;, {}))
+            for key, value in env.items():
+                if not isinstance(key, str):
+                    raise TypeError(&#34;environment variable key must be a string&#34;)
+                if value is not None and not isinstance(value, str):
+                    raise TypeError(&#34;environment variable value must be a string or None&#34;)
+
+            work = kwargs.pop(&#39;work&#39;, None)
+            if work is not None:
+                work = str(work)
+
+            stderr = kwargs.pop(&#39;stderr&#39;, Loglevel.INFO)
+            if stderr is not None and not isinstance(stderr, Loglevel):
+                raise TypeError(&#34;stderr must be a Loglevel or None&#34;)
+
+            stdout = kwargs.pop(&#39;stdout&#39;, Loglevel.INFO)
+            if stdout is not None and not isinstance(stdout, Loglevel):
+                raise TypeError(&#34;stdout must be a Loglevel or None&#34;)
+
+            accept_timeout = float(kwargs.pop(&#39;accept_timeout&#39;, 5.0))
+            shutdown_timeout = float(kwargs.pop(&#39;shutdown_timeout&#39;, 5.0))
+
+        if kwargs:
+            raise TypeError(&#34;unexpected keyword argument {!r}&#34;.format(next(iter(kwargs.keys()))))
+
+        # Produce the constructor function.
+        if arg_mode == 1 or arg_mode == 2:
+            # Plugin process; pcfg interface.
+            def fn():
+                # Construct handle.
+                if arg_mode == 1:
+                    pcfg = Handle(raw.dqcs_pcfg_new(plugin_type, name, specification))
+                elif arg_mode == 2:
+                    pcfg = Handle(raw.dqcs_pcfg_new_raw(plugin_type, name, executable, script))
+
+                # Apply configuration.
+                with pcfg as p:
+                    # Init commands.
+                    for cmd in init:
+                        cmd = cmd._to_raw()
+                        with cmd as c:
+                            raw.dqcs_pcfg_init_cmd(p, c)
+
+                    # Logging.
+                    raw.dqcs_pcfg_verbosity_set(p, int(verbosity))
+                    for key, value in tee.items():
+                        raw.dqcs_pcfg_tee(p, int(value), key)
+
+                    # Process environment.
+                    if work is not None:
+                        raw.dqcs_pcfg_work_set(p, work)
+                    for key, value in env.items():
+                        if value is None:
+                            raw.dqcs_pcfg_env_unset(p, key)
+                        else:
+                            raw.dqcs_pcfg_env_set(p, key, value)
+
+                    # Stream capture.
+                    if stderr is None:
+                        raw.dqcs_pcfg_stderr_mode_set(p, raw.DQCS_LOG_PASS)
+                    else:
+                        raw.dqcs_pcfg_stderr_mode_set(p, int(stderr))
+                    if stdout is None:
+                        raw.dqcs_pcfg_stdout_mode_set(p, raw.DQCS_LOG_PASS)
+                    else:
+                        raw.dqcs_pcfg_stdout_mode_set(p, int(stdout))
+
+                    # Timeouts.
+                    raw.dqcs_pcfg_accept_timeout_set(p, accept_timeout)
+                    raw.dqcs_pcfg_shutdown_timeout_set(p, shutdown_timeout)
+
+                # Return the handle.
+                return pcfg
+
+        elif arg_mode == 3 or arg_mode == 4:
+            # Plugin thread; tcfg interface.
+            def fn():
+                # Construct handle.
+                if arg_mode == 3:
+                    with definition._to_pdef() as pd:
+                        tcfg = Handle(raw.dqcs_tcfg_new(pd, name))
+                elif arg_mode == 4:
+                    tcfg = Handle(raw.dqcs_tcfg_new_raw_pyfun(plugin_type, name, callback))
+
+                # Apply configuration.
+                with tcfg as t:
+                    # Init commands.
+                    for cmd in init:
+                        cmd = cmd._to_raw()
+                        with cmd as c:
+                            raw.dqcs_tcfg_init_cmd(t, c)
+
+                    # Logging.
+                    raw.dqcs_tcfg_verbosity_set(t, int(verbosity))
+                    for key, value in tee.items():
+                        raw.dqcs_tcfg_tee(t, int(value), key)
+
+                # Return the handle.
+                return tcfg
+
+        return fn
+
+    def with_frontend(self, *args, **kwargs):
+        &#34;&#34;&#34;Sets the frontend plugin for the simulation.
+
+        This must be called prior to launching the simulation, either by the
+        constructor or by you manually. If it is called multiple times, the
+        last call counts. The function mutates and returns `self`, so it can be
+        used for both builder-style constructions or mutation-based
+        construction.
+
+        There are five supported combinations of positional arguments,
+        representing five different ways to launch a plugin:
+
+          - `str`
+
+            Constructs a plugin in the same way that the command-line interface
+            does it. That is, a single string conforming to any of the
+            following:
+
+              - a valid path to the plugin executable;
+              - the basename of the plugin executable with implicit `dqcsfe`
+                prefix, searched for in the current working directory and in
+                the system `$PATH`;
+              - a valid path to a script file with a file extension. In this
+                case, the above rule is run for a plugin named by the file
+                extension of the script file. For instance, if `test.py` is
+                specified, the library will look for an executable named
+                `dqcsfepy`. The script filename is passed to the plugin through
+                its sole command-line argument.
+
+          - `str, None`
+
+            Constructs a plugin using the given direct path to the native
+            plugin executable. The path can be absolute or relative to the
+            current working directory, but other than that no desugaring is
+            performed.
+
+          - `str, str`
+
+            As above, but for non-native plugins. The first string must be the
+            path to the interpreter used to run the non-native plugin, the
+            second must be the path to the plugin script. Both paths can either
+            be absolute or relative to the current working directory.
+
+          - `Frontend`
+
+            Instead of launching a process for the frontend plugin, it is
+            launched in a thread within the context of this Python interpreter.
+            The dqcsim library will take care of this launch.
+
+          - `(str) -&gt; None`
+
+            Instead of launching a process for the frontend plugin, it is
+            launched in a thread within the context of this Python interpreter.
+            You are in charge of doing this through a function that you
+            provide. This function takes the simulator address string as its
+            sole argument, and in some way pass it to `Frontend.start()` or
+            `Frontend.run()`. The function&#39;s return value (if any) is ignored.
+
+        Besides the positional arguments, you can provide a number of keyword
+        arguments to configure the behavior of the plugin:
+
+          - `name = str` (default: `&#34;front&#34;`)
+
+            Sets the name of the plugin, used to refer to it in log messages or
+            in a reproduction file.
+
+          - `init = ArbCmd or [ArbCmd]` (default: `[]`)
+
+            Specifies a single `ArbCmd` or a list of `ArbCmd`s to send to the
+            plugin&#39;s initialization callback.
+
+          - `env = {str: str or None}` (default: `{}`)
+
+            Configures the environment variables passed to the plugin process.
+            The set of variables is based on the current environment, then
+            modified using the given dictionary. Specifying a variable name as
+            key and a string value sets or overrides the environment variable.
+            Setting the value to `None` removes it from the environment. This
+            is only supported for plugin processes.
+
+          - `work = str or None` (default: `None`)
+
+            If a string is specified, the plugin process will launch using the
+            given string as its working directory. `None` causes the current
+            working directory to be used. This is only supported for plugin
+            processes.
+
+          - `verbosity = Loglevel` (default: `Loglevel.TRACE`)
+
+            Sets the minimum loglevel a log message must have for it to be
+            forwarded to the simulator process. This defaults to
+            `Loglevel.TRACE` to effectively disable the filter.
+
+          - `tee = {str: Loglevel}` (default: `{}`)
+
+            Each entry in the dictionary consists of a log output filename as
+            key and a loglevel filter as the value. It causes log messages
+            generated by this plugin (though not including any captured
+            streams) that pass the specified filter to be logged to the given
+            log file, in addition to their normal handling.
+
+          - `stderr = Loglevel or None` (default: `Loglevel.INFO`)
+
+            Configures if/how the `stderr` stream of the plugin process is
+            captured. If `Loglevel.OFF` is specified, the `stderr` stream is
+            ignored. Any other loglevel causes each line of output to be logged
+            using a message of the specified level. Passing `None` prevents the
+            stderr stream from being captured at all, so the messages will
+            appear in this Python process&#39; `stderr` stream. This is only
+            supported for plugin processes, since threads do not have separate
+            streams.
+
+          - `stdout = Loglevel or None` (default: `Loglevel.INFO`)
+
+            Same as `stderr`, but for the `stdout` stream.
+
+          - `accept_timeout = float (default: `5.0` seconds)
+
+            Sets the amount of time that DQCsim will wait in seconds for the
+            plugin to finish starting up and connect to the simulator process.
+            This is currently only supported for plugin processes.
+
+          - `shutdown_timeout = float (default: `5.0` seconds)
+
+            Sets the amount of time that DQCsim will wait in seconds for the
+            plugin to shut down after the simulator sends the abort request to
+            it. This is currently only supported for plugin processes.
+        &#34;&#34;&#34;
+        self._front = self._plugin_factory(raw.DQCS_PTYPE_FRONT, *args, **kwargs)
+        return self
+
+    def with_operator(self, *args, **kwargs):
+        &#34;&#34;&#34;Adds an operator plugin to the simulation.
+
+        Operators must be added in front to back order by calling this function
+        for every operator. The function mutates and returns `self`, so it can
+        be used for both builder-style constructions or mutation-based
+        construction.
+
+        Operators are constructed in the same way as frontends and backends.
+        Refer to `with_frontend()` for information about the positional and
+        keyword arguments, replacing `Frontend` with `Operator` and `dqcsfe`
+        with `dqcsop`. The default name is `&#34;op&lt;N&gt;&#34;`, where `N` is the operator
+        index in front-to-back order starting at 1.
+        &#34;&#34;&#34;
+        self._opers.append(self._plugin_factory(raw.DQCS_PTYPE_OPER, *args, **kwargs))
+        return self
+
+    def with_backend(self, *args, **kwargs):
+        &#34;&#34;&#34;Sets the backend plugin for the simulation.
+
+        If this is not called either manually or by the constructor, the
+        simulation defaults to using the QX backend. If it is called multiple
+        times, the last call counts. The function mutates and returns `self`,
+        so it can be used for both builder-style constructions or
+        mutation-based construction.
+
+        Backends are constructed in the same way as frontends and operators.
+        Refer to `with_frontend()` for information about the positional and
+        keyword arguments, replacing `Frontend` with `Backend` and `dqcsfe`
+        with `dqcsbe`. The default name is `&#34;back&#34;`.
+        &#34;&#34;&#34;
+        self._back = self._plugin_factory(raw.DQCS_PTYPE_BACK, *args, **kwargs)
+        return self
+
+    def run(self, *args, **kwargs):
+        &#34;&#34;&#34;Runs a simple simulation without host-accelerator interaction.
+
+        This is completely equivalent to calling:
+
+            sim.simulate()
+            sim.start(*args, **kwargs)
+            ret = sim.wait()
+            sim.stop()
+            return ret
+
+        If a simulation was already running, the `simulate()` and `stop()`
+        calls are omitted.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            self.simulate()
+            self.start(*args, **kwargs)
+            ret = self.wait()
+            self.stop()
+        else:
+            self.start(*args, **kwargs)
+            ret = self.wait()
+        return ret
+
+    def simulate(self, seed=None):
+        &#34;&#34;&#34;Starts the simulation.
+
+        `seed` optionally specifies the random seed used for the simulation.
+        An `int` argument between `0` and `2^64-1` inclusive specifies the
+        seed directly. For other types `zlib.adler32(str(...).encode(&#39;utf-8&#39;))`
+        is applied to get a number, which is then cast to a 32-bit unsigned
+        number. If `None` is specified or the argument is omitted, DQCsim will
+        randomize the seed based on the highest resolution timestamp the
+        operating system is capable of providing.
+        &#34;&#34;&#34;
+        if self._sim_handle is not None:
+            raise RuntimeError(&#34;Cannot run multiple simulations at once&#34;)
+        if self._front is None:
+            raise RuntimeError(&#34;Frontend plugin was never specified&#34;)
+        if self._back is None:
+            self.with_backend(&#34;qx&#34;)
+
+        # Create a new configuration.
+        scfg_ob = Handle(raw.dqcs_scfg_new())
+        with scfg_ob as scfg:
+
+            # Configure the seed.
+            if seed is not None:
+                if isinstance(seed, int) and seed &gt;= 0 and seed &lt;= 0xFFFFFFFFFFFFFFFF:
+                    raw.dqcs_scfg_seed_set(scfg, seed)
+                else:
+                    raw.dqcs_scfg_seed_set(scfg, zlib.adler32(str(seed).encode(&#39;utf-8&#39;)) &amp; 0xFFFFFFFF)
+
+            # Configure reproduction file logging.
+            if self._repro is None:
+                raw.dqcs_scfg_repro_disable(scfg)
+            else:
+                raw.dqcs_scfg_repro_path_style_set(scfg, {
+                    &#39;keep&#39;: raw.DQCS_PATH_STYLE_KEEP,
+                    &#39;relative&#39;: raw.DQCS_PATH_STYLE_RELATIVE,
+                    &#39;absolute&#39;: raw.DQCS_PATH_STYLE_ABSOLUTE,
+                }[self._repro])
+
+            # Configure regular logging.
+            raw.dqcs_scfg_dqcsim_verbosity_set(scfg, int(self._dqcsim_verbosity))
+            raw.dqcs_scfg_stderr_verbosity_set(scfg, int(self._stderr_verbosity))
+            if self._log_capture is not None:
+                raw.dqcs_scfg_log_callback_pyfun(scfg, int(self._log_capture_verbosity), self._log_capture)
+            for key, value in self._tee.items():
+                raw.dqcs_scfg_tee(scfg, int(value), key)
+
+            # Push the plugins.
+            with self._front() as xcfg:
+                raw.dqcs_scfg_push_plugin(scfg, xcfg)
+            for oper in self._opers:
+                with oper() as xcfg:
+                    raw.dqcs_scfg_push_plugin(scfg, xcfg)
+            with self._back() as xcfg:
+                raw.dqcs_scfg_push_plugin(scfg, xcfg)
+
+            # Start the simulation.
+            self._sim_handle = Handle(raw.dqcs_sim_new(scfg))
+
+    def stop(self, repro_out=None):
+        &#34;&#34;&#34;Stops a simulation previously started through `simulate()`.
+
+        `repro_out` can optionally be set to an output filename for a
+        reproduction file. If this is omitted or set to `None`, no reproduction
+        file is written.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+
+        # Write reproduction file if requested.
+        if repro_out is not None:
+            with self._sim_handle as sim:
+                raw.dqcs_sim_write_reproduction_file(sim, repro_out)
+
+        # Delete the simulation handle.
+        raw.dqcs_handle_delete(self._sim_handle.take())
+        self._sim_handle = None
+
+    def __enter__(self):
+        &#34;&#34;&#34;Allows you to use a `Simulator` object with the `with` syntax.
+        `simulate()` is called at the start of the `with` block; `stop()` is
+        called at the end of it.&#34;&#34;&#34;
+        self.simulate()
+        return self
+
+    def __exit__(self, *_):
+        &#34;&#34;&#34;Allows you to use a `Simulator` object with the `with` syntax.
+        `simulate()` is called at the start of the `with` block; `stop()` is
+        called at the end of it.&#34;&#34;&#34;
+        self.stop()
+
+    def start(self, *args, **kwargs):
+        &#34;&#34;&#34;Sends the `start` command to the simulated accelerator.
+
+        Calling this will start execution of the frontend plugin&#39;s run callback
+        as soon as the host process yields to the simulator. The `ArbData`
+        argument passed to it is constructed by passing this function&#39;s
+        arguments to the constructor of `ArbData` directly.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            with ArbData(*args, **kwargs)._to_raw() as data:
+                raw.dqcs_sim_start(sim, data)
+
+    def wait(self):
+        &#34;&#34;&#34;Waits for the simulated accelerator to finish executing its run
+        callback.
+
+        This function returns an `ArbData` object representing the return value
+        of the run callback. If performing this operation would result in a
+        deadlock, an exception is thrown instead of waiting indefinitely.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            return ArbData._from_raw(Handle(raw.dqcs_sim_wait(sim)))
+
+    def send(self, *args, **kwargs):
+        &#34;&#34;&#34;Sends data to the simulated accelerator.
+
+        This function&#39;s arguments are passed directly to the constructor of
+        `ArbData` to construct the data object that is to be sent. This object
+        can then be retrieved by the frontend&#39;s run callback through recv.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            with ArbData(*args, **kwargs)._to_raw() as data:
+                raw.dqcs_sim_send(sim, data)
+
+    def recv(self):
+        &#34;&#34;&#34;Waits for the simulated accelerator to send data to us.
+
+        This function returns an `ArbData` object representing the data that
+        was sent. If performing this operation would result in a deadlock, an
+        exception is thrown instead of waiting indefinitely.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            return ArbData._from_raw(Handle(raw.dqcs_sim_recv(sim)))
+
+    def yeeld(self):
+        &#34;&#34;&#34;Explicitely sends all queued commands to the accelerator and waits
+        for it to block again.
+
+        This is useful if you&#39;re waiting for or want to synchronize log
+        messages. Note that the function is named yeeld instead of yield
+        because yield is a keyword in Python.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            raw.dqcs_sim_yield(sim)
+
+    def arb(self, target, *args, **kwargs):
+        &#34;&#34;&#34;Sends an `ArbCmd` to one of the plugins that make up the simulated
+        accelerator.
+
+        `target` specifies the plugin that the command is to be sent to. It
+        must either be a Pythonic integer index within the front-to-back plugin
+        pipeline (that is, 0 for the frontend, 1..x for the operators from
+        front to back, -1 for the backend, -2..x for the operators from back to
+        front), or a string matching one of the plugin&#39;s names.
+
+        The remaining arguments are passed to the constructor for `ArbCmd` to
+        generate the command object. This function returns an `ArbData` object
+        representing the data that was returned by the command.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            with ArbCmd(*args, **kwargs)._to_raw() as cmd:
+                if isinstance(target, int):
+                    return ArbData._from_raw(Handle(raw.dqcs_sim_arb_idx(sim, int(target), cmd)))
+                else:
+                    return ArbData._from_raw(Handle(raw.dqcs_sim_arb(sim, str(target), cmd)))
+
+    def get_meta(self, target):
+        &#34;&#34;&#34;Returns metadata information for one of the plugins in the
+        pipeline.
+
+        The `target` parameter works the same as the one in `arb()`. The
+        returned metadata is a three-tuple of the implementation name, author,
+        and version strings. This function only works while a simulation is
+        running, since the plugins report their metadata during initialization.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            if isinstance(target, int):
+                return ( #@
+                    raw.dqcs_sim_get_name_idx(sim, int(target)),
+                    raw.dqcs_sim_get_author_idx(sim, int(target)),
+                    raw.dqcs_sim_get_version_idx(sim, int(target)))
+            else:
+                return ( #@
+                    raw.dqcs_sim_get_name(sim, str(target)),
+                    raw.dqcs_sim_get_author(sim, str(target)),
+                    raw.dqcs_sim_get_version(sim, str(target)))
+
+    def __len__(self):
+        &#34;&#34;&#34;Returns the number of plugins in the pipeline.&#34;&#34;&#34;
+        l = len(self._opers)
+        if self._front is not None:
+            l += 1
+        if self._back is not None:
+            l += 1
+        return l
+
+    def __repr__(self):
+        return &#34;Simulator()&#34;
+
+    __str__ = __repr__</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="dqcsim.host.Simulator"><code class="flex name class">
+<span>class <span class="ident">Simulator</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Represents a DQCsim simulator managed by Python.</p>
+<p>The constructor (<code>__init__()</code>), <code>with_frontend()</code>, <code>with_operator()</code>, and
+<code>with_backend()</code> may be used to configure the simulation. After that, it
+may be started with <code>simulate()</code> and stopped with <code>stop()</code> as many times as
+desired.</p>
+<p>Between invocations of <code>simulate()</code> and <code>stop()</code>, the calling Python script
+functions as the host process. It can call <code>start()</code>, <code>wait()</code>, <code>send()</code>,
+<code>recv()</code>, <code>yeeld()</code>, and <code>arb()</code> to communicate with the simulated quantum
+accelerator formed by the plugins.</p>
+<p>For simple simulations, <code>run()</code> may also be used for convenience. It
+combines <code>simulate()</code>, <code>start()</code>, <code>wait()</code>, and <code>stop()</code>.</p>
+<p>Constructs a simulation configuration.</p>
+<p>Each positional argument represents a plugin that the constructor will
+add for you, ordered from frontend to backend. You may also not specify
+any positional arguments if you would rather add them later using
+<code>with_frontend()</code>, <code>with_operator()</code>, and/or <code>with_backend()</code>. You can
+specify the plugins using the following types of values:</p>
+<ul>
+<li><code>str</code>: constructs the plugin in the same way that the command-line
+interface does it.</li>
+<li><code>(str, None)</code>: specifies the path to the plugin executable
+directly.</li>
+<li><code>(str, str)</code>: specifies the path to the plugin executable and the
+script it must run directly.</li>
+<li><code>Frontend</code>/<code>Operator</code>/<code>Backend</code>: constructs a DQCsim-managed thread
+that runs the given plugin definition instead of launching an
+external process for it.</li>
+<li><code>(str) -&gt; None</code>: the specified callback is used to spawn the
+plugin.</li>
+<li><code>(&lt;any of the above&gt;, {key: value})</code>: the last entry of the tuple,
+which must be a dictionary, is used to configure the plugin (it is
+sent to <code>**kwargs</code> when the plugin is added).</li>
+</ul>
+<p>For more information, refer to <code>with_frontend()</code>.</p>
+<p>Besides the positional arguments, you can provide a number of keyword
+arguments to configure the behavior of the simulator:</p>
+<ul>
+<li>
+<p><code>repro = "keep", "absolute", "relative", or None</code> (default: <code>"keep"</code>)</p>
+<p>Configures whether logging for the purpose of generating a
+reproduction file is enabled, and if it is, what style to use for
+storing filesystem paths.</p>
+</li>
+<li>
+<p><code>dqcsim_verbosity = Loglevel</code> (default: <code>Loglevel.TRACE</code>)</p>
+<p>Sets the minimum loglevel that a message generated by DQCsim itself
+must have for it to be logged anywhere, analogous to the
+plugin-specific verbosities. This defaults to <code>Loglevel.TRACE</code> to
+effectively disable the filter.</p>
+</li>
+<li>
+<p><code>stderr_verbosity = Loglevel</code> (default: <code>Loglevel.INFO</code>)</p>
+<p>Sets the minimum loglevel needed for a message to be logged to
+<code>stderr</code>.</p>
+</li>
+<li>
+<p><code>log_capture = callback, str, or None</code> (default: <code>None</code>)</p>
+<p>Specifies an alternative destination for log messages. If a
+callback is specified, it is called for every log message passing
+all the filters. If a string is specified, the messages are
+forwarded to Python's <code>logging</code> module using the specified string
+for the logger name. Note that this adds DQCsim's trace and note
+loglevels to <code>logging</code> using severities 5 and 25 respectively. If
+<code>None</code> is specified, forwarding is disabled.</p>
+<p>The user-defined callback is called with the following positional
+arguments:</p>
+<ul>
+<li><code>str</code>: the log message, without any metadata added to it.</li>
+<li><code>str</code>: the name of the logger that produced the message.</li>
+<li><code>Loglevel</code>: the loglevel assigned to the message.</li>
+<li><code>str</code>: string describing the logical source of the log message.
+Its significance depends on the programming language of the
+plugin that produced it. It is set to the Rust crate/module
+path for Rust programs, the Python module for Python scripts,
+and is left blank for C(++) programs.</li>
+<li><code>str</code>: string specifying the filename of the source that
+produced the message (<code>*.rs</code>, <code>*.cpp</code>, <code>*.py</code>, etc.)</li>
+<li><code>int</code>: the line number within the aforementioned source.</li>
+<li><code>int</code>: message timestamp, in nanoseconds since the Unix epoch.</li>
+<li><code>int</code>: process ID of the generating process.</li>
+<li><code>int</code>: thread ID of the generating thread.</li>
+</ul>
+</li>
+<li>
+<p><code>log_capture_verbosity = Loglevel</code> (default: <code>Loglevel.TRACE</code>)</p>
+<p>Sets the minimum loglevel needed for a message to be sent to the
+sink specified by <code>log_capture</code> (if any). This defaults to
+<code>Loglevel.TRACE</code> to effectively disable the filter.</p>
+</li>
+<li>
+<p><code>tee = {str: Loglevel}</code> (default: <code>{}</code>)</p>
+<p>Each entry in the dictionary consists of a log output filename as
+key and a loglevel filter as the value. It causes log messages
+generated by this plugin (though not including any captured
+streams) that pass the specified filter to be logged to the given
+log file, in addition to their normal handling.</p>
+</li>
+</ul></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Simulator(object):
+    &#34;&#34;&#34;Represents a DQCsim simulator managed by Python.
+
+    The constructor (`__init__()`), `with_frontend()`, `with_operator()`, and
+    `with_backend()` may be used to configure the simulation. After that, it
+    may be started with `simulate()` and stopped with `stop()` as many times as
+    desired.
+
+    Between invocations of `simulate()` and `stop()`, the calling Python script
+    functions as the host process. It can call `start()`, `wait()`, `send()`,
+    `recv()`, `yeeld()`, and `arb()` to communicate with the simulated quantum
+    accelerator formed by the plugins.
+
+    For simple simulations, `run()` may also be used for convenience. It
+    combines `simulate()`, `start()`, `wait()`, and `stop()`.
+    &#34;&#34;&#34;
+
+    def __init__(self, *args, **kwargs):
+        &#34;&#34;&#34;Constructs a simulation configuration.
+
+        Each positional argument represents a plugin that the constructor will
+        add for you, ordered from frontend to backend. You may also not specify
+        any positional arguments if you would rather add them later using
+        `with_frontend()`, `with_operator()`, and/or `with_backend()`. You can
+        specify the plugins using the following types of values:
+
+          - `str`: constructs the plugin in the same way that the command-line
+            interface does it.
+          - `(str, None)`: specifies the path to the plugin executable
+            directly.
+          - `(str, str)`: specifies the path to the plugin executable and the
+            script it must run directly.
+          - `Frontend`/`Operator`/`Backend`: constructs a DQCsim-managed thread
+            that runs the given plugin definition instead of launching an
+            external process for it.
+          - `(str) -&gt; None`: the specified callback is used to spawn the
+            plugin.
+          - `(&lt;any of the above&gt;, {key: value})`: the last entry of the tuple,
+            which must be a dictionary, is used to configure the plugin (it is
+            sent to `**kwargs` when the plugin is added).
+
+        For more information, refer to `with_frontend()`.
+
+        Besides the positional arguments, you can provide a number of keyword
+        arguments to configure the behavior of the simulator:
+
+          - `repro = &#34;keep&#34;, &#34;absolute&#34;, &#34;relative&#34;, or None` (default: `&#34;keep&#34;`)
+
+            Configures whether logging for the purpose of generating a
+            reproduction file is enabled, and if it is, what style to use for
+            storing filesystem paths.
+
+          - `dqcsim_verbosity = Loglevel` (default: `Loglevel.TRACE`)
+
+            Sets the minimum loglevel that a message generated by DQCsim itself
+            must have for it to be logged anywhere, analogous to the
+            plugin-specific verbosities. This defaults to `Loglevel.TRACE` to
+            effectively disable the filter.
+
+          - `stderr_verbosity = Loglevel` (default: `Loglevel.INFO`)
+
+            Sets the minimum loglevel needed for a message to be logged to
+            `stderr`.
+
+          - `log_capture = callback, str, or None` (default: `None`)
+
+            Specifies an alternative destination for log messages. If a
+            callback is specified, it is called for every log message passing
+            all the filters. If a string is specified, the messages are
+            forwarded to Python&#39;s `logging` module using the specified string
+            for the logger name. Note that this adds DQCsim&#39;s trace and note
+            loglevels to `logging` using severities 5 and 25 respectively. If
+            `None` is specified, forwarding is disabled.
+
+            The user-defined callback is called with the following positional
+            arguments:
+
+              - `str`: the log message, without any metadata added to it.
+              - `str`: the name of the logger that produced the message.
+              - `Loglevel`: the loglevel assigned to the message.
+              - `str`: string describing the logical source of the log message.
+                Its significance depends on the programming language of the
+                plugin that produced it. It is set to the Rust crate/module
+                path for Rust programs, the Python module for Python scripts,
+                and is left blank for C(++) programs.
+              - `str`: string specifying the filename of the source that
+                produced the message (`*.rs`, `*.cpp`, `*.py`, etc.)
+              - `int`: the line number within the aforementioned source.
+              - `int`: message timestamp, in nanoseconds since the Unix epoch.
+              - `int`: process ID of the generating process.
+              - `int`: thread ID of the generating thread.
+
+          - `log_capture_verbosity = Loglevel` (default: `Loglevel.TRACE`)
+
+            Sets the minimum loglevel needed for a message to be sent to the
+            sink specified by `log_capture` (if any). This defaults to
+            `Loglevel.TRACE` to effectively disable the filter.
+
+          - `tee = {str: Loglevel}` (default: `{}`)
+
+            Each entry in the dictionary consists of a log output filename as
+            key and a loglevel filter as the value. It causes log messages
+            generated by this plugin (though not including any captured
+            streams) that pass the specified filter to be logged to the given
+            log file, in addition to their normal handling.
+        &#34;&#34;&#34;
+        super().__init__()
+        self._sim_handle = None
+        self._front = None
+        self._opers = []
+        self._back = None
+
+        # Check the keyword arguments.
+        self._repro = kwargs.pop(&#39;repro&#39;, &#39;keep&#39;)
+        if self._repro not in {&#39;keep&#39;, &#39;absolute&#39;, &#39;relative&#39;, None}:
+            raise TypeError(&#34;repro must be &#39;keep&#39;, &#39;absolute&#39;, &#39;relative&#39;, or None&#34;)
+
+        self._dqcsim_verbosity = kwargs.pop(&#39;dqcsim_verbosity&#39;, Loglevel.TRACE)
+        if not isinstance(self._dqcsim_verbosity, Loglevel):
+            raise TypeError(&#34;dqcsim_verbosity must be a Loglevel&#34;)
+
+        self._stderr_verbosity = kwargs.pop(&#39;stderr_verbosity&#39;, Loglevel.INFO)
+        if not isinstance(self._stderr_verbosity, Loglevel):
+            raise TypeError(&#34;stderr_verbosity must be a Loglevel&#34;)
+
+        self._log_capture = kwargs.pop(&#39;log_capture&#39;, None)
+        if self._log_capture is not None:
+            if isinstance(self._log_capture, str):
+                import logging
+                logging.addLevelName(25, &#34;NOTE&#34;)
+                logging.addLevelName(5, &#34;TRACE&#34;)
+                logger = logging.getLogger(self._log_capture)
+                def to_logging(message, name, level, source, filename, lineno, nanotime, tid, pid):
+                    if level == Loglevel.TRACE:
+                        level = 5
+                    elif level == Loglevel.DEBUG:
+                        level = logging.DEBUG
+                    elif level == Loglevel.INFO:
+                        level = logging.INFO
+                    elif level == Loglevel.NOTE:
+                        level = 25
+                    elif level == Loglevel.WARN:
+                        level = logging.WARNING
+                    elif level == Loglevel.ERROR:
+                        level = logging.ERROR
+                    elif level == Loglevel.FATAL:
+                        level = logging.CRITICAL
+                    else:
+                        level = logging.NOTSET
+                    rec = logger.makeRecord(name, level, filename, lineno, message, (), None, source)
+                    logger.handle(rec)
+                self._log_capture = to_logging
+            elif not callable(self._log_capture):
+                raise TypeError(&#34;log_capture must be callable or a string identifying a logger from the logging library&#34;)
+            cb = self._log_capture
+            def transmute(message, name, level, source, filename, lineno, time_s, time_ns, tid, pid):
+                cb(message, name, Loglevel(level), source, filename, lineno, time_s * 1000000000 + time_ns, tid, pid)
+            # Handle trace functions.
+            trace_fn = sys.gettrace()
+            if trace_fn is None:
+                self._log_capture = transmute # no_kcoverage
+            else:
+                # We have a trace function, probably set by kcov for getting
+                # coverage data. Callbacks from the C API run from a new
+                # context every time, so we need to set the trace function
+                # before calling into the callback.
+                def traced(*args):
+                    sys.settrace(trace_fn) # no_kcoverage
+                    transmute(*args) # no_kcoverage
+                self._log_capture = traced
+
+        self._log_capture_verbosity = kwargs.pop(&#39;log_capture_verbosity&#39;, Loglevel.TRACE)
+        if not isinstance(self._log_capture_verbosity, Loglevel):
+            raise TypeError(&#34;log_capture_verbosity must be a Loglevel&#34;)
+
+        self._tee = dict(kwargs.pop(&#39;tee&#39;, {}))
+        for key, value in self._tee.items():
+            if not isinstance(key, str):
+                raise TypeError(&#34;tee file key must be a string&#34;)
+            if not isinstance(value, Loglevel):
+                raise TypeError(&#34;tee file value must be a Loglevel&#34;)
+
+        if kwargs:
+            raise TypeError(&#34;unexpected keyword argument {!r}&#34;.format(next(iter(kwargs.keys()))))
+
+        # Add the plugins.
+        if args:
+            def add(fn, args):
+                if not isinstance(args, tuple):
+                    args = [args]
+                else:
+                    args = list(args)
+                if args and isinstance(args[-1], dict):
+                    kwargs = args[-1]
+                    del args[-1]
+                else:
+                    kwargs = {}
+                return fn(*args, **kwargs)
+
+            add(self.with_frontend, args[0])
+            if len(args) &gt;= 2:
+                add(self.with_backend, args[-1])
+                for arg in args[1:-1]:
+                    add(self.with_operator, arg)
+
+    def _plugin_factory(self, plugin_type, *args, **kwargs):
+        &#34;&#34;&#34;Makes a function that constructs an &#34;`xcfg`&#34; handle for the
+        specified plugin.
+
+        `plugin_type` must be set to the expected plugin type code, taken from
+        `raw.DQCS_PTYPE_*`. `*args` and `**kwargs` follow the formats described
+        in the docs for `Simulator.with_frontend()`. These should be
+        typechecked as much as possible during construction of the function vs.
+        execution.
+        &#34;&#34;&#34;
+        if self._sim_handle is not None:
+            raise RuntimeError(&#34;Cannot reconfigure simulation while it is running&#34;)
+
+        # Check plugin type argument.
+        if plugin_type not in {raw.DQCS_PTYPE_FRONT, raw.DQCS_PTYPE_OPER, raw.DQCS_PTYPE_BACK}:
+            raise TypeError(&#34;plugin_type is not set to a valid plugin type code&#34;)
+
+        # Check *args.
+        arg_mode = None
+        if len(args) == 1:
+            if isinstance(args[0], str):
+                arg_mode = 1
+                specification = str(args[0])
+            elif isinstance(args[0], Frontend) and plugin_type == raw.DQCS_PTYPE_FRONT:
+                arg_mode = 3
+                definition = args[0]
+            elif isinstance(args[0], Operator) and plugin_type == raw.DQCS_PTYPE_OPER:
+                arg_mode = 3
+                definition = args[0]
+            elif isinstance(args[0], Backend) and plugin_type == raw.DQCS_PTYPE_BACK:
+                arg_mode = 3
+                definition = args[0]
+            elif callable(args[0]):
+                arg_mode = 4
+                callback = args[0]
+        elif len(args) == 2 and isinstance(args[0], str) and (args[1] is None or isinstance(args[1], str)):
+            arg_mode = 2
+            executable = os.path.realpath(args[0])
+            script = os.path.realpath(args[1])
+        if arg_mode is None:
+            raise TypeError(&#34;invalid combination of positional arguments&#34;)
+
+        # Check **kwargs.
+        name = kwargs.pop(&#39;name&#39;, None)
+        if name is None:
+            name = &#34;&#34;
+        else:
+            name = str(name)
+
+        init = kwargs.pop(&#39;init&#39;, [])
+        if isinstance(init, ArbCmd):
+            init = [init]
+        init = list(init)
+        for cmd in init:
+            if not isinstance(cmd, ArbCmd):
+                raise TypeError(&#34;init must be a single ArbCmd or a list/tuple of ArbCmds&#34;)
+
+        verbosity = kwargs.pop(&#39;verbosity&#39;, Loglevel.TRACE)
+        if not isinstance(verbosity, Loglevel):
+            raise TypeError(&#34;verbosity must be a Loglevel&#34;)
+
+        tee = dict(kwargs.pop(&#39;tee&#39;, {}))
+        for key, value in tee.items():
+            if not isinstance(key, str):
+                raise TypeError(&#34;tee file key must be a string&#34;)
+            if not isinstance(value, Loglevel):
+                raise TypeError(&#34;tee file value must be a Loglevel&#34;)
+
+        if arg_mode == 1 or arg_mode == 2:
+            # Pop kwargs that are only available for processes.
+            env = dict(kwargs.pop(&#39;env&#39;, {}))
+            for key, value in env.items():
+                if not isinstance(key, str):
+                    raise TypeError(&#34;environment variable key must be a string&#34;)
+                if value is not None and not isinstance(value, str):
+                    raise TypeError(&#34;environment variable value must be a string or None&#34;)
+
+            work = kwargs.pop(&#39;work&#39;, None)
+            if work is not None:
+                work = str(work)
+
+            stderr = kwargs.pop(&#39;stderr&#39;, Loglevel.INFO)
+            if stderr is not None and not isinstance(stderr, Loglevel):
+                raise TypeError(&#34;stderr must be a Loglevel or None&#34;)
+
+            stdout = kwargs.pop(&#39;stdout&#39;, Loglevel.INFO)
+            if stdout is not None and not isinstance(stdout, Loglevel):
+                raise TypeError(&#34;stdout must be a Loglevel or None&#34;)
+
+            accept_timeout = float(kwargs.pop(&#39;accept_timeout&#39;, 5.0))
+            shutdown_timeout = float(kwargs.pop(&#39;shutdown_timeout&#39;, 5.0))
+
+        if kwargs:
+            raise TypeError(&#34;unexpected keyword argument {!r}&#34;.format(next(iter(kwargs.keys()))))
+
+        # Produce the constructor function.
+        if arg_mode == 1 or arg_mode == 2:
+            # Plugin process; pcfg interface.
+            def fn():
+                # Construct handle.
+                if arg_mode == 1:
+                    pcfg = Handle(raw.dqcs_pcfg_new(plugin_type, name, specification))
+                elif arg_mode == 2:
+                    pcfg = Handle(raw.dqcs_pcfg_new_raw(plugin_type, name, executable, script))
+
+                # Apply configuration.
+                with pcfg as p:
+                    # Init commands.
+                    for cmd in init:
+                        cmd = cmd._to_raw()
+                        with cmd as c:
+                            raw.dqcs_pcfg_init_cmd(p, c)
+
+                    # Logging.
+                    raw.dqcs_pcfg_verbosity_set(p, int(verbosity))
+                    for key, value in tee.items():
+                        raw.dqcs_pcfg_tee(p, int(value), key)
+
+                    # Process environment.
+                    if work is not None:
+                        raw.dqcs_pcfg_work_set(p, work)
+                    for key, value in env.items():
+                        if value is None:
+                            raw.dqcs_pcfg_env_unset(p, key)
+                        else:
+                            raw.dqcs_pcfg_env_set(p, key, value)
+
+                    # Stream capture.
+                    if stderr is None:
+                        raw.dqcs_pcfg_stderr_mode_set(p, raw.DQCS_LOG_PASS)
+                    else:
+                        raw.dqcs_pcfg_stderr_mode_set(p, int(stderr))
+                    if stdout is None:
+                        raw.dqcs_pcfg_stdout_mode_set(p, raw.DQCS_LOG_PASS)
+                    else:
+                        raw.dqcs_pcfg_stdout_mode_set(p, int(stdout))
+
+                    # Timeouts.
+                    raw.dqcs_pcfg_accept_timeout_set(p, accept_timeout)
+                    raw.dqcs_pcfg_shutdown_timeout_set(p, shutdown_timeout)
+
+                # Return the handle.
+                return pcfg
+
+        elif arg_mode == 3 or arg_mode == 4:
+            # Plugin thread; tcfg interface.
+            def fn():
+                # Construct handle.
+                if arg_mode == 3:
+                    with definition._to_pdef() as pd:
+                        tcfg = Handle(raw.dqcs_tcfg_new(pd, name))
+                elif arg_mode == 4:
+                    tcfg = Handle(raw.dqcs_tcfg_new_raw_pyfun(plugin_type, name, callback))
+
+                # Apply configuration.
+                with tcfg as t:
+                    # Init commands.
+                    for cmd in init:
+                        cmd = cmd._to_raw()
+                        with cmd as c:
+                            raw.dqcs_tcfg_init_cmd(t, c)
+
+                    # Logging.
+                    raw.dqcs_tcfg_verbosity_set(t, int(verbosity))
+                    for key, value in tee.items():
+                        raw.dqcs_tcfg_tee(t, int(value), key)
+
+                # Return the handle.
+                return tcfg
+
+        return fn
+
+    def with_frontend(self, *args, **kwargs):
+        &#34;&#34;&#34;Sets the frontend plugin for the simulation.
+
+        This must be called prior to launching the simulation, either by the
+        constructor or by you manually. If it is called multiple times, the
+        last call counts. The function mutates and returns `self`, so it can be
+        used for both builder-style constructions or mutation-based
+        construction.
+
+        There are five supported combinations of positional arguments,
+        representing five different ways to launch a plugin:
+
+          - `str`
+
+            Constructs a plugin in the same way that the command-line interface
+            does it. That is, a single string conforming to any of the
+            following:
+
+              - a valid path to the plugin executable;
+              - the basename of the plugin executable with implicit `dqcsfe`
+                prefix, searched for in the current working directory and in
+                the system `$PATH`;
+              - a valid path to a script file with a file extension. In this
+                case, the above rule is run for a plugin named by the file
+                extension of the script file. For instance, if `test.py` is
+                specified, the library will look for an executable named
+                `dqcsfepy`. The script filename is passed to the plugin through
+                its sole command-line argument.
+
+          - `str, None`
+
+            Constructs a plugin using the given direct path to the native
+            plugin executable. The path can be absolute or relative to the
+            current working directory, but other than that no desugaring is
+            performed.
+
+          - `str, str`
+
+            As above, but for non-native plugins. The first string must be the
+            path to the interpreter used to run the non-native plugin, the
+            second must be the path to the plugin script. Both paths can either
+            be absolute or relative to the current working directory.
+
+          - `Frontend`
+
+            Instead of launching a process for the frontend plugin, it is
+            launched in a thread within the context of this Python interpreter.
+            The dqcsim library will take care of this launch.
+
+          - `(str) -&gt; None`
+
+            Instead of launching a process for the frontend plugin, it is
+            launched in a thread within the context of this Python interpreter.
+            You are in charge of doing this through a function that you
+            provide. This function takes the simulator address string as its
+            sole argument, and in some way pass it to `Frontend.start()` or
+            `Frontend.run()`. The function&#39;s return value (if any) is ignored.
+
+        Besides the positional arguments, you can provide a number of keyword
+        arguments to configure the behavior of the plugin:
+
+          - `name = str` (default: `&#34;front&#34;`)
+
+            Sets the name of the plugin, used to refer to it in log messages or
+            in a reproduction file.
+
+          - `init = ArbCmd or [ArbCmd]` (default: `[]`)
+
+            Specifies a single `ArbCmd` or a list of `ArbCmd`s to send to the
+            plugin&#39;s initialization callback.
+
+          - `env = {str: str or None}` (default: `{}`)
+
+            Configures the environment variables passed to the plugin process.
+            The set of variables is based on the current environment, then
+            modified using the given dictionary. Specifying a variable name as
+            key and a string value sets or overrides the environment variable.
+            Setting the value to `None` removes it from the environment. This
+            is only supported for plugin processes.
+
+          - `work = str or None` (default: `None`)
+
+            If a string is specified, the plugin process will launch using the
+            given string as its working directory. `None` causes the current
+            working directory to be used. This is only supported for plugin
+            processes.
+
+          - `verbosity = Loglevel` (default: `Loglevel.TRACE`)
+
+            Sets the minimum loglevel a log message must have for it to be
+            forwarded to the simulator process. This defaults to
+            `Loglevel.TRACE` to effectively disable the filter.
+
+          - `tee = {str: Loglevel}` (default: `{}`)
+
+            Each entry in the dictionary consists of a log output filename as
+            key and a loglevel filter as the value. It causes log messages
+            generated by this plugin (though not including any captured
+            streams) that pass the specified filter to be logged to the given
+            log file, in addition to their normal handling.
+
+          - `stderr = Loglevel or None` (default: `Loglevel.INFO`)
+
+            Configures if/how the `stderr` stream of the plugin process is
+            captured. If `Loglevel.OFF` is specified, the `stderr` stream is
+            ignored. Any other loglevel causes each line of output to be logged
+            using a message of the specified level. Passing `None` prevents the
+            stderr stream from being captured at all, so the messages will
+            appear in this Python process&#39; `stderr` stream. This is only
+            supported for plugin processes, since threads do not have separate
+            streams.
+
+          - `stdout = Loglevel or None` (default: `Loglevel.INFO`)
+
+            Same as `stderr`, but for the `stdout` stream.
+
+          - `accept_timeout = float (default: `5.0` seconds)
+
+            Sets the amount of time that DQCsim will wait in seconds for the
+            plugin to finish starting up and connect to the simulator process.
+            This is currently only supported for plugin processes.
+
+          - `shutdown_timeout = float (default: `5.0` seconds)
+
+            Sets the amount of time that DQCsim will wait in seconds for the
+            plugin to shut down after the simulator sends the abort request to
+            it. This is currently only supported for plugin processes.
+        &#34;&#34;&#34;
+        self._front = self._plugin_factory(raw.DQCS_PTYPE_FRONT, *args, **kwargs)
+        return self
+
+    def with_operator(self, *args, **kwargs):
+        &#34;&#34;&#34;Adds an operator plugin to the simulation.
+
+        Operators must be added in front to back order by calling this function
+        for every operator. The function mutates and returns `self`, so it can
+        be used for both builder-style constructions or mutation-based
+        construction.
+
+        Operators are constructed in the same way as frontends and backends.
+        Refer to `with_frontend()` for information about the positional and
+        keyword arguments, replacing `Frontend` with `Operator` and `dqcsfe`
+        with `dqcsop`. The default name is `&#34;op&lt;N&gt;&#34;`, where `N` is the operator
+        index in front-to-back order starting at 1.
+        &#34;&#34;&#34;
+        self._opers.append(self._plugin_factory(raw.DQCS_PTYPE_OPER, *args, **kwargs))
+        return self
+
+    def with_backend(self, *args, **kwargs):
+        &#34;&#34;&#34;Sets the backend plugin for the simulation.
+
+        If this is not called either manually or by the constructor, the
+        simulation defaults to using the QX backend. If it is called multiple
+        times, the last call counts. The function mutates and returns `self`,
+        so it can be used for both builder-style constructions or
+        mutation-based construction.
+
+        Backends are constructed in the same way as frontends and operators.
+        Refer to `with_frontend()` for information about the positional and
+        keyword arguments, replacing `Frontend` with `Backend` and `dqcsfe`
+        with `dqcsbe`. The default name is `&#34;back&#34;`.
+        &#34;&#34;&#34;
+        self._back = self._plugin_factory(raw.DQCS_PTYPE_BACK, *args, **kwargs)
+        return self
+
+    def run(self, *args, **kwargs):
+        &#34;&#34;&#34;Runs a simple simulation without host-accelerator interaction.
+
+        This is completely equivalent to calling:
+
+            sim.simulate()
+            sim.start(*args, **kwargs)
+            ret = sim.wait()
+            sim.stop()
+            return ret
+
+        If a simulation was already running, the `simulate()` and `stop()`
+        calls are omitted.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            self.simulate()
+            self.start(*args, **kwargs)
+            ret = self.wait()
+            self.stop()
+        else:
+            self.start(*args, **kwargs)
+            ret = self.wait()
+        return ret
+
+    def simulate(self, seed=None):
+        &#34;&#34;&#34;Starts the simulation.
+
+        `seed` optionally specifies the random seed used for the simulation.
+        An `int` argument between `0` and `2^64-1` inclusive specifies the
+        seed directly. For other types `zlib.adler32(str(...).encode(&#39;utf-8&#39;))`
+        is applied to get a number, which is then cast to a 32-bit unsigned
+        number. If `None` is specified or the argument is omitted, DQCsim will
+        randomize the seed based on the highest resolution timestamp the
+        operating system is capable of providing.
+        &#34;&#34;&#34;
+        if self._sim_handle is not None:
+            raise RuntimeError(&#34;Cannot run multiple simulations at once&#34;)
+        if self._front is None:
+            raise RuntimeError(&#34;Frontend plugin was never specified&#34;)
+        if self._back is None:
+            self.with_backend(&#34;qx&#34;)
+
+        # Create a new configuration.
+        scfg_ob = Handle(raw.dqcs_scfg_new())
+        with scfg_ob as scfg:
+
+            # Configure the seed.
+            if seed is not None:
+                if isinstance(seed, int) and seed &gt;= 0 and seed &lt;= 0xFFFFFFFFFFFFFFFF:
+                    raw.dqcs_scfg_seed_set(scfg, seed)
+                else:
+                    raw.dqcs_scfg_seed_set(scfg, zlib.adler32(str(seed).encode(&#39;utf-8&#39;)) &amp; 0xFFFFFFFF)
+
+            # Configure reproduction file logging.
+            if self._repro is None:
+                raw.dqcs_scfg_repro_disable(scfg)
+            else:
+                raw.dqcs_scfg_repro_path_style_set(scfg, {
+                    &#39;keep&#39;: raw.DQCS_PATH_STYLE_KEEP,
+                    &#39;relative&#39;: raw.DQCS_PATH_STYLE_RELATIVE,
+                    &#39;absolute&#39;: raw.DQCS_PATH_STYLE_ABSOLUTE,
+                }[self._repro])
+
+            # Configure regular logging.
+            raw.dqcs_scfg_dqcsim_verbosity_set(scfg, int(self._dqcsim_verbosity))
+            raw.dqcs_scfg_stderr_verbosity_set(scfg, int(self._stderr_verbosity))
+            if self._log_capture is not None:
+                raw.dqcs_scfg_log_callback_pyfun(scfg, int(self._log_capture_verbosity), self._log_capture)
+            for key, value in self._tee.items():
+                raw.dqcs_scfg_tee(scfg, int(value), key)
+
+            # Push the plugins.
+            with self._front() as xcfg:
+                raw.dqcs_scfg_push_plugin(scfg, xcfg)
+            for oper in self._opers:
+                with oper() as xcfg:
+                    raw.dqcs_scfg_push_plugin(scfg, xcfg)
+            with self._back() as xcfg:
+                raw.dqcs_scfg_push_plugin(scfg, xcfg)
+
+            # Start the simulation.
+            self._sim_handle = Handle(raw.dqcs_sim_new(scfg))
+
+    def stop(self, repro_out=None):
+        &#34;&#34;&#34;Stops a simulation previously started through `simulate()`.
+
+        `repro_out` can optionally be set to an output filename for a
+        reproduction file. If this is omitted or set to `None`, no reproduction
+        file is written.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+
+        # Write reproduction file if requested.
+        if repro_out is not None:
+            with self._sim_handle as sim:
+                raw.dqcs_sim_write_reproduction_file(sim, repro_out)
+
+        # Delete the simulation handle.
+        raw.dqcs_handle_delete(self._sim_handle.take())
+        self._sim_handle = None
+
+    def __enter__(self):
+        &#34;&#34;&#34;Allows you to use a `Simulator` object with the `with` syntax.
+        `simulate()` is called at the start of the `with` block; `stop()` is
+        called at the end of it.&#34;&#34;&#34;
+        self.simulate()
+        return self
+
+    def __exit__(self, *_):
+        &#34;&#34;&#34;Allows you to use a `Simulator` object with the `with` syntax.
+        `simulate()` is called at the start of the `with` block; `stop()` is
+        called at the end of it.&#34;&#34;&#34;
+        self.stop()
+
+    def start(self, *args, **kwargs):
+        &#34;&#34;&#34;Sends the `start` command to the simulated accelerator.
+
+        Calling this will start execution of the frontend plugin&#39;s run callback
+        as soon as the host process yields to the simulator. The `ArbData`
+        argument passed to it is constructed by passing this function&#39;s
+        arguments to the constructor of `ArbData` directly.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            with ArbData(*args, **kwargs)._to_raw() as data:
+                raw.dqcs_sim_start(sim, data)
+
+    def wait(self):
+        &#34;&#34;&#34;Waits for the simulated accelerator to finish executing its run
+        callback.
+
+        This function returns an `ArbData` object representing the return value
+        of the run callback. If performing this operation would result in a
+        deadlock, an exception is thrown instead of waiting indefinitely.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            return ArbData._from_raw(Handle(raw.dqcs_sim_wait(sim)))
+
+    def send(self, *args, **kwargs):
+        &#34;&#34;&#34;Sends data to the simulated accelerator.
+
+        This function&#39;s arguments are passed directly to the constructor of
+        `ArbData` to construct the data object that is to be sent. This object
+        can then be retrieved by the frontend&#39;s run callback through recv.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            with ArbData(*args, **kwargs)._to_raw() as data:
+                raw.dqcs_sim_send(sim, data)
+
+    def recv(self):
+        &#34;&#34;&#34;Waits for the simulated accelerator to send data to us.
+
+        This function returns an `ArbData` object representing the data that
+        was sent. If performing this operation would result in a deadlock, an
+        exception is thrown instead of waiting indefinitely.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            return ArbData._from_raw(Handle(raw.dqcs_sim_recv(sim)))
+
+    def yeeld(self):
+        &#34;&#34;&#34;Explicitely sends all queued commands to the accelerator and waits
+        for it to block again.
+
+        This is useful if you&#39;re waiting for or want to synchronize log
+        messages. Note that the function is named yeeld instead of yield
+        because yield is a keyword in Python.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            raw.dqcs_sim_yield(sim)
+
+    def arb(self, target, *args, **kwargs):
+        &#34;&#34;&#34;Sends an `ArbCmd` to one of the plugins that make up the simulated
+        accelerator.
+
+        `target` specifies the plugin that the command is to be sent to. It
+        must either be a Pythonic integer index within the front-to-back plugin
+        pipeline (that is, 0 for the frontend, 1..x for the operators from
+        front to back, -1 for the backend, -2..x for the operators from back to
+        front), or a string matching one of the plugin&#39;s names.
+
+        The remaining arguments are passed to the constructor for `ArbCmd` to
+        generate the command object. This function returns an `ArbData` object
+        representing the data that was returned by the command.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            with ArbCmd(*args, **kwargs)._to_raw() as cmd:
+                if isinstance(target, int):
+                    return ArbData._from_raw(Handle(raw.dqcs_sim_arb_idx(sim, int(target), cmd)))
+                else:
+                    return ArbData._from_raw(Handle(raw.dqcs_sim_arb(sim, str(target), cmd)))
+
+    def get_meta(self, target):
+        &#34;&#34;&#34;Returns metadata information for one of the plugins in the
+        pipeline.
+
+        The `target` parameter works the same as the one in `arb()`. The
+        returned metadata is a three-tuple of the implementation name, author,
+        and version strings. This function only works while a simulation is
+        running, since the plugins report their metadata during initialization.
+        &#34;&#34;&#34;
+        if self._sim_handle is None:
+            raise RuntimeError(&#34;No simulation is currently running&#34;)
+        with self._sim_handle as sim:
+            if isinstance(target, int):
+                return ( #@
+                    raw.dqcs_sim_get_name_idx(sim, int(target)),
+                    raw.dqcs_sim_get_author_idx(sim, int(target)),
+                    raw.dqcs_sim_get_version_idx(sim, int(target)))
+            else:
+                return ( #@
+                    raw.dqcs_sim_get_name(sim, str(target)),
+                    raw.dqcs_sim_get_author(sim, str(target)),
+                    raw.dqcs_sim_get_version(sim, str(target)))
+
+    def __len__(self):
+        &#34;&#34;&#34;Returns the number of plugins in the pipeline.&#34;&#34;&#34;
+        l = len(self._opers)
+        if self._front is not None:
+            l += 1
+        if self._back is not None:
+            l += 1
+        return l
+
+    def __repr__(self):
+        return &#34;Simulator()&#34;
+
+    __str__ = __repr__</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="dqcsim.host.Simulator.arb"><code class="name flex">
+<span>def <span class="ident">arb</span></span>(<span>self, target, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Sends an <code>ArbCmd</code> to one of the plugins that make up the simulated
+accelerator.</p>
+<p><code>target</code> specifies the plugin that the command is to be sent to. It
+must either be a Pythonic integer index within the front-to-back plugin
+pipeline (that is, 0 for the frontend, 1..x for the operators from
+front to back, -1 for the backend, -2..x for the operators from back to
+front), or a string matching one of the plugin's names.</p>
+<p>The remaining arguments are passed to the constructor for <code>ArbCmd</code> to
+generate the command object. This function returns an <code>ArbData</code> object
+representing the data that was returned by the command.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def arb(self, target, *args, **kwargs):
+    &#34;&#34;&#34;Sends an `ArbCmd` to one of the plugins that make up the simulated
+    accelerator.
+
+    `target` specifies the plugin that the command is to be sent to. It
+    must either be a Pythonic integer index within the front-to-back plugin
+    pipeline (that is, 0 for the frontend, 1..x for the operators from
+    front to back, -1 for the backend, -2..x for the operators from back to
+    front), or a string matching one of the plugin&#39;s names.
+
+    The remaining arguments are passed to the constructor for `ArbCmd` to
+    generate the command object. This function returns an `ArbData` object
+    representing the data that was returned by the command.
+    &#34;&#34;&#34;
+    if self._sim_handle is None:
+        raise RuntimeError(&#34;No simulation is currently running&#34;)
+    with self._sim_handle as sim:
+        with ArbCmd(*args, **kwargs)._to_raw() as cmd:
+            if isinstance(target, int):
+                return ArbData._from_raw(Handle(raw.dqcs_sim_arb_idx(sim, int(target), cmd)))
+            else:
+                return ArbData._from_raw(Handle(raw.dqcs_sim_arb(sim, str(target), cmd)))</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.host.Simulator.get_meta"><code class="name flex">
+<span>def <span class="ident">get_meta</span></span>(<span>self, target)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns metadata information for one of the plugins in the
+pipeline.</p>
+<p>The <code>target</code> parameter works the same as the one in <code>arb()</code>. The
+returned metadata is a three-tuple of the implementation name, author,
+and version strings. This function only works while a simulation is
+running, since the plugins report their metadata during initialization.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_meta(self, target):
+    &#34;&#34;&#34;Returns metadata information for one of the plugins in the
+    pipeline.
+
+    The `target` parameter works the same as the one in `arb()`. The
+    returned metadata is a three-tuple of the implementation name, author,
+    and version strings. This function only works while a simulation is
+    running, since the plugins report their metadata during initialization.
+    &#34;&#34;&#34;
+    if self._sim_handle is None:
+        raise RuntimeError(&#34;No simulation is currently running&#34;)
+    with self._sim_handle as sim:
+        if isinstance(target, int):
+            return ( #@
+                raw.dqcs_sim_get_name_idx(sim, int(target)),
+                raw.dqcs_sim_get_author_idx(sim, int(target)),
+                raw.dqcs_sim_get_version_idx(sim, int(target)))
+        else:
+            return ( #@
+                raw.dqcs_sim_get_name(sim, str(target)),
+                raw.dqcs_sim_get_author(sim, str(target)),
+                raw.dqcs_sim_get_version(sim, str(target)))</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.host.Simulator.recv"><code class="name flex">
+<span>def <span class="ident">recv</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Waits for the simulated accelerator to send data to us.</p>
+<p>This function returns an <code>ArbData</code> object representing the data that
+was sent. If performing this operation would result in a deadlock, an
+exception is thrown instead of waiting indefinitely.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def recv(self):
+    &#34;&#34;&#34;Waits for the simulated accelerator to send data to us.
+
+    This function returns an `ArbData` object representing the data that
+    was sent. If performing this operation would result in a deadlock, an
+    exception is thrown instead of waiting indefinitely.
+    &#34;&#34;&#34;
+    if self._sim_handle is None:
+        raise RuntimeError(&#34;No simulation is currently running&#34;)
+    with self._sim_handle as sim:
+        return ArbData._from_raw(Handle(raw.dqcs_sim_recv(sim)))</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.host.Simulator.run"><code class="name flex">
+<span>def <span class="ident">run</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Runs a simple simulation without host-accelerator interaction.</p>
+<p>This is completely equivalent to calling:</p>
+<pre><code>sim.simulate()
+sim.start(*args, **kwargs)
+ret = sim.wait()
+sim.stop()
+return ret
+</code></pre>
+<p>If a simulation was already running, the <code>simulate()</code> and <code>stop()</code>
+calls are omitted.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run(self, *args, **kwargs):
+    &#34;&#34;&#34;Runs a simple simulation without host-accelerator interaction.
+
+    This is completely equivalent to calling:
+
+        sim.simulate()
+        sim.start(*args, **kwargs)
+        ret = sim.wait()
+        sim.stop()
+        return ret
+
+    If a simulation was already running, the `simulate()` and `stop()`
+    calls are omitted.
+    &#34;&#34;&#34;
+    if self._sim_handle is None:
+        self.simulate()
+        self.start(*args, **kwargs)
+        ret = self.wait()
+        self.stop()
+    else:
+        self.start(*args, **kwargs)
+        ret = self.wait()
+    return ret</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.host.Simulator.send"><code class="name flex">
+<span>def <span class="ident">send</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Sends data to the simulated accelerator.</p>
+<p>This function's arguments are passed directly to the constructor of
+<code>ArbData</code> to construct the data object that is to be sent. This object
+can then be retrieved by the frontend's run callback through recv.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def send(self, *args, **kwargs):
+    &#34;&#34;&#34;Sends data to the simulated accelerator.
+
+    This function&#39;s arguments are passed directly to the constructor of
+    `ArbData` to construct the data object that is to be sent. This object
+    can then be retrieved by the frontend&#39;s run callback through recv.
+    &#34;&#34;&#34;
+    if self._sim_handle is None:
+        raise RuntimeError(&#34;No simulation is currently running&#34;)
+    with self._sim_handle as sim:
+        with ArbData(*args, **kwargs)._to_raw() as data:
+            raw.dqcs_sim_send(sim, data)</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.host.Simulator.simulate"><code class="name flex">
+<span>def <span class="ident">simulate</span></span>(<span>self, seed=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Starts the simulation.</p>
+<p><code>seed</code> optionally specifies the random seed used for the simulation.
+An <code>int</code> argument between <code>0</code> and <code>2^64-1</code> inclusive specifies the
+seed directly. For other types <code>zlib.adler32(str(...).encode('utf-8'))</code>
+is applied to get a number, which is then cast to a 32-bit unsigned
+number. If <code>None</code> is specified or the argument is omitted, DQCsim will
+randomize the seed based on the highest resolution timestamp the
+operating system is capable of providing.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def simulate(self, seed=None):
+    &#34;&#34;&#34;Starts the simulation.
+
+    `seed` optionally specifies the random seed used for the simulation.
+    An `int` argument between `0` and `2^64-1` inclusive specifies the
+    seed directly. For other types `zlib.adler32(str(...).encode(&#39;utf-8&#39;))`
+    is applied to get a number, which is then cast to a 32-bit unsigned
+    number. If `None` is specified or the argument is omitted, DQCsim will
+    randomize the seed based on the highest resolution timestamp the
+    operating system is capable of providing.
+    &#34;&#34;&#34;
+    if self._sim_handle is not None:
+        raise RuntimeError(&#34;Cannot run multiple simulations at once&#34;)
+    if self._front is None:
+        raise RuntimeError(&#34;Frontend plugin was never specified&#34;)
+    if self._back is None:
+        self.with_backend(&#34;qx&#34;)
+
+    # Create a new configuration.
+    scfg_ob = Handle(raw.dqcs_scfg_new())
+    with scfg_ob as scfg:
+
+        # Configure the seed.
+        if seed is not None:
+            if isinstance(seed, int) and seed &gt;= 0 and seed &lt;= 0xFFFFFFFFFFFFFFFF:
+                raw.dqcs_scfg_seed_set(scfg, seed)
+            else:
+                raw.dqcs_scfg_seed_set(scfg, zlib.adler32(str(seed).encode(&#39;utf-8&#39;)) &amp; 0xFFFFFFFF)
+
+        # Configure reproduction file logging.
+        if self._repro is None:
+            raw.dqcs_scfg_repro_disable(scfg)
+        else:
+            raw.dqcs_scfg_repro_path_style_set(scfg, {
+                &#39;keep&#39;: raw.DQCS_PATH_STYLE_KEEP,
+                &#39;relative&#39;: raw.DQCS_PATH_STYLE_RELATIVE,
+                &#39;absolute&#39;: raw.DQCS_PATH_STYLE_ABSOLUTE,
+            }[self._repro])
+
+        # Configure regular logging.
+        raw.dqcs_scfg_dqcsim_verbosity_set(scfg, int(self._dqcsim_verbosity))
+        raw.dqcs_scfg_stderr_verbosity_set(scfg, int(self._stderr_verbosity))
+        if self._log_capture is not None:
+            raw.dqcs_scfg_log_callback_pyfun(scfg, int(self._log_capture_verbosity), self._log_capture)
+        for key, value in self._tee.items():
+            raw.dqcs_scfg_tee(scfg, int(value), key)
+
+        # Push the plugins.
+        with self._front() as xcfg:
+            raw.dqcs_scfg_push_plugin(scfg, xcfg)
+        for oper in self._opers:
+            with oper() as xcfg:
+                raw.dqcs_scfg_push_plugin(scfg, xcfg)
+        with self._back() as xcfg:
+            raw.dqcs_scfg_push_plugin(scfg, xcfg)
+
+        # Start the simulation.
+        self._sim_handle = Handle(raw.dqcs_sim_new(scfg))</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.host.Simulator.start"><code class="name flex">
+<span>def <span class="ident">start</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Sends the <code>start</code> command to the simulated accelerator.</p>
+<p>Calling this will start execution of the frontend plugin's run callback
+as soon as the host process yields to the simulator. The <code>ArbData</code>
+argument passed to it is constructed by passing this function's
+arguments to the constructor of <code>ArbData</code> directly.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def start(self, *args, **kwargs):
+    &#34;&#34;&#34;Sends the `start` command to the simulated accelerator.
+
+    Calling this will start execution of the frontend plugin&#39;s run callback
+    as soon as the host process yields to the simulator. The `ArbData`
+    argument passed to it is constructed by passing this function&#39;s
+    arguments to the constructor of `ArbData` directly.
+    &#34;&#34;&#34;
+    if self._sim_handle is None:
+        raise RuntimeError(&#34;No simulation is currently running&#34;)
+    with self._sim_handle as sim:
+        with ArbData(*args, **kwargs)._to_raw() as data:
+            raw.dqcs_sim_start(sim, data)</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.host.Simulator.stop"><code class="name flex">
+<span>def <span class="ident">stop</span></span>(<span>self, repro_out=None)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Stops a simulation previously started through <code>simulate()</code>.</p>
+<p><code>repro_out</code> can optionally be set to an output filename for a
+reproduction file. If this is omitted or set to <code>None</code>, no reproduction
+file is written.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def stop(self, repro_out=None):
+    &#34;&#34;&#34;Stops a simulation previously started through `simulate()`.
+
+    `repro_out` can optionally be set to an output filename for a
+    reproduction file. If this is omitted or set to `None`, no reproduction
+    file is written.
+    &#34;&#34;&#34;
+    if self._sim_handle is None:
+        raise RuntimeError(&#34;No simulation is currently running&#34;)
+
+    # Write reproduction file if requested.
+    if repro_out is not None:
+        with self._sim_handle as sim:
+            raw.dqcs_sim_write_reproduction_file(sim, repro_out)
+
+    # Delete the simulation handle.
+    raw.dqcs_handle_delete(self._sim_handle.take())
+    self._sim_handle = None</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.host.Simulator.wait"><code class="name flex">
+<span>def <span class="ident">wait</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Waits for the simulated accelerator to finish executing its run
+callback.</p>
+<p>This function returns an <code>ArbData</code> object representing the return value
+of the run callback. If performing this operation would result in a
+deadlock, an exception is thrown instead of waiting indefinitely.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wait(self):
+    &#34;&#34;&#34;Waits for the simulated accelerator to finish executing its run
+    callback.
+
+    This function returns an `ArbData` object representing the return value
+    of the run callback. If performing this operation would result in a
+    deadlock, an exception is thrown instead of waiting indefinitely.
+    &#34;&#34;&#34;
+    if self._sim_handle is None:
+        raise RuntimeError(&#34;No simulation is currently running&#34;)
+    with self._sim_handle as sim:
+        return ArbData._from_raw(Handle(raw.dqcs_sim_wait(sim)))</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.host.Simulator.with_backend"><code class="name flex">
+<span>def <span class="ident">with_backend</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Sets the backend plugin for the simulation.</p>
+<p>If this is not called either manually or by the constructor, the
+simulation defaults to using the QX backend. If it is called multiple
+times, the last call counts. The function mutates and returns <code>self</code>,
+so it can be used for both builder-style constructions or
+mutation-based construction.</p>
+<p>Backends are constructed in the same way as frontends and operators.
+Refer to <code>with_frontend()</code> for information about the positional and
+keyword arguments, replacing <code>Frontend</code> with <code>Backend</code> and <code>dqcsfe</code>
+with <code>dqcsbe</code>. The default name is <code>"back"</code>.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def with_backend(self, *args, **kwargs):
+    &#34;&#34;&#34;Sets the backend plugin for the simulation.
+
+    If this is not called either manually or by the constructor, the
+    simulation defaults to using the QX backend. If it is called multiple
+    times, the last call counts. The function mutates and returns `self`,
+    so it can be used for both builder-style constructions or
+    mutation-based construction.
+
+    Backends are constructed in the same way as frontends and operators.
+    Refer to `with_frontend()` for information about the positional and
+    keyword arguments, replacing `Frontend` with `Backend` and `dqcsfe`
+    with `dqcsbe`. The default name is `&#34;back&#34;`.
+    &#34;&#34;&#34;
+    self._back = self._plugin_factory(raw.DQCS_PTYPE_BACK, *args, **kwargs)
+    return self</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.host.Simulator.with_frontend"><code class="name flex">
+<span>def <span class="ident">with_frontend</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Sets the frontend plugin for the simulation.</p>
+<p>This must be called prior to launching the simulation, either by the
+constructor or by you manually. If it is called multiple times, the
+last call counts. The function mutates and returns <code>self</code>, so it can be
+used for both builder-style constructions or mutation-based
+construction.</p>
+<p>There are five supported combinations of positional arguments,
+representing five different ways to launch a plugin:</p>
+<ul>
+<li>
+<p><code>str</code></p>
+<p>Constructs a plugin in the same way that the command-line interface
+does it. That is, a single string conforming to any of the
+following:</p>
+<ul>
+<li>a valid path to the plugin executable;</li>
+<li>the basename of the plugin executable with implicit <code>dqcsfe</code>
+prefix, searched for in the current working directory and in
+the system <code>$PATH</code>;</li>
+<li>a valid path to a script file with a file extension. In this
+case, the above rule is run for a plugin named by the file
+extension of the script file. For instance, if <code>test.py</code> is
+specified, the library will look for an executable named
+<code>dqcsfepy</code>. The script filename is passed to the plugin through
+its sole command-line argument.</li>
+</ul>
+</li>
+<li>
+<p><code>str, None</code></p>
+<p>Constructs a plugin using the given direct path to the native
+plugin executable. The path can be absolute or relative to the
+current working directory, but other than that no desugaring is
+performed.</p>
+</li>
+<li>
+<p><code>str, str</code></p>
+<p>As above, but for non-native plugins. The first string must be the
+path to the interpreter used to run the non-native plugin, the
+second must be the path to the plugin script. Both paths can either
+be absolute or relative to the current working directory.</p>
+</li>
+<li>
+<p><code>Frontend</code></p>
+<p>Instead of launching a process for the frontend plugin, it is
+launched in a thread within the context of this Python interpreter.
+The dqcsim library will take care of this launch.</p>
+</li>
+<li>
+<p><code>(str) -&gt; None</code></p>
+<p>Instead of launching a process for the frontend plugin, it is
+launched in a thread within the context of this Python interpreter.
+You are in charge of doing this through a function that you
+provide. This function takes the simulator address string as its
+sole argument, and in some way pass it to <code>Frontend.start()</code> or
+<code>Frontend.run()</code>. The function's return value (if any) is ignored.</p>
+</li>
+</ul>
+<p>Besides the positional arguments, you can provide a number of keyword
+arguments to configure the behavior of the plugin:</p>
+<ul>
+<li>
+<p><code>name = str</code> (default: <code>"front"</code>)</p>
+<p>Sets the name of the plugin, used to refer to it in log messages or
+in a reproduction file.</p>
+</li>
+<li>
+<p><code>init = ArbCmd or [ArbCmd]</code> (default: <code>[]</code>)</p>
+<p>Specifies a single <code>ArbCmd</code> or a list of <code>ArbCmd</code>s to send to the
+plugin's initialization callback.</p>
+</li>
+<li>
+<p><code>env = {str: str or None}</code> (default: <code>{}</code>)</p>
+<p>Configures the environment variables passed to the plugin process.
+The set of variables is based on the current environment, then
+modified using the given dictionary. Specifying a variable name as
+key and a string value sets or overrides the environment variable.
+Setting the value to <code>None</code> removes it from the environment. This
+is only supported for plugin processes.</p>
+</li>
+<li>
+<p><code>work = str or None</code> (default: <code>None</code>)</p>
+<p>If a string is specified, the plugin process will launch using the
+given string as its working directory. <code>None</code> causes the current
+working directory to be used. This is only supported for plugin
+processes.</p>
+</li>
+<li>
+<p><code>verbosity = Loglevel</code> (default: <code>Loglevel.TRACE</code>)</p>
+<p>Sets the minimum loglevel a log message must have for it to be
+forwarded to the simulator process. This defaults to
+<code>Loglevel.TRACE</code> to effectively disable the filter.</p>
+</li>
+<li>
+<p><code>tee = {str: Loglevel}</code> (default: <code>{}</code>)</p>
+<p>Each entry in the dictionary consists of a log output filename as
+key and a loglevel filter as the value. It causes log messages
+generated by this plugin (though not including any captured
+streams) that pass the specified filter to be logged to the given
+log file, in addition to their normal handling.</p>
+</li>
+<li>
+<p><code>stderr = Loglevel or None</code> (default: <code>Loglevel.INFO</code>)</p>
+<p>Configures if/how the <code>stderr</code> stream of the plugin process is
+captured. If <code>Loglevel.OFF</code> is specified, the <code>stderr</code> stream is
+ignored. Any other loglevel causes each line of output to be logged
+using a message of the specified level. Passing <code>None</code> prevents the
+stderr stream from being captured at all, so the messages will
+appear in this Python process' <code>stderr</code> stream. This is only
+supported for plugin processes, since threads do not have separate
+streams.</p>
+</li>
+<li>
+<p><code>stdout = Loglevel or None</code> (default: <code>Loglevel.INFO</code>)</p>
+<p>Same as <code>stderr</code>, but for the <code>stdout</code> stream.</p>
+</li>
+<li>
+<p><code>accept_timeout = float (default:</code>5.0` seconds)</p>
+<p>Sets the amount of time that DQCsim will wait in seconds for the
+plugin to finish starting up and connect to the simulator process.
+This is currently only supported for plugin processes.</p>
+</li>
+<li>
+<p><code>shutdown_timeout = float (default:</code>5.0` seconds)</p>
+<p>Sets the amount of time that DQCsim will wait in seconds for the
+plugin to shut down after the simulator sends the abort request to
+it. This is currently only supported for plugin processes.</p>
+</li>
+</ul></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def with_frontend(self, *args, **kwargs):
+    &#34;&#34;&#34;Sets the frontend plugin for the simulation.
+
+    This must be called prior to launching the simulation, either by the
+    constructor or by you manually. If it is called multiple times, the
+    last call counts. The function mutates and returns `self`, so it can be
+    used for both builder-style constructions or mutation-based
+    construction.
+
+    There are five supported combinations of positional arguments,
+    representing five different ways to launch a plugin:
+
+      - `str`
+
+        Constructs a plugin in the same way that the command-line interface
+        does it. That is, a single string conforming to any of the
+        following:
+
+          - a valid path to the plugin executable;
+          - the basename of the plugin executable with implicit `dqcsfe`
+            prefix, searched for in the current working directory and in
+            the system `$PATH`;
+          - a valid path to a script file with a file extension. In this
+            case, the above rule is run for a plugin named by the file
+            extension of the script file. For instance, if `test.py` is
+            specified, the library will look for an executable named
+            `dqcsfepy`. The script filename is passed to the plugin through
+            its sole command-line argument.
+
+      - `str, None`
+
+        Constructs a plugin using the given direct path to the native
+        plugin executable. The path can be absolute or relative to the
+        current working directory, but other than that no desugaring is
+        performed.
+
+      - `str, str`
+
+        As above, but for non-native plugins. The first string must be the
+        path to the interpreter used to run the non-native plugin, the
+        second must be the path to the plugin script. Both paths can either
+        be absolute or relative to the current working directory.
+
+      - `Frontend`
+
+        Instead of launching a process for the frontend plugin, it is
+        launched in a thread within the context of this Python interpreter.
+        The dqcsim library will take care of this launch.
+
+      - `(str) -&gt; None`
+
+        Instead of launching a process for the frontend plugin, it is
+        launched in a thread within the context of this Python interpreter.
+        You are in charge of doing this through a function that you
+        provide. This function takes the simulator address string as its
+        sole argument, and in some way pass it to `Frontend.start()` or
+        `Frontend.run()`. The function&#39;s return value (if any) is ignored.
+
+    Besides the positional arguments, you can provide a number of keyword
+    arguments to configure the behavior of the plugin:
+
+      - `name = str` (default: `&#34;front&#34;`)
+
+        Sets the name of the plugin, used to refer to it in log messages or
+        in a reproduction file.
+
+      - `init = ArbCmd or [ArbCmd]` (default: `[]`)
+
+        Specifies a single `ArbCmd` or a list of `ArbCmd`s to send to the
+        plugin&#39;s initialization callback.
+
+      - `env = {str: str or None}` (default: `{}`)
+
+        Configures the environment variables passed to the plugin process.
+        The set of variables is based on the current environment, then
+        modified using the given dictionary. Specifying a variable name as
+        key and a string value sets or overrides the environment variable.
+        Setting the value to `None` removes it from the environment. This
+        is only supported for plugin processes.
+
+      - `work = str or None` (default: `None`)
+
+        If a string is specified, the plugin process will launch using the
+        given string as its working directory. `None` causes the current
+        working directory to be used. This is only supported for plugin
+        processes.
+
+      - `verbosity = Loglevel` (default: `Loglevel.TRACE`)
+
+        Sets the minimum loglevel a log message must have for it to be
+        forwarded to the simulator process. This defaults to
+        `Loglevel.TRACE` to effectively disable the filter.
+
+      - `tee = {str: Loglevel}` (default: `{}`)
+
+        Each entry in the dictionary consists of a log output filename as
+        key and a loglevel filter as the value. It causes log messages
+        generated by this plugin (though not including any captured
+        streams) that pass the specified filter to be logged to the given
+        log file, in addition to their normal handling.
+
+      - `stderr = Loglevel or None` (default: `Loglevel.INFO`)
+
+        Configures if/how the `stderr` stream of the plugin process is
+        captured. If `Loglevel.OFF` is specified, the `stderr` stream is
+        ignored. Any other loglevel causes each line of output to be logged
+        using a message of the specified level. Passing `None` prevents the
+        stderr stream from being captured at all, so the messages will
+        appear in this Python process&#39; `stderr` stream. This is only
+        supported for plugin processes, since threads do not have separate
+        streams.
+
+      - `stdout = Loglevel or None` (default: `Loglevel.INFO`)
+
+        Same as `stderr`, but for the `stdout` stream.
+
+      - `accept_timeout = float (default: `5.0` seconds)
+
+        Sets the amount of time that DQCsim will wait in seconds for the
+        plugin to finish starting up and connect to the simulator process.
+        This is currently only supported for plugin processes.
+
+      - `shutdown_timeout = float (default: `5.0` seconds)
+
+        Sets the amount of time that DQCsim will wait in seconds for the
+        plugin to shut down after the simulator sends the abort request to
+        it. This is currently only supported for plugin processes.
+    &#34;&#34;&#34;
+    self._front = self._plugin_factory(raw.DQCS_PTYPE_FRONT, *args, **kwargs)
+    return self</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.host.Simulator.with_operator"><code class="name flex">
+<span>def <span class="ident">with_operator</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Adds an operator plugin to the simulation.</p>
+<p>Operators must be added in front to back order by calling this function
+for every operator. The function mutates and returns <code>self</code>, so it can
+be used for both builder-style constructions or mutation-based
+construction.</p>
+<p>Operators are constructed in the same way as frontends and backends.
+Refer to <code>with_frontend()</code> for information about the positional and
+keyword arguments, replacing <code>Frontend</code> with <code>Operator</code> and <code>dqcsfe</code>
+with <code>dqcsop</code>. The default name is <code>"op&lt;N&gt;"</code>, where <code>N</code> is the operator
+index in front-to-back order starting at 1.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def with_operator(self, *args, **kwargs):
+    &#34;&#34;&#34;Adds an operator plugin to the simulation.
+
+    Operators must be added in front to back order by calling this function
+    for every operator. The function mutates and returns `self`, so it can
+    be used for both builder-style constructions or mutation-based
+    construction.
+
+    Operators are constructed in the same way as frontends and backends.
+    Refer to `with_frontend()` for information about the positional and
+    keyword arguments, replacing `Frontend` with `Operator` and `dqcsfe`
+    with `dqcsop`. The default name is `&#34;op&lt;N&gt;&#34;`, where `N` is the operator
+    index in front-to-back order starting at 1.
+    &#34;&#34;&#34;
+    self._opers.append(self._plugin_factory(raw.DQCS_PTYPE_OPER, *args, **kwargs))
+    return self</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.host.Simulator.yeeld"><code class="name flex">
+<span>def <span class="ident">yeeld</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Explicitely sends all queued commands to the accelerator and waits
+for it to block again.</p>
+<p>This is useful if you're waiting for or want to synchronize log
+messages. Note that the function is named yeeld instead of yield
+because yield is a keyword in Python.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def yeeld(self):
+    &#34;&#34;&#34;Explicitely sends all queued commands to the accelerator and waits
+    for it to block again.
+
+    This is useful if you&#39;re waiting for or want to synchronize log
+    messages. Note that the function is named yeeld instead of yield
+    because yield is a keyword in Python.
+    &#34;&#34;&#34;
+    if self._sim_handle is None:
+        raise RuntimeError(&#34;No simulation is currently running&#34;)
+    with self._sim_handle as sim:
+        raw.dqcs_sim_yield(sim)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="dqcsim" href="../index.html">dqcsim</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="dqcsim.host.Simulator" href="#dqcsim.host.Simulator">Simulator</a></code></h4>
+<ul class="two-column">
+<li><code><a title="dqcsim.host.Simulator.arb" href="#dqcsim.host.Simulator.arb">arb</a></code></li>
+<li><code><a title="dqcsim.host.Simulator.get_meta" href="#dqcsim.host.Simulator.get_meta">get_meta</a></code></li>
+<li><code><a title="dqcsim.host.Simulator.recv" href="#dqcsim.host.Simulator.recv">recv</a></code></li>
+<li><code><a title="dqcsim.host.Simulator.run" href="#dqcsim.host.Simulator.run">run</a></code></li>
+<li><code><a title="dqcsim.host.Simulator.send" href="#dqcsim.host.Simulator.send">send</a></code></li>
+<li><code><a title="dqcsim.host.Simulator.simulate" href="#dqcsim.host.Simulator.simulate">simulate</a></code></li>
+<li><code><a title="dqcsim.host.Simulator.start" href="#dqcsim.host.Simulator.start">start</a></code></li>
+<li><code><a title="dqcsim.host.Simulator.stop" href="#dqcsim.host.Simulator.stop">stop</a></code></li>
+<li><code><a title="dqcsim.host.Simulator.wait" href="#dqcsim.host.Simulator.wait">wait</a></code></li>
+<li><code><a title="dqcsim.host.Simulator.with_backend" href="#dqcsim.host.Simulator.with_backend">with_backend</a></code></li>
+<li><code><a title="dqcsim.host.Simulator.with_frontend" href="#dqcsim.host.Simulator.with_frontend">with_frontend</a></code></li>
+<li><code><a title="dqcsim.host.Simulator.with_operator" href="#dqcsim.host.Simulator.with_operator">with_operator</a></code></li>
+<li><code><a title="dqcsim.host.Simulator.yeeld" href="#dqcsim.host.Simulator.yeeld">yeeld</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.2</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

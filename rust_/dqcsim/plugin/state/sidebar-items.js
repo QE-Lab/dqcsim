@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["PluginState","Structure representing the state of a plugin."]]});

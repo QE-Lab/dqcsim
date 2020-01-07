@@ -1,0 +1,324 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `bindings` mod in crate `dqcsim`."><meta name="keywords" content="rust, rustlang, rust-lang, bindings"><title>dqcsim::bindings - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../dqcsim/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a><p class='location'>Module bindings</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'><a href='../index.html'>dqcsim</a></p><script>window.sidebarCurrent = {name: 'bindings', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/dqcsim/bindings/mod.rs.html#1-62' title='goto source code'>[src]</a></span><span class='in-band'>Module <a href='../index.html'>dqcsim</a>::<wbr><a class="mod" href=''>bindings</a></span></h1><div class='docblock'><p>This module provides a C interface to the DQCsim simulator.</p>
+<p>Refer to <a href="https://mbrobbel.github.io/dqcsim/c-api/c-api.apigen.html">the generated API docs</a>
+for more information.</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table><tr class='module-item'><td><a class="struct" href="struct.dqcs_plugin_state_t.html" title='dqcsim::bindings::dqcs_plugin_state_t struct'>dqcs_plugin_state_t</a></td><td class='docblock-short'><p>Type for a plugin state.
+&gt;</p>
+</td></tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table><tr class='module-item'><td><a class="enum" href="enum.dqcs_bool_return_t.html" title='dqcsim::bindings::dqcs_bool_return_t enum'>dqcs_bool_return_t</a></td><td class='docblock-short'><p>Return type for functions that normally return a boolean but can also fail.</p>
+</td></tr><tr class='module-item'><td><a class="enum" href="enum.dqcs_handle_type_t.html" title='dqcsim::bindings::dqcs_handle_type_t enum'>dqcs_handle_type_t</a></td><td class='docblock-short'><p>Enumeration of types that can be associated with a handle.</p>
+</td></tr><tr class='module-item'><td><a class="enum" href="enum.dqcs_loglevel_t.html" title='dqcsim::bindings::dqcs_loglevel_t enum'>dqcs_loglevel_t</a></td><td class='docblock-short'><p>Enumeration of loglevels and logging modes.</p>
+</td></tr><tr class='module-item'><td><a class="enum" href="enum.dqcs_measurement_t.html" title='dqcsim::bindings::dqcs_measurement_t enum'>dqcs_measurement_t</a></td><td class='docblock-short'><p>Qubit measurement value.</p>
+</td></tr><tr class='module-item'><td><a class="enum" href="enum.dqcs_path_style_t.html" title='dqcsim::bindings::dqcs_path_style_t enum'>dqcs_path_style_t</a></td><td class='docblock-short'><p>Reproduction file path style.</p>
+</td></tr><tr class='module-item'><td><a class="enum" href="enum.dqcs_plugin_type_t.html" title='dqcsim::bindings::dqcs_plugin_type_t enum'>dqcs_plugin_type_t</a></td><td class='docblock-short'><p>Enumeration of the three types of plugins.</p>
+</td></tr><tr class='module-item'><td><a class="enum" href="enum.dqcs_return_t.html" title='dqcsim::bindings::dqcs_return_t enum'>dqcs_return_t</a></td><td class='docblock-short'><p>Default return type for functions that don't need to return anything.</p>
+</td></tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_assign.html" title='dqcsim::bindings::dqcs_arb_assign fn'>dqcs_arb_assign</a></td><td class='docblock-short'><p>Copies the data from one object to another.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_cbor_get.html" title='dqcsim::bindings::dqcs_arb_cbor_get fn'>dqcs_arb_cbor_get</a></td><td class='docblock-short'><p>Returns the JSON/CBOR object of an <code>ArbData</code> object in the form of a CBOR
+object.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_cbor_set.html" title='dqcsim::bindings::dqcs_arb_cbor_set fn'>dqcs_arb_cbor_set</a></td><td class='docblock-short'><p>Sets the JSON/CBOR object of an <code>ArbData</code> object by means of a CBOR object.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_clear.html" title='dqcsim::bindings::dqcs_arb_clear fn'>dqcs_arb_clear</a></td><td class='docblock-short'><p>Clears the unstructured argument list.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_get_raw.html" title='dqcsim::bindings::dqcs_arb_get_raw fn'>dqcs_arb_get_raw</a></td><td class='docblock-short'><p>Returns the unstructured string argument at the specified index.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_get_size.html" title='dqcsim::bindings::dqcs_arb_get_size fn'>dqcs_arb_get_size</a></td><td class='docblock-short'><p>Returns the size in bytes of the unstructured string argument at the
+specified index.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_get_str.html" title='dqcsim::bindings::dqcs_arb_get_str fn'>dqcs_arb_get_str</a></td><td class='docblock-short'><p>Returns the unstructured string argument at the specified index.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_insert_raw.html" title='dqcsim::bindings::dqcs_arb_insert_raw fn'>dqcs_arb_insert_raw</a></td><td class='docblock-short'><p>Inserts an unstructured raw argument into the list at the specified
+index.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_insert_str.html" title='dqcsim::bindings::dqcs_arb_insert_str fn'>dqcs_arb_insert_str</a></td><td class='docblock-short'><p>Inserts an unstructured string argument into the list at the specified
+index.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_json_get.html" title='dqcsim::bindings::dqcs_arb_json_get fn'>dqcs_arb_json_get</a></td><td class='docblock-short'><p>Returns the JSON/CBOR object of an <code>ArbData</code> object in the form of a JSON
+string.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_json_set.html" title='dqcsim::bindings::dqcs_arb_json_set fn'>dqcs_arb_json_set</a></td><td class='docblock-short'><p>Sets the JSON/CBOR object of an <code>ArbData</code> object by means of a JSON string.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_len.html" title='dqcsim::bindings::dqcs_arb_len fn'>dqcs_arb_len</a></td><td class='docblock-short'><p>Returns the number of unstructured arguments, or -1 to indicate failure.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_new.html" title='dqcsim::bindings::dqcs_arb_new fn'>dqcs_arb_new</a></td><td class='docblock-short'><p>Creates a new <code>ArbData</code> object.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_pop.html" title='dqcsim::bindings::dqcs_arb_pop fn'>dqcs_arb_pop</a></td><td class='docblock-short'><p>Pops an unstructured argument from the back of the list without returning
+it.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_pop_raw.html" title='dqcsim::bindings::dqcs_arb_pop_raw fn'>dqcs_arb_pop_raw</a></td><td class='docblock-short'><p>Pops an unstructured raw argument from the back of the list.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_pop_str.html" title='dqcsim::bindings::dqcs_arb_pop_str fn'>dqcs_arb_pop_str</a></td><td class='docblock-short'><p>Pops an unstructured string argument from the back of the list.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_push_raw.html" title='dqcsim::bindings::dqcs_arb_push_raw fn'>dqcs_arb_push_raw</a></td><td class='docblock-short'><p>Pushes an unstructured raw argument to the back of the list.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_push_str.html" title='dqcsim::bindings::dqcs_arb_push_str fn'>dqcs_arb_push_str</a></td><td class='docblock-short'><p>Pushes an unstructured string argument to the back of the list.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_remove.html" title='dqcsim::bindings::dqcs_arb_remove fn'>dqcs_arb_remove</a></td><td class='docblock-short'><p>Removes the specified unstructured string argument from the list.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_set_raw.html" title='dqcsim::bindings::dqcs_arb_set_raw fn'>dqcs_arb_set_raw</a></td><td class='docblock-short'><p>Replaces the unstructured argument at the specified index with the
+specified raw object.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_arb_set_str.html" title='dqcsim::bindings::dqcs_arb_set_str fn'>dqcs_arb_set_str</a></td><td class='docblock-short'><p>Replaces the unstructured argument at the specified index with the
+specified string.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_cmd_iface_cmp.html" title='dqcsim::bindings::dqcs_cmd_iface_cmp fn'>dqcs_cmd_iface_cmp</a></td><td class='docblock-short'><p>Compares the interface ID of an <code>ArbCmd</code> with the given string.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_cmd_iface_get.html" title='dqcsim::bindings::dqcs_cmd_iface_get fn'>dqcs_cmd_iface_get</a></td><td class='docblock-short'><p>Returns the interface ID of an <code>ArbCmd</code>.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_cmd_new.html" title='dqcsim::bindings::dqcs_cmd_new fn'>dqcs_cmd_new</a></td><td class='docblock-short'><p>Creates a new <code>ArbCmd</code> object.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_cmd_oper_cmp.html" title='dqcsim::bindings::dqcs_cmd_oper_cmp fn'>dqcs_cmd_oper_cmp</a></td><td class='docblock-short'><p>Compares the operation ID of an <code>ArbCmd</code> with the given string.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_cmd_oper_get.html" title='dqcsim::bindings::dqcs_cmd_oper_get fn'>dqcs_cmd_oper_get</a></td><td class='docblock-short'><p>Returns the operation ID of an <code>ArbCmd</code>.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_cq_len.html" title='dqcsim::bindings::dqcs_cq_len fn'>dqcs_cq_len</a></td><td class='docblock-short'><p>Returns the number of <code>ArbCmd</code> objects in the given <code>ArbCmd</code> queue.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_cq_new.html" title='dqcsim::bindings::dqcs_cq_new fn'>dqcs_cq_new</a></td><td class='docblock-short'><p>Creates a new <code>ArbCmd</code> queue object.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_cq_next.html" title='dqcsim::bindings::dqcs_cq_next fn'>dqcs_cq_next</a></td><td class='docblock-short'><p>Advances an <code>ArbCmd</code> queue to the next command.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_cq_push.html" title='dqcsim::bindings::dqcs_cq_push fn'>dqcs_cq_push</a></td><td class='docblock-short'><p>Pushes an <code>ArbCmd</code> object into the given <code>ArbCmd</code> queue.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_error_get.html" title='dqcsim::bindings::dqcs_error_get fn'>dqcs_error_get</a></td><td class='docblock-short'><p>Returns a pointer to the latest error message.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_error_set.html" title='dqcsim::bindings::dqcs_error_set fn'>dqcs_error_set</a></td><td class='docblock-short'><p>Sets the latest error message string.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_controls.html" title='dqcsim::bindings::dqcs_gate_controls fn'>dqcs_gate_controls</a></td><td class='docblock-short'><p>Returns a handle to a new qubit reference set containing the qubits
+that control this gate.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_has_controls.html" title='dqcsim::bindings::dqcs_gate_has_controls fn'>dqcs_gate_has_controls</a></td><td class='docblock-short'><p>Returns whether the specified gate has control qubits.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_has_matrix.html" title='dqcsim::bindings::dqcs_gate_has_matrix fn'>dqcs_gate_has_matrix</a></td><td class='docblock-short'><p>Returns whether a unitary matrix is associated with this gate.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_has_measures.html" title='dqcsim::bindings::dqcs_gate_has_measures fn'>dqcs_gate_has_measures</a></td><td class='docblock-short'><p>Returns whether the specified gate measures any qubits.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_has_targets.html" title='dqcsim::bindings::dqcs_gate_has_targets fn'>dqcs_gate_has_targets</a></td><td class='docblock-short'><p>Returns whether the specified gate has target qubits.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_is_custom.html" title='dqcsim::bindings::dqcs_gate_is_custom fn'>dqcs_gate_is_custom</a></td><td class='docblock-short'><p>Returns whether the specified gate is a custom gate.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_matrix.html" title='dqcsim::bindings::dqcs_gate_matrix fn'>dqcs_gate_matrix</a></td><td class='docblock-short'><p>Returns a copy of the unitary matrix associated with this gate, if one
+exists.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_matrix_len.html" title='dqcsim::bindings::dqcs_gate_matrix_len fn'>dqcs_gate_matrix_len</a></td><td class='docblock-short'><p>Returns the size of the gate matrix associated with this gate.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_measures.html" title='dqcsim::bindings::dqcs_gate_measures fn'>dqcs_gate_measures</a></td><td class='docblock-short'><p>Returns a handle to a new qubit reference set containing the qubits
+measured by this gate.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_name.html" title='dqcsim::bindings::dqcs_gate_name fn'>dqcs_gate_name</a></td><td class='docblock-short'><p>Returns the name of a custom gate.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_new_custom.html" title='dqcsim::bindings::dqcs_gate_new_custom fn'>dqcs_gate_new_custom</a></td><td class='docblock-short'><p>Constructs a new custom gate.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_new_measurement.html" title='dqcsim::bindings::dqcs_gate_new_measurement fn'>dqcs_gate_new_measurement</a></td><td class='docblock-short'><p>Constructs a new measurement gate.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_new_unitary.html" title='dqcsim::bindings::dqcs_gate_new_unitary fn'>dqcs_gate_new_unitary</a></td><td class='docblock-short'><p>Constructs a new unitary gate.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_targets.html" title='dqcsim::bindings::dqcs_gate_targets fn'>dqcs_gate_targets</a></td><td class='docblock-short'><p>Returns a handle to a new qubit reference set containing the qubits
+targetted by this gate.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_handle_delete.html" title='dqcsim::bindings::dqcs_handle_delete fn'>dqcs_handle_delete</a></td><td class='docblock-short'><p>Destroys the object associated with a handle.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_handle_delete_all.html" title='dqcsim::bindings::dqcs_handle_delete_all fn'>dqcs_handle_delete_all</a></td><td class='docblock-short'><p>Deletes all handles for the current thread.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_handle_dump.html" title='dqcsim::bindings::dqcs_handle_dump fn'>dqcs_handle_dump</a></td><td class='docblock-short'><p>Returns a debug dump of the object associated with the given handle.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_handle_leak_check.html" title='dqcsim::bindings::dqcs_handle_leak_check fn'>dqcs_handle_leak_check</a></td><td class='docblock-short'><p>Succeeds only if there are no live handles in the current thread.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_handle_type.html" title='dqcsim::bindings::dqcs_handle_type fn'>dqcs_handle_type</a></td><td class='docblock-short'><p>Returns the type of object associated with the given handle.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_log_raw.html" title='dqcsim::bindings::dqcs_log_raw fn'>dqcs_log_raw</a></td><td class='docblock-short'><p>Primitive API for sending a log message using the current logger.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_meas_new.html" title='dqcsim::bindings::dqcs_meas_new fn'>dqcs_meas_new</a></td><td class='docblock-short'><p>Constructs a new measurement object.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_meas_qubit_get.html" title='dqcsim::bindings::dqcs_meas_qubit_get fn'>dqcs_meas_qubit_get</a></td><td class='docblock-short'><p>Returns the qubit reference associated with a measurement object.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_meas_qubit_set.html" title='dqcsim::bindings::dqcs_meas_qubit_set fn'>dqcs_meas_qubit_set</a></td><td class='docblock-short'><p>Sets the qubit reference associated with a measurement object.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_meas_value_get.html" title='dqcsim::bindings::dqcs_meas_value_get fn'>dqcs_meas_value_get</a></td><td class='docblock-short'><p>Returns the measurement value associated with a measurement object.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_meas_value_set.html" title='dqcsim::bindings::dqcs_meas_value_set fn'>dqcs_meas_value_set</a></td><td class='docblock-short'><p>Sets the measurement value associated with a measurement object.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mset_contains.html" title='dqcsim::bindings::dqcs_mset_contains fn'>dqcs_mset_contains</a></td><td class='docblock-short'><p>Returns whether the given qubit measurement set contains data for the given
+qubit.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mset_get.html" title='dqcsim::bindings::dqcs_mset_get fn'>dqcs_mset_get</a></td><td class='docblock-short'><p>Returns a copy of the measurement result for the given qubit from a
+measurement result set.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mset_len.html" title='dqcsim::bindings::dqcs_mset_len fn'>dqcs_mset_len</a></td><td class='docblock-short'><p>Returns the number of qubits measurements in the given measurement set.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mset_new.html" title='dqcsim::bindings::dqcs_mset_new fn'>dqcs_mset_new</a></td><td class='docblock-short'><p>Creates a new set of qubit measurement results.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mset_remove.html" title='dqcsim::bindings::dqcs_mset_remove fn'>dqcs_mset_remove</a></td><td class='docblock-short'><p>Removes the measurement result for the given qubit from a measurement
+result set.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mset_set.html" title='dqcsim::bindings::dqcs_mset_set fn'>dqcs_mset_set</a></td><td class='docblock-short'><p>Adds a measurement result to a measurement result set.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mset_take.html" title='dqcsim::bindings::dqcs_mset_take fn'>dqcs_mset_take</a></td><td class='docblock-short'><p>Returns the measurement result for the given qubit from a measurement
+result set and removes it from the set.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mset_take_any.html" title='dqcsim::bindings::dqcs_mset_take_any fn'>dqcs_mset_take_any</a></td><td class='docblock-short'><p>Returns the measurement result for any of the qubits contained in a
+measurement result set and removes it from the set.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_accept_timeout_get.html" title='dqcsim::bindings::dqcs_pcfg_accept_timeout_get fn'>dqcs_pcfg_accept_timeout_get</a></td><td class='docblock-short'><p>Returns the configured timeout for the plugin process to connect to DQCsim.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_accept_timeout_set.html" title='dqcsim::bindings::dqcs_pcfg_accept_timeout_set fn'>dqcs_pcfg_accept_timeout_set</a></td><td class='docblock-short'><p>Configures the timeout for the plugin process to connect to DQCsim.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_env_set.html" title='dqcsim::bindings::dqcs_pcfg_env_set fn'>dqcs_pcfg_env_set</a></td><td class='docblock-short'><p>Overrides an environment variable for the plugin process.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_env_unset.html" title='dqcsim::bindings::dqcs_pcfg_env_unset fn'>dqcs_pcfg_env_unset</a></td><td class='docblock-short'><p>Removes/unsets an environment variable for the plugin process.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_executable.html" title='dqcsim::bindings::dqcs_pcfg_executable fn'>dqcs_pcfg_executable</a></td><td class='docblock-short'><p>Returns the configured executable path for the given plugin process.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_init_cmd.html" title='dqcsim::bindings::dqcs_pcfg_init_cmd fn'>dqcs_pcfg_init_cmd</a></td><td class='docblock-short'><p>Appends an <code>ArbCmd</code> to the list of initialization commands of a plugin
+process.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_name.html" title='dqcsim::bindings::dqcs_pcfg_name fn'>dqcs_pcfg_name</a></td><td class='docblock-short'><p>Returns the configured name for the given plugin process.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_new.html" title='dqcsim::bindings::dqcs_pcfg_new fn'>dqcs_pcfg_new</a></td><td class='docblock-short'><p>Creates a new plugin process configuration object using sugared syntax.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_new_raw.html" title='dqcsim::bindings::dqcs_pcfg_new_raw fn'>dqcs_pcfg_new_raw</a></td><td class='docblock-short'><p>Creates a new plugin process configuration object using raw paths.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_script.html" title='dqcsim::bindings::dqcs_pcfg_script fn'>dqcs_pcfg_script</a></td><td class='docblock-short'><p>Returns the configured script path for the given plugin process.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_shutdown_timeout_get.html" title='dqcsim::bindings::dqcs_pcfg_shutdown_timeout_get fn'>dqcs_pcfg_shutdown_timeout_get</a></td><td class='docblock-short'><p>Returns the configured timeout for the plugin process to shut down
+gracefully.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_shutdown_timeout_set.html" title='dqcsim::bindings::dqcs_pcfg_shutdown_timeout_set fn'>dqcs_pcfg_shutdown_timeout_set</a></td><td class='docblock-short'><p>Configures the timeout for the plugin process to shut down gracefully.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_stderr_mode_get.html" title='dqcsim::bindings::dqcs_pcfg_stderr_mode_get fn'>dqcs_pcfg_stderr_mode_get</a></td><td class='docblock-short'><p>Returns the configured stderr capture mode for the specified plugin
+process.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_stderr_mode_set.html" title='dqcsim::bindings::dqcs_pcfg_stderr_mode_set fn'>dqcs_pcfg_stderr_mode_set</a></td><td class='docblock-short'><p>Configures the capture mode for the stderr stream of the specified plugin
+process.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_stdout_mode_get.html" title='dqcsim::bindings::dqcs_pcfg_stdout_mode_get fn'>dqcs_pcfg_stdout_mode_get</a></td><td class='docblock-short'><p>Returns the configured stdout capture mode for the specified plugin
+process.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_stdout_mode_set.html" title='dqcsim::bindings::dqcs_pcfg_stdout_mode_set fn'>dqcs_pcfg_stdout_mode_set</a></td><td class='docblock-short'><p>Configures the capture mode for the stdout stream of the specified plugin
+process.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_tee.html" title='dqcsim::bindings::dqcs_pcfg_tee fn'>dqcs_pcfg_tee</a></td><td class='docblock-short'><p>Configures a plugin process to also output its log messages to a file.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_type.html" title='dqcsim::bindings::dqcs_pcfg_type fn'>dqcs_pcfg_type</a></td><td class='docblock-short'><p>Returns the type of the given plugin process configuration.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_verbosity_get.html" title='dqcsim::bindings::dqcs_pcfg_verbosity_get fn'>dqcs_pcfg_verbosity_get</a></td><td class='docblock-short'><p>Returns the configured verbosity for the given plugin process.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_verbosity_set.html" title='dqcsim::bindings::dqcs_pcfg_verbosity_set fn'>dqcs_pcfg_verbosity_set</a></td><td class='docblock-short'><p>Configures the logging verbosity for the given plugin process.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_work_get.html" title='dqcsim::bindings::dqcs_pcfg_work_get fn'>dqcs_pcfg_work_get</a></td><td class='docblock-short'><p>Returns the configured working directory for the given plugin process.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pcfg_work_set.html" title='dqcsim::bindings::dqcs_pcfg_work_set fn'>dqcs_pcfg_work_set</a></td><td class='docblock-short'><p>Overrides the working directory for the plugin process.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_author.html" title='dqcsim::bindings::dqcs_pdef_author fn'>dqcs_pdef_author</a></td><td class='docblock-short'><p>Returns the plugin author for the given plugin definition object.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_name.html" title='dqcsim::bindings::dqcs_pdef_name fn'>dqcs_pdef_name</a></td><td class='docblock-short'><p>Returns the plugin name for the given plugin definition object.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_new.html" title='dqcsim::bindings::dqcs_pdef_new fn'>dqcs_pdef_new</a></td><td class='docblock-short'><p>Creates a new <code>PluginDefinition</code> object.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_set_advance_cb.html" title='dqcsim::bindings::dqcs_pdef_set_advance_cb fn'>dqcs_pdef_set_advance_cb</a></td><td class='docblock-short'><p>Sets the callback for advancing time for operators and backends.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_set_allocate_cb.html" title='dqcsim::bindings::dqcs_pdef_set_allocate_cb fn'>dqcs_pdef_set_allocate_cb</a></td><td class='docblock-short'><p>Sets the qubit allocation callback for operators and backends.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_set_drop_cb.html" title='dqcsim::bindings::dqcs_pdef_set_drop_cb fn'>dqcs_pdef_set_drop_cb</a></td><td class='docblock-short'><p>Sets the user logic drop/cleanup callback.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_set_free_cb.html" title='dqcsim::bindings::dqcs_pdef_set_free_cb fn'>dqcs_pdef_set_free_cb</a></td><td class='docblock-short'><p>Sets the qubit deallocation callback for operators and backends.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_set_gate_cb.html" title='dqcsim::bindings::dqcs_pdef_set_gate_cb fn'>dqcs_pdef_set_gate_cb</a></td><td class='docblock-short'><p>Sets the gate execution callback for operators and backends.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_set_host_arb_cb.html" title='dqcsim::bindings::dqcs_pdef_set_host_arb_cb fn'>dqcs_pdef_set_host_arb_cb</a></td><td class='docblock-short'><p>Sets the callback function function for handling an arb from the host.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_set_initialize_cb.html" title='dqcsim::bindings::dqcs_pdef_set_initialize_cb fn'>dqcs_pdef_set_initialize_cb</a></td><td class='docblock-short'><p>Sets the user logic initialization callback.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_set_modify_measurement_cb.html" title='dqcsim::bindings::dqcs_pdef_set_modify_measurement_cb fn'>dqcs_pdef_set_modify_measurement_cb</a></td><td class='docblock-short'><p>Sets the measurement modification callback for operators.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_set_run_cb.html" title='dqcsim::bindings::dqcs_pdef_set_run_cb fn'>dqcs_pdef_set_run_cb</a></td><td class='docblock-short'><p>Sets the run callback for frontends.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_set_upstream_arb_cb.html" title='dqcsim::bindings::dqcs_pdef_set_upstream_arb_cb fn'>dqcs_pdef_set_upstream_arb_cb</a></td><td class='docblock-short'><p>Sets the callback function for handling an arb from upstream for
+operators and backends.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_type.html" title='dqcsim::bindings::dqcs_pdef_type fn'>dqcs_pdef_type</a></td><td class='docblock-short'><p>Returns the plugin type for the given plugin definition object.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_pdef_version.html" title='dqcsim::bindings::dqcs_pdef_version fn'>dqcs_pdef_version</a></td><td class='docblock-short'><p>Returns the plugin version for the given plugin definition object.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_advance.html" title='dqcsim::bindings::dqcs_plugin_advance fn'>dqcs_plugin_advance</a></td><td class='docblock-short'><p>Tells the downstream plugin to run for the specified number of cycles.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_allocate.html" title='dqcsim::bindings::dqcs_plugin_allocate fn'>dqcs_plugin_allocate</a></td><td class='docblock-short'><p>Allocate the given number of downstream qubits.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_arb.html" title='dqcsim::bindings::dqcs_plugin_arb fn'>dqcs_plugin_arb</a></td><td class='docblock-short'><p>Sends an arbitrary command downstream.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_free.html" title='dqcsim::bindings::dqcs_plugin_free fn'>dqcs_plugin_free</a></td><td class='docblock-short'><p>Free the given downstream qubits.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_gate.html" title='dqcsim::bindings::dqcs_plugin_gate fn'>dqcs_plugin_gate</a></td><td class='docblock-short'><p>Tells the downstream plugin to execute a gate.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_get_cycle.html" title='dqcsim::bindings::dqcs_plugin_get_cycle fn'>dqcs_plugin_get_cycle</a></td><td class='docblock-short'><p>Returns the current value of the downstream cycle counter.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_get_cycles_between_measures.html" title='dqcsim::bindings::dqcs_plugin_get_cycles_between_measures fn'>dqcs_plugin_get_cycles_between_measures</a></td><td class='docblock-short'><p>Returns the number of downstream cycles between the last two measurements
+of the given downstream qubit.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_get_cycles_since_measure.html" title='dqcsim::bindings::dqcs_plugin_get_cycles_since_measure fn'>dqcs_plugin_get_cycles_since_measure</a></td><td class='docblock-short'><p>Returns the number of downstream cycles since the latest measurement of the
+given downstream qubit.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_get_measurement.html" title='dqcsim::bindings::dqcs_plugin_get_measurement fn'>dqcs_plugin_get_measurement</a></td><td class='docblock-short'><p>Returns the latest measurement of the given downstream qubit.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_random_f64.html" title='dqcsim::bindings::dqcs_plugin_random_f64 fn'>dqcs_plugin_random_f64</a></td><td class='docblock-short'><p>Generates a random floating point number using the simulator random seed.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_random_u64.html" title='dqcsim::bindings::dqcs_plugin_random_u64 fn'>dqcs_plugin_random_u64</a></td><td class='docblock-short'><p>Generates a random unsigned 64-bit number using the simulator random seed.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_recv.html" title='dqcsim::bindings::dqcs_plugin_recv fn'>dqcs_plugin_recv</a></td><td class='docblock-short'><p>Waits for a message from the host.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_run.html" title='dqcsim::bindings::dqcs_plugin_run fn'>dqcs_plugin_run</a></td><td class='docblock-short'><p>Executes a plugin in the current thread.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_send.html" title='dqcsim::bindings::dqcs_plugin_send fn'>dqcs_plugin_send</a></td><td class='docblock-short'><p>Sends a message to the host.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_start.html" title='dqcsim::bindings::dqcs_plugin_start fn'>dqcs_plugin_start</a></td><td class='docblock-short'><p>Executes a plugin in a worker thread.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_plugin_wait.html" title='dqcsim::bindings::dqcs_plugin_wait fn'>dqcs_plugin_wait</a></td><td class='docblock-short'><p>Waits for a plugin worker thread to finish executing.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_qbset_contains.html" title='dqcsim::bindings::dqcs_qbset_contains fn'>dqcs_qbset_contains</a></td><td class='docblock-short'><p>Returns whether the given qubit set contains the given qubit.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_qbset_copy.html" title='dqcsim::bindings::dqcs_qbset_copy fn'>dqcs_qbset_copy</a></td><td class='docblock-short'><p>Returns a copy of the given qubit set, intended for non-destructive
+iteration.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_qbset_len.html" title='dqcsim::bindings::dqcs_qbset_len fn'>dqcs_qbset_len</a></td><td class='docblock-short'><p>Returns the number of qubits in the given set.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_qbset_new.html" title='dqcsim::bindings::dqcs_qbset_new fn'>dqcs_qbset_new</a></td><td class='docblock-short'><p>Creates a new set of qubit references.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_qbset_pop.html" title='dqcsim::bindings::dqcs_qbset_pop fn'>dqcs_qbset_pop</a></td><td class='docblock-short'><p>Pops a qubit reference off of a qubit reference set.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_qbset_push.html" title='dqcsim::bindings::dqcs_qbset_push fn'>dqcs_qbset_push</a></td><td class='docblock-short'><p>Pushes a qubit reference into a qubit reference set.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_dqcsim_verbosity_get.html" title='dqcsim::bindings::dqcs_scfg_dqcsim_verbosity_get fn'>dqcs_scfg_dqcsim_verbosity_get</a></td><td class='docblock-short'><p>Returns the configured verbosity for DQCsim's own messages.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_dqcsim_verbosity_set.html" title='dqcsim::bindings::dqcs_scfg_dqcsim_verbosity_set fn'>dqcs_scfg_dqcsim_verbosity_set</a></td><td class='docblock-short'><p>Configures the logging verbosity for DQCsim's own messages.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_log_callback.html" title='dqcsim::bindings::dqcs_scfg_log_callback fn'>dqcs_scfg_log_callback</a></td><td class='docblock-short'><p>Configures DQCsim to also output its log messages to callback function.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_new.html" title='dqcsim::bindings::dqcs_scfg_new fn'>dqcs_scfg_new</a></td><td class='docblock-short'><p>Constructs an empty simulation configuration.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_push_plugin.html" title='dqcsim::bindings::dqcs_scfg_push_plugin fn'>dqcs_scfg_push_plugin</a></td><td class='docblock-short'><p>Appends a plugin to a simulation configuration.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_repro_disable.html" title='dqcsim::bindings::dqcs_scfg_repro_disable fn'>dqcs_scfg_repro_disable</a></td><td class='docblock-short'><p>Disables the reproduction logging system.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_repro_path_style_get.html" title='dqcsim::bindings::dqcs_scfg_repro_path_style_get fn'>dqcs_scfg_repro_path_style_get</a></td><td class='docblock-short'><p>Returns the path style used when writing reproduction files.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_repro_path_style_set.html" title='dqcsim::bindings::dqcs_scfg_repro_path_style_set fn'>dqcs_scfg_repro_path_style_set</a></td><td class='docblock-short'><p>Sets the path style used when writing reproduction files.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_seed_get.html" title='dqcsim::bindings::dqcs_scfg_seed_get fn'>dqcs_scfg_seed_get</a></td><td class='docblock-short'><p>Returns the configured random seed.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_seed_set.html" title='dqcsim::bindings::dqcs_scfg_seed_set fn'>dqcs_scfg_seed_set</a></td><td class='docblock-short'><p>Configures the random seed that the simulation should use.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_stderr_verbosity_get.html" title='dqcsim::bindings::dqcs_scfg_stderr_verbosity_get fn'>dqcs_scfg_stderr_verbosity_get</a></td><td class='docblock-short'><p>Returns the configured stderr sink verbosity for a simulation.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_stderr_verbosity_set.html" title='dqcsim::bindings::dqcs_scfg_stderr_verbosity_set fn'>dqcs_scfg_stderr_verbosity_set</a></td><td class='docblock-short'><p>Configures the stderr sink verbosity for a simulation.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_scfg_tee.html" title='dqcsim::bindings::dqcs_scfg_tee fn'>dqcs_scfg_tee</a></td><td class='docblock-short'><p>Configures DQCsim to also output its log messages to a file.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_arb.html" title='dqcsim::bindings::dqcs_sim_arb fn'>dqcs_sim_arb</a></td><td class='docblock-short'><p>Sends an <code>ArbCmd</code> message to one of the plugins, referenced by name.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_arb_idx.html" title='dqcsim::bindings::dqcs_sim_arb_idx fn'>dqcs_sim_arb_idx</a></td><td class='docblock-short'><p>Sends an <code>ArbCmd</code> message to one of the plugins, referenced by index.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_get_author.html" title='dqcsim::bindings::dqcs_sim_get_author fn'>dqcs_sim_get_author</a></td><td class='docblock-short'><p>Queries the author of a plugin, referenced by instance name.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_get_author_idx.html" title='dqcsim::bindings::dqcs_sim_get_author_idx fn'>dqcs_sim_get_author_idx</a></td><td class='docblock-short'><p>Queries the author of a plugin, referenced by index.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_get_name.html" title='dqcsim::bindings::dqcs_sim_get_name fn'>dqcs_sim_get_name</a></td><td class='docblock-short'><p>Queries the implementation name of a plugin, referenced by instance
+name.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_get_name_idx.html" title='dqcsim::bindings::dqcs_sim_get_name_idx fn'>dqcs_sim_get_name_idx</a></td><td class='docblock-short'><p>Queries the implementation name of a plugin, referenced by index.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_get_version.html" title='dqcsim::bindings::dqcs_sim_get_version fn'>dqcs_sim_get_version</a></td><td class='docblock-short'><p>Queries the version of a plugin, referenced by instance name.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_get_version_idx.html" title='dqcsim::bindings::dqcs_sim_get_version_idx fn'>dqcs_sim_get_version_idx</a></td><td class='docblock-short'><p>Queries the version of a plugin, referenced by index.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_new.html" title='dqcsim::bindings::dqcs_sim_new fn'>dqcs_sim_new</a></td><td class='docblock-short'><p>Constructs a DQCsim simulation.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_recv.html" title='dqcsim::bindings::dqcs_sim_recv fn'>dqcs_sim_recv</a></td><td class='docblock-short'><p>Waits for the simulated accelerator to send a message to us.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_send.html" title='dqcsim::bindings::dqcs_sim_send fn'>dqcs_sim_send</a></td><td class='docblock-short'><p>Sends a message to the simulated accelerator.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_start.html" title='dqcsim::bindings::dqcs_sim_start fn'>dqcs_sim_start</a></td><td class='docblock-short'><p>Starts a program on the simulated accelerator.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_wait.html" title='dqcsim::bindings::dqcs_sim_wait fn'>dqcs_sim_wait</a></td><td class='docblock-short'><p>Waits for the simulated accelerator to finish its current program.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_write_reproduction_file.html" title='dqcsim::bindings::dqcs_sim_write_reproduction_file fn'>dqcs_sim_write_reproduction_file</a></td><td class='docblock-short'><p>Writes a reproduction file for the simulation so far.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_sim_yield.html" title='dqcsim::bindings::dqcs_sim_yield fn'>dqcs_sim_yield</a></td><td class='docblock-short'><p>Yields to the simulator.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_tcfg_init_cmd.html" title='dqcsim::bindings::dqcs_tcfg_init_cmd fn'>dqcs_tcfg_init_cmd</a></td><td class='docblock-short'><p>Appends an <code>ArbCmd</code> to the list of initialization commands of a plugin
+thread.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_tcfg_name.html" title='dqcsim::bindings::dqcs_tcfg_name fn'>dqcs_tcfg_name</a></td><td class='docblock-short'><p>Returns the configured name for the given plugin thread.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_tcfg_new.html" title='dqcsim::bindings::dqcs_tcfg_new fn'>dqcs_tcfg_new</a></td><td class='docblock-short'><p>Creates a new plugin thread configuration object from a plugin definition.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_tcfg_new_raw.html" title='dqcsim::bindings::dqcs_tcfg_new_raw fn'>dqcs_tcfg_new_raw</a></td><td class='docblock-short'><p>Creates a new plugin thread configuration object from a callback.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_tcfg_tee.html" title='dqcsim::bindings::dqcs_tcfg_tee fn'>dqcs_tcfg_tee</a></td><td class='docblock-short'><p>Configures a plugin thread to also output its log messages to a file.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_tcfg_type.html" title='dqcsim::bindings::dqcs_tcfg_type fn'>dqcs_tcfg_type</a></td><td class='docblock-short'><p>Returns the type of the given plugin thread configuration.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_tcfg_verbosity_get.html" title='dqcsim::bindings::dqcs_tcfg_verbosity_get fn'>dqcs_tcfg_verbosity_get</a></td><td class='docblock-short'><p>Returns the configured verbosity for the given plugin thread.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_tcfg_verbosity_set.html" title='dqcsim::bindings::dqcs_tcfg_verbosity_set fn'>dqcs_tcfg_verbosity_set</a></td><td class='docblock-short'><p>Configures the logging verbosity for the given plugin thread.</p>
+</td></tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table><tr class='module-item'><td><a class="type" href="type.dqcs_cycle_t.html" title='dqcsim::bindings::dqcs_cycle_t type'>dqcs_cycle_t</a></td><td class='docblock-short'><p>Type for a simulation cycle timestamp.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="type" href="type.dqcs_handle_t.html" title='dqcsim::bindings::dqcs_handle_t type'>dqcs_handle_t</a></td><td class='docblock-short'><p>Type for a handle.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="type" href="type.dqcs_qubit_t.html" title='dqcsim::bindings::dqcs_qubit_t type'>dqcs_qubit_t</a></td><td class='docblock-short'><p>Type for a qubit reference.
+&gt;</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "dqcsim";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>
