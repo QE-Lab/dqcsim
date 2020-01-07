@@ -3,11 +3,11 @@
 [![Crates.io](https://badgen.net/crates/v/dqcsim)](https://crates.io/crates/dqcsim/)
 [![PyPi](https://badgen.net/pypi/v/dqcsim)](https://pypi.org/project/dqcsim/)
 
-[![Rust workflow](https://github.com/mbrobbel/dqcsim/workflows/Rust/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow=Rust)
-[![Python workflow](https://github.com/mbrobbel/dqcsim/workflows/Python/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow=Python)
-[![C++ workflow](https://github.com/mbrobbel/dqcsim/workflows/C++/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow=C++)
-[![Documentation workflow](https://github.com/mbrobbel/dqcsim/workflows/Documentation/badge.svg)](https://mbrobbel.github.io/dqcsim/)
-[![Coverage workflow](https://github.com/mbrobbel/dqcsim/workflows/Coverage/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow=Coverage)
+[![Rust workflow](https://github.com/mbrobbel/dqcsim/workflows/Rust/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3ARust)
+[![Python workflow](https://github.com/mbrobbel/dqcsim/workflows/Python/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3APython)
+[![C++ workflow](https://github.com/mbrobbel/dqcsim/workflows/C++/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3AC++)
+[![Documentation workflow](https://github.com/mbrobbel/dqcsim/workflows/Documentation/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3ADocumentation)
+[![Coverage workflow](https://github.com/mbrobbel/dqcsim/workflows/Coverage/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3ACoverage)
 [![Codecov.io](https://codecov.io/gh/mbrobbel/dqcsim/branch/master/graph/badge.svg)](https://codecov.io/gh/mbrobbel/dqcsim)
 
 DQCsim, short for Delft Quantum & Classical simulator, is a *framework* that
