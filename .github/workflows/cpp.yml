@@ -2,13 +2,15 @@ name: C++
 
 on:
   push:
+    branches:
+    - master
+  pull_request:
     paths:
     - 'rust/**'
     - '**/Cargo.toml'
     - '**/Cargo.lock'
     - 'cpp/**'
     - '**/CMakeLists.txt'
-  pull_request:
 
 jobs:
   test:

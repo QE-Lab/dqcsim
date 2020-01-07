@@ -2,13 +2,15 @@ name: Python
 
 on:
   push:
+    branches:
+    - master
+  pull_request:
     paths:
     - 'rust/**'
     - '**/Cargo.toml'
     - '**/Cargo.lock'
     - 'python/**'
     - '**/setup.py'
-  pull_request:
 
 jobs:
   test:

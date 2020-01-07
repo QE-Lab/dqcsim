@@ -2,6 +2,9 @@ name: Coverage
 
 on:
   push:
+    branches:
+    - master
+  pull_request:
     paths:
     - 'rust/**'
     - '**/Cargo.toml'
@@ -10,7 +13,6 @@ on:
     - '**/CMakeLists.txt'
     - 'python/**'
     - '**/setup.py'
-  pull_request:
 
 jobs:
   rust:
