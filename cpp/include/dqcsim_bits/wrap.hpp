@@ -5,169 +5,18 @@
 
 /*! \mainpage
  *
- * \section intro Introduction
+ * This is the generated documentation for the C++ interface of
+ * <a href="../index.html">DQCsim</a>. A more tutorial-esque description is
+ * available <a href="../cpp-api/index.html">here</a>; you should probably
+ * have a look at that first.
  *
- * This is the documentation for the C++ interface of
- * <a href="../index.html">DQCsim</a>.
- *
- * If this is the first time you're looking at DQCsim's API, you may find it
- * helpful to skim through the <a href="../c-api/index.html">C documentation</a>
- * first. It is written in a more tutorial-esque fashion, and most concepts are
- * the same, as the C++ API is built on top of the C API. In fact, you can mix
- * the raw C functions (`dqcsim::raw`) and the C++ wrappers in (`dqcsim::wrap`)
- * if you like. The primary advantages of the C++ interface over the C interface
- * are:
- *
- *  - DQCsim's error handling is abstracted through exceptions.
- *  - Handles are wrapped by classes with appropriate inheritance.
- *  - Handle construction and deletion is more-or-less abstracted away by RAII,
- *    so you never have to worry about calling `dqcs_handle_delete()`.
- *  - All strings are wrapped using `std::string`, so you don't need to worry
- *    about malloc/free when dealing with DQCsim's string functions.
- *  - All callbacks support C-style callbacks with a template for the user data
- *    argument type, class member functions, and `std::function` objects, so
- *    you don't have to deal with `void*` casts.
- *  - Many function/method overloads are provided to help you make your code
- *    more succinct.
- *  - Basic support for `nlohmann::json` for the `ArbData` JSON/CBOR object.
- *
- * \section usage Usage
- *
- * The C++ wrappers around the C library are header-only. Assuming you've
- * <a href="../install/index.html">installed</a> DQCsim already, all you have
- * to do to use the library is add
+ * Everything related to the C++ API is provided by
  *
  * ```
  * #include <dqcsim>
- *
- * // Optionally:
- * using namespace dqcsim::wrap;
  * ```
  *
- * to the top of your sources, and link to DQCsim by adding `-ldqcsim` to your
- * compiler (linker) command line. If you didn't install DQCsim as root, you
- * may need to add to add `-L /path/to/dqcsim/lib -I /path/to/dqcsim/include`.
- * You may also need to add `-std=c++11` (or newer) if you haven't already, as
- * DQCsim uses features from C++11.
- *
- * You can also use CMake. TODO: Matthijs
- *
- * \subsection sim Running simulations
- *
- * To run a simulation (that is, make a host process) with the C++ interface,
- * you start with a `SimulationConfiguration` object. The most important thing
- * to do with this object is to configure which plugins you want to use,
- * particularly the frontend and backend. You do this by adding plugin
- * configurations using `with_plugin()` or `add_plugin()`. These plugin
- * configurations are in turn constructed with the `dqcsim::wrap::Frontend()`,
- * `dqcsim::wrap::Operator()`, and `dqcsim::wrap::Backend()` shorthands,
- * followed by the appropriate builder functions for how you want to launch the
- * plugins.
- *
- * When you're done with your configuration, call `build()` or `run()`. The
- * difference is that the former only initializes the simulation and then
- * <a href="../intro/host-iface.html">passes control over to you</a>, while the
- * latter is a shorthand for just calling `run()`, which is usually sufficient.
- * After this, you may want to write a reproduction file with
- * `write_reproduction_file()`; this file allows you to reproduce your
- * simulation exactly using the DQCsim command line (as long as the plugins
- * only use DQCsim's pseudorandom number generator or are deterministic)
- * without even needing your host program anymore.
- *
- * The simplest example for running a simulation is therefore as follows:
- *
- * ```
- * #include <dqcsim>
- * using namespace dqcsim::wrap;
- *
- * int main() {
- *
- *   SimulationConfiguration()
- *     .with_plugin(Frontend().with_spec("null"))
- *     .with_plugin(Backend().with_spec("null"))
- *     .run()
- *     .write_reproduction_file("null.repro");
- *
- *   return 0;
- * }
- * ```
- *
- * This is roughly equivalent to `dqcsim null null` on the command line.
- *
- * \subsection frontend Defining plugins
- *
- * To define your own plugin, you can use the `Plugin` class. The workflow is
- * as follows:
- *
- *  - Use `Plugin::Frontend()`, `Plugin::Operator()`, or `Plugin::Backend()`
- *    to start defining a plugin.
- *  - Assign callback functions at your leisure using the `with_*` functions.
- *    You can pass any combination of arguments supported by
- *    `dqcsim::wrap::Callback()` to these builder functions, provided that the
- *    callback function signature is correct, of course.
- *  - Either:
- *     - run the plugin in the current thread using `Plugin::run()`;
- *     - start the plugin in a DQCsim-managed worker thread using
- *       `Plugin::start()`;
- *     - or pass the plugin definition object to
- *       `PluginConfigurationBuilder::with_callbacks()` to directly add it to
- *       a simulation.
- *
- * Here's a simple extension of the previous example with a frontend defined
- * in-place that just logs `"Hello, World!"`:
- *
- * ```
- * #define DQCSIM_SHORT_LOGGING_MACROS
- * #include <dqcsim>
- * using namespace dqcsim::wrap;
- *
- * ArbData run(RunningPluginState &state, ArbData &&arg) {
- *   INFO("Hello, World!");
- *   return ArbData();
- * }
- *
- * int main() {
- *
- *   SimulationConfiguration()
- *     .without_reproduction()
- *     .with_plugin(Frontend().with_callbacks(
- *       Plugin::Frontend("hello", "JvS", "v1.0")
- *         .with_run(run)
- *     ))
- *     .with_plugin(Backend().with_spec("null"))
- *     .run();
- *
- *   return 0;
- * }
- * ```
- *
- * Note that simulations with plugins defined in-place in the host process
- * cannot be reproduced through a reproduction file. Therefore, the
- * reproduction system was turned off here.
- *
- * The `hello` frontend can be turned into its own executable as follows:
- *
- * ```
- * #define DQCSIM_SHORT_LOGGING_MACROS
- * #include <dqcsim>
- * #include <iostream>
- * using namespace dqcsim::wrap;
- * using namespace std;
- *
- * ArbData run(RunningPluginState &state, ArbData &&arg) {
- *   INFO("Hello, World!");
- *   return ArbData();
- * }
- *
- * int main(int argc, char *argv[]) {
- *   return Plugin::Frontend("hello", "JvS", "v1.0")
- *     .with_run(run)
- *     .run(argc, argv);
- * }
- * ```
- *
- * Assuming you compile this to an executable named `hello`, you can now run
- * the plugin (from the same directory) using `dqcsim hello null`.
+ * Click <a href="dqcsim.html">here</a> for the documentation of that file.
  */
 
 /*!
