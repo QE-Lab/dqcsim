@@ -75,11 +75,9 @@ pub extern "C" fn dqcs_mset_take(mset: dqcs_handle_t, qubit: dqcs_qubit_t) -> dq
         resolve!(mset as &mut QubitMeasurementResultSet);
         let qubit = QubitRef::from_foreign(qubit)
             .ok_or_else(oe_inv_arg("0 is not a valid qubit reference"))?;
-        Ok(insert(
-            mset.remove(&qubit)
-                .ok_or_else(oe_inv_arg("qubit not included in measurement set"))?
-                .clone(),
-        ))
+        Ok(insert(mset.remove(&qubit).ok_or_else(oe_inv_arg(
+            "qubit not included in measurement set",
+        ))?))
     })
 }
 
@@ -109,6 +107,7 @@ pub extern "C" fn dqcs_mset_take_any(mset: dqcs_handle_t) -> dqcs_handle_t {
             .keys()
             .next()
             .ok_or_else(oe_inv_arg("measurement set is empty"))?;
-        Ok(insert(mset.remove(&qubit).unwrap().clone()))
+        let x = mset.remove(&qubit).take().unwrap();
+        Ok(insert(x))
     })
 }

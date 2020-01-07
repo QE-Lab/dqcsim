@@ -13,7 +13,7 @@ use std::{
 static CARGOENV: &str = "cargo:rustc-env=";
 
 #[cfg(feature = "bindings")]
-fn prepreprocess(path: &path::Path) -> io::Result<(String)> {
+fn prepreprocess(path: &path::Path) -> io::Result<String> {
     use lazy_static::lazy_static;
     use regex::{Captures, Regex, RegexBuilder, Replacer};
 

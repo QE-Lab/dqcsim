@@ -124,7 +124,7 @@ mod tests {
         assert!(log_proxy.enabled(Loglevel::Debug));
         assert!(log_proxy.enabled(Loglevel::Trace));
 
-        let log_proxy = LogProxy::boxed("off", LoglevelFilter::Off, log_endpoint.clone());
+        let log_proxy = LogProxy::boxed("off", LoglevelFilter::Off, log_endpoint);
         assert!(!log_proxy.enabled(Loglevel::Fatal));
         assert!(!log_proxy.enabled(Loglevel::Error));
         assert!(!log_proxy.enabled(Loglevel::Warn));

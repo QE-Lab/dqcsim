@@ -153,11 +153,15 @@ mod test {
     #[test]
     fn with_clone() {
         let tf = TeeFileConfiguration::new(LoglevelFilter::Info, "/tmp/log.info");
+        let tf_clone = tf.clone();
         assert_eq!(
             format!("{:?}", tf),
             "TeeFileConfiguration { filter: Info, file: \"/tmp/log.info\" }"
         );
-        let _ = tf.clone();
+        assert_eq!(
+            format!("{:?}", tf_clone),
+            "TeeFileConfiguration { filter: Info, file: \"/tmp/log.info\" }"
+        );
     }
 
     #[test]

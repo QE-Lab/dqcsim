@@ -1,6 +1,6 @@
 [package]
 name = "dqcsim"
-version = "0.0.6"
+version = "0.0.8"
 authors = ["Quantum Computer Architectures, Quantum & Computer Engineering, QuTech, Delft University of Technology"]
 edition = '2018'
 build = "tools/build.rs"
@@ -15,7 +15,6 @@ license = "Apache-2.0"
 default-run = "dqcsim"
 
 [badges]
-# travis-ci = { repository = "mbrobbel/dqcsim" }
 codecov = { repository = "mbrobbel/dqcsim" }
 
 [lib]
@@ -48,8 +47,8 @@ null-plugins = []
 bindings = ["cbindgen", "libc", "regex", "lazy_static"]
 
 [dependencies]
-strum = "0.16"
-strum_macros = "0.16"
+strum = "0.17"
+strum_macros = "0.17"
 named_type = "0.2"
 named_type_derive = "0.2"
 serde = { version = "1.0", features = ["derive"] }
@@ -57,9 +56,9 @@ serde_json = "1.0"
 serde_cbor = "0.10"
 serde_yaml = "0.8"
 serde-transcode = "1.1"
-crossbeam-channel = "0.3"
-ipc-channel = "0.12"
-whoami = "0.6"
+crossbeam-channel = "0.4"
+ipc-channel = "0.13"
+whoami = "0.7"
 pathdiff = "0.1"
 lazy_static = "1.4"
 ref_thread_local = "0.0"
@@ -79,6 +78,6 @@ git-testament = { version = "0.1", optional = true }
 libc = { version = "0.2", optional = true }
 
 [build-dependencies]
-cbindgen = { version = "0.11", optional = true }
+cbindgen = { version = "0.12", optional = true }
 regex = { version = "1", optional = true }
 lazy_static = { version = "1.4", optional = true }
