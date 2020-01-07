@@ -5519,8 +5519,10 @@ namespace wrap {
           std::string(file ? file : ""),
           line,
           std::chrono::system_clock::time_point(
-            std::chrono::seconds(time_s)
-            + std::chrono::nanoseconds(time_ns)
+            std::chrono::duration_cast<std::chrono::microseconds>(
+              std::chrono::seconds(time_s)
+              + std::chrono::nanoseconds(time_ns)
+            )
           ),
           pid,
           tid
@@ -5622,7 +5624,7 @@ namespace wrap {
    * the plugin's functionality, but many of the callback functions are shared.
    * The following matrix shows which functions are required (x), optional (o),
    * and not applicable (-):
-   * 
+   *
    * | Callback             | Frontend  | Operator  |  Backend  |
    * |----------------------|:---------:|:---------:|:---------:|
    * | `initialize`         |     o     |     o     |     o     |
