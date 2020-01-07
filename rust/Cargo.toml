@@ -15,7 +15,6 @@ license = "Apache-2.0"
 default-run = "dqcsim"
 
 [badges]
-# travis-ci = { repository = "mbrobbel/dqcsim" }
 codecov = { repository = "mbrobbel/dqcsim" }
 
 [lib]
