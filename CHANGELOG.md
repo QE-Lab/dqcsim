@@ -1,3 +1,81 @@
+## [0.0.7] - 2020-01-09
+
+-  1d01a4f Fix documentation deploy condition
+-  52ff27a Update workflow triggers
+-  e5d96fc Update url to workflows
+-  8dd4538 Merge pull request #342 from mbrobbel/github-actions
+-  b39da13 Update badges
+-  d96e657 Add Release workflow
+-  65df953 Remove templates
+-  2081056 Add Documentation workflow
+-  fe9de2e Bump quick-error from 1.2.2 to 1.2.3
+-  c9540e6 Bump proc-macro2 from 1.0.6 to 1.0.7
+-  aae809c Bump rustversion from 1.0.0 to 1.0.1
+-  cbe523d Bump cbindgen from 0.12.0 to 0.12.1
+-  dcf0c96 Bump structopt from 0.3.6 to 0.3.7
+-  eff57b9 Add C++ coverage
+-  a037997 Merge pull request #353 from mbrobbel/update-channels
+-  e247b40 Update crossbeam-channel and ipc-channel
+-  0e271dd Bump structopt from 0.3.5 to 0.3.6
+-  25cd9c4 Bump strum_macros from 0.16.0 to 0.17.1
+-  125a6c1 Bump strum from 0.16.0 to 0.17.1
+-  6b1fa80 Bump whoami from 0.6.0 to 0.7.0
+-  94298aa Add Python coverage
+-  3e41901 Update Rust workflow
+-  1109ca8 Add Coverage workflow
+-  db366f8 Add Python workflow
+-  f666eb0 Add C++ workflow
+-  d911f51 Add Rust workflow
+-  54c6315 Merge pull request #343 from mbrobbel/rust-1.40
+-  644ace1 Updates for Rust 1.40
+-  c3498f6 Bump cbindgen from 0.11.1 to 0.12.0
+-  9278465 Bump serde from 1.0.103 to 1.0.104
+-  3b9afa7 Bump log from 0.4.8 to 0.4.10
+-  5e19263 Merge pull request #332 from mbrobbel/issue-329
+-  92bd35f Fix incorrect terminology in documentation
+-  567d66d Bump bincode from 1.2.0 to 1.2.1
+-  7710c3e Bump cbindgen from 0.11.0 to 0.11.1
+-  0665816 Merge pull request #324 from mbrobbel/codecov
+-  f256190 Update codecov.yml
+-  666a86a Merge pull request #322 from mbrobbel/fix-r-gate
+-  4b59cc5 Update codecov.yml
+-  88a796e Add codecov.yml
+-  5205298 Fix R gate in Python
+-  1f8df72 Bump unicode-width from 0.1.6 to 0.1.7
+-  beece2f Merge pull request #320 from mbrobbel/docgen-cleanup
+-  1e465d4 Replace underline header style with # for consistency
+-  e9cac7a Clean up documentation generation
+-  0773ca2 Bump serde_json from 1.0.43 to 1.0.44
+-  8af48cf Bump cc from 1.0.47 to 1.0.48
+-  44dbafb Bump serde_json from 1.0.42 to 1.0.43
+-  2a525af Bump cbindgen from 0.10.0 to 0.11.0
+-  fe1fbd0 Bump libc from 0.2.65 to 0.2.66
+-  733605d Bump mio from 0.6.19 to 0.6.21
+-  085d54e Merge pull request #309 from mbrobbel/cmake-compile-units
+-  55b1423 Update test unit definition
+-  d60445d Fix CMake paths
+-  bc39af8 Update travis.yml
+-  38abdca Use debug build in cpp ci
+-  93cc438 Allow Debug builds of dqcsim crate from CMake
+-  77d58f6 Update test executable output path in coverage job
+-  85f5c27 Fix build of clean project
+-  0773f90 Re-enable disabled plugin tests
+-  5323f34 Update CMake in CI
+-  4bb499a Use CompileUnits CMake module for dqcsim-cpp
+-  bdeded9 Bump num-traits from 0.2.9 to 0.2.10
+-  d7eaf53 Bump serde_json from 1.0.41 to 1.0.42
+-  166885a Bump serde from 1.0.102 to 1.0.103
+-  82a5a80 Bump chrono from 0.4.9 to 0.4.10
+-  31f10d5 Bump structopt from 0.3.4 to 0.3.5
+-  1b6bd5a Bump cbindgen from 0.9.1 to 0.10.0
+-  22fd703 Bump wasm-bindgen from 0.2.54 to 0.2.55
+-  4d4c86e Bump float-cmp from 0.5.3 to 0.6.0
+-  d31b2f1 Bump num-traits from 0.2.8 to 0.2.9
+-  ed1eb80 Bump synstructure from 0.12.2 to 0.12.3
+-  c594f70 Bump unicode-segmentation from 1.5.0 to 1.6.0
+-  cd3c140 Bump structopt from 0.3.3 to 0.3.4
+-  648ad09 Bump wasm-bindgen from 0.2.53 to 0.2.54
+
 ## [0.0.6] - 2019-11-0
 
 -  f3435061c Add swap gate validation test
@@ -289,3 +367,4 @@
 [0.0.4]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.4
 [0.0.5]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.5
 [0.0.6]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.6
+[0.0.7]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.7
