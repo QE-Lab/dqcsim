@@ -1,16 +1,14 @@
 # DQCsim
 
+[![Crates.io](https://badgen.net/crates/v/dqcsim)](https://crates.io/crates/dqcsim/)
 [![PyPi](https://badgen.net/pypi/v/dqcsim)](https://pypi.org/project/dqcsim/)
-[![Python version](https://badgen.net/badge/python/3.5,3.6,3.7?list=1)](https://pypi.org/project/dqcsim/)
-[![Crates](https://badgen.net/crates/v/dqcsim)](https://crates.io/crates/dqcsim)
-[![Rust version](https://badgen.net/badge/rust/stable)](https://rustup.rs)
-[![Platform support](https://badgen.net/badge/platform/linux,macos?list=1)](https://mbrobbel.github.io/dqcsim/install/index.html)
-[![License](https://badgen.net/badge/license/Apache-2.0)](https://github.com/mbrobbel/dqcsim/blob/master/LICENSE)
 
-[![Docs](https://badgen.net/github/status/mbrobbel/dqcsim/gh-pages?label=documentation)](https://mbrobbel.github.io/dqcsim/)
-[![Azure Pipelines](https://badgen.net/azure-pipelines/mbrobbel/dqcsim/mbrobbel.dqcsim?label=azure-pipelines)](https://dev.azure.com/mbrobbel/dqcsim/_build/latest?definitionId=3&branchName=master)
-[![Travis](https://badgen.net/travis/mbrobbel/dqcsim)](https://travis-ci.com/mbrobbel/dqcsim)
-[![Coverage](https://badgen.net/codecov/c/github/mbrobbel/dqcsim)](https://codecov.io/gh/mbrobbel/dqcsim)
+[![Rust workflow](https://github.com/mbrobbel/dqcsim/workflows/Rust/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow=Rust)
+[![Python workflow](https://github.com/mbrobbel/dqcsim/workflows/Python/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow=Python)
+[![C++ workflow](https://github.com/mbrobbel/dqcsim/workflows/C++/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow=C++)
+[![Documentation workflow](https://github.com/mbrobbel/dqcsim/workflows/Documentation/badge.svg)](https://mbrobbel.github.io/dqcsim/)
+[![Coverage workflow](https://github.com/mbrobbel/dqcsim/workflows/Coverage/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow=Coverage)
+[![Codecov.io](https://codecov.io/gh/mbrobbel/dqcsim/branch/master/graph/badge.svg)](https://codecov.io/gh/mbrobbel/dqcsim)
 
 DQCsim, short for Delft Quantum & Classical simulator, is a *framework* that
 can be used to tie *components* of quantum computer simulators together in a
@@ -74,11 +72,3 @@ Testing is done by the buildsystem associated with the language:
  - `cargo test` will run the core test suite for DQCsim and its command-line interface.
  - TODO will run the C/C++ API tests.
  - `python3 setup.py test` will run the Python API test suite.
-
-### Code coverage
-
-TODO (read the drone/travis build instructions)
-
-### Version management & distribution
-
-TODO

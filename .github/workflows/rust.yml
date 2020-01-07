@@ -1,0 +1,78 @@
+name: Rust
+
+on:
+  push:
+    paths:
+    - 'rust/**'
+    - '**/Cargo.toml'
+    - '**/Cargo.lock'
+  pull_request:
+
+jobs:
+  check:
+    name: Check
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+        - ubuntu-latest
+        - macos-latest
+        rust:
+        - stable
+        # - 1.40.0
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        default: true
+    - uses: actions-rs/cargo@v1
+      with:
+        command: check
+        args: --all-features --all-targets
+
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+        - ubuntu-latest
+        - macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --all-features --all-targets
+
+  rustfmt:
+    name: Rustfmt
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        components: rustfmt
+    - uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        components: clippy
+    - uses: actions-rs/clippy-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: --all-features --all-targets -- -Dwarnings

@@ -1,19 +1,20 @@
-ARG MANYLINUX=1
-FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64 as dqcsim-python-base
+ARG MANYLINUX=2010
+FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64
+
+ARG PYTHON_VERSION=38
+ENV PYBIN /opt/python/cp${PYTHON_VERSION}-cp${PYTHON_VERSION}m/bin
 
 RUN curl -sSf https://sh.rustup.rs | sh -s -- -y && \
-	curl -sSfL https://github.com/swig/swig/archive/rel-3.0.12.zip -o swig.zip && \
+	curl -sSfL https://github.com/swig/swig/archive/rel-4.0.1.zip -o swig.zip && \
 	unzip -qq swig.zip && \
-	cd swig-rel-3.0.12 && \
+	cd swig-rel-4.0.1 && \
 	./autogen.sh && \
 	./configure --without-pcre && \
 	make && \
 	make install && \
-	for PIP in /opt/python/cp3{5,6,7}*/bin/pip3; do $PIP install auditwheel; done
+	${PYBIN}/pip3 install auditwheel
 
 ENV PATH=$PATH:/root/.cargo/bin
 
-FROM dqcsim-python-base
-
 WORKDIR /io
-ENTRYPOINT ["bash", "-c", "for PYTHON in /opt/python/cp3{5,6,7}*/bin/python3; do $PYTHON setup.py bdist_wheel; done;"]
+ENTRYPOINT ["bash", "-c", "${PYBIN}/python3 setup.py bdist_wheel"]

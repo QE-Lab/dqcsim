@@ -1,0 +1,129 @@
+name: Release
+
+on:
+  push:
+    tags:
+    - '**'
+
+jobs:
+  github:
+    name: GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/create-release@v1.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+  crates:
+    name: Crates.io
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/cargo@v1.0.1
+      with:
+        command: publish
+        args: --manifest-path rust/Cargo.toml --token ${{ secrets.CRATES_IO_TOKEN }}
+
+  macos-wheels:
+    name: macOS wheels
+    strategy:
+      matrix:
+        python:
+        - '3.5'
+        - '3.6'
+        - '3.7'
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python }}
+    - name: Install Swig
+      run: brew install swig
+    - name: Install dependencies
+      run: python -m pip install wheel
+    - name: Build wheel
+      run: python3 setup.py bdist_wheel
+    - uses: actions/upload-artifact@v1
+      with:
+        name: dqcsim-py${{ matrix.python }}-macos
+        path: target/python/dist/
+
+  manylinux-wheels:
+    name: Manylinux wheels
+    strategy:
+      matrix:
+        python:
+        - '35'
+        - '36'
+        - '37'
+        manylinux:
+        - '1'
+        - '2010'
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: ${{ matrix.python }}
+      MANYLINUX: ${{ matrix.manylinux }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build container
+      run: docker build --build-arg MANYLINUX=${MANYLINUX} --build-arg PYTHON_VERSION=${PYTHON_VERSION} -t dqcsim - < python/tools/Dockerfile
+    - name: Run container
+      run: docker run --rm -v `pwd`:/io dqcsim
+    - name: Clean up
+      run: sudo rm -rf target/python/dist/*-linux_x86_64.whl
+    - uses: actions/upload-artifact@v1
+      with:
+        name: dqcsim-py${{ matrix.python }}-manylinux${{ matrix.manylinux }}
+        path: target/python/dist/
+
+  pypi:
+    name: PyPi
+    runs-on: ubuntu-latest
+    needs: [manylinux-wheels, macos-wheels]
+    steps:
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py35-manylinux1
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py36-manylinux1
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py37-manylinux1
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py35-manylinux2010
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py36-manylinux2010
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py37-manylinux2010
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py3.5-macos
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py3.6-macos
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py3.7-macos
+    - name: Move
+      run: mv dqcsim-py*/*.whl .
+    - uses: pypa/gh-action-pypi-publish@v1.0.0a0
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}
+        packages_dir: ./
+
+  # assets:
+  #   name: Upload assets
