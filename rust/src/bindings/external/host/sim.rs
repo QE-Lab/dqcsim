@@ -29,13 +29,17 @@ pub extern "C" fn dqcs_sim_new(scfg: dqcs_handle_t) -> dqcs_handle_t {
 pub extern "C" fn dqcs_sim_start(sim: dqcs_handle_t, data: dqcs_handle_t) -> dqcs_return_t {
     api_return_none(|| {
         resolve!(sim as &mut Simulator);
-        resolve!(data as pending ArbData);
-        let data_ob = {
-            let x: &ArbData = data.as_ref().unwrap();
-            x.clone()
-        };
-        sim.simulation.start(data_ob)?;
-        delete!(resolved data);
+        if data == 0 {
+            sim.simulation.start(ArbData::default())?;
+        } else {
+            resolve!(data as pending ArbData);
+            let data_ob = {
+                let x: &ArbData = data.as_ref().unwrap();
+                x.clone()
+            };
+            sim.simulation.start(data_ob)?;
+            delete!(resolved data);
+        }
         Ok(())
     })
 }

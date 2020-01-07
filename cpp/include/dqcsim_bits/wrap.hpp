@@ -5,7 +5,7 @@
 
 /*! \mainpage
  *
- * \section Introduction
+ * \section intro Introduction
  *
  * This is the documentation for the C++ interface of
  * <a href="../index.html">DQCsim</a>.
@@ -31,7 +31,7 @@
  *    more succinct.
  *  - Basic support for `nlohmann::json` for the `ArbData` JSON/CBOR object.
  *
- * \section Linking
+ * \section usage Usage
  *
  * The C++ wrappers around the C library are header-only. Assuming you've
  * <a href="../install/index.html">installed</a> DQCsim already, all you have
@@ -50,7 +50,124 @@
  * You may also need to add `-std=c++11` (or newer) if you haven't already, as
  * DQCsim uses features from C++11.
  *
- * TODO: examples
+ * You can also use CMake. TODO: Matthijs
+ *
+ * \subsection sim Running simulations
+ *
+ * To run a simulation (that is, make a host process) with the C++ interface,
+ * you start with a `SimulationConfiguration` object. The most important thing
+ * to do with this object is to configure which plugins you want to use,
+ * particularly the frontend and backend. You do this by adding plugin
+ * configurations using `with_plugin()` or `add_plugin()`. These plugin
+ * configurations are in turn constructed with the `dqcsim::wrap::Frontend()`,
+ * `dqcsim::wrap::Operator()`, and `dqcsim::wrap::Backend()` shorthands,
+ * followed by the appropriate builder functions for how you want to launch the
+ * plugins.
+ *
+ * When you're done with your configuration, call `build()` or `run()`. The
+ * difference is that the former only initializes the simulation and then
+ * <a href="../intro/host-iface.html">passes control over to you</a>, while the
+ * latter is a shorthand for just calling `run()`, which is usually sufficient.
+ * After this, you may want to write a reproduction file with
+ * `write_reproduction_file()`; this file allows you to reproduce your
+ * simulation exactly using the DQCsim command line (as long as the plugins
+ * only use DQCsim's pseudorandom number generator or are deterministic)
+ * without even needing your host program anymore.
+ *
+ * The simplest example for running a simulation is therefore as follows:
+ *
+ * ```
+ * #include <dqcsim>
+ * using namespace dqcsim::wrap;
+ *
+ * int main() {
+ *
+ *   SimulationConfiguration()
+ *     .with_plugin(Frontend().with_spec("null"))
+ *     .with_plugin(Backend().with_spec("null"))
+ *     .run()
+ *     .write_reproduction_file("null.repro");
+ *
+ *   return 0;
+ * }
+ * ```
+ *
+ * This is roughly equivalent to `dqcsim null null` on the command line.
+ *
+ * \subsection frontend Defining plugins
+ *
+ * To define your own plugin, you can use the `Plugin` class. The workflow is
+ * as follows:
+ *
+ *  - Use `Plugin::Frontend()`, `Plugin::Operator()`, or `Plugin::Backend()`
+ *    to start defining a plugin.
+ *  - Assign callback functions at your leisure using the `with_*` functions.
+ *    You can pass any combination of arguments supported by
+ *    `dqcsim::wrap::Callback()` to these builder functions, provided that the
+ *    callback function signature is correct, of course.
+ *  - Either:
+ *     - run the plugin in the current thread using `Plugin::run()`;
+ *     - start the plugin in a DQCsim-managed worker thread using
+ *       `Plugin::start()`;
+ *     - or pass the plugin definition object to
+ *       `PluginConfigurationBuilder::with_callbacks()` to directly add it to
+ *       a simulation.
+ *
+ * Here's a simple extension of the previous example with a frontend defined
+ * in-place that just logs `"Hello, World!"`:
+ *
+ * ```
+ * #define DQCSIM_SHORT_LOGGING_MACROS
+ * #include <dqcsim>
+ * using namespace dqcsim::wrap;
+ *
+ * ArbData run(RunningPluginState &state, ArbData &&arg) {
+ *   INFO("Hello, World!");
+ *   return ArbData();
+ * }
+ *
+ * int main() {
+ *
+ *   SimulationConfiguration()
+ *     .without_reproduction()
+ *     .with_plugin(Frontend().with_callbacks(
+ *       Plugin::Frontend("hello", "JvS", "v1.0")
+ *         .with_run(run)
+ *     ))
+ *     .with_plugin(Backend().with_spec("null"))
+ *     .run();
+ *
+ *   return 0;
+ * }
+ * ```
+ *
+ * Note that simulations with plugins defined in-place in the host process
+ * cannot be reproduced through a reproduction file. Therefore, the
+ * reproduction system was turned off here.
+ *
+ * The `hello` frontend can be turned into its own executable as follows:
+ *
+ * ```
+ * #define DQCSIM_SHORT_LOGGING_MACROS
+ * #include <dqcsim>
+ * #include <iostream>
+ * using namespace dqcsim::wrap;
+ * using namespace std;
+ *
+ * ArbData run(RunningPluginState &state, ArbData &&arg) {
+ *   INFO("Hello, World!");
+ *   return ArbData();
+ * }
+ *
+ * int main(int argc, char *argv[]) {
+ *   return Plugin::Frontend("hello", "JvS", "v1.0")
+ *     .with_run(run)
+ *     .run(argc, argv);
+ * }
+ * ```
+ *
+ * Assuming you compile this to an executable named `hello`, you can now run
+ * the plugin (from the same directory) using `dqcsim hello null`.
  */
 
 /*!
@@ -1877,9 +1994,9 @@ namespace wrap {
      * \returns `&self`, to continue building.
      * \throws std::runtime_error When either handle is invalid.
      */
-    ArbCmdQueue &with(ArbCmd &&cmd) {
+    ArbCmdQueue &&with(ArbCmd &&cmd) {
       push(std::move(cmd));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -1890,9 +2007,9 @@ namespace wrap {
      * \throws std::runtime_error When either handle is invalid or the copy
      * fails.
      */
-    ArbCmdQueue &with(const Cmd &cmd) {
+    ArbCmdQueue &&with(const Cmd &cmd) {
       push(cmd);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -2210,9 +2327,9 @@ namespace wrap {
      * \returns `&self`, to continue building.
      * \throws std::runtime_error When the handle is invalid.
      */
-    QubitSet &with(const QubitRef &qubit) {
+    QubitSet &&with(const QubitRef &qubit) {
       push(qubit);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -4098,7 +4215,7 @@ namespace wrap {
      * \throws std::runtime_error When the measurement handle or the current
      * handle is invalid.
      */
-    MeasurementSet &with(Measurement &&measurement) {
+    MeasurementSet &&with(Measurement &&measurement) {
       set(std::move(measurement));
     }
 
@@ -4112,7 +4229,7 @@ namespace wrap {
      * \throws std::runtime_error When the measurement handle or the current
      * handle is invalid.
      */
-    MeasurementSet &with(const Measurement &measurement) {
+    MeasurementSet &&with(const Measurement &measurement) {
       set(measurement);
     }
 
@@ -4929,7 +5046,7 @@ namespace wrap {
     /**
      * Sends a message to the host.
      *
-     * The host must do an accompanying `receive()` call, which returns the
+     * The host must do an accompanying `recv()` call, which returns the
      * data sent here. Failure to do so will result in a deadlock error to
      * the host.
      *
@@ -4944,7 +5061,7 @@ namespace wrap {
     /**
      * Sends a message to the host.
      *
-     * The host must do an accompanying `receive()` call, which returns the
+     * The host must do an accompanying `recv()` call, which returns the
      * data sent here. Failure to do so will result in a deadlock error to
      * the host.
      *
@@ -4967,7 +5084,7 @@ namespace wrap {
      * \throws std::runtime_error When no handle could be constructed for the
      * message or reception fails for some reason.
      */
-    ArbData receive() {
+    ArbData recv() {
       return ArbData(check(raw::dqcs_plugin_recv(state)));
     }
 
@@ -6015,9 +6132,9 @@ namespace wrap {
     //      * \\throws std::runtime_error When the current handle is invalid or of an
     //      * unsupported plugin type, or when the callback object is invalid.
     //      */
-    //     Plugin &with_{0[1]}(const callback::{0[2]} &cb) {{
+    //     Plugin &&with_{0[1]}(const callback::{0[2]} &cb) {{
     //       set_{0[1]}(new callback::{0[2]}(cb));
-    //       return *this;
+    //       return std::move(*this);
     //     }}
     //
     //     /**
@@ -6029,9 +6146,9 @@ namespace wrap {
     //      * \\throws std::runtime_error When the current handle is invalid or of an
     //      * unsupported plugin type, or when the callback object is invalid.
     //      */
-    //     Plugin &with_{0[1]}(callback::{0[2]} &&cb) {{
+    //     Plugin &&with_{0[1]}(callback::{0[2]} &&cb) {{
     //       set_{0[1]}(new callback::{0[2]}(std::move(cb)));
-    //       return *this;
+    //       return std::move(*this);
     //     }}
     //
     //     /**
@@ -6043,9 +6160,9 @@ namespace wrap {
     //      * unsupported plugin type, or when the callback object is invalid.
     //      */
     //     template<typename... Args>
-    //     Plugin &with_{0[1]}(Args... args) {{
+    //     Plugin &&with_{0[1]}(Args... args) {{
     //       set_{0[1]}(new callback::{0[2]}(args...));
-    //       return *this;
+    //       return std::move(*this);
     //     }}
     // """
     //
@@ -6095,9 +6212,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_initialize(const callback::Initialize &cb) {
+    Plugin &&with_initialize(const callback::Initialize &cb) {
       set_initialize(new callback::Initialize(cb));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6109,9 +6226,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_initialize(callback::Initialize &&cb) {
+    Plugin &&with_initialize(callback::Initialize &&cb) {
       set_initialize(new callback::Initialize(std::move(cb)));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6123,9 +6240,9 @@ namespace wrap {
      * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
-    Plugin &with_initialize(Args... args) {
+    Plugin &&with_initialize(Args... args) {
       set_initialize(new callback::Initialize(args...));
-      return *this;
+      return std::move(*this);
     }
 
   private:
@@ -6159,9 +6276,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_drop(const callback::Drop &cb) {
+    Plugin &&with_drop(const callback::Drop &cb) {
       set_drop(new callback::Drop(cb));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6173,9 +6290,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_drop(callback::Drop &&cb) {
+    Plugin &&with_drop(callback::Drop &&cb) {
       set_drop(new callback::Drop(std::move(cb)));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6187,9 +6304,9 @@ namespace wrap {
      * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
-    Plugin &with_drop(Args... args) {
+    Plugin &&with_drop(Args... args) {
       set_drop(new callback::Drop(args...));
-      return *this;
+      return std::move(*this);
     }
 
   private:
@@ -6223,9 +6340,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_run(const callback::Run &cb) {
+    Plugin &&with_run(const callback::Run &cb) {
       set_run(new callback::Run(cb));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6237,9 +6354,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_run(callback::Run &&cb) {
+    Plugin &&with_run(callback::Run &&cb) {
       set_run(new callback::Run(std::move(cb)));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6251,9 +6368,9 @@ namespace wrap {
      * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
-    Plugin &with_run(Args... args) {
+    Plugin &&with_run(Args... args) {
       set_run(new callback::Run(args...));
-      return *this;
+      return std::move(*this);
     }
 
   private:
@@ -6287,9 +6404,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_allocate(const callback::Allocate &cb) {
+    Plugin &&with_allocate(const callback::Allocate &cb) {
       set_allocate(new callback::Allocate(cb));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6301,9 +6418,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_allocate(callback::Allocate &&cb) {
+    Plugin &&with_allocate(callback::Allocate &&cb) {
       set_allocate(new callback::Allocate(std::move(cb)));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6315,9 +6432,9 @@ namespace wrap {
      * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
-    Plugin &with_allocate(Args... args) {
+    Plugin &&with_allocate(Args... args) {
       set_allocate(new callback::Allocate(args...));
-      return *this;
+      return std::move(*this);
     }
 
   private:
@@ -6351,9 +6468,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_free(const callback::Free &cb) {
+    Plugin &&with_free(const callback::Free &cb) {
       set_free(new callback::Free(cb));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6365,9 +6482,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_free(callback::Free &&cb) {
+    Plugin &&with_free(callback::Free &&cb) {
       set_free(new callback::Free(std::move(cb)));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6379,9 +6496,9 @@ namespace wrap {
      * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
-    Plugin &with_free(Args... args) {
+    Plugin &&with_free(Args... args) {
       set_free(new callback::Free(args...));
-      return *this;
+      return std::move(*this);
     }
 
   private:
@@ -6415,9 +6532,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_gate(const callback::Gate &cb) {
+    Plugin &&with_gate(const callback::Gate &cb) {
       set_gate(new callback::Gate(cb));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6429,9 +6546,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_gate(callback::Gate &&cb) {
+    Plugin &&with_gate(callback::Gate &&cb) {
       set_gate(new callback::Gate(std::move(cb)));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6443,9 +6560,9 @@ namespace wrap {
      * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
-    Plugin &with_gate(Args... args) {
+    Plugin &&with_gate(Args... args) {
       set_gate(new callback::Gate(args...));
-      return *this;
+      return std::move(*this);
     }
 
   private:
@@ -6479,9 +6596,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_modify_measurement(const callback::ModifyMeasurement &cb) {
+    Plugin &&with_modify_measurement(const callback::ModifyMeasurement &cb) {
       set_modify_measurement(new callback::ModifyMeasurement(cb));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6493,9 +6610,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_modify_measurement(callback::ModifyMeasurement &&cb) {
+    Plugin &&with_modify_measurement(callback::ModifyMeasurement &&cb) {
       set_modify_measurement(new callback::ModifyMeasurement(std::move(cb)));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6507,9 +6624,9 @@ namespace wrap {
      * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
-    Plugin &with_modify_measurement(Args... args) {
+    Plugin &&with_modify_measurement(Args... args) {
       set_modify_measurement(new callback::ModifyMeasurement(args...));
-      return *this;
+      return std::move(*this);
     }
 
   private:
@@ -6543,9 +6660,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_advance(const callback::Advance &cb) {
+    Plugin &&with_advance(const callback::Advance &cb) {
       set_advance(new callback::Advance(cb));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6557,9 +6674,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_advance(callback::Advance &&cb) {
+    Plugin &&with_advance(callback::Advance &&cb) {
       set_advance(new callback::Advance(std::move(cb)));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6571,9 +6688,9 @@ namespace wrap {
      * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
-    Plugin &with_advance(Args... args) {
+    Plugin &&with_advance(Args... args) {
       set_advance(new callback::Advance(args...));
-      return *this;
+      return std::move(*this);
     }
 
   private:
@@ -6607,9 +6724,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_upstream_arb(const callback::Arb &cb) {
+    Plugin &&with_upstream_arb(const callback::Arb &cb) {
       set_upstream_arb(new callback::Arb(cb));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6621,9 +6738,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_upstream_arb(callback::Arb &&cb) {
+    Plugin &&with_upstream_arb(callback::Arb &&cb) {
       set_upstream_arb(new callback::Arb(std::move(cb)));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6635,9 +6752,9 @@ namespace wrap {
      * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
-    Plugin &with_upstream_arb(Args... args) {
+    Plugin &&with_upstream_arb(Args... args) {
       set_upstream_arb(new callback::Arb(args...));
-      return *this;
+      return std::move(*this);
     }
 
   private:
@@ -6671,9 +6788,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_host_arb(const callback::Arb &cb) {
+    Plugin &&with_host_arb(const callback::Arb &cb) {
       set_host_arb(new callback::Arb(cb));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6685,9 +6802,9 @@ namespace wrap {
      * \throws std::runtime_error When the current handle is invalid or of an
      * unsupported plugin type, or when the callback object is invalid.
      */
-    Plugin &with_host_arb(callback::Arb &&cb) {
+    Plugin &&with_host_arb(callback::Arb &&cb) {
       set_host_arb(new callback::Arb(std::move(cb)));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6699,17 +6816,16 @@ namespace wrap {
      * unsupported plugin type, or when the callback object is invalid.
      */
     template<typename... Args>
-    Plugin &with_host_arb(Args... args) {
+    Plugin &&with_host_arb(Args... args) {
       set_host_arb(new callback::Arb(args...));
-      return *this;
+      return std::move(*this);
     }
 
     // End of generated code.
 
     /**
-     * Runs the defined plugin in the current thread.
-     *
-     * This is normally the last statement executed in a plugin executable.
+     * Runs the defined plugin in the current thread with the given simulator
+     * connection descriptor string.
      *
      * \param simulator Simulator connection descriptor. This should come from
      * the first (for normal plugins) or second (for script-interpreting
@@ -6720,6 +6836,34 @@ namespace wrap {
     void run(const char *simulator) {
       check(raw::dqcs_plugin_run(handle, simulator));
       take_handle();
+    }
+
+    /**
+     * Runs the defined plugin in the current thread with the given command
+     * line.
+     *
+     * This is normally the end of the only statement in your plugin
+     * executable's `main()`.
+     *
+     * \param argc The `argc` parameter from your plugin executable's `main()`.
+     * \param argv The `argv` parameter from your plugin executable's `main()`.
+     * \returns The proper exit code for the plugin.
+     */
+    int run(int argc, char *argv[]) noexcept {
+      if (argc != 2) {
+        DQCSIM_FATAL("Expecting exactly one command-line argument, but got %d", argc);
+        return 1;
+      }
+      try {
+        run(argv[1]);
+      } catch (const std::exception &e) {
+        DQCSIM_FATAL("Returning failure because of the following: %s", e.what());
+        return 1;
+      } catch (...) {
+        DQCSIM_FATAL("Returning failure because of an unknown exception");
+        return 1;
+      }
+      return 0;
     }
 
     /**
@@ -6942,9 +7086,9 @@ namespace wrap {
      * \throws std::runtime_error When the plugin definition or command handle
      * is invalid.
      */
-    PluginProcessConfiguration &with_init_cmd(ArbCmd &&cmd) {
+    PluginProcessConfiguration &&with_init_cmd(ArbCmd &&cmd) {
       add_init_cmd(std::move(cmd));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -6975,9 +7119,9 @@ namespace wrap {
      * \throws std::runtime_error When the plugin definition or command handle
      * is invalid.
      */
-    PluginProcessConfiguration &with_env_var(const std::string &key, const std::string &value) {
+    PluginProcessConfiguration &&with_env_var(const std::string &key, const std::string &value) {
       set_env_var(key, value);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7006,9 +7150,9 @@ namespace wrap {
      * \throws std::runtime_error When the plugin definition or command handle
      * is invalid.
      */
-    PluginProcessConfiguration &without_env_var(const std::string &key) {
+    PluginProcessConfiguration &&without_env_var(const std::string &key) {
       unset_env_var(key);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7031,9 +7175,9 @@ namespace wrap {
      * \throws std::runtime_error When the plugin definition or command handle
      * is invalid.
      */
-    PluginProcessConfiguration &with_work_dir(const std::string &dir) {
+    PluginProcessConfiguration &&with_work_dir(const std::string &dir) {
       set_work_dir(dir);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7067,9 +7211,9 @@ namespace wrap {
      * \returns `&self`, to continue building.
      * \throws std::runtime_error When the plugin definition handle is invalid.
      */
-    PluginProcessConfiguration &with_verbosity(Loglevel level) {
+    PluginProcessConfiguration &&with_verbosity(Loglevel level) {
       set_verbosity(level);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7104,9 +7248,9 @@ namespace wrap {
      * \returns `&self`, to continue building.
      * \throws std::runtime_error When the plugin definition handle is invalid.
      */
-    PluginProcessConfiguration &with_log_tee(Loglevel verbosity, const std::string &filename) {
+    PluginProcessConfiguration &&with_log_tee(Loglevel verbosity, const std::string &filename) {
       log_tee(verbosity, filename);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7132,9 +7276,9 @@ namespace wrap {
      * \returns `&self`, to continue building.
      * \throws std::runtime_error When the plugin definition handle is invalid.
      */
-    PluginProcessConfiguration &with_stdout_loglevel(Loglevel level) {
+    PluginProcessConfiguration &&with_stdout_loglevel(Loglevel level) {
       set_stdout_loglevel(level);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7171,9 +7315,9 @@ namespace wrap {
      * \returns `&self`, to continue building.
      * \throws std::runtime_error When the plugin definition handle is invalid.
      */
-    PluginProcessConfiguration &with_stderr_loglevel(Loglevel level) {
+    PluginProcessConfiguration &&with_stderr_loglevel(Loglevel level) {
       set_stderr_loglevel(level);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7213,9 +7357,9 @@ namespace wrap {
      * \returns `&self`, to continue building.
      * \throws std::runtime_error When the plugin definition handle is invalid.
      */
-    PluginProcessConfiguration &with_accept_timeout(double timeout) {
+    PluginProcessConfiguration &&with_accept_timeout(double timeout) {
       set_accept_timeout(timeout);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7225,9 +7369,9 @@ namespace wrap {
      * \returns `&self`, to continue building.
      * \throws std::runtime_error When the plugin definition handle is invalid.
      */
-    PluginProcessConfiguration &without_accept_timeout() {
+    PluginProcessConfiguration &&without_accept_timeout() {
       set_accept_timeout(std::numeric_limits<double>::infinity());
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7267,9 +7411,9 @@ namespace wrap {
      * \returns `&self`, to continue building.
      * \throws std::runtime_error When the plugin definition handle is invalid.
      */
-    PluginProcessConfiguration &with_shutdown_timeout(double timeout) {
+    PluginProcessConfiguration &&with_shutdown_timeout(double timeout) {
       set_shutdown_timeout(timeout);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7279,9 +7423,9 @@ namespace wrap {
      * \returns `&self`, to continue building.
      * \throws std::runtime_error When the plugin definition handle is invalid.
      */
-    PluginProcessConfiguration &without_shutdown_timeout() {
+    PluginProcessConfiguration &&without_shutdown_timeout() {
       set_shutdown_timeout(std::numeric_limits<double>::infinity());
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7374,9 +7518,9 @@ namespace wrap {
      * \throws std::runtime_error When the plugin definition or command handle
      * is invalid.
      */
-    PluginThreadConfiguration &with_init_cmd(ArbCmd &&cmd) {
+    PluginThreadConfiguration &&with_init_cmd(ArbCmd &&cmd) {
       add_init_cmd(std::move(cmd));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7396,9 +7540,9 @@ namespace wrap {
      * \returns `&self`, to continue building.
      * \throws std::runtime_error When the plugin definition handle is invalid.
      */
-    PluginThreadConfiguration &with_verbosity(Loglevel level) {
+    PluginThreadConfiguration &&with_verbosity(Loglevel level) {
       set_verbosity(level);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -7433,9 +7577,9 @@ namespace wrap {
      * \returns `&self`, to continue building.
      * \throws std::runtime_error When the plugin definition handle is invalid.
      */
-    PluginThreadConfiguration &with_log_tee(Loglevel verbosity, const std::string &filename) {
+    PluginThreadConfiguration &&with_log_tee(Loglevel verbosity, const std::string &filename) {
       log_tee(verbosity, filename);
-      return *this;
+      return std::move(*this);
     }
 
   };
@@ -7474,9 +7618,9 @@ namespace wrap {
      * \param name The name for the plugin.
      * \returns `&self`, to continue building.
      */
-    PluginConfigurationBuilder &with_name(const std::string &name) noexcept {
+    PluginConfigurationBuilder &&with_name(const std::string &name) noexcept {
       this->name = name;
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -8137,9 +8281,9 @@ namespace wrap {
      * \throws std::runtime_error When the simulation or plugin configuration
      * handle is invalid for some reason.
      */
-    SimulationConfiguration &with_plugin(PluginConfiguration &&plugin) {
+    SimulationConfiguration &&with_plugin(PluginConfiguration &&plugin) {
       add_plugin(std::move(plugin));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -8166,9 +8310,9 @@ namespace wrap {
      * \throws std::runtime_error When the simulation configuration handle is
      * invalid for some reason.
      */
-    SimulationConfiguration &with_seed(uint64_t seed) {
+    SimulationConfiguration &&with_seed(uint64_t seed) {
       set_seed(seed);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -8216,9 +8360,9 @@ namespace wrap {
      * \throws std::runtime_error When the simulation configuration handle is
      * invalid for some reason.
      */
-    SimulationConfiguration &with_reproduction_style(PathStyle style) {
+    SimulationConfiguration &&with_reproduction_style(PathStyle style) {
       set_reproduction_style(style);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -8255,9 +8399,9 @@ namespace wrap {
      * \throws std::runtime_error When the simulation configuration handle is
      * invalid for some reason.
      */
-    SimulationConfiguration &without_reproduction() {
+    SimulationConfiguration &&without_reproduction() {
       check(raw::dqcs_scfg_repro_disable(handle));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -8280,9 +8424,9 @@ namespace wrap {
      * \throws std::runtime_error When the simulation configuration handle is
      * invalid for some reason.
      */
-    SimulationConfiguration &with_dqcsim_verbosity(Loglevel level) {
+    SimulationConfiguration &&with_dqcsim_verbosity(Loglevel level) {
       set_dqcsim_verbosity(level);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -8321,9 +8465,9 @@ namespace wrap {
      * \throws std::runtime_error When the simulation configuration handle is
      * invalid for some reason.
      */
-    SimulationConfiguration &with_stderr_verbosity(Loglevel level) {
+    SimulationConfiguration &&with_stderr_verbosity(Loglevel level) {
       set_stderr_verbosity(level);
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -8362,9 +8506,9 @@ namespace wrap {
      * \throws std::runtime_error When the simulation configuration handle is
      * invalid for some reason.
      */
-    SimulationConfiguration &with_log_tee(Loglevel verbosity, const std::string &filename) {
+    SimulationConfiguration &&with_log_tee(Loglevel verbosity, const std::string &filename) {
       log_tee(verbosity, filename);
-      return *this;
+      return std::move(*this);
     }
 
   private:
@@ -8491,9 +8635,9 @@ namespace wrap {
      * \throws std::runtime_error When the simulation configuration handle is
      * invalid for some reason.
      */
-    SimulationConfiguration &with_log_callback(Loglevel verbosity, const callback::Log &data) {
+    SimulationConfiguration &&with_log_callback(Loglevel verbosity, const callback::Log &data) {
       set_log_callback_ptr(verbosity, new callback::Log(data));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -8516,9 +8660,9 @@ namespace wrap {
      * \throws std::runtime_error When the simulation configuration handle is
      * invalid for some reason.
      */
-    SimulationConfiguration &with_log_callback(Loglevel verbosity, callback::Log &&data) {
+    SimulationConfiguration &&with_log_callback(Loglevel verbosity, callback::Log &&data) {
       set_log_callback_ptr(verbosity, new callback::Log(std::move(data)));
-      return *this;
+      return std::move(*this);
     }
 
     /**
@@ -8542,9 +8686,9 @@ namespace wrap {
      * invalid for some reason.
      */
     template<typename... Args>
-    SimulationConfiguration &with_log_callback(Loglevel verbosity, Args... args) {
+    SimulationConfiguration &&with_log_callback(Loglevel verbosity, Args... args) {
       set_log_callback_ptr(verbosity, new callback::Log(args...));
-      return *this;
+      return std::move(*this);
     }
 
     /**
