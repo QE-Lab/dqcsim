@@ -11,6 +11,7 @@
     - [ArbData and ArbCmds](./intro/arbs.md)
     - [Gate- and measurement streams](./intro/gatestream.md)
     - [The host interface](./intro/host-iface.md)
+    - [Matrix and MatrixMap](./intro/matrix-map.md)
     - [Miscellaneous interfaces](./intro/misc-iface.md)
   - [Reproducibility](./intro/reproducibility.md)
 - [Installation](./install/index.md)
