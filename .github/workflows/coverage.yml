@@ -8,7 +8,7 @@ on:
     paths:
     - 'rust/**'
     - '**/Cargo.toml'
-    - '**/Cargo.lock'
+    - 'Cargo.lock'
     - 'cpp/**'
     - '**/CMakeLists.txt'
     - 'python/**'
