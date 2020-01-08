@@ -38,10 +38,10 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Returns a pointer to the latest error message.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Call this to get extra information when another function returns a failure</span>
-<span class="doccomment">///&gt; code. The returned pointer is temporary and therefore should **NOT** be</span>
-<span class="doccomment">///&gt; `free()`d. It will become invalid when a new error occurs.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Call this to get extra information when another function returns a failure</span>
+<span class="doccomment">/// code. The returned pointer is temporary and therefore should **NOT** be</span>
+<span class="doccomment">/// `free()`d. It will become invalid when a new error occurs.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_error_get</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span> {
     <span class="ident">API_STATE</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">state</span><span class="op">|</span> {
@@ -54,12 +54,12 @@
 }
 
 <span class="doccomment">/// Sets the latest error message string.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This must be called by callback functions when an error occurs within the</span>
-<span class="doccomment">///&gt; callback, otherwise the upstream result for `dqcs_error_get()` will be</span>
-<span class="doccomment">///&gt; undefined.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If `msg` is set to `NULL`, the error string is cleared instead.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This must be called by callback functions when an error occurs within the</span>
+<span class="doccomment">/// callback, otherwise the upstream result for `dqcs_error_get()` will be</span>
+<span class="doccomment">/// undefined.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If `msg` is set to `NULL`, the error string is cleared instead.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_error_set</span>(<span class="ident">msg</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) {
     <span class="ident">API_STATE</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">state</span><span class="op">|</span> {

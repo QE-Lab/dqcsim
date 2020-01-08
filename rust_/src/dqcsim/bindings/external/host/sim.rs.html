@@ -284,14 +284,18 @@
 <span id="284">284</span>
 <span id="285">285</span>
 <span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">host</span>::<span class="ident">accelerator</span>::<span class="ident">Accelerator</span>;
 
 <span class="doccomment">/// Constructs a DQCsim simulation.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The provided handle is consumed if it is a simulation configuration,</span>
-<span class="doccomment">///&gt; regardless of whether simulation construction succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The provided handle is consumed if it is a simulation configuration,</span>
+<span class="doccomment">/// regardless of whether simulation construction succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_new</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
@@ -305,35 +309,39 @@
 }
 
 <span class="doccomment">/// Starts a program on the simulated accelerator.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This is an asynchronous call: nothing happens until `yield()`,</span>
-<span class="doccomment">///&gt; `recv()`, or `wait()` is called.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The `ArbData` handle is optional; if 0 is passed, an empty data object is</span>
-<span class="doccomment">///&gt; used. If a handle is passed, it is consumed if and only if the API call</span>
-<span class="doccomment">///&gt; succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is an asynchronous call: nothing happens until `yield()`,</span>
+<span class="doccomment">/// `recv()`, or `wait()` is called.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The `ArbData` handle is optional; if 0 is passed, an empty data object is</span>
+<span class="doccomment">/// used. If a handle is passed, it is consumed if and only if the API call</span>
+<span class="doccomment">/// succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_start</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">data</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Simulator</span>);
-        <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">data</span> <span class="kw">as</span> <span class="ident">pending</span> <span class="ident">ArbData</span>);
-        <span class="kw">let</span> <span class="ident">data_ob</span> <span class="op">=</span> {
-            <span class="kw">let</span> <span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="ident">ArbData</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>();
-            <span class="ident">x</span>.<span class="ident">clone</span>()
-        };
-        <span class="ident">sim</span>.<span class="ident">simulation</span>.<span class="ident">start</span>(<span class="ident">data_ob</span>)<span class="question-mark">?</span>;
-        <span class="macro">delete</span><span class="macro">!</span>(<span class="ident">resolved</span> <span class="ident">data</span>);
+        <span class="kw">if</span> <span class="ident">data</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+            <span class="ident">sim</span>.<span class="ident">simulation</span>.<span class="ident">start</span>(<span class="ident">ArbData</span>::<span class="ident">default</span>())<span class="question-mark">?</span>;
+        } <span class="kw">else</span> {
+            <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">data</span> <span class="kw">as</span> <span class="ident">pending</span> <span class="ident">ArbData</span>);
+            <span class="kw">let</span> <span class="ident">data_ob</span> <span class="op">=</span> {
+                <span class="kw">let</span> <span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="ident">ArbData</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>();
+                <span class="ident">x</span>.<span class="ident">clone</span>()
+            };
+            <span class="ident">sim</span>.<span class="ident">simulation</span>.<span class="ident">start</span>(<span class="ident">data_ob</span>)<span class="question-mark">?</span>;
+            <span class="macro">delete</span><span class="macro">!</span>(<span class="ident">resolved</span> <span class="ident">data</span>);
+        }
         <span class="prelude-val">Ok</span>(())
     })
 }
 
 <span class="doccomment">/// Waits for the simulated accelerator to finish its current program.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; When this succeeds, the return value of the accelerator&#39;s `run()`</span>
-<span class="doccomment">///&gt; function is returned in the form of a new handle. When it fails, 0 is</span>
-<span class="doccomment">///&gt; returned.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Deadlocks are detected and prevented by returning an error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// When this succeeds, the return value of the accelerator&#39;s `run()`</span>
+<span class="doccomment">/// function is returned in the form of a new handle. When it fails, 0 is</span>
+<span class="doccomment">/// returned.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Deadlocks are detected and prevented by returning an error.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_wait</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
@@ -343,13 +351,13 @@
 }
 
 <span class="doccomment">/// Sends a message to the simulated accelerator.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This is an asynchronous call: nothing happens until `yield()`,</span>
-<span class="doccomment">///&gt; `recv()`, or `wait()` is called.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The `ArbData` handle is optional; if 0 is passed, an empty data object is</span>
-<span class="doccomment">///&gt; used. If a handle is passed, it is consumed if and only if the API call</span>
-<span class="doccomment">///&gt; succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is an asynchronous call: nothing happens until `yield()`,</span>
+<span class="doccomment">/// `recv()`, or `wait()` is called.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The `ArbData` handle is optional; if 0 is passed, an empty data object is</span>
+<span class="doccomment">/// used. If a handle is passed, it is consumed if and only if the API call</span>
+<span class="doccomment">/// succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_send</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">data</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -366,11 +374,11 @@
 }
 
 <span class="doccomment">/// Waits for the simulated accelerator to send a message to us.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; When this succeeds, the received data is returned in the form of a new</span>
-<span class="doccomment">///&gt; handle. When it fails, 0 is returned.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Deadlocks are detected and prevented by returning an error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// When this succeeds, the received data is returned in the form of a new</span>
+<span class="doccomment">/// handle. When it fails, 0 is returned.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Deadlocks are detected and prevented by returning an error.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_recv</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
@@ -380,14 +388,14 @@
 }
 
 <span class="doccomment">/// Yields to the simulator.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The simulation runs until it blocks again. This is useful if you want an</span>
-<span class="doccomment">///&gt; immediate response to an otherwise asynchronous call through the logging</span>
-<span class="doccomment">///&gt; system or some communication channel outside of DQCsim&#39;s control.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function silently returns immediately if no asynchronous data was</span>
-<span class="doccomment">///&gt; pending or if the simulator is waiting for something that has not been</span>
-<span class="doccomment">///&gt; sent yet.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The simulation runs until it blocks again. This is useful if you want an</span>
+<span class="doccomment">/// immediate response to an otherwise asynchronous call through the logging</span>
+<span class="doccomment">/// system or some communication channel outside of DQCsim&#39;s control.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function silently returns immediately if no asynchronous data was</span>
+<span class="doccomment">/// pending or if the simulator is waiting for something that has not been</span>
+<span class="doccomment">/// sent yet.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_yield</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -398,15 +406,15 @@
 }
 
 <span class="doccomment">/// Sends an `ArbCmd` message to one of the plugins, referenced by name.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `ArbCmd`s are executed immediately after yielding to the simulator, so</span>
-<span class="doccomment">///&gt; all pending asynchronous calls are flushed and executed *before* the</span>
-<span class="doccomment">///&gt; `ArbCmd`.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; When this succeeds, the received data is returned in the form of a new</span>
-<span class="doccomment">///&gt; handle. When it fails, 0 is returned.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The `ArbCmd` handle is consumed if and only if the API call succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `ArbCmd`s are executed immediately after yielding to the simulator, so</span>
+<span class="doccomment">/// all pending asynchronous calls are flushed and executed *before* the</span>
+<span class="doccomment">/// `ArbCmd`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// When this succeeds, the received data is returned in the form of a new</span>
+<span class="doccomment">/// handle. When it fails, 0 is returned.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The `ArbCmd` handle is consumed if and only if the API call succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_arb</span>(
     <span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>,
@@ -424,22 +432,22 @@
 }
 
 <span class="doccomment">/// Sends an `ArbCmd` message to one of the plugins, referenced by index.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The frontend always has index 0. 1 through N are used for the operators</span>
-<span class="doccomment">///&gt; in front to back order (where N is the number of operators). The</span>
-<span class="doccomment">///&gt; backend is at index N+1.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Python-style negative indices are supported. That is, -1 can be used to</span>
-<span class="doccomment">///&gt; refer to the backend, -2 to the last operator, and so on.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `ArbCmd`s are executed immediately after yielding to the simulator, so</span>
-<span class="doccomment">///&gt; all pending asynchronous calls are flushed and executed *before* the</span>
-<span class="doccomment">///&gt; `ArbCmd`.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; When this succeeds, the received data is returned in the form of a new</span>
-<span class="doccomment">///&gt; handle. When it fails, 0 is returned.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The `ArbCmd` handle is consumed if and only if the API call succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The frontend always has index 0. 1 through N are used for the operators</span>
+<span class="doccomment">/// in front to back order (where N is the number of operators). The</span>
+<span class="doccomment">/// backend is at index N+1.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Python-style negative indices are supported. That is, -1 can be used to</span>
+<span class="doccomment">/// refer to the backend, -2 to the last operator, and so on.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `ArbCmd`s are executed immediately after yielding to the simulator, so</span>
+<span class="doccomment">/// all pending asynchronous calls are flushed and executed *before* the</span>
+<span class="doccomment">/// `ArbCmd`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// When this succeeds, the received data is returned in the form of a new</span>
+<span class="doccomment">/// handle. When it fails, 0 is returned.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The `ArbCmd` handle is consumed if and only if the API call succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_arb_idx</span>(
     <span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>,
@@ -458,10 +466,10 @@
 
 <span class="doccomment">/// Queries the implementation name of a plugin, referenced by instance</span>
 <span class="doccomment">/// name.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the</span>
-<span class="doccomment">///&gt; name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the</span>
+<span class="doccomment">/// name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_name</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -475,10 +483,10 @@
 }
 
 <span class="doccomment">/// Queries the implementation name of a plugin, referenced by index.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the</span>
-<span class="doccomment">///&gt; name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the</span>
+<span class="doccomment">/// name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_name_idx</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">index</span>: <span class="ident">ssize_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -492,10 +500,10 @@
 }
 
 <span class="doccomment">/// Queries the author of a plugin, referenced by instance name.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the</span>
-<span class="doccomment">///&gt; author. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the</span>
+<span class="doccomment">/// author. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_author</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -509,10 +517,10 @@
 }
 
 <span class="doccomment">/// Queries the author of a plugin, referenced by index.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the</span>
-<span class="doccomment">///&gt; author. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the</span>
+<span class="doccomment">/// author. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_author_idx</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">index</span>: <span class="ident">ssize_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -526,10 +534,10 @@
 }
 
 <span class="doccomment">/// Queries the version of a plugin, referenced by instance name.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the</span>
-<span class="doccomment">///&gt; version. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the</span>
+<span class="doccomment">/// version. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_version</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -543,10 +551,10 @@
 }
 
 <span class="doccomment">/// Queries the version of a plugin, referenced by index.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the</span>
-<span class="doccomment">///&gt; version. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the</span>
+<span class="doccomment">/// version. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_version_idx</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">index</span>: <span class="ident">ssize_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {

@@ -83,11 +83,11 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Creates a new set of qubit references.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Returns the handle of the newly created set. The set is initially empty.</span>
-<span class="doccomment">///&gt; Qubit sets are ordered, meaning that the order in which qubits are popped</span>
-<span class="doccomment">///&gt; from the set equals the order in which they were pushed. To iterate over a</span>
-<span class="doccomment">///&gt; set, simply make a copy and drain the copy using pop.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns the handle of the newly created set. The set is initially empty.</span>
+<span class="doccomment">/// Qubit sets are ordered, meaning that the order in which qubits are popped</span>
+<span class="doccomment">/// from the set equals the order in which they were pushed. To iterate over a</span>
+<span class="doccomment">/// set, simply make a copy and drain the copy using pop.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_qbset_new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">insert</span>(<span class="ident">QubitReferenceSet</span>::<span class="ident">new</span>())
@@ -108,8 +108,8 @@
 }
 
 <span class="doccomment">/// Pushes a qubit reference into a qubit reference set.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function will fail if the specified qubit was already part of the set.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function will fail if the specified qubit was already part of the set.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_qbset_push</span>(<span class="ident">qbset</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">qubit</span>: <span class="ident">dqcs_qubit_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -126,9 +126,9 @@
 }
 
 <span class="doccomment">/// Pops a qubit reference off of a qubit reference set.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Qubits are popped in the same order in which they were pushed. That is,</span>
-<span class="doccomment">///&gt; they are FIFO-ordered.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Qubits are popped in the same order in which they were pushed. That is,</span>
+<span class="doccomment">/// they are FIFO-ordered.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_qbset_pop</span>(<span class="ident">qbset</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_qubit_t</span> {
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
@@ -142,8 +142,8 @@
 }
 
 <span class="doccomment">/// Returns the number of qubits in the given set.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function returns -1 to indicate failure.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns -1 to indicate failure.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_qbset_len</span>(<span class="ident">qbset</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ssize_t</span> {
     <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1</span>, <span class="op">|</span><span class="op">|</span> {

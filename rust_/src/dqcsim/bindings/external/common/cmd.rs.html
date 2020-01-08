@@ -72,12 +72,12 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Creates a new `ArbCmd` object.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Returns the handle of the newly created `ArbCmd`. The `ArbCmd` is</span>
-<span class="doccomment">///&gt; initialized with the given interface and operation IDs, JSON object `{}`,</span>
-<span class="doccomment">///&gt; and an empty binary argument list. Upon failure, returns 0.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `ArbCmd` objects support the `handle`, `arb`, and `cmd` interfaces.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns the handle of the newly created `ArbCmd`. The `ArbCmd` is</span>
+<span class="doccomment">/// initialized with the given interface and operation IDs, JSON object `{}`,</span>
+<span class="doccomment">/// and an empty binary argument list. Upon failure, returns 0.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `ArbCmd` objects support the `handle`, `arb`, and `cmd` interfaces.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_cmd_new</span>(<span class="ident">iface</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>, <span class="ident">oper</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
@@ -90,10 +90,10 @@
 }
 
 <span class="doccomment">/// Returns the interface ID of an `ArbCmd`.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the JSON</span>
-<span class="doccomment">///&gt; string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure, this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the JSON</span>
+<span class="doccomment">/// string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure, this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_cmd_iface_get</span>(<span class="ident">cmd</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -103,8 +103,8 @@
 }
 
 <span class="doccomment">/// Compares the interface ID of an `ArbCmd` with the given string.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Returns -1 for failure, 0 for no match, or 1 for a match.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns -1 for failure, 0 for no match, or 1 for a match.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_cmd_iface_cmp</span>(
     <span class="ident">cmd</span>: <span class="ident">dqcs_handle_t</span>,
@@ -117,10 +117,10 @@
 }
 
 <span class="doccomment">/// Returns the operation ID of an `ArbCmd`.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the JSON</span>
-<span class="doccomment">///&gt; string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure, this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the JSON</span>
+<span class="doccomment">/// string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure, this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_cmd_oper_get</span>(<span class="ident">cmd</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -130,8 +130,8 @@
 }
 
 <span class="doccomment">/// Compares the operation ID of an `ArbCmd` with the given string.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Returns -1 for failure, 0 for no match, or 1 for a match.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns -1 for failure, 0 for no match, or 1 for a match.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_cmd_oper_cmp</span>(<span class="ident">cmd</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">oper</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_bool_return_t</span> {
     <span class="ident">api_return_bool</span>(<span class="op">|</span><span class="op">|</span> {

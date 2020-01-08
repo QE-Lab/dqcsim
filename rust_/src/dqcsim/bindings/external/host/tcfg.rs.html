@@ -135,8 +135,8 @@
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">log</span>::<span class="ident">tee_file</span>::<span class="ident">TeeFileConfiguration</span>;
 
 <span class="doccomment">/// Creates a new plugin thread configuration object from a plugin definition.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The plugin definition handle is consumed by this function.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The plugin definition handle is consumed by this function.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_tcfg_new</span>(<span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
@@ -152,11 +152,11 @@
 }
 
 <span class="doccomment">/// Creates a new plugin thread configuration object from a callback.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The callback is called by DQCsim from a dedicated thread when DQCsim wants</span>
-<span class="doccomment">///&gt; to start the plugin. The callback must then in some way spawn a plugin</span>
-<span class="doccomment">///&gt; process that connects to the provided simulator string. The callback should</span>
-<span class="doccomment">///&gt; return only when the process terminates.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The callback is called by DQCsim from a dedicated thread when DQCsim wants</span>
+<span class="doccomment">/// to start the plugin. The callback must then in some way spawn a plugin</span>
+<span class="doccomment">/// process that connects to the provided simulator string. The callback should</span>
+<span class="doccomment">/// return only when the process terminates.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_tcfg_new_raw</span>(
     <span class="ident">plugin_type</span>: <span class="ident">dqcs_plugin_type_t</span>,
@@ -194,10 +194,10 @@
 }
 
 <span class="doccomment">/// Returns the configured name for the given plugin thread.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the</span>
-<span class="doccomment">///&gt; name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the</span>
+<span class="doccomment">/// name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_tcfg_name</span>(<span class="ident">tcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -208,9 +208,9 @@
 
 <span class="doccomment">/// Appends an `ArbCmd` to the list of initialization commands of a plugin</span>
 <span class="doccomment">/// thread.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The `ArbCmd` handle is consumed by this function, and is thus invalidated,</span>
-<span class="doccomment">///&gt; if and only if it is successful.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The `ArbCmd` handle is consumed by this function, and is thus invalidated,</span>
+<span class="doccomment">/// if and only if it is successful.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_tcfg_init_cmd</span>(<span class="ident">tcfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">cmd</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -244,8 +244,8 @@
 }
 
 <span class="doccomment">/// Configures a plugin thread to also output its log messages to a file.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `verbosity` configures the verbosity level for the file only.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `verbosity` configures the verbosity level for the file only.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_tcfg_tee</span>(
     <span class="ident">tcfg</span>: <span class="ident">dqcs_handle_t</span>,

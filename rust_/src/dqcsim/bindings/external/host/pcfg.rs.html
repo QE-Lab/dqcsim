@@ -349,13 +349,13 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null</span>;
 
 <span class="doccomment">/// Creates a new plugin process configuration object using sugared syntax.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `typ` specifies the type of plugin. `name` specifies the name used to refer</span>
-<span class="doccomment">///&gt; to the plugin later, which much be unique within a simulation; if it is</span>
-<span class="doccomment">///&gt; empty or `NULL`, auto-naming will be performed: &quot;front&quot; for the frontend,</span>
-<span class="doccomment">///&gt; &quot;oper&amp;lt;i&amp;gt;&quot; for the operators (indices starting at 1 from frontend to</span>
-<span class="doccomment">///&gt; backend), and &quot;back&quot; for the backend. `spec` specifies which plugin to use,</span>
-<span class="doccomment">///&gt; using the same syntax that the `dqcsim` command line interface uses.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `typ` specifies the type of plugin. `name` specifies the name used to refer</span>
+<span class="doccomment">/// to the plugin later, which much be unique within a simulation; if it is</span>
+<span class="doccomment">/// empty or `NULL`, auto-naming will be performed: &quot;front&quot; for the frontend,</span>
+<span class="doccomment">/// &quot;oper&amp;lt;i&amp;gt;&quot; for the operators (indices starting at 1 from frontend to</span>
+<span class="doccomment">/// backend), and &quot;back&quot; for the backend. `spec` specifies which plugin to use,</span>
+<span class="doccomment">/// using the same syntax that the `dqcsim` command line interface uses.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_new</span>(
     <span class="ident">typ</span>: <span class="ident">dqcs_plugin_type_t</span>,
@@ -377,15 +377,15 @@
 }
 
 <span class="doccomment">/// Creates a new plugin process configuration object using raw paths.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This works the same as `dqcs_pcfg_new()`, but instead of the sugared,</span>
-<span class="doccomment">///&gt; command-line style specification you have to specify the path to the plugin</span>
-<span class="doccomment">///&gt; executable and (if applicable) the script it must execute directly. This is</span>
-<span class="doccomment">///&gt; useful when you have a specific executable in mind and you don&#39;t want the</span>
-<span class="doccomment">///&gt; somewhat heuristic desugaring algorithm from doing something unexpected.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Pass `NULL` or an empty string to `script` to specify a native plugin</span>
-<span class="doccomment">///&gt; executable that does not take a script argument.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This works the same as `dqcs_pcfg_new()`, but instead of the sugared,</span>
+<span class="doccomment">/// command-line style specification you have to specify the path to the plugin</span>
+<span class="doccomment">/// executable and (if applicable) the script it must execute directly. This is</span>
+<span class="doccomment">/// useful when you have a specific executable in mind and you don&#39;t want the</span>
+<span class="doccomment">/// somewhat heuristic desugaring algorithm from doing something unexpected.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Pass `NULL` or an empty string to `script` to specify a native plugin</span>
+<span class="doccomment">/// executable that does not take a script argument.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_new_raw</span>(
     <span class="ident">typ</span>: <span class="ident">dqcs_plugin_type_t</span>,
@@ -418,10 +418,10 @@
 }
 
 <span class="doccomment">/// Returns the configured name for the given plugin process.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the</span>
-<span class="doccomment">///&gt; name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the</span>
+<span class="doccomment">/// name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_name</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -431,11 +431,11 @@
 }
 
 <span class="doccomment">/// Returns the configured executable path for the given plugin process.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the</span>
-<span class="doccomment">///&gt; executable path. Free it with `free()` when you&#39;re done with it to avoid</span>
-<span class="doccomment">///&gt; memory leaks.** On failure (i.e., the handle is invalid) this returns</span>
-<span class="doccomment">///&gt; `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the</span>
+<span class="doccomment">/// executable path. Free it with `free()` when you&#39;re done with it to avoid</span>
+<span class="doccomment">/// memory leaks.** On failure (i.e., the handle is invalid) this returns</span>
+<span class="doccomment">/// `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_executable</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -445,12 +445,12 @@
 }
 
 <span class="doccomment">/// Returns the configured script path for the given plugin process.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the</span>
-<span class="doccomment">///&gt; script path. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure (i.e., the handle is invalid) this returns `NULL`. An</span>
-<span class="doccomment">///&gt; empty string will be returned if no script is configured to distinguish it</span>
-<span class="doccomment">///&gt; from failure.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the</span>
+<span class="doccomment">/// script path. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`. An</span>
+<span class="doccomment">/// empty string will be returned if no script is configured to distinguish it</span>
+<span class="doccomment">/// from failure.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_script</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -465,9 +465,9 @@
 
 <span class="doccomment">/// Appends an `ArbCmd` to the list of initialization commands of a plugin</span>
 <span class="doccomment">/// process.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The `ArbCmd` handle is consumed by this function, and is thus invalidated,</span>
-<span class="doccomment">///&gt; if and only if it is successful.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The `ArbCmd` handle is consumed by this function, and is thus invalidated,</span>
+<span class="doccomment">/// if and only if it is successful.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_init_cmd</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">cmd</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -479,11 +479,11 @@
 }
 
 <span class="doccomment">/// Overrides an environment variable for the plugin process.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The environment variable `key` is set to `value` regardless of whether it</span>
-<span class="doccomment">///&gt; exists in the parent environment variable scope.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If value is `NULL`, the environment variable `key` is unset instead.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The environment variable `key` is set to `value` regardless of whether it</span>
+<span class="doccomment">/// exists in the parent environment variable scope.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If value is `NULL`, the environment variable `key` is unset instead.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_env_set</span>(
     <span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>,
@@ -504,9 +504,9 @@
 }
 
 <span class="doccomment">/// Removes/unsets an environment variable for the plugin process.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The environment variable `key` is unset regardless of whether it exists in</span>
-<span class="doccomment">///&gt; the parent environment variable scope.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The environment variable `key` is unset regardless of whether it exists in</span>
+<span class="doccomment">/// the parent environment variable scope.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_env_unset</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">key</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">dqcs_pcfg_env_set</span>(<span class="ident">pcfg</span>, <span class="ident">key</span>, <span class="ident">null</span>())
@@ -528,11 +528,11 @@
 }
 
 <span class="doccomment">/// Returns the configured working directory for the given plugin process.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the</span>
-<span class="doccomment">///&gt; working directory. Free it with `free()` when you&#39;re done with it to avoid</span>
-<span class="doccomment">///&gt; memory leaks.** On failure (i.e., the handle is invalid) this returns</span>
-<span class="doccomment">///&gt; `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the</span>
+<span class="doccomment">/// working directory. Free it with `free()` when you&#39;re done with it to avoid</span>
+<span class="doccomment">/// memory leaks.** On failure (i.e., the handle is invalid) this returns</span>
+<span class="doccomment">/// `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_work_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -564,8 +564,8 @@
 }
 
 <span class="doccomment">/// Configures a plugin process to also output its log messages to a file.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `verbosity` configures the verbosity level for the file only.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `verbosity` configures the verbosity level for the file only.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_tee</span>(
     <span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>,
@@ -631,12 +631,12 @@
 }
 
 <span class="doccomment">/// Configures the timeout for the plugin process to connect to DQCsim.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default is 5 seconds, so you should normally be able to leave this</span>
-<span class="doccomment">///&gt; alone.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The time unit is seconds. Use IEEE positive infinity to specify an infinite</span>
-<span class="doccomment">///&gt; timeout.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default is 5 seconds, so you should normally be able to leave this</span>
+<span class="doccomment">/// alone.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The time unit is seconds. Use IEEE positive infinity to specify an infinite</span>
+<span class="doccomment">/// timeout.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_accept_timeout_set</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">timeout</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -647,9 +647,9 @@
 }
 
 <span class="doccomment">/// Returns the configured timeout for the plugin process to connect to DQCsim.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The time unit is in seconds. Returns positive inifinity for an infinite</span>
-<span class="doccomment">///&gt; timeout. Returns -1 when the function fails.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The time unit is in seconds. Returns positive inifinity for an infinite</span>
+<span class="doccomment">/// timeout. Returns -1 when the function fails.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_accept_timeout_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1.0</span>, <span class="op">|</span><span class="op">|</span> {
@@ -659,12 +659,12 @@
 }
 
 <span class="doccomment">/// Configures the timeout for the plugin process to shut down gracefully.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default is 5 seconds, so you should normally be able to leave this</span>
-<span class="doccomment">///&gt; alone.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The time unit is seconds. Use IEEE positive infinity to specify an infinite</span>
-<span class="doccomment">///&gt; timeout.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default is 5 seconds, so you should normally be able to leave this</span>
+<span class="doccomment">/// alone.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The time unit is seconds. Use IEEE positive infinity to specify an infinite</span>
+<span class="doccomment">/// timeout.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_shutdown_timeout_set</span>(
     <span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>,
@@ -679,9 +679,9 @@
 
 <span class="doccomment">/// Returns the configured timeout for the plugin process to shut down</span>
 <span class="doccomment">/// gracefully.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The time unit is in seconds. Returns positive inifinity for an infinite</span>
-<span class="doccomment">///&gt; timeout. Returns -1 when the function fails.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The time unit is in seconds. Returns positive inifinity for an infinite</span>
+<span class="doccomment">/// timeout. Returns -1 when the function fails.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_shutdown_timeout_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1.0</span>, <span class="op">|</span><span class="op">|</span> {

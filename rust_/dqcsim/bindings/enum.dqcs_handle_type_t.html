@@ -23,135 +23,75 @@
 }</pre></div><div class='docblock'><p>Enumeration of types that can be associated with a handle.</p>
 </div><h2 id='variants' class='variants small-section-header'>
                    Variants<a href='#variants' class='anchor'></a></h2>
-<div id="variant.DQCS_HTYPE_INVALID" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_INVALID" class="anchor field"></a><code id='DQCS_HTYPE_INVALID.v'>DQCS_HTYPE_INVALID</code></div><div class='docblock'><p>Indicates that the given handle is invalid.
-&gt;</p>
-<blockquote>
+<div id="variant.DQCS_HTYPE_INVALID" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_INVALID" class="anchor field"></a><code id='DQCS_HTYPE_INVALID.v'>DQCS_HTYPE_INVALID</code></div><div class='docblock'><p>Indicates that the given handle is invalid.</p>
 <p>This indicates one of the following:</p>
 <ul>
 <li>The handle value is invalid (zero or negative).</li>
 <li>The handle has not been used yet.</li>
 <li>The object associated with the handle was deleted.</li>
 </ul>
-</blockquote>
-</div><div id="variant.DQCS_HTYPE_ARB_DATA" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_ARB_DATA" class="anchor field"></a><code id='DQCS_HTYPE_ARB_DATA.v'>DQCS_HTYPE_ARB_DATA</code></div><div class='docblock'><p>Indicates that the given handle belongs to an <code>ArbData</code> object.
-&gt;</p>
-<blockquote>
+</div><div id="variant.DQCS_HTYPE_ARB_DATA" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_ARB_DATA" class="anchor field"></a><code id='DQCS_HTYPE_ARB_DATA.v'>DQCS_HTYPE_ARB_DATA</code></div><div class='docblock'><p>Indicates that the given handle belongs to an <code>ArbData</code> object.</p>
 <p>This means that the handle supports the <code>handle</code> and <code>arb</code> interfaces.</p>
-</blockquote>
-</div><div id="variant.DQCS_HTYPE_ARB_CMD" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_ARB_CMD" class="anchor field"></a><code id='DQCS_HTYPE_ARB_CMD.v'>DQCS_HTYPE_ARB_CMD</code></div><div class='docblock'><p>Indicates that the given handle belongs to an <code>ArbCmd</code> object.
-&gt;</p>
-<blockquote>
+</div><div id="variant.DQCS_HTYPE_ARB_CMD" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_ARB_CMD" class="anchor field"></a><code id='DQCS_HTYPE_ARB_CMD.v'>DQCS_HTYPE_ARB_CMD</code></div><div class='docblock'><p>Indicates that the given handle belongs to an <code>ArbCmd</code> object.</p>
 <p>This means that the handle supports the <code>handle</code>, <code>arb</code>, and <code>cmd</code>
 interfaces.</p>
-</blockquote>
-</div><div id="variant.DQCS_HTYPE_ARB_CMD_QUEUE" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_ARB_CMD_QUEUE" class="anchor field"></a><code id='DQCS_HTYPE_ARB_CMD_QUEUE.v'>DQCS_HTYPE_ARB_CMD_QUEUE</code></div><div class='docblock'><p>Indicates that the given handle belongs to a queue of <code>ArbCmd</code> object.
-&gt;</p>
-<blockquote>
+</div><div id="variant.DQCS_HTYPE_ARB_CMD_QUEUE" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_ARB_CMD_QUEUE" class="anchor field"></a><code id='DQCS_HTYPE_ARB_CMD_QUEUE.v'>DQCS_HTYPE_ARB_CMD_QUEUE</code></div><div class='docblock'><p>Indicates that the given handle belongs to a queue of <code>ArbCmd</code> object.</p>
 <p>This means that the handle supports the <code>handle</code>, <code>arb</code>, <code>cmd</code>, and
 <code>cq</code> interfaces.</p>
-</blockquote>
-</div><div id="variant.DQCS_HTYPE_QUBIT_SET" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_QUBIT_SET" class="anchor field"></a><code id='DQCS_HTYPE_QUBIT_SET.v'>DQCS_HTYPE_QUBIT_SET</code></div><div class='docblock'><p>Indicates that the given handle belongs to a set of qubit references.
-&gt;</p>
-<blockquote>
+</div><div id="variant.DQCS_HTYPE_QUBIT_SET" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_QUBIT_SET" class="anchor field"></a><code id='DQCS_HTYPE_QUBIT_SET.v'>DQCS_HTYPE_QUBIT_SET</code></div><div class='docblock'><p>Indicates that the given handle belongs to a set of qubit references.</p>
 <p>This means that the handle supports the <code>handle</code> and <code>qbset</code>
 interfaces.</p>
-</blockquote>
-</div><div id="variant.DQCS_HTYPE_GATE" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_GATE" class="anchor field"></a><code id='DQCS_HTYPE_GATE.v'>DQCS_HTYPE_GATE</code></div><div class='docblock'><p>Indicates that the given handle belongs to a quantum gate description.
-&gt;</p>
-<blockquote>
+</div><div id="variant.DQCS_HTYPE_GATE" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_GATE" class="anchor field"></a><code id='DQCS_HTYPE_GATE.v'>DQCS_HTYPE_GATE</code></div><div class='docblock'><p>Indicates that the given handle belongs to a quantum gate description.</p>
 <p>This means that the handle supports the <code>handle</code>, <code>gate</code>, and <code>arb</code>
 interfaces.</p>
-</blockquote>
-</div><div id="variant.DQCS_HTYPE_MEAS" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_MEAS" class="anchor field"></a><code id='DQCS_HTYPE_MEAS.v'>DQCS_HTYPE_MEAS</code></div><div class='docblock'><p>Indicates that the given handle belongs to a qubit measurement result.
-&gt;</p>
-<blockquote>
+</div><div id="variant.DQCS_HTYPE_MEAS" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_MEAS" class="anchor field"></a><code id='DQCS_HTYPE_MEAS.v'>DQCS_HTYPE_MEAS</code></div><div class='docblock'><p>Indicates that the given handle belongs to a qubit measurement result.</p>
 <p>This means that the handle supports the <code>handle</code>, <code>meas</code>, and <code>arb</code>
 interfaces. It can also be used in place of a qubit measurement result
 set by functions that consume the object.</p>
-</blockquote>
 </div><div id="variant.DQCS_HTYPE_MEAS_SET" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_MEAS_SET" class="anchor field"></a><code id='DQCS_HTYPE_MEAS_SET.v'>DQCS_HTYPE_MEAS_SET</code></div><div class='docblock'><p>Indicates that the given handle belongs to a set of qubit measurement
-results.
-&gt;</p>
-<blockquote>
+results.</p>
 <p>This means that the handle supports the <code>handle</code> and <code>mset</code> interfaces.</p>
-</blockquote>
 </div><div id="variant.DQCS_HTYPE_FRONT_PROCESS_CONFIG" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_FRONT_PROCESS_CONFIG" class="anchor field"></a><code id='DQCS_HTYPE_FRONT_PROCESS_CONFIG.v'>DQCS_HTYPE_FRONT_PROCESS_CONFIG</code></div><div class='docblock'><p>Indicates that the given handle belongs to a frontend plugin process
-configuration object.
-&gt;</p>
-<blockquote>
+configuration object.</p>
 <p>This means that the handle supports the <code>handle</code>, <code>pcfg</code>, and <code>xcfg</code>
 interfaces.</p>
-</blockquote>
 </div><div id="variant.DQCS_HTYPE_OPER_PROCESS_CONFIG" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_OPER_PROCESS_CONFIG" class="anchor field"></a><code id='DQCS_HTYPE_OPER_PROCESS_CONFIG.v'>DQCS_HTYPE_OPER_PROCESS_CONFIG</code></div><div class='docblock'><p>Indicates that the given handle belongs to an operator plugin process
-configuration object.
-&gt;</p>
-<blockquote>
+configuration object.</p>
 <p>This means that the handle supports the <code>handle</code>, <code>pcfg</code>, and <code>xcfg</code>
 interfaces.</p>
-</blockquote>
 </div><div id="variant.DQCS_HTYPE_BACK_PROCESS_CONFIG" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_BACK_PROCESS_CONFIG" class="anchor field"></a><code id='DQCS_HTYPE_BACK_PROCESS_CONFIG.v'>DQCS_HTYPE_BACK_PROCESS_CONFIG</code></div><div class='docblock'><p>Indicates that the given handle belongs to a backend plugin process
-configuration object.
-&gt;</p>
-<blockquote>
+configuration object.</p>
 <p>This means that the handle supports the <code>handle</code>, <code>pcfg</code>, and <code>xcfg</code>
 interfaces.</p>
-</blockquote>
 </div><div id="variant.DQCS_HTYPE_FRONT_THREAD_CONFIG" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_FRONT_THREAD_CONFIG" class="anchor field"></a><code id='DQCS_HTYPE_FRONT_THREAD_CONFIG.v'>DQCS_HTYPE_FRONT_THREAD_CONFIG</code></div><div class='docblock'><p>Indicates that the given handle belongs to a frontend plugin thread
-configuration object.
-&gt;</p>
-<blockquote>
+configuration object.</p>
 <p>This means that the handle supports the <code>handle</code>, <code>tcfg</code>, and <code>xcfg</code>
 interfaces.</p>
-</blockquote>
 </div><div id="variant.DQCS_HTYPE_OPER_THREAD_CONFIG" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_OPER_THREAD_CONFIG" class="anchor field"></a><code id='DQCS_HTYPE_OPER_THREAD_CONFIG.v'>DQCS_HTYPE_OPER_THREAD_CONFIG</code></div><div class='docblock'><p>Indicates that the given handle belongs to an operator plugin thread
-configuration object.
-&gt;</p>
-<blockquote>
+configuration object.</p>
 <p>This means that the handle supports the <code>handle</code>, <code>tcfg</code>, and <code>xcfg</code>
 interfaces.</p>
-</blockquote>
 </div><div id="variant.DQCS_HTYPE_BACK_THREAD_CONFIG" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_BACK_THREAD_CONFIG" class="anchor field"></a><code id='DQCS_HTYPE_BACK_THREAD_CONFIG.v'>DQCS_HTYPE_BACK_THREAD_CONFIG</code></div><div class='docblock'><p>Indicates that the given handle belongs to a backend plugin thread
-configuration object.
-&gt;</p>
-<blockquote>
+configuration object.</p>
 <p>This means that the handle supports the <code>handle</code>, <code>tcfg</code>, and <code>xcfg</code>
 interfaces.</p>
-</blockquote>
 </div><div id="variant.DQCS_HTYPE_SIM_CONFIG" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_SIM_CONFIG" class="anchor field"></a><code id='DQCS_HTYPE_SIM_CONFIG.v'>DQCS_HTYPE_SIM_CONFIG</code></div><div class='docblock'><p>Indicates that the given handle belongs to a simulator configuration
-object.
-&gt;</p>
-<blockquote>
+object.</p>
 <p>This means that the handle supports the <code>handle</code> and <code>scfg</code> interfaces.</p>
-</blockquote>
-</div><div id="variant.DQCS_HTYPE_SIM" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_SIM" class="anchor field"></a><code id='DQCS_HTYPE_SIM.v'>DQCS_HTYPE_SIM</code></div><div class='docblock'><p>Indicates that the given handle belongs to a simulator instance.
-&gt;</p>
-<blockquote>
+</div><div id="variant.DQCS_HTYPE_SIM" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_SIM" class="anchor field"></a><code id='DQCS_HTYPE_SIM.v'>DQCS_HTYPE_SIM</code></div><div class='docblock'><p>Indicates that the given handle belongs to a simulator instance.</p>
 <p>This means that the handle supports the <code>handle</code> and <code>sim</code> interfaces.</p>
-</blockquote>
 </div><div id="variant.DQCS_HTYPE_FRONT_DEF" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_FRONT_DEF" class="anchor field"></a><code id='DQCS_HTYPE_FRONT_DEF.v'>DQCS_HTYPE_FRONT_DEF</code></div><div class='docblock'><p>Indicates that the given handle belongs to a frontend plugin
-definition object.
-&gt;</p>
-<blockquote>
+definition object.</p>
 <p>This means that the handle supports the <code>handle</code> and <code>pdef</code> interfaces.</p>
-</blockquote>
 </div><div id="variant.DQCS_HTYPE_OPER_DEF" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_OPER_DEF" class="anchor field"></a><code id='DQCS_HTYPE_OPER_DEF.v'>DQCS_HTYPE_OPER_DEF</code></div><div class='docblock'><p>Indicates that the given handle belongs to an operator plugin
-definition object.
-&gt;</p>
-<blockquote>
+definition object.</p>
 <p>This means that the handle supports the <code>handle</code> and <code>pdef</code> interfaces.</p>
-</blockquote>
 </div><div id="variant.DQCS_HTYPE_BACK_DEF" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_BACK_DEF" class="anchor field"></a><code id='DQCS_HTYPE_BACK_DEF.v'>DQCS_HTYPE_BACK_DEF</code></div><div class='docblock'><p>Indicates that the given handle belongs to a backend plugin
-definition object.
-&gt;</p>
-<blockquote>
+definition object.</p>
 <p>This means that the handle supports the <code>handle</code> and <code>pdef</code> interfaces.</p>
-</blockquote>
-</div><div id="variant.DQCS_HTYPE_PLUGIN_JOIN" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_PLUGIN_JOIN" class="anchor field"></a><code id='DQCS_HTYPE_PLUGIN_JOIN.v'>DQCS_HTYPE_PLUGIN_JOIN</code></div><div class='docblock'><p>Indicates that the given handle belongs to a plugin thread join handle.
-&gt;</p>
-<blockquote>
+</div><div id="variant.DQCS_HTYPE_PLUGIN_JOIN" class="variant small-section-header"><a href="#variant.DQCS_HTYPE_PLUGIN_JOIN" class="anchor field"></a><code id='DQCS_HTYPE_PLUGIN_JOIN.v'>DQCS_HTYPE_PLUGIN_JOIN</code></div><div class='docblock'><p>Indicates that the given handle belongs to a plugin thread join handle.</p>
 <p>This means that the handle supports the <code>handle</code> and <code>pjoin</code>
 interfaces.</p>
-</blockquote>
 </div><h2 id='implementations' class='small-section-header'>Trait Implementations<a href='#implementations' class='anchor'></a></h2><div id='implementations-list'><h3 id='impl-Clone' class='impl'><code class='in-band'>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> for <a class="enum" href="../../dqcsim/bindings/enum.dqcs_handle_type_t.html" title="enum dqcsim::bindings::dqcs_handle_type_t">dqcs_handle_type_t</a></code><a href='#impl-Clone' class='anchor'></a><a class='srclink' href='../../src/dqcsim/bindings/ctypes.rs.html#84' title='goto source code'>[src]</a></h3><div class='impl-items'><h4 id='method.clone' class="method hidden"><code id='clone.v'>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class="enum" href="../../dqcsim/bindings/enum.dqcs_handle_type_t.html" title="enum dqcsim::bindings::dqcs_handle_type_t">dqcs_handle_type_t</a></code><a class='srclink' href='../../src/dqcsim/bindings/ctypes.rs.html#84' title='goto source code'>[src]</a></h4><div class='docblock hidden'><p>Returns a copy of the value. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone">Read more</a></p>
 </div><h4 id='method.clone_from' class="method hidden"><code id='clone_from.v'>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Self)</code><span class='since' title='Stable since Rust version 1.0.0'>1.0.0</span><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/clone.rs.html#131-133' title='goto source code'>[src]</a></h4><div class='docblock hidden'><p>Performs copy-assignment from <code>source</code>. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from">Read more</a></p>
 </div></div><h3 id='impl-Copy' class='impl'><code class='in-band'>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html" title="trait core::marker::Copy">Copy</a> for <a class="enum" href="../../dqcsim/bindings/enum.dqcs_handle_type_t.html" title="enum dqcsim::bindings::dqcs_handle_type_t">dqcs_handle_type_t</a></code><a href='#impl-Copy' class='anchor'></a><a class='srclink' href='../../src/dqcsim/bindings/ctypes.rs.html#84' title='goto source code'>[src]</a></h3><div class='impl-items'></div><h3 id='impl-PartialEq%3Cdqcs_handle_type_t%3E' class='impl'><code class='in-band'>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html" title="trait core::cmp::PartialEq">PartialEq</a>&lt;<a class="enum" href="../../dqcsim/bindings/enum.dqcs_handle_type_t.html" title="enum dqcsim::bindings::dqcs_handle_type_t">dqcs_handle_type_t</a>&gt; for <a class="enum" href="../../dqcsim/bindings/enum.dqcs_handle_type_t.html" title="enum dqcsim::bindings::dqcs_handle_type_t">dqcs_handle_type_t</a></code><a href='#impl-PartialEq%3Cdqcs_handle_type_t%3E' class='anchor'></a><a class='srclink' href='../../src/dqcsim/bindings/ctypes.rs.html#84' title='goto source code'>[src]</a></h3><div class='impl-items'><h4 id='method.eq' class="method hidden"><code id='eq.v'>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq' class='fnname'>eq</a>(&amp;self, other: &amp;<a class="enum" href="../../dqcsim/bindings/enum.dqcs_handle_type_t.html" title="enum dqcsim::bindings::dqcs_handle_type_t">dqcs_handle_type_t</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code><a class='srclink' href='../../src/dqcsim/bindings/ctypes.rs.html#84' title='goto source code'>[src]</a></h4><div class='docblock hidden'><p>This method tests for <code>self</code> and <code>other</code> values to be equal, and is used by <code>==</code>. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq">Read more</a></p>

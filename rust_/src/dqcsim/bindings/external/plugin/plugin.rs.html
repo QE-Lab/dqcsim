@@ -312,18 +312,18 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Executes a plugin in the current thread.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `pdef` must be an appropriately populated plugin definition object.</span>
-<span class="doccomment">///&gt; Its callback functions will be called from the current thread, from within</span>
-<span class="doccomment">///&gt; the context of this function.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `simulator` must be set to the address of our endpoint of the simulator</span>
-<span class="doccomment">///&gt; that&#39;s using the plugin; DQCsim normally passes this as the first command</span>
-<span class="doccomment">///&gt; line argument of the plugin process.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If the plugin starts, the `pdef` handle is consumed by this function,</span>
-<span class="doccomment">///&gt; regardless of whether the plugin eventually closes normally. The handle is</span>
-<span class="doccomment">///&gt; only left alive if `pdef` is not a plugin definition object.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `pdef` must be an appropriately populated plugin definition object.</span>
+<span class="doccomment">/// Its callback functions will be called from the current thread, from within</span>
+<span class="doccomment">/// the context of this function.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `simulator` must be set to the address of our endpoint of the simulator</span>
+<span class="doccomment">/// that&#39;s using the plugin; DQCsim normally passes this as the first command</span>
+<span class="doccomment">/// line argument of the plugin process.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If the plugin starts, the `pdef` handle is consumed by this function,</span>
+<span class="doccomment">/// regardless of whether the plugin eventually closes normally. The handle is</span>
+<span class="doccomment">/// only left alive if `pdef` is not a plugin definition object.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_run</span>(<span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">simulator</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -333,20 +333,20 @@
 }
 
 <span class="doccomment">/// Executes a plugin in a worker thread.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function behaves the same as dqcs_plugin_log(), but is asynchronous;</span>
-<span class="doccomment">///&gt; it always returns immediately. Of course, this means that the callbacks in</span>
-<span class="doccomment">///&gt; `pdef` will be called from a different thread.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; To wait for the thread to finish executing, call `dqcs_plugin_wait()` on</span>
-<span class="doccomment">///&gt; the returned join handle. Alternatively you can delete the join handle</span>
-<span class="doccomment">///&gt; object, which will detach the thread.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Note that `dqcs_log_*()` will only be available in the thread that the</span>
-<span class="doccomment">///&gt; plugin actually runs in.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function returns 0 to indicate failure to start the plugin. Otherwise,</span>
-<span class="doccomment">///&gt; the join handle is returned.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function behaves the same as dqcs_plugin_log(), but is asynchronous;</span>
+<span class="doccomment">/// it always returns immediately. Of course, this means that the callbacks in</span>
+<span class="doccomment">/// `pdef` will be called from a different thread.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// To wait for the thread to finish executing, call `dqcs_plugin_wait()` on</span>
+<span class="doccomment">/// the returned join handle. Alternatively you can delete the join handle</span>
+<span class="doccomment">/// object, which will detach the thread.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Note that `dqcs_log_*()` will only be available in the thread that the</span>
+<span class="doccomment">/// plugin actually runs in.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns 0 to indicate failure to start the plugin. Otherwise,</span>
+<span class="doccomment">/// the join handle is returned.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_start</span>(
     <span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>,
@@ -367,10 +367,10 @@
 }
 
 <span class="doccomment">/// Waits for a plugin worker thread to finish executing.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Unless the join handle is invalid, this function returns success/failure</span>
-<span class="doccomment">///&gt; based on the result of the plugin execution. If the plugin thread is</span>
-<span class="doccomment">///&gt; joined, the join handle is deleted.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Unless the join handle is invalid, this function returns success/failure</span>
+<span class="doccomment">/// based on the result of the plugin execution. If the plugin thread is</span>
+<span class="doccomment">/// joined, the join handle is deleted.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_wait</span>(<span class="ident">pjoin</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -380,11 +380,11 @@
 }
 
 <span class="doccomment">/// Sends a message to the host.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; It is only legal to call this function from within the `run()` callback.</span>
-<span class="doccomment">///&gt; Any other source will result in an error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The `cmd` handle is consumed by this function if and only if it succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// It is only legal to call this function from within the `run()` callback.</span>
+<span class="doccomment">/// Any other source will result in an error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The `cmd` handle is consumed by this function if and only if it succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_send</span>(
     <span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>,
@@ -400,32 +400,32 @@
 }
 
 <span class="doccomment">/// Waits for a message from the host.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; It is only legal to call this function from within the `run()` callback.</span>
-<span class="doccomment">///&gt; Any other source will result in an error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; When successful, this function returns a new handle to the received</span>
-<span class="doccomment">///&gt; `ArbData` object. 0 is used to indicate that an error occurred.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// It is only legal to call this function from within the `run()` callback.</span>
+<span class="doccomment">/// Any other source will result in an error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// When successful, this function returns a new handle to the received</span>
+<span class="doccomment">/// `ArbData` object. 0 is used to indicate that an error occurred.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_recv</span>(<span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">insert</span>(<span class="ident">plugin</span>.<span class="ident">resolve</span>()<span class="question-mark">?</span>.<span class="ident">recv</span>()<span class="question-mark">?</span>)))
 }
 
 <span class="doccomment">/// Allocate the given number of downstream qubits.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Backend plugins are not allowed to call this. Doing so will result in an</span>
-<span class="doccomment">///&gt; error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `num_qubits` specifies the number of qubits that are to be allocated.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `commands` must be 0 or a valid handle to an `ArbCmd` queue, containing a</span>
-<span class="doccomment">///&gt; list of commands that may be used to modify the behavior of the qubit</span>
-<span class="doccomment">///&gt; register; 0 is equivalent to zero commands. The queue is consumed by this</span>
-<span class="doccomment">///&gt; function, i.e. the handle becomes invalid, if and only if it succeeds.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If the function is successful, a new handle to the set of qubit references</span>
-<span class="doccomment">///&gt; representing the newly allocated register is returned. When the function</span>
-<span class="doccomment">///&gt; fails, 0 is returned.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in an</span>
+<span class="doccomment">/// error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `num_qubits` specifies the number of qubits that are to be allocated.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `commands` must be 0 or a valid handle to an `ArbCmd` queue, containing a</span>
+<span class="doccomment">/// list of commands that may be used to modify the behavior of the qubit</span>
+<span class="doccomment">/// register; 0 is equivalent to zero commands. The queue is consumed by this</span>
+<span class="doccomment">/// function, i.e. the handle becomes invalid, if and only if it succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If the function is successful, a new handle to the set of qubit references</span>
+<span class="doccomment">/// representing the newly allocated register is returned. When the function</span>
+<span class="doccomment">/// fails, 0 is returned.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_allocate</span>(
     <span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>,
@@ -449,12 +449,12 @@
 }
 
 <span class="doccomment">/// Free the given downstream qubits.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Backend plugins are not allowed to call this. Doing so will result in an</span>
-<span class="doccomment">///&gt; error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `qubits` must be a valid set of qubit references. The set is consumed by</span>
-<span class="doccomment">///&gt; this function, i.e. the handle becomes invalid, if and only if it succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in an</span>
+<span class="doccomment">/// error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `qubits` must be a valid set of qubit references. The set is consumed by</span>
+<span class="doccomment">/// this function, i.e. the handle becomes invalid, if and only if it succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_free</span>(
     <span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>,
@@ -470,12 +470,12 @@
 }
 
 <span class="doccomment">/// Tells the downstream plugin to execute a gate.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Backend plugins are not allowed to call this. Doing so will result in an</span>
-<span class="doccomment">///&gt; error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `gate` must be a valid gate object. The object is consumed by this</span>
-<span class="doccomment">///&gt; function, i.e. the handle becomes invalid, if and only if it succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in an</span>
+<span class="doccomment">/// error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `gate` must be a valid gate object. The object is consumed by this</span>
+<span class="doccomment">/// function, i.e. the handle becomes invalid, if and only if it succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_gate</span>(
     <span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>,
@@ -491,12 +491,12 @@
 }
 
 <span class="doccomment">/// Returns the latest measurement of the given downstream qubit.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Backend plugins are not allowed to call this. Doing so will result in an</span>
-<span class="doccomment">///&gt; error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If the function succeeds, it returns a new handle to a qubit measurement</span>
-<span class="doccomment">///&gt; result object. Otherwise it returns 0.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in an</span>
+<span class="doccomment">/// error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If the function succeeds, it returns a new handle to a qubit measurement</span>
+<span class="doccomment">/// result object. Otherwise it returns 0.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_get_measurement</span>(
     <span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>,
@@ -511,11 +511,11 @@
 
 <span class="doccomment">/// Returns the number of downstream cycles since the latest measurement of the</span>
 <span class="doccomment">/// given downstream qubit.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Backend plugins are not allowed to call this. Doing so will result in an</span>
-<span class="doccomment">///&gt; error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function uses -1 to signal an error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in an</span>
+<span class="doccomment">/// error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function uses -1 to signal an error.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_get_cycles_since_measure</span>(
     <span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>,
@@ -530,11 +530,11 @@
 
 <span class="doccomment">/// Returns the number of downstream cycles between the last two measurements</span>
 <span class="doccomment">/// of the given downstream qubit.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Backend plugins are not allowed to call this. Doing so will result in an</span>
-<span class="doccomment">///&gt; error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function uses -1 to signal an error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in an</span>
+<span class="doccomment">/// error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function uses -1 to signal an error.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_get_cycles_between_measures</span>(
     <span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>,
@@ -548,12 +548,12 @@
 }
 
 <span class="doccomment">/// Tells the downstream plugin to run for the specified number of cycles.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Backend plugins are not allowed to call this. Doing so will result in an</span>
-<span class="doccomment">///&gt; error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The return value is the new cycle counter. This function uses -1 to signal</span>
-<span class="doccomment">///&gt; an error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in an</span>
+<span class="doccomment">/// error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The return value is the new cycle counter. This function uses -1 to signal</span>
+<span class="doccomment">/// an error.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_advance</span>(
     <span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>,
@@ -569,23 +569,23 @@
 }
 
 <span class="doccomment">/// Returns the current value of the downstream cycle counter.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Backend plugins are not allowed to call this. Doing so will result in an</span>
-<span class="doccomment">///&gt; error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function uses -1 to signal an error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in an</span>
+<span class="doccomment">/// error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function uses -1 to signal an error.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_get_cycle</span>(<span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_cycle_t</span> {
     <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1</span>, <span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">plugin</span>.<span class="ident">resolve</span>()<span class="question-mark">?</span>.<span class="ident">get_cycle</span>()<span class="question-mark">?</span>.<span class="ident">into</span>()))
 }
 
 <span class="doccomment">/// Sends an arbitrary command downstream.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Backend plugins are not allowed to call this. Doing so will result in an</span>
-<span class="doccomment">///&gt; error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function returns a new handle to an `ArbData` object representing the</span>
-<span class="doccomment">///&gt; return value of the `ArbCmd` when successful. Otherwise, it returns 0.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in an</span>
+<span class="doccomment">/// error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns a new handle to an `ArbData` object representing the</span>
+<span class="doccomment">/// return value of the `ArbCmd` when successful. Otherwise, it returns 0.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_arb</span>(
     <span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>,
@@ -601,20 +601,20 @@
 }
 
 <span class="doccomment">/// Generates a random unsigned 64-bit number using the simulator random seed.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function only fails if the `plugin` handle is invalid, in which case</span>
-<span class="doccomment">///&gt; it returns 0. Of course, 0 is also a valid (if rare) random return value.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function only fails if the `plugin` handle is invalid, in which case</span>
+<span class="doccomment">/// it returns 0. Of course, 0 is also a valid (if rare) random return value.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_random_u64</span>(<span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">plugin</span>.<span class="ident">resolve</span>()<span class="question-mark">?</span>.<span class="ident">random_u64</span>()))
 }
 
 <span class="doccomment">/// Generates a random floating point number using the simulator random seed.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The generated numbers are uniformly distributed in the range `[0,1&gt;`.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function only fails if the `plugin` handle is invalid, in which case</span>
-<span class="doccomment">///&gt; it returns 0. Of course, 0 is also a valid (if rare) random return value.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The generated numbers are uniformly distributed in the range `[0,1&gt;`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function only fails if the `plugin` handle is invalid, in which case</span>
+<span class="doccomment">/// it returns 0. Of course, 0 is also a valid (if rare) random return value.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_plugin_random_f64</span>(<span class="ident">plugin</span>: <span class="ident">dqcs_plugin_state_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_double</span> {
     <span class="ident">api_return</span>(<span class="number">0.0</span>, <span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">plugin</span>.<span class="ident">resolve</span>()<span class="question-mark">?</span>.<span class="ident">random_f64</span>()))

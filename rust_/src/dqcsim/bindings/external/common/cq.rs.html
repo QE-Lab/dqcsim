@@ -69,25 +69,25 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Creates a new `ArbCmd` queue object.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Returns the handle of the newly created `ArbCmd` queue. The queue is</span>
-<span class="doccomment">///&gt; initially empty. Queues implement a &quot;first-in, first-out&quot; model.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `ArbCmd` queue objects support the `handle`, `arb`, `cmd`, and `cq` APIs.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The `arb` and `cmd` APIs refer to the `ArbCmd` at the front of the queue.</span>
-<span class="doccomment">///&gt; Use `dqcs_cq_next()` to remove the front entry, allowing access to the next</span>
-<span class="doccomment">///&gt; command.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns the handle of the newly created `ArbCmd` queue. The queue is</span>
+<span class="doccomment">/// initially empty. Queues implement a &quot;first-in, first-out&quot; model.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `ArbCmd` queue objects support the `handle`, `arb`, `cmd`, and `cq` APIs.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The `arb` and `cmd` APIs refer to the `ArbCmd` at the front of the queue.</span>
+<span class="doccomment">/// Use `dqcs_cq_next()` to remove the front entry, allowing access to the next</span>
+<span class="doccomment">/// command.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_cq_new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">insert</span>(<span class="ident">ArbCmdQueue</span>::<span class="ident">new</span>())
 }
 
 <span class="doccomment">/// Pushes an `ArbCmd` object into the given `ArbCmd` queue.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function returns -1 to indicate failure. The `ArbCmd` object specified</span>
-<span class="doccomment">///&gt; by `cmd` is moved into the queue. That is, the handle is consumed if and</span>
-<span class="doccomment">///&gt; only if the function succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns -1 to indicate failure. The `ArbCmd` object specified</span>
+<span class="doccomment">/// by `cmd` is moved into the queue. That is, the handle is consumed if and</span>
+<span class="doccomment">/// only if the function succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_cq_push</span>(<span class="ident">cq</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">cmd</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -99,18 +99,18 @@
 }
 
 <span class="doccomment">/// Advances an `ArbCmd` queue to the next command.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Use the `dqcs_arb_*` and `dqcs_cmd_*` interfaces to read out the command</span>
-<span class="doccomment">///&gt; before calling this function.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; To iterate over a queue in C, use the following snippit:</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; ```C</span>
-<span class="doccomment">///&gt; for (; dqcs_cq_len(queue) &gt; 0; dqcs_cq_next(queue)) {</span>
-<span class="doccomment">///&gt;     dqcs_cmd_...(queue, ...)</span>
-<span class="doccomment">///&gt;     dqcs_arb_...(queue, ...)</span>
-<span class="doccomment">///&gt; }</span>
-<span class="doccomment">///&gt; ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Use the `dqcs_arb_*` and `dqcs_cmd_*` interfaces to read out the command</span>
+<span class="doccomment">/// before calling this function.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// To iterate over a queue in C, use the following snippit:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```C</span>
+<span class="doccomment">/// for (; dqcs_cq_len(queue) &gt; 0; dqcs_cq_next(queue)) {</span>
+<span class="doccomment">///     dqcs_cmd_...(queue, ...)</span>
+<span class="doccomment">///     dqcs_arb_...(queue, ...)</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_cq_next</span>(<span class="ident">cq</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -124,8 +124,8 @@
 }
 
 <span class="doccomment">/// Returns the number of `ArbCmd` objects in the given `ArbCmd` queue.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function returns -1 to indicate failure.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns -1 to indicate failure.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_cq_len</span>(<span class="ident">cq</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ssize_t</span> {
     <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1</span>, <span class="op">|</span><span class="op">|</span> {

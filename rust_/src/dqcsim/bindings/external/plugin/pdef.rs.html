@@ -623,18 +623,18 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Creates a new `PluginDefinition` object.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Plugin definitions contain the callback functions/closures that define the</span>
-<span class="doccomment">///&gt; functionality of a plugin. They also contain some metadata to identify the</span>
-<span class="doccomment">///&gt; implementation, in the form of a name, author, and version string, that</span>
-<span class="doccomment">///&gt; must be specified when the definition is constructed. The callback</span>
-<span class="doccomment">///&gt; functions/closures are initialized to sane defaults for the requested</span>
-<span class="doccomment">///&gt; plugin type, but obviously one or more of these should be overridden to</span>
-<span class="doccomment">///&gt; make the plugin do something.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Once a definition object has been built, it can be used to spawn a plugin</span>
-<span class="doccomment">///&gt; thread or run a plugin in the main thread, given a DQCsim server URL for it</span>
-<span class="doccomment">///&gt; to connect to.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Plugin definitions contain the callback functions/closures that define the</span>
+<span class="doccomment">/// functionality of a plugin. They also contain some metadata to identify the</span>
+<span class="doccomment">/// implementation, in the form of a name, author, and version string, that</span>
+<span class="doccomment">/// must be specified when the definition is constructed. The callback</span>
+<span class="doccomment">/// functions/closures are initialized to sane defaults for the requested</span>
+<span class="doccomment">/// plugin type, but obviously one or more of these should be overridden to</span>
+<span class="doccomment">/// make the plugin do something.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Once a definition object has been built, it can be used to spawn a plugin</span>
+<span class="doccomment">/// thread or run a plugin in the main thread, given a DQCsim server URL for it</span>
+<span class="doccomment">/// to connect to.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_new</span>(
     <span class="ident">typ</span>: <span class="ident">dqcs_plugin_type_t</span>,
@@ -671,10 +671,10 @@
 }
 
 <span class="doccomment">/// Returns the plugin name for the given plugin definition object.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the JSON</span>
-<span class="doccomment">///&gt; string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure, this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the JSON</span>
+<span class="doccomment">/// string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure, this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_name</span>(<span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -684,10 +684,10 @@
 }
 
 <span class="doccomment">/// Returns the plugin author for the given plugin definition object.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the JSON</span>
-<span class="doccomment">///&gt; string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure, this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the JSON</span>
+<span class="doccomment">/// string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure, this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_author</span>(<span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -697,10 +697,10 @@
 }
 
 <span class="doccomment">/// Returns the plugin version for the given plugin definition object.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the JSON</span>
-<span class="doccomment">///&gt; string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure, this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the JSON</span>
+<span class="doccomment">/// string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure, this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_version</span>(<span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -710,21 +710,21 @@
 }
 
 <span class="doccomment">/// Sets the user logic initialization callback.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This is always called before any of the other callbacks are run. The</span>
-<span class="doccomment">///&gt; downstream plugin has already been initialized at this stage, so it is</span>
-<span class="doccomment">///&gt; legal to send it commands.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default behavior is no-op.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Besides the common arguments, the callback receives a handle to an</span>
-<span class="doccomment">///&gt; `ArbCmd` queue (`dqcs_cq_*`, `dqcs_cmd_*`, and `dqcs_arb_*` interfaces)</span>
-<span class="doccomment">///&gt; containing user-defined initialization commands. This is a borrowed</span>
-<span class="doccomment">///&gt; handle; the caller will delete it.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The callback can return an error by setting an error message using</span>
-<span class="doccomment">///&gt; `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should</span>
-<span class="doccomment">///&gt; return `DQCS_SUCCESS`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is always called before any of the other callbacks are run. The</span>
+<span class="doccomment">/// downstream plugin has already been initialized at this stage, so it is</span>
+<span class="doccomment">/// legal to send it commands.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default behavior is no-op.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Besides the common arguments, the callback receives a handle to an</span>
+<span class="doccomment">/// `ArbCmd` queue (`dqcs_cq_*`, `dqcs_cmd_*`, and `dqcs_arb_*` interfaces)</span>
+<span class="doccomment">/// containing user-defined initialization commands. This is a borrowed</span>
+<span class="doccomment">/// handle; the caller will delete it.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The callback can return an error by setting an error message using</span>
+<span class="doccomment">/// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should</span>
+<span class="doccomment">/// return `DQCS_SUCCESS`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_set_initialize_cb</span>(
     <span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>,
@@ -756,16 +756,16 @@
 }
 
 <span class="doccomment">/// Sets the user logic drop/cleanup callback.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This is called when a plugin is gracefully terminated. It is not</span>
-<span class="doccomment">///&gt; recommended to execute any downstream instructions at this time, but it</span>
-<span class="doccomment">///&gt; is supported in case this is really necessary.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default behavior is no-op.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The callback can return an error by setting an error message using</span>
-<span class="doccomment">///&gt; `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should</span>
-<span class="doccomment">///&gt; return `DQCS_SUCCESS`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is called when a plugin is gracefully terminated. It is not</span>
+<span class="doccomment">/// recommended to execute any downstream instructions at this time, but it</span>
+<span class="doccomment">/// is supported in case this is really necessary.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default behavior is no-op.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The callback can return an error by setting an error message using</span>
+<span class="doccomment">/// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should</span>
+<span class="doccomment">/// return `DQCS_SUCCESS`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_set_drop_cb</span>(
     <span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>,
@@ -787,26 +787,26 @@
 }
 
 <span class="doccomment">/// Sets the run callback for frontends.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This is called in response to a `start()` host API call. The return</span>
-<span class="doccomment">///&gt; value is returned through the `wait()` host API call.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default behavior is to fail with a &quot;not implemented&quot; error;</span>
-<span class="doccomment">///&gt; frontends backends should always override this. This callback is never</span>
-<span class="doccomment">///&gt; called for operator or backend plugins.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Besides the common arguments, the callback receives a handle to an</span>
-<span class="doccomment">///&gt; `ArbData` object containing the data that the host passed to `start()`.</span>
-<span class="doccomment">///&gt; This is a borrowed handle; the caller will delete it.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; When the run callback is successful, it should return a valid `ArbData`</span>
-<span class="doccomment">///&gt; handle. This can be the same as the argument, but it can also be a new</span>
-<span class="doccomment">///&gt; object. This `ArbData` is returned to the host through `wait()`. This</span>
-<span class="doccomment">///&gt; `ArbData` object is deleted after the callback completes.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The callback can return an error by setting an error message using</span>
-<span class="doccomment">///&gt; `dqcs_error_set()` and returning 0. Otherwise, it should return a</span>
-<span class="doccomment">///&gt; valid `ArbData` handle.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is called in response to a `start()` host API call. The return</span>
+<span class="doccomment">/// value is returned through the `wait()` host API call.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default behavior is to fail with a &quot;not implemented&quot; error;</span>
+<span class="doccomment">/// frontends backends should always override this. This callback is never</span>
+<span class="doccomment">/// called for operator or backend plugins.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Besides the common arguments, the callback receives a handle to an</span>
+<span class="doccomment">/// `ArbData` object containing the data that the host passed to `start()`.</span>
+<span class="doccomment">/// This is a borrowed handle; the caller will delete it.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// When the run callback is successful, it should return a valid `ArbData`</span>
+<span class="doccomment">/// handle. This can be the same as the argument, but it can also be a new</span>
+<span class="doccomment">/// object. This `ArbData` is returned to the host through `wait()`. This</span>
+<span class="doccomment">/// `ArbData` object is deleted after the callback completes.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The callback can return an error by setting an error message using</span>
+<span class="doccomment">/// `dqcs_error_set()` and returning 0. Otherwise, it should return a</span>
+<span class="doccomment">/// valid `ArbData` handle.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_set_run_cb</span>(
     <span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>,
@@ -844,20 +844,20 @@
 }
 
 <span class="doccomment">/// Sets the qubit allocation callback for operators and backends.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default for operators is to pass through to</span>
-<span class="doccomment">///&gt; `dqcs_plugin_allocate()`. The default for backends is no-op. This</span>
-<span class="doccomment">///&gt; callback is never called for frontend plugins.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Besides the common arguments, the callback receives a handle to a qubit</span>
-<span class="doccomment">///&gt; set containing the references that are to be used for the</span>
-<span class="doccomment">///&gt; to-be-allocated qubits and an `ArbCmd` queue containing user-defined</span>
-<span class="doccomment">///&gt; commands to optionally augment the behavior of the qubits. These are</span>
-<span class="doccomment">///&gt; borrowed handles; the caller will delete them.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The callback can return an error by setting an error message using</span>
-<span class="doccomment">///&gt; `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should</span>
-<span class="doccomment">///&gt; return `DQCS_SUCCESS`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default for operators is to pass through to</span>
+<span class="doccomment">/// `dqcs_plugin_allocate()`. The default for backends is no-op. This</span>
+<span class="doccomment">/// callback is never called for frontend plugins.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Besides the common arguments, the callback receives a handle to a qubit</span>
+<span class="doccomment">/// set containing the references that are to be used for the</span>
+<span class="doccomment">/// to-be-allocated qubits and an `ArbCmd` queue containing user-defined</span>
+<span class="doccomment">/// commands to optionally augment the behavior of the qubits. These are</span>
+<span class="doccomment">/// borrowed handles; the caller will delete them.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The callback can return an error by setting an error message using</span>
+<span class="doccomment">/// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should</span>
+<span class="doccomment">/// return `DQCS_SUCCESS`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_set_allocate_cb</span>(
     <span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>,
@@ -900,18 +900,18 @@
 }
 
 <span class="doccomment">/// Sets the qubit deallocation callback for operators and backends.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default for operators is to pass through to `dqcs_plugin_free()`.</span>
-<span class="doccomment">///&gt; The default for backends is no-op. This callback is never called for</span>
-<span class="doccomment">///&gt; frontend plugins.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Besides the common arguments, the callback receives a handle to a qubit</span>
-<span class="doccomment">///&gt; set containing the qubits that are to be freed. This is a borrowed</span>
-<span class="doccomment">///&gt; handle; the caller will delete it.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The callback can return an error by setting an error message using</span>
-<span class="doccomment">///&gt; `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should</span>
-<span class="doccomment">///&gt; return `DQCS_SUCCESS`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default for operators is to pass through to `dqcs_plugin_free()`.</span>
+<span class="doccomment">/// The default for backends is no-op. This callback is never called for</span>
+<span class="doccomment">/// frontend plugins.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Besides the common arguments, the callback receives a handle to a qubit</span>
+<span class="doccomment">/// set containing the qubits that are to be freed. This is a borrowed</span>
+<span class="doccomment">/// handle; the caller will delete it.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The callback can return an error by setting an error message using</span>
+<span class="doccomment">/// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should</span>
+<span class="doccomment">/// return `DQCS_SUCCESS`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_set_free_cb</span>(
     <span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>,
@@ -946,48 +946,48 @@
 }
 
 <span class="doccomment">/// Sets the gate execution callback for operators and backends.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Besides the common arguments, the callback receives a handle to the</span>
-<span class="doccomment">///&gt; to-be-executed gate. This is a borrowed handle; the caller will delete</span>
-<span class="doccomment">///&gt; it.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The callback must return one of the following things:</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt;  - a valid handle to a measurement set, created using</span>
-<span class="doccomment">///&gt;    `dqcs_mset_new()` (this object is automatically deleted after the</span>
-<span class="doccomment">///&gt;    callback returns);</span>
-<span class="doccomment">///&gt;  - a valid handle to a single qubit measurement, created using</span>
-<span class="doccomment">///&gt;    `dqcs_meas_new()` (this object is automatically deleted after the</span>
-<span class="doccomment">///&gt;    callback returns);</span>
-<span class="doccomment">///&gt;  - the handle to the supplied gate, a shortcut for not returning any</span>
-<span class="doccomment">///&gt;    measurements (this is less clear than returning an empty measurement</span>
-<span class="doccomment">///&gt;    set, but slightly faster); or</span>
-<span class="doccomment">///&gt;  - 0 to report an error, after calling the error string using</span>
-<span class="doccomment">///&gt;    `dqcs_set_error()`.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Backend plugins must return a measurement result set containing exactly</span>
-<span class="doccomment">///&gt; those qubits specified in the measurement set. For operators, however,</span>
-<span class="doccomment">///&gt; the story is more complicated. Let&#39;s say we want to make a silly</span>
-<span class="doccomment">///&gt; operator that inverts all measurements. The trivial way to do</span>
-<span class="doccomment">///&gt; this would be to forward the gate, query all the measurement results</span>
-<span class="doccomment">///&gt; using `dqcs_plugin_get_measurement()`, invert them, stick them in a</span>
-<span class="doccomment">///&gt; measurement result set, and return that result set. However, this</span>
-<span class="doccomment">///&gt; approach is not very efficient, because `dqcs_plugin_get_measurement()`</span>
-<span class="doccomment">///&gt; has to wait for all downstream plugins to finish executing the gate,</span>
-<span class="doccomment">///&gt; forcing the OS to switch threads, etc. Instead, operators are allowed</span>
-<span class="doccomment">///&gt; to return only a subset (or none) of the measured qubits, as long as</span>
-<span class="doccomment">///&gt; they return the measurements as they arrive through the</span>
-<span class="doccomment">///&gt; `modify_measurement()` callback.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default implementation for this callback for operators is to pass</span>
-<span class="doccomment">///&gt; the gate through to the downstream plugin and return an empty set of</span>
-<span class="doccomment">///&gt; measurements. Combined with the default implementation of</span>
-<span class="doccomment">///&gt; `modify_measurement()`, this behavior is sane. Backends must override</span>
-<span class="doccomment">///&gt; this callback; the default is to return a not-implemented error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Note that for our silly example operator, the default behavior for this</span>
-<span class="doccomment">///&gt; function is sufficient; you&#39;d only have to override</span>
-<span class="doccomment">///&gt; `modify_measurement()` to, well, modify the measurements.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Besides the common arguments, the callback receives a handle to the</span>
+<span class="doccomment">/// to-be-executed gate. This is a borrowed handle; the caller will delete</span>
+<span class="doccomment">/// it.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The callback must return one of the following things:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///  - a valid handle to a measurement set, created using</span>
+<span class="doccomment">///    `dqcs_mset_new()` (this object is automatically deleted after the</span>
+<span class="doccomment">///    callback returns);</span>
+<span class="doccomment">///  - a valid handle to a single qubit measurement, created using</span>
+<span class="doccomment">///    `dqcs_meas_new()` (this object is automatically deleted after the</span>
+<span class="doccomment">///    callback returns);</span>
+<span class="doccomment">///  - the handle to the supplied gate, a shortcut for not returning any</span>
+<span class="doccomment">///    measurements (this is less clear than returning an empty measurement</span>
+<span class="doccomment">///    set, but slightly faster); or</span>
+<span class="doccomment">///  - 0 to report an error, after calling the error string using</span>
+<span class="doccomment">///    `dqcs_set_error()`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Backend plugins must return a measurement result set containing exactly</span>
+<span class="doccomment">/// those qubits specified in the measurement set. For operators, however,</span>
+<span class="doccomment">/// the story is more complicated. Let&#39;s say we want to make a silly</span>
+<span class="doccomment">/// operator that inverts all measurements. The trivial way to do</span>
+<span class="doccomment">/// this would be to forward the gate, query all the measurement results</span>
+<span class="doccomment">/// using `dqcs_plugin_get_measurement()`, invert them, stick them in a</span>
+<span class="doccomment">/// measurement result set, and return that result set. However, this</span>
+<span class="doccomment">/// approach is not very efficient, because `dqcs_plugin_get_measurement()`</span>
+<span class="doccomment">/// has to wait for all downstream plugins to finish executing the gate,</span>
+<span class="doccomment">/// forcing the OS to switch threads, etc. Instead, operators are allowed</span>
+<span class="doccomment">/// to return only a subset (or none) of the measured qubits, as long as</span>
+<span class="doccomment">/// they return the measurements as they arrive through the</span>
+<span class="doccomment">/// `modify_measurement()` callback.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default implementation for this callback for operators is to pass</span>
+<span class="doccomment">/// the gate through to the downstream plugin and return an empty set of</span>
+<span class="doccomment">/// measurements. Combined with the default implementation of</span>
+<span class="doccomment">/// `modify_measurement()`, this behavior is sane. Backends must override</span>
+<span class="doccomment">/// this callback; the default is to return a not-implemented error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Note that for our silly example operator, the default behavior for this</span>
+<span class="doccomment">/// function is sufficient; you&#39;d only have to override</span>
+<span class="doccomment">/// `modify_measurement()` to, well, modify the measurements.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_set_gate_cb</span>(
     <span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>,
@@ -1029,45 +1029,45 @@
 }
 
 <span class="doccomment">/// Sets the measurement modification callback for operators.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This callback is called for every measurement result received from the</span>
-<span class="doccomment">///&gt; downstream plugin, and returns the measurements that should be reported</span>
-<span class="doccomment">///&gt; to the upstream plugin. Note that the results from our plugin&#39;s</span>
-<span class="doccomment">///&gt; `dqcs_plugin_get_measurement()` and friends are consistent with the</span>
-<span class="doccomment">///&gt; results received from downstream; they are not affected by this</span>
-<span class="doccomment">///&gt; function.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The callback takes a handle to a single qubit measurement object as an</span>
-<span class="doccomment">///&gt; argument, and must return one of the following things:</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt;  - a valid handle to a measurement set, created using</span>
-<span class="doccomment">///&gt;    `dqcs_mset_new()` (this object is automatically deleted after the</span>
-<span class="doccomment">///&gt;    callback returns);</span>
-<span class="doccomment">///&gt;  - a valid handle to a single qubit measurement object, which may or</span>
-<span class="doccomment">///&gt;    may not be the supplied one (this object is automatically deleted</span>
-<span class="doccomment">///&gt;    after the callback returns); or</span>
-<span class="doccomment">///&gt;  - 0 to report an error, after calling the error string using</span>
-<span class="doccomment">///&gt;    `dqcs_set_error()`.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This callback is somewhat special in that it is not allowed to call</span>
-<span class="doccomment">///&gt; any plugin command other than logging and the pseudorandom number</span>
-<span class="doccomment">///&gt; generator functions. This is because this function is called</span>
-<span class="doccomment">///&gt; asynchronously with respect to the downstream functions, making the</span>
-<span class="doccomment">///&gt; timing of these calls non-deterministic based on operating system</span>
-<span class="doccomment">///&gt; scheduling.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Note that while this function is called for only a single measurement</span>
-<span class="doccomment">///&gt; at a time, it is allowed to produce a vector of measurements. This</span>
-<span class="doccomment">///&gt; allows you to cancel propagation of the measurement by returning an</span>
-<span class="doccomment">///&gt; empty vector, to just modify the measurement data itself, or to</span>
-<span class="doccomment">///&gt; generate additional measurements from a single measurement. However,</span>
-<span class="doccomment">///&gt; if you need to modify the qubit references for operators that remap</span>
-<span class="doccomment">///&gt; qubits, take care to only send measurement data upstream when these</span>
-<span class="doccomment">///&gt; were explicitly requested through the associated upstream gate</span>
-<span class="doccomment">///&gt; function&#39;s `measured` list.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default behavior for this callback is to return the measurement</span>
-<span class="doccomment">///&gt; without modification.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This callback is called for every measurement result received from the</span>
+<span class="doccomment">/// downstream plugin, and returns the measurements that should be reported</span>
+<span class="doccomment">/// to the upstream plugin. Note that the results from our plugin&#39;s</span>
+<span class="doccomment">/// `dqcs_plugin_get_measurement()` and friends are consistent with the</span>
+<span class="doccomment">/// results received from downstream; they are not affected by this</span>
+<span class="doccomment">/// function.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The callback takes a handle to a single qubit measurement object as an</span>
+<span class="doccomment">/// argument, and must return one of the following things:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///  - a valid handle to a measurement set, created using</span>
+<span class="doccomment">///    `dqcs_mset_new()` (this object is automatically deleted after the</span>
+<span class="doccomment">///    callback returns);</span>
+<span class="doccomment">///  - a valid handle to a single qubit measurement object, which may or</span>
+<span class="doccomment">///    may not be the supplied one (this object is automatically deleted</span>
+<span class="doccomment">///    after the callback returns); or</span>
+<span class="doccomment">///  - 0 to report an error, after calling the error string using</span>
+<span class="doccomment">///    `dqcs_set_error()`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This callback is somewhat special in that it is not allowed to call</span>
+<span class="doccomment">/// any plugin command other than logging and the pseudorandom number</span>
+<span class="doccomment">/// generator functions. This is because this function is called</span>
+<span class="doccomment">/// asynchronously with respect to the downstream functions, making the</span>
+<span class="doccomment">/// timing of these calls non-deterministic based on operating system</span>
+<span class="doccomment">/// scheduling.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Note that while this function is called for only a single measurement</span>
+<span class="doccomment">/// at a time, it is allowed to produce a vector of measurements. This</span>
+<span class="doccomment">/// allows you to cancel propagation of the measurement by returning an</span>
+<span class="doccomment">/// empty vector, to just modify the measurement data itself, or to</span>
+<span class="doccomment">/// generate additional measurements from a single measurement. However,</span>
+<span class="doccomment">/// if you need to modify the qubit references for operators that remap</span>
+<span class="doccomment">/// qubits, take care to only send measurement data upstream when these</span>
+<span class="doccomment">/// were explicitly requested through the associated upstream gate</span>
+<span class="doccomment">/// function&#39;s `measured` list.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default behavior for this callback is to return the measurement</span>
+<span class="doccomment">/// without modification.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_set_modify_measurement_cb</span>(
     <span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>,
@@ -1107,17 +1107,17 @@
 }
 
 <span class="doccomment">/// Sets the callback for advancing time for operators and backends.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default behavior for operators is to pass through to</span>
-<span class="doccomment">///&gt; `dqcs_plugin_advance()`. The default for backends is no-op. This</span>
-<span class="doccomment">///&gt; callback is never called for frontend plugins.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Besides the common arguments, the callback receives an unsigned integer</span>
-<span class="doccomment">///&gt; specifying the number of cycles to advance by.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The callback can return an error by setting an error message using</span>
-<span class="doccomment">///&gt; `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should</span>
-<span class="doccomment">///&gt; return `DQCS_SUCCESS`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default behavior for operators is to pass through to</span>
+<span class="doccomment">/// `dqcs_plugin_advance()`. The default for backends is no-op. This</span>
+<span class="doccomment">/// callback is never called for frontend plugins.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Besides the common arguments, the callback receives an unsigned integer</span>
+<span class="doccomment">/// specifying the number of cycles to advance by.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The callback can return an error by setting an error message using</span>
+<span class="doccomment">/// `dqcs_error_set()` and returning `DQCS_FAILURE`. Otherwise, it should</span>
+<span class="doccomment">/// return `DQCS_SUCCESS`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_set_advance_cb</span>(
     <span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>,
@@ -1147,20 +1147,20 @@
 
 <span class="doccomment">/// Sets the callback function for handling an arb from upstream for</span>
 <span class="doccomment">/// operators and backends.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default behavior for operators is to pass through to</span>
-<span class="doccomment">///&gt; `dqcs_plugin_arb()`; operators that do not support the requested</span>
-<span class="doccomment">///&gt; interface should always do this. The default for backends is no-op.</span>
-<span class="doccomment">///&gt; This callback is never called for frontend plugins.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Besides the common arguments, the callback receives a handle to the</span>
-<span class="doccomment">///&gt; `ArbCmd` object representing the request. It must return a valid</span>
-<span class="doccomment">///&gt; `ArbData` handle containing the response. Both objects are deleted</span>
-<span class="doccomment">///&gt; automatically after invocation.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The callback can return an error by setting an error message using</span>
-<span class="doccomment">///&gt; `dqcs_error_set()` and returning 0. Otherwise, it should return a valid</span>
-<span class="doccomment">///&gt; `ArbData` handle.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default behavior for operators is to pass through to</span>
+<span class="doccomment">/// `dqcs_plugin_arb()`; operators that do not support the requested</span>
+<span class="doccomment">/// interface should always do this. The default for backends is no-op.</span>
+<span class="doccomment">/// This callback is never called for frontend plugins.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Besides the common arguments, the callback receives a handle to the</span>
+<span class="doccomment">/// `ArbCmd` object representing the request. It must return a valid</span>
+<span class="doccomment">/// `ArbData` handle containing the response. Both objects are deleted</span>
+<span class="doccomment">/// automatically after invocation.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The callback can return an error by setting an error message using</span>
+<span class="doccomment">/// `dqcs_error_set()` and returning 0. Otherwise, it should return a valid</span>
+<span class="doccomment">/// `ArbData` handle.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_set_upstream_arb_cb</span>(
     <span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>,
@@ -1198,17 +1198,17 @@
 }
 
 <span class="doccomment">/// Sets the callback function function for handling an arb from the host.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default behavior for this is no-op.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Besides the common arguments, the callback receives a handle to the</span>
-<span class="doccomment">///&gt; `ArbCmd` object representing the request. It must return a valid</span>
-<span class="doccomment">///&gt; `ArbData` handle containing the response. Both objects are deleted</span>
-<span class="doccomment">///&gt; automatically after invocation.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The callback can return an error by setting an error message using</span>
-<span class="doccomment">///&gt; `dqcs_error_set()` and returning 0. Otherwise, it should return a valid</span>
-<span class="doccomment">///&gt; `ArbData` handle.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default behavior for this is no-op.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Besides the common arguments, the callback receives a handle to the</span>
+<span class="doccomment">/// `ArbCmd` object representing the request. It must return a valid</span>
+<span class="doccomment">/// `ArbData` handle containing the response. Both objects are deleted</span>
+<span class="doccomment">/// automatically after invocation.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The callback can return an error by setting an error message using</span>
+<span class="doccomment">/// `dqcs_error_set()` and returning 0. Otherwise, it should return a valid</span>
+<span class="doccomment">/// `ArbData` handle.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pdef_set_host_arb_cb</span>(
     <span class="ident">pdef</span>: <span class="ident">dqcs_handle_t</span>,

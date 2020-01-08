@@ -393,41 +393,41 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>;
 
 <span class="doccomment">/// Constructs a new unitary gate.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `targets` must be a handle to a non-empty qubit set. The qubits in this set</span>
-<span class="doccomment">///&gt; correspond with the supplied unitary matrix.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `controls` optionally specifies a set of control qubits. You may pass 0 or</span>
-<span class="doccomment">///&gt; an empty qubit set if you don&#39;t need control qubits.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `matrix` must point to an appropriately sized array of doubles,</span>
-<span class="doccomment">///&gt; representing the unitary matrix to be applied to the qubits in the</span>
-<span class="doccomment">///&gt; `targets` set. The matrix is specified in row-major form, using pairs of</span>
-<span class="doccomment">///&gt; doubles for the real vs. imaginary component of each entry. The size must</span>
-<span class="doccomment">///&gt; thus be `4**len(targets)` complex numbers = `2*4**len(targets)` doubles =</span>
-<span class="doccomment">///&gt; `16*4**len(targets)` bytes. `matrix_len` must be set to the number of</span>
-<span class="doccomment">///&gt; complex numbers.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The supplied matrix is only applied to the target qubits if all the control</span>
-<span class="doccomment">///&gt; qubits are or will be determined to be set. For instance, to encode a</span>
-<span class="doccomment">///&gt; CCNOT/Toffoli gate, you can specify one target qubits, two control qubits,</span>
-<span class="doccomment">///&gt; and [0, 1; 1, 0] (X) for the matrix. This is equivalent to extending the</span>
-<span class="doccomment">///&gt; matrix to the full Toffoli matrix and specifying all three qubits in the</span>
-<span class="doccomment">///&gt; targets set, or the midway solution using a CNOT matrix, but these</span>
-<span class="doccomment">///&gt; solutions may be less efficient depending on whether the simulator can</span>
-<span class="doccomment">///&gt; optimize its calculations for controlled gates.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Simulators are not required to apply the (hidden) global phase component of</span>
-<span class="doccomment">///&gt; the gate matrix in the same way it is specified; that is, if the simulator</span>
-<span class="doccomment">///&gt; can optimize its calculations by altering the global phase it is allowed</span>
-<span class="doccomment">///&gt; to.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If is up to the user to ensure that the specified matrix is unitary. This</span>
-<span class="doccomment">///&gt; is NOT checked by DQCsim. The simulator backend may or may not check this.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function returns the handle to the gate, or 0 to indicate failure.</span>
-<span class="doccomment">///&gt; The `targets` qubit set and (if specified) the `controls` qubit set are</span>
-<span class="doccomment">///&gt; consumed/deleted by this function if and only if it succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `targets` must be a handle to a non-empty qubit set. The qubits in this set</span>
+<span class="doccomment">/// correspond with the supplied unitary matrix.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `controls` optionally specifies a set of control qubits. You may pass 0 or</span>
+<span class="doccomment">/// an empty qubit set if you don&#39;t need control qubits.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `matrix` must point to an appropriately sized array of doubles,</span>
+<span class="doccomment">/// representing the unitary matrix to be applied to the qubits in the</span>
+<span class="doccomment">/// `targets` set. The matrix is specified in row-major form, using pairs of</span>
+<span class="doccomment">/// doubles for the real vs. imaginary component of each entry. The size must</span>
+<span class="doccomment">/// thus be `4**len(targets)` complex numbers = `2*4**len(targets)` doubles =</span>
+<span class="doccomment">/// `16*4**len(targets)` bytes. `matrix_len` must be set to the number of</span>
+<span class="doccomment">/// complex numbers.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The supplied matrix is only applied to the target qubits if all the control</span>
+<span class="doccomment">/// qubits are or will be determined to be set. For instance, to encode a</span>
+<span class="doccomment">/// CCNOT/Toffoli gate, you can specify one target qubits, two control qubits,</span>
+<span class="doccomment">/// and [0, 1; 1, 0] (X) for the matrix. This is equivalent to extending the</span>
+<span class="doccomment">/// matrix to the full Toffoli matrix and specifying all three qubits in the</span>
+<span class="doccomment">/// targets set, or the midway solution using a CNOT matrix, but these</span>
+<span class="doccomment">/// solutions may be less efficient depending on whether the simulator can</span>
+<span class="doccomment">/// optimize its calculations for controlled gates.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Simulators are not required to apply the (hidden) global phase component of</span>
+<span class="doccomment">/// the gate matrix in the same way it is specified; that is, if the simulator</span>
+<span class="doccomment">/// can optimize its calculations by altering the global phase it is allowed</span>
+<span class="doccomment">/// to.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If is up to the user to ensure that the specified matrix is unitary. This</span>
+<span class="doccomment">/// is NOT checked by DQCsim. The simulator backend may or may not check this.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns the handle to the gate, or 0 to indicate failure.</span>
+<span class="doccomment">/// The `targets` qubit set and (if specified) the `controls` qubit set are</span>
+<span class="doccomment">/// consumed/deleted by this function if and only if it succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_gate_new_unitary</span>(
     <span class="ident">targets</span>: <span class="ident">dqcs_handle_t</span>,
@@ -472,14 +472,14 @@
 }
 
 <span class="doccomment">/// Constructs a new measurement gate.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `measures` must be a handle to a qubit set. The qubits in this set are</span>
-<span class="doccomment">///&gt; measured in the Z-basis. To measure in other bases, first apply the</span>
-<span class="doccomment">///&gt; respective rotation, or use a custom gate.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function returns the handle to the gate, or 0 to indicate failure.</span>
-<span class="doccomment">///&gt; The `measures` qubit set is consumed/deleted by this function if and only</span>
-<span class="doccomment">///&gt; if it succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `measures` must be a handle to a qubit set. The qubits in this set are</span>
+<span class="doccomment">/// measured in the Z-basis. To measure in other bases, first apply the</span>
+<span class="doccomment">/// respective rotation, or use a custom gate.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns the handle to the gate, or 0 to indicate failure.</span>
+<span class="doccomment">/// The `measures` qubit set is consumed/deleted by this function if and only</span>
+<span class="doccomment">/// if it succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_gate_new_measurement</span>(<span class="ident">measures</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
@@ -501,41 +501,41 @@
 }
 
 <span class="doccomment">/// Constructs a new custom gate.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The functionality of custom gates is not specified by DQCsim. Instead, this</span>
-<span class="doccomment">///&gt; is left up to the plugins. Of course, for this to work, plugins that are</span>
-<span class="doccomment">///&gt; connected to each other must agree on the format used.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `name` specifies the name of the gate. The name is used to indicate which</span>
-<span class="doccomment">///&gt; custom operation is to be applied.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `targets` optionally specifies the set of target qubits. You may pass 0 or</span>
-<span class="doccomment">///&gt; an empty qubit set if you don&#39;t need target qubits.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `controls` optionally specifies the set of control qubits. You may pass 0</span>
-<span class="doccomment">///&gt; or an empty qubit set if you don&#39;t need control qubits.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `measures` optionally specifies the set of measured qubits. You may pass 0</span>
-<span class="doccomment">///&gt; or an empty qubit set if no qubits are measured. Note that the upstream</span>
-<span class="doccomment">///&gt; plugin expects exactly one measurement result for each qubit specified in</span>
-<span class="doccomment">///&gt; this set; anything else results in a warning and the measurement result</span>
-<span class="doccomment">///&gt; being set to undefined.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `matrix` can point to an appropriately sized array of doubles, or be `NULL`</span>
-<span class="doccomment">///&gt; if no matrix is required. If a matrix is specified, at least one target</span>
-<span class="doccomment">///&gt; qubit is required, and the matrix must be appropriately sized for the</span>
-<span class="doccomment">///&gt; number of target qubits. The matrix is specified in row-major form, using</span>
-<span class="doccomment">///&gt; pairs of doubles for the real vs. imaginary component of each entry. The</span>
-<span class="doccomment">///&gt; size must thus be `4**len(targets)` complex numbers = `2*4**len(targets)`</span>
-<span class="doccomment">///&gt; doubles = `16*4**len(targets)` bytes. `matrix_len` must be set to the</span>
-<span class="doccomment">///&gt; number of complex numbers.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; In addition to the above data, gate objects implement the `arb` interface</span>
-<span class="doccomment">///&gt; to allow user-specified classical information to be attached.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function returns the handle to the gate, or 0 to indicate failure.</span>
-<span class="doccomment">///&gt; The specified qubit sets are consumed/deleted by this function if and only</span>
-<span class="doccomment">///&gt; if it succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The functionality of custom gates is not specified by DQCsim. Instead, this</span>
+<span class="doccomment">/// is left up to the plugins. Of course, for this to work, plugins that are</span>
+<span class="doccomment">/// connected to each other must agree on the format used.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `name` specifies the name of the gate. The name is used to indicate which</span>
+<span class="doccomment">/// custom operation is to be applied.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `targets` optionally specifies the set of target qubits. You may pass 0 or</span>
+<span class="doccomment">/// an empty qubit set if you don&#39;t need target qubits.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `controls` optionally specifies the set of control qubits. You may pass 0</span>
+<span class="doccomment">/// or an empty qubit set if you don&#39;t need control qubits.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `measures` optionally specifies the set of measured qubits. You may pass 0</span>
+<span class="doccomment">/// or an empty qubit set if no qubits are measured. Note that the upstream</span>
+<span class="doccomment">/// plugin expects exactly one measurement result for each qubit specified in</span>
+<span class="doccomment">/// this set; anything else results in a warning and the measurement result</span>
+<span class="doccomment">/// being set to undefined.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `matrix` can point to an appropriately sized array of doubles, or be `NULL`</span>
+<span class="doccomment">/// if no matrix is required. If a matrix is specified, at least one target</span>
+<span class="doccomment">/// qubit is required, and the matrix must be appropriately sized for the</span>
+<span class="doccomment">/// number of target qubits. The matrix is specified in row-major form, using</span>
+<span class="doccomment">/// pairs of doubles for the real vs. imaginary component of each entry. The</span>
+<span class="doccomment">/// size must thus be `4**len(targets)` complex numbers = `2*4**len(targets)`</span>
+<span class="doccomment">/// doubles = `16*4**len(targets)` bytes. `matrix_len` must be set to the</span>
+<span class="doccomment">/// number of complex numbers.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// In addition to the above data, gate objects implement the `arb` interface</span>
+<span class="doccomment">/// to allow user-specified classical information to be attached.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns the handle to the gate, or 0 to indicate failure.</span>
+<span class="doccomment">/// The specified qubit sets are consumed/deleted by this function if and only</span>
+<span class="doccomment">/// if it succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_gate_new_custom</span>(
     <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
@@ -611,15 +611,15 @@
 }
 
 <span class="doccomment">/// Returns whether the specified gate is a custom gate.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If this returns true, the type of gate is to be determined by matching its</span>
-<span class="doccomment">///&gt; name against a set of known gate types. If this returns false, the gate is</span>
-<span class="doccomment">///&gt; expected to be executed as follows, in this order:</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt;  - if there are target qubits, extend the supplied unitary matrix to</span>
-<span class="doccomment">///&gt;    include the control qubits (if any), then apply it to the control +</span>
-<span class="doccomment">///&gt;    target qubits;</span>
-<span class="doccomment">///&gt;  - measure each measured qubit (if any) in the Z basis.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If this returns true, the type of gate is to be determined by matching its</span>
+<span class="doccomment">/// name against a set of known gate types. If this returns false, the gate is</span>
+<span class="doccomment">/// expected to be executed as follows, in this order:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///  - if there are target qubits, extend the supplied unitary matrix to</span>
+<span class="doccomment">///    include the control qubits (if any), then apply it to the control +</span>
+<span class="doccomment">///    target qubits;</span>
+<span class="doccomment">///  - measure each measured qubit (if any) in the Z basis.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_gate_is_custom</span>(<span class="ident">gate</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_bool_return_t</span> {
     <span class="ident">api_return_bool</span>(<span class="op">|</span><span class="op">|</span> {
@@ -629,14 +629,14 @@
 }
 
 <span class="doccomment">/// Returns the name of a custom gate.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function fails if the gate is not a custom gate. Query</span>
-<span class="doccomment">///&gt; `dqcs_gate_is_custom()` to disambiguate between a non-custom gate and a</span>
-<span class="doccomment">///&gt; different error.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the gate</span>
-<span class="doccomment">///&gt; name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure, this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function fails if the gate is not a custom gate. Query</span>
+<span class="doccomment">/// `dqcs_gate_is_custom()` to disambiguate between a non-custom gate and a</span>
+<span class="doccomment">/// different error.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the gate</span>
+<span class="doccomment">/// name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure, this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_gate_name</span>(<span class="ident">gate</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -724,16 +724,16 @@
 
 <span class="doccomment">/// Returns a copy of the unitary matrix associated with this gate, if one</span>
 <span class="doccomment">/// exists.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If this function succeeds, the matrix is returned in row-major form, using</span>
-<span class="doccomment">///&gt; pairs of doubles for the real vs. imaginary component of each entry. The</span>
-<span class="doccomment">///&gt; size will be `4**len(targets)` complex numbers = `2*4**len(targets)`</span>
-<span class="doccomment">///&gt; doubles = `16*4**len(targets)` bytes.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated array containing the matrix.</span>
-<span class="doccomment">///&gt; Free it with `free()` when you&#39;re done with it to avoid memory leaks.** On</span>
-<span class="doccomment">///&gt; failure, or if no matrix is associated with this gate, this returns `NULL`.</span>
-<span class="doccomment">///&gt; Use `dqcs_gate_has_matrix()` to disambiguate.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If this function succeeds, the matrix is returned in row-major form, using</span>
+<span class="doccomment">/// pairs of doubles for the real vs. imaginary component of each entry. The</span>
+<span class="doccomment">/// size will be `4**len(targets)` complex numbers = `2*4**len(targets)`</span>
+<span class="doccomment">/// doubles = `16*4**len(targets)` bytes.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated array containing the matrix.</span>
+<span class="doccomment">/// Free it with `free()` when you&#39;re done with it to avoid memory leaks.** On</span>
+<span class="doccomment">/// failure, or if no matrix is associated with this gate, this returns `NULL`.</span>
+<span class="doccomment">/// Use `dqcs_gate_has_matrix()` to disambiguate.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_gate_matrix</span>(<span class="ident">gate</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_double</span> {
     <span class="ident">api_return</span>(<span class="ident">null_mut</span>(), <span class="op">|</span><span class="op">|</span> {
@@ -760,11 +760,11 @@
 }
 
 <span class="doccomment">/// Returns the size of the gate matrix associated with this gate.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The size is returned in the form of the number of complex entries. That is,</span>
-<span class="doccomment">///&gt; the number of doubles is two times the return value, and the size in bytes</span>
-<span class="doccomment">///&gt; is 8 times the return value. 0 is returned when there is no matrix. -1 is</span>
-<span class="doccomment">///&gt; used to report errors.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The size is returned in the form of the number of complex entries. That is,</span>
+<span class="doccomment">/// the number of doubles is two times the return value, and the size in bytes</span>
+<span class="doccomment">/// is 8 times the return value. 0 is returned when there is no matrix. -1 is</span>
+<span class="doccomment">/// used to report errors.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_gate_matrix_len</span>(<span class="ident">gate</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ssize_t</span> {
     <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1</span>, <span class="op">|</span><span class="op">|</span> {

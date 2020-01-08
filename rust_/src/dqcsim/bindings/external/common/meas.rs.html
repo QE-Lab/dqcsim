@@ -67,13 +67,13 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Constructs a new measurement object.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `qubit` must be set to the qubit that was measured, `value` must be set to</span>
-<span class="doccomment">///&gt; its value. The return value is the handle to the measurement object, or 0</span>
-<span class="doccomment">///&gt; if something went wrong.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Note that measurement objects implement the `arb` interface, so additional</span>
-<span class="doccomment">///&gt; data can be attached to the object.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `qubit` must be set to the qubit that was measured, `value` must be set to</span>
+<span class="doccomment">/// its value. The return value is the handle to the measurement object, or 0</span>
+<span class="doccomment">/// if something went wrong.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Note that measurement objects implement the `arb` interface, so additional</span>
+<span class="doccomment">/// data can be attached to the object.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_meas_new</span>(<span class="ident">qubit</span>: <span class="ident">dqcs_qubit_t</span>, <span class="ident">value</span>: <span class="ident">dqcs_measurement_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {

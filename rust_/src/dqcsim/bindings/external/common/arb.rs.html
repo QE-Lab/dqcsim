@@ -337,11 +337,11 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>;
 
 <span class="doccomment">/// Creates a new `ArbData` object.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Returns the handle of the newly created `ArbData`. The `ArbData` is</span>
-<span class="doccomment">///&gt; initialized with JSON object `{}` and an empty binary argument list.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `ArbData` objects support the `handle` and `arb` APIs.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns the handle of the newly created `ArbData`. The `ArbData` is</span>
+<span class="doccomment">/// initialized with JSON object `{}` and an empty binary argument list.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `ArbData` objects support the `handle` and `arb` APIs.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_arb_new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">insert</span>(<span class="ident">ArbData</span>::<span class="ident">default</span>())
@@ -359,10 +359,10 @@
 
 <span class="doccomment">/// Returns the JSON/CBOR object of an `ArbData` object in the form of a JSON</span>
 <span class="doccomment">/// string.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the JSON</span>
-<span class="doccomment">///&gt; string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure, this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the JSON</span>
+<span class="doccomment">/// string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure, this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_arb_json_get</span>(<span class="ident">arb</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -386,15 +386,15 @@
 
 <span class="doccomment">/// Returns the JSON/CBOR object of an `ArbData` object in the form of a CBOR</span>
 <span class="doccomment">/// object.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If the actual size of the object differs from the specified object size,</span>
-<span class="doccomment">///&gt; this function will copy the minimum of the actual and specified sizes</span>
-<span class="doccomment">///&gt; number of bytes, and return what the actual size was.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If the specified object size is zero, `obj` is allowed to be `NULL`. You</span>
-<span class="doccomment">///&gt; can use this to query the size before allocating an object.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function returns -1 on failure.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If the actual size of the object differs from the specified object size,</span>
+<span class="doccomment">/// this function will copy the minimum of the actual and specified sizes</span>
+<span class="doccomment">/// number of bytes, and return what the actual size was.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If the specified object size is zero, `obj` is allowed to be `NULL`. You</span>
+<span class="doccomment">/// can use this to query the size before allocating an object.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns -1 on failure.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_arb_cbor_get</span>(
     <span class="ident">arb</span>: <span class="ident">dqcs_handle_t</span>,
@@ -433,12 +433,12 @@
 }
 
 <span class="doccomment">/// Pops an unstructured string argument from the back of the list.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the JSON</span>
-<span class="doccomment">///&gt; string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure, this returns `NULL`. If the failure is due to the</span>
-<span class="doccomment">///&gt; conversion from binary object to C string (i.e., embedded nulls), the</span>
-<span class="doccomment">///&gt; data is still popped and is thus lost.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the JSON</span>
+<span class="doccomment">/// string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure, this returns `NULL`. If the failure is due to the</span>
+<span class="doccomment">/// conversion from binary object to C string (i.e., embedded nulls), the</span>
+<span class="doccomment">/// data is still popped and is thus lost.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_arb_pop_str</span>(<span class="ident">arb</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -452,21 +452,21 @@
 }
 
 <span class="doccomment">/// Pops an unstructured raw argument from the back of the list.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If the actual size of the object differs from the specified object size,</span>
-<span class="doccomment">///&gt; this function will copy the minimum of the actual and specified sizes</span>
-<span class="doccomment">///&gt; number of bytes, and return what the actual size was.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If the specified object size is zero, `obj` is allowed to be `NULL`. You</span>
-<span class="doccomment">///&gt; can use this if you don&#39;t need the contents of the argument and just want</span>
-<span class="doccomment">///&gt; to delete it.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Since this function removes the returned element, data will be lost if the</span>
-<span class="doccomment">///&gt; specified size is smaller than the actual size. To avoid this, first use</span>
-<span class="doccomment">///&gt; `dqcs_arb_get_size(handle, -1)` to query the size.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function returns -1 on failure. If this is due to a `NULL` buffer</span>
-<span class="doccomment">///&gt; being passed, the data that was popped is lost.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If the actual size of the object differs from the specified object size,</span>
+<span class="doccomment">/// this function will copy the minimum of the actual and specified sizes</span>
+<span class="doccomment">/// number of bytes, and return what the actual size was.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If the specified object size is zero, `obj` is allowed to be `NULL`. You</span>
+<span class="doccomment">/// can use this if you don&#39;t need the contents of the argument and just want</span>
+<span class="doccomment">/// to delete it.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Since this function removes the returned element, data will be lost if the</span>
+<span class="doccomment">/// specified size is smaller than the actual size. To avoid this, first use</span>
+<span class="doccomment">/// `dqcs_arb_get_size(handle, -1)` to query the size.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns -1 on failure. If this is due to a `NULL` buffer</span>
+<span class="doccomment">/// being passed, the data that was popped is lost.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_arb_pop_raw</span>(
     <span class="ident">arb</span>: <span class="ident">dqcs_handle_t</span>,
@@ -586,10 +586,10 @@
 }
 
 <span class="doccomment">/// Returns the unstructured string argument at the specified index.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the JSON</span>
-<span class="doccomment">///&gt; string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure, this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the JSON</span>
+<span class="doccomment">/// string. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure, this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_arb_get_str</span>(<span class="ident">arb</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">index</span>: <span class="ident">ssize_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -601,16 +601,16 @@
 }
 
 <span class="doccomment">/// Returns the unstructured string argument at the specified index.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If the actual size of the object differs from the specified object size,</span>
-<span class="doccomment">///&gt; this function will copy the minimum of the actual and specified sizes</span>
-<span class="doccomment">///&gt; number of bytes, and return what the actual size was.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If the specified object size is zero, `obj` is allowed to be `NULL`. You</span>
-<span class="doccomment">///&gt; can use this to determine the size of the argument prior to actually</span>
-<span class="doccomment">///&gt; reading it, so you can allocate the right buffer size first.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function returns -1 on failure.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If the actual size of the object differs from the specified object size,</span>
+<span class="doccomment">/// this function will copy the minimum of the actual and specified sizes</span>
+<span class="doccomment">/// number of bytes, and return what the actual size was.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If the specified object size is zero, `obj` is allowed to be `NULL`. You</span>
+<span class="doccomment">/// can use this to determine the size of the argument prior to actually</span>
+<span class="doccomment">/// reading it, so you can allocate the right buffer size first.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns -1 on failure.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_arb_get_raw</span>(
     <span class="ident">arb</span>: <span class="ident">dqcs_handle_t</span>,
@@ -630,8 +630,8 @@
 
 <span class="doccomment">/// Returns the size in bytes of the unstructured string argument at the</span>
 <span class="doccomment">/// specified index.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Returns -1 when the function fails.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns -1 when the function fails.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_arb_get_size</span>(<span class="ident">arb</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">index</span>: <span class="ident">ssize_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ssize_t</span> {
     <span class="ident">dqcs_arb_get_raw</span>(<span class="ident">arb</span>, <span class="ident">index</span>, <span class="ident">null_mut</span>(), <span class="number">0</span>)

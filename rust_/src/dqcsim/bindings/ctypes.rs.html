@@ -515,54 +515,54 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Type for a handle.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Handles are like pointers into DQCsim&#39;s internal structures: all API calls</span>
-<span class="doccomment">///&gt; use these to refer to objects. Besides the object, they contain type</span>
-<span class="doccomment">///&gt; information. This type can be retrieved using `dqcs_handle_type()`.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Handles are always positive integers, counting upwards from 1 upon</span>
-<span class="doccomment">///&gt; allocation, and they are not reused even after being deleted. Thus, every</span>
-<span class="doccomment">///&gt; subsequent object allocation returns a handle one greater than the</span>
-<span class="doccomment">///&gt; previous. Note however that DQCsim may allocate objects as well without</span>
-<span class="doccomment">///&gt; the user specifically requesting this, so external code should generally</span>
-<span class="doccomment">///&gt; *not* rely on this behavior unless otherwise noted. The value zero is</span>
-<span class="doccomment">///&gt; reserved for invalid references or error propagation.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Note that the scope for handles is thread-local. That is, data referenced</span>
-<span class="doccomment">///&gt; by a handle cannot be shared or moved between threads.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The value zero is reserved for invalid references or error propagation.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Handles are like pointers into DQCsim&#39;s internal structures: all API calls</span>
+<span class="doccomment">/// use these to refer to objects. Besides the object, they contain type</span>
+<span class="doccomment">/// information. This type can be retrieved using `dqcs_handle_type()`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Handles are always positive integers, counting upwards from 1 upon</span>
+<span class="doccomment">/// allocation, and they are not reused even after being deleted. Thus, every</span>
+<span class="doccomment">/// subsequent object allocation returns a handle one greater than the</span>
+<span class="doccomment">/// previous. Note however that DQCsim may allocate objects as well without</span>
+<span class="doccomment">/// the user specifically requesting this, so external code should generally</span>
+<span class="doccomment">/// *not* rely on this behavior unless otherwise noted. The value zero is</span>
+<span class="doccomment">/// reserved for invalid references or error propagation.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Note that the scope for handles is thread-local. That is, data referenced</span>
+<span class="doccomment">/// by a handle cannot be shared or moved between threads.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The value zero is reserved for invalid references or error propagation.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">dqcs_handle_t</span> <span class="op">=</span> <span class="ident">c_ulonglong</span>;
 
 <span class="doccomment">/// Type for a qubit reference.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Qubit references are exchanged between the frontend, operator, and backend</span>
-<span class="doccomment">///&gt; plugins to indicate which qubits a gate operates on. Note that this makes</span>
-<span class="doccomment">///&gt; them fundamentally different from handles, which are thread-local.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Qubit references are always positive integers, counting upwards from 1 upon</span>
-<span class="doccomment">///&gt; allocation, and they are not reused even after the qubit is deallocated.</span>
-<span class="doccomment">///&gt; Thus, every subsequent allocation returns a qubit reference one greater</span>
-<span class="doccomment">///&gt; than the previous. This is guaranteed behavior that external code can rely</span>
-<span class="doccomment">///&gt; upon. The value zero is reserved for invalid references or error</span>
-<span class="doccomment">///&gt; propagation.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Qubit references are exchanged between the frontend, operator, and backend</span>
+<span class="doccomment">/// plugins to indicate which qubits a gate operates on. Note that this makes</span>
+<span class="doccomment">/// them fundamentally different from handles, which are thread-local.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Qubit references are always positive integers, counting upwards from 1 upon</span>
+<span class="doccomment">/// allocation, and they are not reused even after the qubit is deallocated.</span>
+<span class="doccomment">/// Thus, every subsequent allocation returns a qubit reference one greater</span>
+<span class="doccomment">/// than the previous. This is guaranteed behavior that external code can rely</span>
+<span class="doccomment">/// upon. The value zero is reserved for invalid references or error</span>
+<span class="doccomment">/// propagation.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">dqcs_qubit_t</span> <span class="op">=</span> <span class="ident">c_ulonglong</span>;
 
 <span class="doccomment">/// Type for a simulation cycle timestamp.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Timestamps count upward from zero. The type is signed to allow usage of -1</span>
-<span class="doccomment">///&gt; for errors, and to allow numerical differences to be represented.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Timestamps count upward from zero. The type is signed to allow usage of -1</span>
+<span class="doccomment">/// for errors, and to allow numerical differences to be represented.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">dqcs_cycle_t</span> <span class="op">=</span> <span class="ident">c_longlong</span>;
 
 <span class="doccomment">/// Type for a plugin state.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This is an opaque type that is passed along to plugin implementation</span>
-<span class="doccomment">///&gt; callback functions, which those callbacks can then use to interact with the</span>
-<span class="doccomment">///&gt; plugin instance. User code shall not create or modify values of this type,</span>
-<span class="doccomment">///&gt; and shall only use the values when calling `dqcs_plugin_*` functions.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is an opaque type that is passed along to plugin implementation</span>
+<span class="doccomment">/// callback functions, which those callbacks can then use to interact with the</span>
+<span class="doccomment">/// plugin instance. User code shall not create or modify values of this type,</span>
+<span class="doccomment">/// and shall only use the values when calling `dqcs_plugin_*` functions.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
@@ -599,131 +599,131 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">dqcs_handle_type_t</span> {
     <span class="doccomment">/// Indicates that the given handle is invalid.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This indicates one of the following:</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt;  - The handle value is invalid (zero or negative).</span>
-    <span class="doccomment">///&gt;  - The handle has not been used yet.</span>
-    <span class="doccomment">///&gt;  - The object associated with the handle was deleted.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This indicates one of the following:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///  - The handle value is invalid (zero or negative).</span>
+    <span class="doccomment">///  - The handle has not been used yet.</span>
+    <span class="doccomment">///  - The object associated with the handle was deleted.</span>
     <span class="ident">DQCS_HTYPE_INVALID</span> <span class="op">=</span> <span class="number">0</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to an `ArbData` object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle` and `arb` interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle` and `arb` interfaces.</span>
     <span class="ident">DQCS_HTYPE_ARB_DATA</span> <span class="op">=</span> <span class="number">100</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to an `ArbCmd` object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle`, `arb`, and `cmd`</span>
-    <span class="doccomment">///&gt; interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle`, `arb`, and `cmd`</span>
+    <span class="doccomment">/// interfaces.</span>
     <span class="ident">DQCS_HTYPE_ARB_CMD</span> <span class="op">=</span> <span class="number">101</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a queue of `ArbCmd` object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle`, `arb`, `cmd`, and</span>
-    <span class="doccomment">///&gt; `cq` interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle`, `arb`, `cmd`, and</span>
+    <span class="doccomment">/// `cq` interfaces.</span>
     <span class="ident">DQCS_HTYPE_ARB_CMD_QUEUE</span> <span class="op">=</span> <span class="number">102</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a set of qubit references.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle` and `qbset`</span>
-    <span class="doccomment">///&gt; interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle` and `qbset`</span>
+    <span class="doccomment">/// interfaces.</span>
     <span class="ident">DQCS_HTYPE_QUBIT_SET</span> <span class="op">=</span> <span class="number">103</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a quantum gate description.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle`, `gate`, and `arb`</span>
-    <span class="doccomment">///&gt; interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle`, `gate`, and `arb`</span>
+    <span class="doccomment">/// interfaces.</span>
     <span class="ident">DQCS_HTYPE_GATE</span> <span class="op">=</span> <span class="number">104</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a qubit measurement result.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle`, `meas`, and `arb`</span>
-    <span class="doccomment">///&gt; interfaces. It can also be used in place of a qubit measurement result</span>
-    <span class="doccomment">///&gt; set by functions that consume the object.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle`, `meas`, and `arb`</span>
+    <span class="doccomment">/// interfaces. It can also be used in place of a qubit measurement result</span>
+    <span class="doccomment">/// set by functions that consume the object.</span>
     <span class="ident">DQCS_HTYPE_MEAS</span> <span class="op">=</span> <span class="number">105</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a set of qubit measurement</span>
     <span class="doccomment">/// results.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle` and `mset` interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle` and `mset` interfaces.</span>
     <span class="ident">DQCS_HTYPE_MEAS_SET</span> <span class="op">=</span> <span class="number">106</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a frontend plugin process</span>
     <span class="doccomment">/// configuration object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle`, `pcfg`, and `xcfg`</span>
-    <span class="doccomment">///&gt; interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle`, `pcfg`, and `xcfg`</span>
+    <span class="doccomment">/// interfaces.</span>
     <span class="ident">DQCS_HTYPE_FRONT_PROCESS_CONFIG</span> <span class="op">=</span> <span class="number">200</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to an operator plugin process</span>
     <span class="doccomment">/// configuration object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle`, `pcfg`, and `xcfg`</span>
-    <span class="doccomment">///&gt; interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle`, `pcfg`, and `xcfg`</span>
+    <span class="doccomment">/// interfaces.</span>
     <span class="ident">DQCS_HTYPE_OPER_PROCESS_CONFIG</span> <span class="op">=</span> <span class="number">201</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a backend plugin process</span>
     <span class="doccomment">/// configuration object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle`, `pcfg`, and `xcfg`</span>
-    <span class="doccomment">///&gt; interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle`, `pcfg`, and `xcfg`</span>
+    <span class="doccomment">/// interfaces.</span>
     <span class="ident">DQCS_HTYPE_BACK_PROCESS_CONFIG</span> <span class="op">=</span> <span class="number">203</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a frontend plugin thread</span>
     <span class="doccomment">/// configuration object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle`, `tcfg`, and `xcfg`</span>
-    <span class="doccomment">///&gt; interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle`, `tcfg`, and `xcfg`</span>
+    <span class="doccomment">/// interfaces.</span>
     <span class="ident">DQCS_HTYPE_FRONT_THREAD_CONFIG</span> <span class="op">=</span> <span class="number">204</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to an operator plugin thread</span>
     <span class="doccomment">/// configuration object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle`, `tcfg`, and `xcfg`</span>
-    <span class="doccomment">///&gt; interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle`, `tcfg`, and `xcfg`</span>
+    <span class="doccomment">/// interfaces.</span>
     <span class="ident">DQCS_HTYPE_OPER_THREAD_CONFIG</span> <span class="op">=</span> <span class="number">205</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a backend plugin thread</span>
     <span class="doccomment">/// configuration object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle`, `tcfg`, and `xcfg`</span>
-    <span class="doccomment">///&gt; interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle`, `tcfg`, and `xcfg`</span>
+    <span class="doccomment">/// interfaces.</span>
     <span class="ident">DQCS_HTYPE_BACK_THREAD_CONFIG</span> <span class="op">=</span> <span class="number">206</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a simulator configuration</span>
     <span class="doccomment">/// object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle` and `scfg` interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle` and `scfg` interfaces.</span>
     <span class="ident">DQCS_HTYPE_SIM_CONFIG</span> <span class="op">=</span> <span class="number">207</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a simulator instance.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle` and `sim` interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle` and `sim` interfaces.</span>
     <span class="ident">DQCS_HTYPE_SIM</span> <span class="op">=</span> <span class="number">208</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a frontend plugin</span>
     <span class="doccomment">/// definition object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle` and `pdef` interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle` and `pdef` interfaces.</span>
     <span class="ident">DQCS_HTYPE_FRONT_DEF</span> <span class="op">=</span> <span class="number">300</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to an operator plugin</span>
     <span class="doccomment">/// definition object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle` and `pdef` interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle` and `pdef` interfaces.</span>
     <span class="ident">DQCS_HTYPE_OPER_DEF</span> <span class="op">=</span> <span class="number">301</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a backend plugin</span>
     <span class="doccomment">/// definition object.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle` and `pdef` interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle` and `pdef` interfaces.</span>
     <span class="ident">DQCS_HTYPE_BACK_DEF</span> <span class="op">=</span> <span class="number">302</span>,
 
     <span class="doccomment">/// Indicates that the given handle belongs to a plugin thread join handle.</span>
-    <span class="doccomment">///&gt;</span>
-    <span class="doccomment">///&gt; This means that the handle supports the `handle` and `pjoin`</span>
-    <span class="doccomment">///&gt; interfaces.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This means that the handle supports the `handle` and `pjoin`</span>
+    <span class="doccomment">/// interfaces.</span>
     <span class="ident">DQCS_HTYPE_PLUGIN_JOIN</span> <span class="op">=</span> <span class="number">303</span>,
 }
 

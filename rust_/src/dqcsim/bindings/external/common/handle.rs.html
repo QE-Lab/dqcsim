@@ -166,10 +166,10 @@
 }
 
 <span class="doccomment">/// Returns a debug dump of the object associated with the given handle.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; On success, this **returns a newly allocated string containing the</span>
-<span class="doccomment">///&gt; description. Free it with `free()` when you&#39;re done with it to avoid memory</span>
-<span class="doccomment">///&gt; leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// On success, this **returns a newly allocated string containing the</span>
+<span class="doccomment">/// description. Free it with `free()` when you&#39;re done with it to avoid memory</span>
+<span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_handle_dump</span>(<span class="ident">handle</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
     <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
@@ -179,8 +179,8 @@
 }
 
 <span class="doccomment">/// Destroys the object associated with a handle.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Returns 0 when successful, -1 otherwise.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns 0 when successful, -1 otherwise.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_handle_delete</span>(<span class="ident">handle</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -193,10 +193,10 @@
 }
 
 <span class="doccomment">/// Deletes all handles for the current thread.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This can be used to clean stuff up at the end of `main()` or before an</span>
-<span class="doccomment">///&gt; `abort()` of some kind. If you don&#39;t clean up properly, you might get</span>
-<span class="doccomment">///&gt; undefined behavior or errors when DQCsim tries to do it for you.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This can be used to clean stuff up at the end of `main()` or before an</span>
+<span class="doccomment">/// `abort()` of some kind. If you don&#39;t clean up properly, you might get</span>
+<span class="doccomment">/// undefined behavior or errors when DQCsim tries to do it for you.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_handle_delete_all</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">API_STATE</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">state</span><span class="op">|</span> <span class="ident">state</span>.<span class="ident">borrow_mut</span>().<span class="ident">objects</span>.<span class="ident">clear</span>());
@@ -204,10 +204,10 @@
 }
 
 <span class="doccomment">/// Succeeds only if there are no live handles in the current thread.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This is intended for testing and for finding handle leaks. The error</span>
-<span class="doccomment">///&gt; message returned when handles remain contains dumps of the first 10</span>
-<span class="doccomment">///&gt; remaining handles.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is intended for testing and for finding handle leaks. The error</span>
+<span class="doccomment">/// message returned when handles remain contains dumps of the first 10</span>
+<span class="doccomment">/// remaining handles.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_handle_leak_check</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {

@@ -115,16 +115,16 @@
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Creates a new set of qubit measurement results.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Returns the handle of the newly created set. The set is initially empty.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns the handle of the newly created set. The set is initially empty.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mset_new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">insert</span>(<span class="ident">QubitMeasurementResultSet</span>::<span class="ident">new</span>())
 }
 
 <span class="doccomment">/// Returns the number of qubits measurements in the given measurement set.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function returns -1 to indicate failure.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function returns -1 to indicate failure.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mset_len</span>(<span class="ident">mset</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ssize_t</span> {
     <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1</span>, <span class="op">|</span><span class="op">|</span> {
@@ -149,10 +149,10 @@
 }
 
 <span class="doccomment">/// Adds a measurement result to a measurement result set.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If there was already a measurement for the specified qubit, the previous</span>
-<span class="doccomment">///&gt; measurement result is overwritten. The measurement result object is deleted</span>
-<span class="doccomment">///&gt; if and only if the function succeeds.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If there was already a measurement for the specified qubit, the previous</span>
+<span class="doccomment">/// measurement result is overwritten. The measurement result object is deleted</span>
+<span class="doccomment">/// if and only if the function succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mset_set</span>(<span class="ident">mset</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">meas</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -211,8 +211,8 @@
 
 <span class="doccomment">/// Returns the measurement result for any of the qubits contained in a</span>
 <span class="doccomment">/// measurement result set and removes it from the set.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This is useful for iteration.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is useful for iteration.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mset_take_any</span>(<span class="ident">mset</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {

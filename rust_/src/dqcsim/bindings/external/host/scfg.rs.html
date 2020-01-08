@@ -306,35 +306,35 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">time</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Constructs an empty simulation configuration.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Before the configuration can be used, at least a frontend and a backend</span>
-<span class="doccomment">///&gt; plugin configuration must be pushed into it. This can be done with</span>
-<span class="doccomment">///&gt; `dqcs_scfg_push_plugin()`. Failing to do this will result in an error when</span>
-<span class="doccomment">///&gt; you try to start the simulation.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The default settings correspond to the defaults of the `dqcsim` command</span>
-<span class="doccomment">///&gt; line interface. Refer to its help for more information.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Before the configuration can be used, at least a frontend and a backend</span>
+<span class="doccomment">/// plugin configuration must be pushed into it. This can be done with</span>
+<span class="doccomment">/// `dqcs_scfg_push_plugin()`. Failing to do this will result in an error when</span>
+<span class="doccomment">/// you try to start the simulation.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default settings correspond to the defaults of the `dqcsim` command</span>
+<span class="doccomment">/// line interface. Refer to its help for more information.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">insert</span>(<span class="ident">SimulatorConfiguration</span>::<span class="ident">default</span>())
 }
 
 <span class="doccomment">/// Appends a plugin to a simulation configuration.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Both plugin process and plugin thread configuration objects may be used.</span>
-<span class="doccomment">///&gt; The handle is consumed by this function, and is thus invalidated, if and</span>
-<span class="doccomment">///&gt; only if it is successful.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Frontend and backend plugins will automatically be inserted at the front</span>
-<span class="doccomment">///&gt; and back of the pipeline when the simulation is created. Operators are</span>
-<span class="doccomment">///&gt; inserted in front to back order. This function does not provide safeguards</span>
-<span class="doccomment">///&gt; against multiple frontends/backends; such errors will only be reported when</span>
-<span class="doccomment">///&gt; the simulation is started.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Note that it is not possible to observe or mutate a plugin configuration</span>
-<span class="doccomment">///&gt; once it has been added to a simulator configuration handle. If you want to</span>
-<span class="doccomment">///&gt; do this for some reason, you should maintain your own data structures, and</span>
-<span class="doccomment">///&gt; only build the DQCsim structures from them when you&#39;re done.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Both plugin process and plugin thread configuration objects may be used.</span>
+<span class="doccomment">/// The handle is consumed by this function, and is thus invalidated, if and</span>
+<span class="doccomment">/// only if it is successful.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Frontend and backend plugins will automatically be inserted at the front</span>
+<span class="doccomment">/// and back of the pipeline when the simulation is created. Operators are</span>
+<span class="doccomment">/// inserted in front to back order. This function does not provide safeguards</span>
+<span class="doccomment">/// against multiple frontends/backends; such errors will only be reported when</span>
+<span class="doccomment">/// the simulation is started.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Note that it is not possible to observe or mutate a plugin configuration</span>
+<span class="doccomment">/// once it has been added to a simulator configuration handle. If you want to</span>
+<span class="doccomment">/// do this for some reason, you should maintain your own data structures, and</span>
+<span class="doccomment">/// only build the DQCsim structures from them when you&#39;re done.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_push_plugin</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">xcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -346,8 +346,8 @@
 }
 
 <span class="doccomment">/// Configures the random seed that the simulation should use.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Note that the seed is randomized by default.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Note that the seed is randomized by default.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_seed_set</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">seed</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
@@ -358,9 +358,9 @@
 }
 
 <span class="doccomment">/// Returns the configured random seed.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; This function will return 0 when it fails, but this can unfortunately not</span>
-<span class="doccomment">///&gt; be reliably distinguished from a seed that was set to 0.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This function will return 0 when it fails, but this can unfortunately not</span>
+<span class="doccomment">/// be reliably distinguished from a seed that was set to 0.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_seed_get</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
@@ -370,9 +370,9 @@
 }
 
 <span class="doccomment">/// Configures the stderr sink verbosity for a simulation.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; That is, the minimum loglevel that a messages needs to have for it to be</span>
-<span class="doccomment">///&gt; printed to stderr.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// That is, the minimum loglevel that a messages needs to have for it to be</span>
+<span class="doccomment">/// printed to stderr.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_stderr_verbosity_set</span>(
     <span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>,
@@ -386,9 +386,9 @@
 }
 
 <span class="doccomment">/// Returns the configured stderr sink verbosity for a simulation.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; That is, the minimum loglevel that a messages needs to have for it to be</span>
-<span class="doccomment">///&gt; printed to stderr.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// That is, the minimum loglevel that a messages needs to have for it to be</span>
+<span class="doccomment">/// printed to stderr.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_stderr_verbosity_get</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_loglevel_t</span> {
     <span class="ident">api_return</span>(<span class="ident">dqcs_loglevel_t</span>::<span class="ident">DQCS_LOG_INVALID</span>, <span class="op">|</span><span class="op">|</span> {
@@ -398,8 +398,8 @@
 }
 
 <span class="doccomment">/// Configures DQCsim to also output its log messages to a file.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `verbosity` configures the verbosity level for the file only.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `verbosity` configures the verbosity level for the file only.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_tee</span>(
     <span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>,
@@ -417,48 +417,48 @@
 }
 
 <span class="doccomment">/// Configures DQCsim to also output its log messages to callback function.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `verbosity` specifies the minimum importance of a message required for the</span>
-<span class="doccomment">///&gt; callback to be called.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; `callback` is the callback function to install. It is always called with</span>
-<span class="doccomment">///&gt; the `user_data` pointer to make calling stuff like class member functions</span>
-<span class="doccomment">///&gt; or closures possible. The `user_free` function, if non-null, will be called</span>
-<span class="doccomment">///&gt; when the callback is uninstalled in any way. If `callback` is null, any</span>
-<span class="doccomment">///&gt; current callback is uninstalled instead. For consistency, if `user_free` is</span>
-<span class="doccomment">///&gt; non-null while `callback` is null, `user_free` is called immediately, under</span>
-<span class="doccomment">///&gt; the assumption that the caller has allocated resources unbeknownst that the</span>
-<span class="doccomment">///&gt; callback it&#39;s trying to install is null.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; **NOTE: both `callback` and `user_free` may be called from a thread spawned</span>
-<span class="doccomment">///&gt; by the simulator. Calling any API calls from the callback is therefore</span>
-<span class="doccomment">///&gt; undefined behavior!**</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The callback takes the following arguments:</span>
-<span class="doccomment">///&gt;  - `void*`: user defined data.</span>
-<span class="doccomment">///&gt;  - `const char*`: log message string, excluding metadata.</span>
-<span class="doccomment">///&gt;  - `const char*`: name assigned to the logger that was used to produce the</span>
-<span class="doccomment">///&gt;    message (= &quot;dqcsim&quot; or a plugin name).</span>
-<span class="doccomment">///&gt;  - `dqcs_loglevel_t`: the verbosity level that the message was logged with.</span>
-<span class="doccomment">///&gt;  - `const char*`: string representing the source of the log message, or</span>
-<span class="doccomment">///&gt;    `NULL` when no source is known.</span>
-<span class="doccomment">///&gt;  - `const char*`: string containing the filename of the source that</span>
-<span class="doccomment">///&gt;    generated the message, or `NULL` when no source is known.</span>
-<span class="doccomment">///&gt;  - `uint32_t`: line number within the aforementioned file, or 0 if not</span>
-<span class="doccomment">///&gt;    known.</span>
-<span class="doccomment">///&gt;  - `uint64_t`: Time in seconds since the Unix epoch.</span>
-<span class="doccomment">///&gt;  - `uint32_t`: Additional time in nanoseconds since the aforementioned.</span>
-<span class="doccomment">///&gt;  - `uint32_t`: PID of the generating process.</span>
-<span class="doccomment">///&gt;  - `uint64_t`: TID of the generating thread.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; If an internal log record is particularly malformed and cannot be coerced</span>
-<span class="doccomment">///&gt; into the above (nul bytes in the strings, invalid timestamp, whatever) the</span>
-<span class="doccomment">///&gt; message is silently ignored.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; The primary use of this callback is to pipe DQCsim&#39;s messages to an</span>
-<span class="doccomment">///&gt; external logging framework. When you do this, you probably also want to</span>
-<span class="doccomment">///&gt; call `dqcs_scfg_stderr_verbosity_set(handle, DQCS_LOG_OFF)` to prevent</span>
-<span class="doccomment">///&gt; DQCsim from writing the messages to stderr itself.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `verbosity` specifies the minimum importance of a message required for the</span>
+<span class="doccomment">/// callback to be called.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `callback` is the callback function to install. It is always called with</span>
+<span class="doccomment">/// the `user_data` pointer to make calling stuff like class member functions</span>
+<span class="doccomment">/// or closures possible. The `user_free` function, if non-null, will be called</span>
+<span class="doccomment">/// when the callback is uninstalled in any way. If `callback` is null, any</span>
+<span class="doccomment">/// current callback is uninstalled instead. For consistency, if `user_free` is</span>
+<span class="doccomment">/// non-null while `callback` is null, `user_free` is called immediately, under</span>
+<span class="doccomment">/// the assumption that the caller has allocated resources unbeknownst that the</span>
+<span class="doccomment">/// callback it&#39;s trying to install is null.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **NOTE: both `callback` and `user_free` may be called from a thread spawned</span>
+<span class="doccomment">/// by the simulator. Calling any API calls from the callback is therefore</span>
+<span class="doccomment">/// undefined behavior!**</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The callback takes the following arguments:</span>
+<span class="doccomment">///  - `void*`: user defined data.</span>
+<span class="doccomment">///  - `const char*`: log message string, excluding metadata.</span>
+<span class="doccomment">///  - `const char*`: name assigned to the logger that was used to produce the</span>
+<span class="doccomment">///    message (= &quot;dqcsim&quot; or a plugin name).</span>
+<span class="doccomment">///  - `dqcs_loglevel_t`: the verbosity level that the message was logged with.</span>
+<span class="doccomment">///  - `const char*`: string representing the source of the log message, or</span>
+<span class="doccomment">///    `NULL` when no source is known.</span>
+<span class="doccomment">///  - `const char*`: string containing the filename of the source that</span>
+<span class="doccomment">///    generated the message, or `NULL` when no source is known.</span>
+<span class="doccomment">///  - `uint32_t`: line number within the aforementioned file, or 0 if not</span>
+<span class="doccomment">///    known.</span>
+<span class="doccomment">///  - `uint64_t`: Time in seconds since the Unix epoch.</span>
+<span class="doccomment">///  - `uint32_t`: Additional time in nanoseconds since the aforementioned.</span>
+<span class="doccomment">///  - `uint32_t`: PID of the generating process.</span>
+<span class="doccomment">///  - `uint64_t`: TID of the generating thread.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If an internal log record is particularly malformed and cannot be coerced</span>
+<span class="doccomment">/// into the above (nul bytes in the strings, invalid timestamp, whatever) the</span>
+<span class="doccomment">/// message is silently ignored.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The primary use of this callback is to pipe DQCsim&#39;s messages to an</span>
+<span class="doccomment">/// external logging framework. When you do this, you probably also want to</span>
+<span class="doccomment">/// call `dqcs_scfg_stderr_verbosity_set(handle, DQCS_LOG_OFF)` to prevent</span>
+<span class="doccomment">/// DQCsim from writing the messages to stderr itself.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_must_use</span>)]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_log_callback</span>(
@@ -586,9 +586,9 @@
 }
 
 <span class="doccomment">/// Disables the reproduction logging system.</span>
-<span class="doccomment">///&gt;</span>
-<span class="doccomment">///&gt; Calling this will disable the warnings printed when a simulation that</span>
-<span class="doccomment">///&gt; cannot be reproduced is constructed.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Calling this will disable the warnings printed when a simulation that</span>
+<span class="doccomment">/// cannot be reproduced is constructed.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_repro_disable</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
