@@ -1,11 +1,9 @@
 # C API
 
 The C API allows any language that supports C bindings to use DQCsim for making
-plugins or host programs. It consists of a header file (`dqcsim.h`) and an
-associated dynamic library (`libdqcsim.so` on Linux, `dqcsim.dylib` on macOS).
-These will be installed automatically in the `include` and `lib` directories
-that Python is aware of when DQCsim is installed using `pip3 install dqcsim`
-(more detailed notes [here](../install/index.html)).
+plugins or host programs. It consists of a shared object and a header file,
+which are automatically installed along with the DQCsim Python package (more
+detailed notes [here](../install/index.html)).
 
 ## How to read this chapter
 
@@ -22,6 +20,7 @@ decent understanding of the basic concepts. If you don't, start
 
 ## Contents
 
+ - [Usage](usage.apigen.md)
  - [Concepts](concepts.apigen.md)
  - [Type definitions](type-definitions.apigen.md)
  - [ArbData and ArbCmd objects](arb-cmd-cq.apigen.md)

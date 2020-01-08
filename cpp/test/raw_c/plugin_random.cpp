@@ -1,9 +1,7 @@
-#include <dqcsim_raw.hpp>
+#include <dqcsim.h>
 #include "gtest/gtest.h"
 #include "util.h"
 #include <queue>
-
-using namespace dqcsim;
 
 typedef struct {
   std::queue<double> f64s;
@@ -65,6 +63,8 @@ dqcs_handle_t modify_measurement_cb(void *user_data, dqcs_plugin_state_t state, 
 }
 
 dqcs_handle_t gate_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t gate) {
+  (void)user_data;
+  (void)state;
   dqcs_log_debug("gate_cb");
   dqcs_handle_t meas_qubits = dqcs_gate_measures(gate);
   dqcs_handle_delete(gate);

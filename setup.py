@@ -62,14 +62,14 @@ class build(_build):
                     cargo["build"]["--features"]["bindings"] & FG
                 else:
                     cargo["build"]["--release"]["--features"]["bindings"] & FG
-        
+
         local['mkdir']("-p", py_target_dir)
         sys.path.append("python/tools")
         import add_swig_directives
         add_swig_directives.run(include_dir + "/dqcsim-py.h", py_target_dir + "/dqcsim.i")
 
         local["swig"]["-v"]["-python"]["-py3"]["-outdir"][py_target_dir]["-o"][py_target_dir + "/dqcsim.c"][py_target_dir + "/dqcsim.i"] & FG
-        
+
         _build.run(self)
 
 class bdist(_bdist):
@@ -125,11 +125,15 @@ class KCovCommand(distutils.cmd.Command):
             level=distutils.log.INFO)
         subprocess.check_call(command, env=kcov_env)
 
+include_files = {}
+#for root, _, files in os.walk('cpp/include'):
+    #assert root.startswith('cpp/')
+    #include_files[root[4:]] = list(map(lambda name: os.path.join(root, name), files))
 
 setup(
     name = 'dqcsim',
     version = version,
-    
+
     author = 'Quantum Computer Architectures, Quantum & Computer Engineering, QuTech, Delft University of Technology',
     author_email = '',
     description = 'Python bindings for DQCsim',
@@ -157,7 +161,7 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
-        
+
         "Topic :: Scientific/Engineering"
     ],
 
@@ -173,12 +177,13 @@ setup(
         ]),
         ('include', [
             'target/include/dqcsim.h',
-            'target/include/dqcsim_raw.hpp'
-        ]),
+            'target/include/cdqcsim',
+            'target/include/dqcsim',
+        ] + include_files.pop('include', [])),
         ('lib', [
             output_dir + '/libdqcsim.' + ('so' if platform.system() == "Linux" else 'dylib')
         ])
-    ],
+    ] + list(include_files.items()),
 
     packages = find_packages('python'),
     package_dir = {

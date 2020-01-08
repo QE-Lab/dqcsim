@@ -2,7 +2,7 @@ APISRC_FILES = $(shell find src -name '*.apisrc.md')
 APIGEN_FILES = $(APISRC_FILES:.apisrc.md=.apigen.md)
 
 .PHONY: all
-all: book python rust
+all: book python rust cpp
 
 .PHONY: open
 open: all
@@ -32,3 +32,6 @@ rust:
 	cargo doc --no-deps --all-features
 	cp -R ../target/doc/ ../target/book/rust_
 
+.PHONY: cpp
+cpp: book
+	@doxygen || echo "WARNING: doxygen failed, C++ doc not generated"

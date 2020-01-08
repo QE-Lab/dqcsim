@@ -1,10 +1,8 @@
-#include <dqcsim_raw.hpp>
+#include <dqcsim.h>
 #include "gtest/gtest.h"
 #include <fcntl.h>
 #include <math.h>
 #include "util.h"
-
-using namespace dqcsim;
 
 // Sanity check the plugin definition API.
 TEST(pdef, sanity) {
@@ -102,44 +100,74 @@ void free_cb(void *user_data) {
 namespace pdef {
 
   dqcs_return_t initialize_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t init_cmds) {
+    (void)user_data;
+    (void)state;
+    (void)init_cmds;
     return dqcs_return_t::DQCS_FAILURE;
   }
 
 }
 
 dqcs_return_t drop_cb(void *user_data, dqcs_plugin_state_t state) {
+  (void)user_data;
+  (void)state;
   return dqcs_return_t::DQCS_FAILURE;
 }
 
 dqcs_handle_t run_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t args) {
+  (void)user_data;
+  (void)state;
+  (void)args;
   return 0u;
 }
 
 dqcs_return_t allocate_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t qubits, dqcs_handle_t alloc_cmds) {
+  (void)user_data;
+  (void)state;
+  (void)qubits;
+  (void)alloc_cmds;
   return dqcs_return_t::DQCS_FAILURE;
 }
 
 dqcs_return_t free_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t qubits) {
+  (void)user_data;
+  (void)state;
+  (void)qubits;
   return dqcs_return_t::DQCS_FAILURE;
 }
 
 dqcs_handle_t gate_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t gate) {
+  (void)user_data;
+  (void)state;
+  (void)gate;
   return 0u;
 }
 
 dqcs_handle_t modify_measurement_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t meas) {
+  (void)user_data;
+  (void)state;
+  (void)meas;
   return 0u;
 }
 
 dqcs_return_t advance_cb(void *user_data, dqcs_plugin_state_t state,  dqcs_cycle_t cycles) {
+  (void)user_data;
+  (void)state;
+  (void)cycles;
   return dqcs_return_t::DQCS_FAILURE;
 }
 
 dqcs_handle_t upstream_arb_cb(void *user_data, dqcs_plugin_state_t state,  dqcs_handle_t cmd) {
+  (void)user_data;
+  (void)state;
+  (void)cmd;
   return 0u;
 }
 
 dqcs_handle_t host_arb_cb(void *user_data, dqcs_plugin_state_t state,  dqcs_handle_t cmd) {
+  (void)user_data;
+  (void)state;
+  (void)cmd;
   return 0u;
 }
 

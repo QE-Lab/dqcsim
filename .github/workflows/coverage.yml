@@ -96,7 +96,7 @@ jobs:
         echo "::add-path::${HOME}/cmake/bin"
     - name: Build
       run: |
-        cmake . -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+        cmake . -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fno-inline -fno-inline-small-functions -fno-default-inline"
         make -j
     - uses: docker://kcov/kcov:v37
       with:

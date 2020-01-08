@@ -1,0 +1,4 @@
+// <dqcsim> -*- C++ -*-
+
+#include "dqcsim_bits/wrap.hpp"
+#include "dqcsim_bits/log.hpp"
