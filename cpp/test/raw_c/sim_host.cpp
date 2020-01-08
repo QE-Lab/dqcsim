@@ -62,6 +62,23 @@ dqcs_handle_t run_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle_t a
   return args;
 }
 
+// Start followed by wait, accelerator finishes, empty arb passed to start.
+TEST(sim_host, empty) {
+  SIM_HEADER;
+  user_data_t ud = {"run() was here", 0};
+  dqcs_pdef_set_run_cb(front, run_cb, NULL, &ud);
+  SIM_CONSTRUCT;
+
+  EXPECT_EQ(dqcs_sim_start(sim, 0), dqcs_return_t::DQCS_SUCCESS);
+
+  dqcs_handle_t a = dqcs_sim_wait(sim);
+  CHECK_ARB(a, "{}", "run() was here");
+
+  SIM_FOOTER;
+
+  EXPECT_EQ(ud.counter, 1);
+}
+
 // Start followed by wait, accelerator finishes.
 TEST(sim_host, start_wait) {
   SIM_HEADER;
