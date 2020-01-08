@@ -200,6 +200,7 @@ namespace wrap {
     if (value < 0.0) {
       throw std::runtime_error(raw::dqcs_error_get());
     }
+    return value;
   }
 
   /**
@@ -1811,7 +1812,7 @@ namespace wrap {
      * `cmd` fails.
      */
     void push(const Cmd &cmd) {
-      push(std::move(ArbCmd(cmd)));
+      push(ArbCmd(cmd));
     }
 
     /**
@@ -3300,7 +3301,7 @@ namespace wrap {
      * for some reason.
      */
     static Gate unitary(const QubitSet &targets, const Matrix &matrix) {
-      return unitary(std::move(QubitSet(targets)), matrix);
+      return unitary(QubitSet(targets), matrix);
     }
 
     /**
@@ -3342,7 +3343,7 @@ namespace wrap {
      * for some reason.
      */
     static Gate unitary(const QubitSet &targets, const QubitSet &controls, const Matrix &matrix) {
-      return unitary(std::move(QubitSet(targets)), std::move(QubitSet(controls)), matrix);
+      return unitary(QubitSet(targets), QubitSet(controls), matrix);
     }
 
     /**
@@ -3372,7 +3373,7 @@ namespace wrap {
      * for some reason.
      */
     static Gate measure(const QubitSet &measures) {
-      return measure(std::move(QubitSet(measures)));
+      return measure(QubitSet(measures));
     }
 
     /**
@@ -3444,9 +3445,9 @@ namespace wrap {
     ) {
       return custom(
         name,
-        std::move(QubitSet(targets)),
-        std::move(QubitSet(controls)),
-        std::move(QubitSet(measures)),
+        QubitSet(targets),
+        QubitSet(controls),
+        QubitSet(measures),
         matrix
       );
     }
@@ -3510,9 +3511,9 @@ namespace wrap {
     ) {
       return custom(
         name,
-        std::move(QubitSet(targets)),
-        std::move(QubitSet(controls)),
-        std::move(QubitSet(measures))
+        QubitSet(targets),
+        QubitSet(controls),
+        QubitSet(measures)
       );
     }
 
@@ -3575,8 +3576,8 @@ namespace wrap {
     ) {
       return custom(
         name,
-        std::move(QubitSet(targets)),
-        std::move(QubitSet(controls)),
+        QubitSet(targets),
+        QubitSet(controls),
         matrix
       );
     }
@@ -3628,8 +3629,8 @@ namespace wrap {
     ) {
       return custom(
         name,
-        std::move(QubitSet(targets)),
-        std::move(QubitSet(controls))
+        QubitSet(targets),
+        QubitSet(controls)
       );
     }
 
@@ -3680,7 +3681,7 @@ namespace wrap {
     ) {
       return custom(
         name,
-        std::move(QubitSet(targets)),
+        QubitSet(targets),
         matrix
       );
     }
@@ -3726,7 +3727,7 @@ namespace wrap {
     ) {
       return custom(
         name,
-        std::move(QubitSet(targets))
+        QubitSet(targets)
       );
     }
 
@@ -4070,7 +4071,7 @@ namespace wrap {
      * handle is invalid.
      */
     void set(const Measurement &measurement) {
-      set(std::move(Measurement(measurement)));
+      set(Measurement(measurement));
     }
 
     /**
@@ -4406,7 +4407,7 @@ namespace wrap {
      * plugin will not be (immediately) visible.
      */
     QubitSet allocate(size_t num_qubits, ArbCmdQueue &cmds) {
-      return allocate(num_qubits, std::move(ArbCmdQueue(cmds)));
+      return allocate(num_qubits, ArbCmdQueue(cmds));
     }
 
     /**
@@ -4463,7 +4464,7 @@ namespace wrap {
      * plugin will not be (immediately) visible.
      */
     QubitRef allocate(ArbCmdQueue &cmds) {
-      return allocate(std::move(ArbCmdQueue(cmds)));
+      return allocate(ArbCmdQueue(cmds));
     }
 
     /**
@@ -4510,7 +4511,7 @@ namespace wrap {
      * plugin will not be (immediately) visible.
      */
     void free(const QubitSet &qubits) {
-      free(std::move(QubitSet(qubits)));
+      free(QubitSet(qubits));
     }
 
     /**
@@ -4525,7 +4526,7 @@ namespace wrap {
      * plugin will not be (immediately) visible.
      */
     void free(const QubitRef &qubit) {
-      free(std::move(QubitRef(qubit)));
+      free(QubitSet().with(qubit));
     }
 
     /**
@@ -4791,7 +4792,7 @@ namespace wrap {
      * plugin will not be (immediately) visible.
      */
     void measure_z(const QubitSet &qs) {
-      measure_z(std::move(QubitSet(qs)));
+      measure_z(QubitSet(qs));
     }
 
     /**
@@ -4831,7 +4832,7 @@ namespace wrap {
      * exception is received, or this is called by a backend plugin.
      */
     ArbData arb(const ArbCmd &cmd) {
-      return arb(std::move(ArbCmd(cmd)));
+      return arb(ArbCmd(cmd));
     }
 
     /**
@@ -4941,7 +4942,7 @@ namespace wrap {
      * delivery fails for some reason.
      */
     void send(const ArbData &message) {
-      send(std::move(ArbData(message)));
+      send(ArbData(message));
     }
 
     /**
@@ -6825,7 +6826,7 @@ namespace wrap {
      * is invalid.
      */
     void add_init_cmd(const ArbCmd &cmd) {
-      add_init_cmd(std::move(ArbCmd(cmd)));
+      add_init_cmd(ArbCmd(cmd));
     }
 
     /**
@@ -7751,7 +7752,7 @@ namespace wrap {
      * \throws std::runtime_error When the simulation is in an invalid state.
      */
     void start(const ArbData &data) {
-      start(std::move(ArbData(data)));
+      start(ArbData(data));
     }
 
     /**
@@ -7856,7 +7857,7 @@ namespace wrap {
      * \throws std::runtime_error When the simulation is in an invalid state.
      */
     void send(const ArbData &data) {
-      send(std::move(ArbData(data)));
+      send(ArbData(data));
     }
 
     /**
@@ -7920,7 +7921,7 @@ namespace wrap {
      * plugin, the command failed, or the simulation is in an invalid state.
      */
     ArbData arb(const std::string &name, const ArbCmd &cmd) {
-      return arb(name, std::move(ArbCmd(cmd)));
+      return arb(name, ArbCmd(cmd));
     }
 
     /**
@@ -7964,7 +7965,7 @@ namespace wrap {
      * command failed, or the simulation is in an invalid state.
      */
     ArbData arb(ssize_t index, const ArbCmd &cmd) {
-      return arb(index, std::move(ArbCmd(cmd)));
+      return arb(index, ArbCmd(cmd));
     }
 
     /**
