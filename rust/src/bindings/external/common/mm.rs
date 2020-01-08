@@ -270,6 +270,9 @@ pub extern "C" fn dqcs_mm_map_matrix(
     param_data: *mut dqcs_handle_t,
 ) -> dqcs_bool_return_t {
     api_return_bool(|| {
+        if !param_data.is_null() {
+            unsafe { *param_data = 0 };
+        }
         resolve!(mm as &MatrixMapC);
         let matrix: Matrix = receive_matrix_raw(matrix, matrix_len)?
             .ok_or_else(oe_inv_arg("empty matrix"))?
@@ -285,12 +288,7 @@ pub extern "C" fn dqcs_mm_map_matrix(
                 }
                 Ok(true)
             }
-            None => {
-                if !param_data.is_null() {
-                    unsafe { *param_data = 0 };
-                }
-                Ok(false)
-            }
+            None => Ok(false),
         }
     })
 }
@@ -319,6 +317,9 @@ pub extern "C" fn dqcs_mm_map_gate(
     param_data: *mut dqcs_handle_t,
 ) -> dqcs_bool_return_t {
     api_return_bool(|| {
+        if !param_data.is_null() {
+            unsafe { *param_data = 0 };
+        }
         resolve!(mm as &MatrixMapC);
         resolve!(gate as &Gate);
         match mm.detect(
@@ -335,12 +336,7 @@ pub extern "C" fn dqcs_mm_map_gate(
                 }
                 Ok(true)
             }
-            None => {
-                if !param_data.is_null() {
-                    unsafe { *param_data = 0 };
-                }
-                Ok(false)
-            }
+            None => Ok(false),
         }
     })
 }
