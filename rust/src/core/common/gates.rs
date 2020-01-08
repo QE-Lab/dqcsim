@@ -450,4 +450,83 @@ mod tests {
         assert!(check(UnboundGate::T, UnboundGate::R(0., 0., PI / 4.)));
         assert!(check(UnboundGate::TDAG, UnboundGate::R(0., 0., -PI / 4.)));
     }
+
+    #[test]
+    fn gates_coversions() {
+        for gate in vec![
+            (UnboundGate::I, GateType::I),
+            (UnboundGate::X, GateType::X),
+            (UnboundGate::Y, GateType::Y),
+            (UnboundGate::Z, GateType::Z),
+            (UnboundGate::H, GateType::H),
+            (UnboundGate::S, GateType::S),
+            (UnboundGate::SDAG, GateType::SDAG),
+            (UnboundGate::T, GateType::T),
+            (UnboundGate::TDAG, GateType::TDAG),
+            (UnboundGate::RX90, GateType::RX90),
+            (UnboundGate::RXM90, GateType::RXM90),
+            (UnboundGate::RX180, GateType::RX180),
+            (UnboundGate::RY90, GateType::RY90),
+            (UnboundGate::RYM90, GateType::RYM90),
+            (UnboundGate::RY180, GateType::RY180),
+            (UnboundGate::RZ90, GateType::RZ90),
+            (UnboundGate::RZM90, GateType::RZM90),
+            (UnboundGate::RZ180, GateType::RZ180),
+            (UnboundGate::RX(1.), GateType::RX),
+            (UnboundGate::RY(1.), GateType::RY),
+            (UnboundGate::RK(1), GateType::RK),
+            (UnboundGate::RZ(1.), GateType::RZ),
+            (UnboundGate::R(1., 1., 1.), GateType::R),
+            (UnboundGate::SWAP, GateType::SWAP),
+            (UnboundGate::SQSWAP, GateType::SQSWAP),
+            (
+                UnboundGate::U(Matrix::new(vec![c!(1.), c!(1.), c!(1.), c!(1.)])),
+                GateType::U(1),
+            ),
+        ]
+        .into_iter()
+        {
+            let gate_type: GateType = gate.0.into();
+            assert_eq!(gate_type, gate.1);
+        }
+
+        let a = QubitRef::from_foreign(1).unwrap();
+        let b = QubitRef::from_foreign(2).unwrap();
+        for gate in vec![
+            (BoundGate::I(a), UnboundGate::I),
+            (BoundGate::X(a), UnboundGate::X),
+            (BoundGate::Y(a), UnboundGate::Y),
+            (BoundGate::Z(a), UnboundGate::Z),
+            (BoundGate::H(a), UnboundGate::H),
+            (BoundGate::S(a), UnboundGate::S),
+            (BoundGate::SDAG(a), UnboundGate::SDAG),
+            (BoundGate::T(a), UnboundGate::T),
+            (BoundGate::TDAG(a), UnboundGate::TDAG),
+            (BoundGate::RX90(a), UnboundGate::RX90),
+            (BoundGate::RXM90(a), UnboundGate::RXM90),
+            (BoundGate::RX180(a), UnboundGate::RX180),
+            (BoundGate::RY90(a), UnboundGate::RY90),
+            (BoundGate::RYM90(a), UnboundGate::RYM90),
+            (BoundGate::RY180(a), UnboundGate::RY180),
+            (BoundGate::RZ90(a), UnboundGate::RZ90),
+            (BoundGate::RZM90(a), UnboundGate::RZM90),
+            (BoundGate::RZ180(a), UnboundGate::RZ180),
+            (BoundGate::RX(1., a), UnboundGate::RX(1.)),
+            (BoundGate::RY(1., a), UnboundGate::RY(1.)),
+            (BoundGate::RK(1, a), UnboundGate::RK(1)),
+            (BoundGate::RZ(1., a), UnboundGate::RZ(1.)),
+            (BoundGate::R(1., 1., 1., a), UnboundGate::R(1., 1., 1.)),
+            (BoundGate::SWAP(a, b), UnboundGate::SWAP),
+            (BoundGate::SQSWAP(a, b), UnboundGate::SQSWAP),
+            (
+                BoundGate::U(Matrix::new(vec![c!(1.), c!(1.), c!(1.), c!(1.)]), vec![a]),
+                UnboundGate::U(Matrix::new(vec![c!(1.), c!(1.), c!(1.), c!(1.)])),
+            ),
+        ]
+        .into_iter()
+        {
+            let unbound_gate: UnboundGate = gate.0.into();
+            assert_eq!(unbound_gate, gate.1);
+        }
+    }
 }

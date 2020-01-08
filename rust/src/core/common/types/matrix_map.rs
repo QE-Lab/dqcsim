@@ -242,22 +242,6 @@ impl<T, K> From<MatrixMapBuilder<T, K>> for MatrixMap<T, K> {
     }
 }
 
-// /// Returns a detector function which detects the given Matrix.
-// pub fn matrix_detector<T: 'static + Clone>(
-//     matrix: Matrix,
-//     epsilon: f64,
-//     ignore_global_phase: bool,
-//     t: T,
-// ) -> Box<Detector<T>> {
-//     Box::new(move |input: &Matrix| -> Result<Option<T>> {
-//         Ok(if matrix.approx_eq(input, epsilon, ignore_global_phase) {
-//             Some(t.clone())
-//         } else {
-//             None
-//         })
-//     })
-// }
-
 /// Assuming that there is an x and y for which the inputs are equal to the
 /// following equations:
 ///
@@ -420,6 +404,36 @@ mod test {
                 panic!()
             }
         ));
+        let matrix: Matrix = UnboundGate::RZ(1.1).into();
+        assert!(approx_eq!(
+            f64,
+            1.1,
+            if let UnboundGate::RZ(x) = mm.detect(&matrix).unwrap().unwrap().1 {
+                x
+            } else {
+                panic!()
+            }
+        ));
+        let matrix: Matrix = UnboundGate::RK(3).into();
+        if let UnboundGate::RK(x) = mm.detect(&matrix).unwrap().unwrap().1 {
+            assert_eq!(3, x);
+        } else {
+            panic!("{:?}", mm.detect(&matrix))
+        }
+        let matrix: Matrix = UnboundGate::R(0.1, 0.2, 0.3).into();
+        if let UnboundGate::R(x, y, z) = mm.detect(&matrix).unwrap().unwrap().1 {
+            assert!(approx_eq!(f64, 0.1, x));
+            assert!(approx_eq!(f64, 0.2, y));
+            assert!(approx_eq!(f64, 0.3, z));
+        } else {
+            panic!()
+        };
+        let matrix = Matrix::new(vec![c!(0.), c!(0.), c!(1.), c!(1.)]);
+        if let UnboundGate::U(x) = mm.detect(&matrix).unwrap().unwrap().1 {
+            assert_eq!(matrix, x);
+        } else {
+            panic!("{:?}", mm.detect(&matrix))
+        }
     }
 
     #[test]
