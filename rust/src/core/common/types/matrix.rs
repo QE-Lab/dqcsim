@@ -335,9 +335,17 @@ mod tests {
 
     #[test]
     fn matrix() {
-        let mut a = Matrix::new(vec![c!(1.), c!(1.), c!(1.), c!(-1.)]);
-        let b = Matrix::new(vec![c!(0., 1.), c!(0.), c!(1.), c!(-1., -1.)]);
-        let c = Matrix::new(vec![c!(1.), c!(-1., -1.)]);
+        let mut a = matrix!(
+            1., 1.;
+            1., (-1.);
+        );
+        let b = matrix!(
+            (0., 1.), 0.;
+            1., (-1., -1.);
+        );
+        let c = matrix!(
+            1., (-1., -1.);
+        );
         assert_eq!(a, a);
         assert_eq!(b, b);
         assert_eq!(c, c);
@@ -363,35 +371,33 @@ mod tests {
 
     #[test]
     fn matrix_approx_eq() {
-        let x1 = Matrix::new(vec![c!(0.), c!(1.), c!(1.), c!(0.)]);
-        let x2 = Matrix::new(vec![c!(0.), c!(0., -1.), c!(0., -1.), c!(0.)]);
+        let x1 = matrix!(
+            0., 1.;
+            1., 0.;
+        );
+        let x2 = matrix!(
+            0., (-1.);
+            (-1.), 0.;
+        );
         assert!(x1.approx_eq(&x2, 0., true));
         assert!(x2.approx_eq(&x1, 0., true));
 
-        let h1 = Matrix::new(vec![
-            c!(FRAC_1_SQRT_2),
-            c!(FRAC_1_SQRT_2),
-            c!(FRAC_1_SQRT_2),
-            c!(-FRAC_1_SQRT_2),
-        ]);
-        let h2 = Matrix::new(vec![
-            c!(-FRAC_1_SQRT_2),
-            c!(-FRAC_1_SQRT_2),
-            c!(-FRAC_1_SQRT_2),
-            c!(FRAC_1_SQRT_2),
-        ]);
-        let h3 = Matrix::new(vec![
-            c!(0., FRAC_1_SQRT_2),
-            c!(0., FRAC_1_SQRT_2),
-            c!(0., FRAC_1_SQRT_2),
-            c!(0., -FRAC_1_SQRT_2),
-        ]);
-        let h4 = Matrix::new(vec![
-            c!(0., -FRAC_1_SQRT_2),
-            c!(0., -FRAC_1_SQRT_2),
-            c!(0., -FRAC_1_SQRT_2),
-            c!(0., FRAC_1_SQRT_2),
-        ]);
+        let h1 = matrix!(
+            (FRAC_1_SQRT_2), (FRAC_1_SQRT_2);
+            (FRAC_1_SQRT_2), (-FRAC_1_SQRT_2);
+        );
+        let h2 = matrix!(
+            (-FRAC_1_SQRT_2), (-FRAC_1_SQRT_2);
+            (-FRAC_1_SQRT_2), (FRAC_1_SQRT_2);
+        );
+        let h3 = matrix!(
+            (0., FRAC_1_SQRT_2), (0., FRAC_1_SQRT_2);
+            (0., FRAC_1_SQRT_2), (0., -FRAC_1_SQRT_2);
+        );
+        let h4 = matrix!(
+            (0., -FRAC_1_SQRT_2), (0., -FRAC_1_SQRT_2);
+            (0., -FRAC_1_SQRT_2), (0., FRAC_1_SQRT_2);
+        );
         assert!(h1.approx_eq(&h2, 0., true));
         assert!(h1.approx_eq(&h3, 0., true));
         assert!(h1.approx_eq(&h4, 0., true));
@@ -410,27 +416,12 @@ mod tests {
     fn add_controls() {
         let x: Matrix = UnboundGate::X.into();
         assert!(x.add_controls(1).approx_eq(
-            &Matrix::new(vec![
-                c!(1.),
-                c!(0.),
-                c!(0.),
-                c!(0.),
-                //
-                c!(0.),
-                c!(1.),
-                c!(0.),
-                c!(0.),
-                //
-                c!(0.),
-                c!(0.),
-                c!(0.),
-                c!(1.),
-                //
-                c!(0.),
-                c!(0.),
-                c!(1.),
-                c!(0.),
-            ]),
+            &matrix!(
+                1., 0., 0., 0.;
+                0., 1., 0., 0.;
+                0., 0., 0., 1.;
+                0., 0., 1., 0.;
+            ),
             0.0001,
             false
         ));
@@ -438,48 +429,18 @@ mod tests {
 
     #[test]
     fn strip_control() {
-        let cnot_a = Matrix::new(vec![
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            //
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            //
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-        ]);
-        let cnot_b = Matrix::new(vec![
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            //
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            //
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-        ]);
+        let cnot_a = matrix!(
+            1., 0., 0., 0.;
+            0., 1., 0., 0.;
+            0., 0., 0., 1.;
+            0., 0., 1., 0.;
+        );
+        let cnot_b = matrix!(
+            1., 0., 0., 0.;
+            0., 0., 0., 1.;
+            0., 0., 1., 0.;
+            0., 1., 0., 0.;
+        );
 
         let (map_a, matrix_a) = cnot_a.strip_control(0.0001, false);
         assert_eq!(map_a, HashSet::from_iter(vec![0]));
@@ -488,215 +449,47 @@ mod tests {
         assert!(matrix_a.approx_eq(&matrix_b, 0.0001, false));
         assert_ne!(map_a, map_b);
 
-        let i = Matrix::new(vec![
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.), //
-        ]);
+        let i = matrix!(
+            1., 0., 0., 0., 0., 0., 0., 0.;
+            0., 1., 0., 0., 0., 0., 0., 0.;
+            0., 0., 1., 0., 0., 0., 0., 0.;
+            0., 0., 0., 1., 0., 0., 0., 0.;
+            0., 0., 0., 0., 1., 0., 0., 0.;
+            0., 0., 0., 0., 0., 1., 0., 0.;
+            0., 0., 0., 0., 0., 0., 1., 0.;
+            0., 0., 0., 0., 0., 0., 0., 1.;
+        );
 
         let (map_a, matrix_a) = i.strip_control(0.0001, false);
         assert!(matrix_a.approx_eq(&Matrix::new_identity(8), 0.0001, false));
         assert!(map_a.is_empty());
 
-        let fredkin = Matrix::new(vec![
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.), //
-        ]);
+        let fredkin = matrix!(
+            1., 0., 0., 0., 0., 0., 0., 0.;
+            0., 1., 0., 0., 0., 0., 0., 0.;
+            0., 0., 1., 0., 0., 0., 0., 0.;
+            0., 0., 0., 1., 0., 0., 0., 0.;
+            0., 0., 0., 0., 1., 0., 0., 0.;
+            0., 0., 0., 0., 0., 0., 1., 0.;
+            0., 0., 0., 0., 0., 1., 0., 0.;
+            0., 0., 0., 0., 0., 0., 0., 1.;
+        );
 
         let (map_a, matrix_a) = fredkin.strip_control(0.0001, false);
         assert_eq!(map_a, HashSet::from_iter(vec![0]));
         let x: Matrix = UnboundGate::SWAP.into();
         assert!(matrix_a.approx_eq(&x, 0.0001, false));
 
-        let toffoli = Matrix::new(vec![
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.),
-            c!(0.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.), //
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(0.),
-            c!(1.),
-            c!(0.), //
-        ]);
+        let toffoli = matrix!(
+            1., 0., 0., 0., 0., 0., 0., 0.;
+            0., 1., 0., 0., 0., 0., 0., 0.;
+            0., 0., 1., 0., 0., 0., 0., 0.;
+            0., 0., 0., 1., 0., 0., 0., 0.;
+            0., 0., 0., 0., 1., 0., 0., 0.;
+            0., 0., 0., 0., 0., 1., 0., 0.;
+            0., 0., 0., 0., 0., 0., 0., 1.;
+            0., 0., 0., 0., 0., 0., 1., 0.;
+        );
 
         let (map_a, matrix_a) = toffoli.strip_control(0.0001, false);
         assert_eq!(map_a, HashSet::from_iter(vec![0, 1]));

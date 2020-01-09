@@ -35,11 +35,28 @@ pub fn log_2(x: usize) -> Option<usize> {
 /// assert_eq!(c!(0., 1.), Complex64::new(0., 1.));
 /// ```
 macro_rules! c {
+    (($re:expr, $im:expr)) => {
+        $crate::core::Complex64::new($re, $im);
+    };
     ($re:expr, $im:expr) => {
         $crate::core::Complex64::new($re, $im);
     };
     ($re:expr) => {
         $crate::core::Complex64::new($re, 0.)
+    };
+}
+
+/// Returns a `Matrix` with the given elements.
+///
+/// Shorthand for `Matrix::new(vec![...])`. The primary use for this is to
+/// prevent `cargo fmt` from making the matrices unreadable.
+#[cfg(test)]
+macro_rules! matrix {
+    ($($($x:tt),+);+) => {
+        $crate::core::common::types::Matrix::new(vec![$($(c!($x)),+),+])
+    };
+    ($($($x:tt),+);+;) => {
+        $crate::core::common::types::Matrix::new(vec![$($(c!($x)),+),+])
     };
 }
 
