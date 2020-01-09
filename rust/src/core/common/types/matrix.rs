@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use std::os::raw::c_double;
 use std::{
     collections::HashSet,
+    fmt,
+    fmt::{Display, Formatter},
     hash::{Hash, Hasher},
     iter::FromIterator,
     ops::{Index, IndexMut},
@@ -135,6 +137,19 @@ impl IntoIterator for Matrix {
     }
 }
 
+impl Display for Matrix {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        for row in 0..self.dimension() {
+            for col in 0..self.dimension() {
+                let e = self[(row, col)];
+                write!(f, "{:6.3}{:+6.3}i  ", e.re, e.im)?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
+    }
+}
+
 impl Matrix {
     /// Returns a Box<Detector<T>> for this Matrix.
     pub fn into_detector<T: Clone + 'static>(
@@ -161,6 +176,15 @@ impl Matrix {
             dimension: elements.len().integer_sqrt(),
             data: elements,
         }
+    }
+
+    /// Returns a new identify Matrix with given dimension.
+    pub fn new_identity(dimension: usize) -> Self {
+        let mut output = Matrix::new(vec![c!(0.); dimension.pow(2)]);
+        for i in 0..dimension {
+            output[(i, i)] = c!(1.);
+        }
+        output
     }
 
     /// Approximately compares this Matrix with another Matrix.
@@ -199,21 +223,76 @@ impl Matrix {
             .is_some()
     }
 
+    /// Returns new Matrix with `number_of_control` qubits added.
+    pub fn add_controls(&self, number_of_controls: usize) -> Self {
+        let dimension = self.dimension() * 2usize.pow(number_of_controls as u32);
+        let mut output = Matrix::new_identity(dimension);
+        for row in 0..self.dimension() {
+            for col in 0..self.dimension() {
+                output[(
+                    row + dimension - self.dimension(),
+                    col + dimension - self.dimension(),
+                )] = self[(row, col)];
+            }
+        }
+        output
+    }
+
     /// Returns new Matrix with control behavior removed from the Matrix, and
     /// the control indices corresponding to the target qubits acting as
     /// control in the original Matrix.
     /// `epsilon` specifies the maximum element-wise deviation from the
     /// identity matrix for the relevant array elements for a qubit to be
     /// considered a control qubit. Note that if this is greater than zero, the
-    /// resulting gate may not be exactly equivalent. If `ignore_gphase` is
+    /// resulting gate may not be exactly equivalent. If `ignore_global_phase` is
     /// set, any global phase in the matrix is ignored, but the global phase of
     /// the non-control submatrix is not changed.
     pub fn strip_control(
         &self,
-        _epsilon: f64,
-        _ignore_global_phase: bool,
-    ) -> (Self, HashSet<usize>) {
-        todo!()
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> (HashSet<usize>, Matrix) {
+        let phase = if ignore_global_phase {
+            Complex64::from_polar(&1.0, &self[(0, 0)].arg())
+        } else {
+            c!(1.0)
+        };
+
+        let mut controls_int = self.dimension() - 1;
+        for i in 0..self.dimension() - 1 {
+            if (self[(i, i)] - phase).norm_sqr() > epsilon.powi(2) {
+                controls_int &= i;
+                if controls_int == 0 {
+                    return (HashSet::new(), self.clone());
+                }
+            }
+        }
+
+        // check for identity matrix
+        if controls_int == self.dimension() - 1 {
+            return (HashSet::new(), self.clone());
+        }
+
+        let mut controls = HashSet::new();
+        let num_qubits = self.num_qubits().unwrap();
+        for q in 0..num_qubits {
+            if controls_int & (1 << q) != 0 {
+                controls.insert(num_qubits - q - 1);
+            }
+        }
+
+        let mut entries = vec![];
+        for row in 0..self.dimension() {
+            if row & controls_int == controls_int {
+                for col in 0..self.dimension() {
+                    if col & controls_int == controls_int {
+                        entries.push(self[(row, col)] * phase.conj());
+                    }
+                }
+            }
+        }
+
+        return (controls, Matrix::new(entries));
     }
 
     /// Returns the number of elements in the Matrix.
@@ -251,6 +330,7 @@ impl Matrix {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::common::gates::UnboundGate;
     use std::f64::consts::FRAC_1_SQRT_2;
 
     #[test]
@@ -324,5 +404,304 @@ mod tests {
         assert!(h4.approx_eq(&h1, 0., true));
         assert!(h3.approx_eq(&h2, 0., true));
         assert!(h3.approx_eq(&h3, 0., true));
+    }
+
+    #[test]
+    fn add_controls() {
+        let x: Matrix = UnboundGate::X.into();
+        assert!(x.add_controls(1).approx_eq(
+            &Matrix::new(vec![
+                c!(1.),
+                c!(0.),
+                c!(0.),
+                c!(0.),
+                //
+                c!(0.),
+                c!(1.),
+                c!(0.),
+                c!(0.),
+                //
+                c!(0.),
+                c!(0.),
+                c!(0.),
+                c!(1.),
+                //
+                c!(0.),
+                c!(0.),
+                c!(1.),
+                c!(0.),
+            ]),
+            0.0001,
+            false
+        ));
+    }
+
+    #[test]
+    fn strip_control() {
+        let cnot_a = Matrix::new(vec![
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            //
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            //
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+        ]);
+        let cnot_b = Matrix::new(vec![
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            //
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            //
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+        ]);
+
+        let (map_a, matrix_a) = cnot_a.strip_control(0.0001, false);
+        assert_eq!(map_a, HashSet::from_iter(vec![0]));
+        let (map_b, matrix_b) = cnot_b.strip_control(0.0001, false);
+        assert_eq!(map_b, HashSet::from_iter(vec![1]));
+        assert!(matrix_a.approx_eq(&matrix_b, 0.0001, false));
+        assert_ne!(map_a, map_b);
+
+        let i = Matrix::new(vec![
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.), //
+        ]);
+
+        let (map_a, matrix_a) = i.strip_control(0.0001, false);
+        assert!(matrix_a.approx_eq(&Matrix::new_identity(8), 0.0001, false));
+        assert!(map_a.is_empty());
+
+        let fredkin = Matrix::new(vec![
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.), //
+        ]);
+
+        let (map_a, matrix_a) = fredkin.strip_control(0.0001, false);
+        assert_eq!(map_a, HashSet::from_iter(vec![0]));
+        let x: Matrix = UnboundGate::SWAP.into();
+        assert!(matrix_a.approx_eq(&x, 0.0001, false));
+
+        let toffoli = Matrix::new(vec![
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.),
+            c!(0.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.), //
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(0.),
+            c!(1.),
+            c!(0.), //
+        ]);
+
+        let (map_a, matrix_a) = toffoli.strip_control(0.0001, false);
+        assert_eq!(map_a, HashSet::from_iter(vec![0, 1]));
+
+        let x: Matrix = UnboundGate::X.into();
+        assert!(matrix_a.approx_eq(&x, 0.001, false));
     }
 }
