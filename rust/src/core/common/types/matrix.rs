@@ -292,7 +292,7 @@ impl Matrix {
             }
         }
 
-        return (controls, Matrix::new(entries));
+        (controls, Matrix::new(entries))
     }
 
     /// Returns the number of elements in the Matrix.

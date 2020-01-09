@@ -316,3 +316,31 @@ TEST(gate, erroneous) {
   // Leak check.
   EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
 }
+
+TEST(gate, control) {
+    double i[] = {0.,0.,1.,0.,1.,0.,0.,0.};
+    const void *output;
+    dqcs_handle_t param;
+    dqcs_handle_t targets = dqcs_qbset_new();
+    dqcs_qbset_push(targets, 1);
+    dqcs_handle_t controls = dqcs_qbset_new();
+    dqcs_qbset_push(controls, 2);
+    dqcs_handle_t gate = dqcs_gate_new_unitary(
+      targets,
+      controls,
+      i,
+      4
+    );
+
+    // expand
+    dqcs_handle_t cnot = dqcs_gate_expand_control(gate);
+    EXPECT_EQ(dqcs_handle_type(cnot), dqcs_handle_type_t::DQCS_HTYPE_GATE);
+    EXPECT_EQ(dqcs_gate_matrix_len(cnot), 16);
+    EXPECT_EQ(dqcs_gate_has_controls(cnot), dqcs_bool_return_t::DQCS_FALSE);
+
+    // reduce
+    dqcs_handle_t x = dqcs_gate_reduce_control(cnot, 0.0001, false);
+    EXPECT_EQ(dqcs_handle_type(x), dqcs_handle_type_t::DQCS_HTYPE_GATE);
+    EXPECT_EQ(dqcs_gate_matrix_len(x), 4);
+    EXPECT_QBSET(dqcs_gate_controls(x), 2u);
+}

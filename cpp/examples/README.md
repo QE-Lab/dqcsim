@@ -1,3 +1,6 @@
+C++ examples
+============
+
 This folder contains some simple examples for the C++ API. The makefiles should
 work if DQCsim is *installed* and discoverable by GCC. That is, the headers are
 installed in `/usr/include` and the shared object in `/usr/lib`, as done by

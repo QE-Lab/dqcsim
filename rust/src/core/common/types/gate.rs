@@ -291,6 +291,50 @@ impl Gate {
             Some(self.matrix.clone())
         }
     }
+
+    /// Returns a new Gate with its controls moved to the matrix.
+    pub fn with_matrix_controls(&self) -> Self {
+        let num_controls = self.controls.len();
+        if num_controls > 0 {
+            let matrix = self.matrix.add_controls(num_controls);
+            let mut targets = self.controls.clone();
+            targets.append(&mut self.targets.clone());
+            Gate {
+                name: self.name.clone(),
+                targets,
+                controls: vec![],
+                measures: self.measures.to_vec(),
+                matrix,
+                data: self.data.clone(),
+            }
+        } else {
+            self.clone()
+        }
+    }
+
+    /// Returns a new Gate with controls encoded in the matrix moved to the
+    /// Gate controls field. Forwards the epsilon and ignore_global_phase args
+    /// to the Matrix::strip_control method.
+    pub fn with_gate_controls(&self, epsilon: f64, ignore_global_phase: bool) -> Self {
+        if let Some(matrix) = self.get_matrix() {
+            let (control_set, matrix) = matrix.strip_control(epsilon, ignore_global_phase);
+            let mut targets = self.get_targets().to_vec();
+            let mut controls = vec![];
+            for c in control_set {
+                controls.push(targets.remove(c));
+            }
+            Gate {
+                name: self.name.clone(),
+                targets,
+                controls,
+                measures: self.measures.to_vec(),
+                matrix,
+                data: self.data.clone(),
+            }
+        } else {
+            self.clone()
+        }
+    }
 }
 
 #[cfg(test)]
@@ -607,5 +651,53 @@ mod tests {
         ];
         let g = Gate::new_unitary(targets, controls, matrix).unwrap();
         assert_eq!(serde_json::to_string(&g).unwrap(), "{\"name\":null,\"targets\":[1],\"controls\":[2],\"measures\":[],\"matrix\":[{\"re\":1.0,\"im\":0.0},{\"re\":0.0,\"im\":0.0},{\"re\":0.0,\"im\":0.0},{\"re\":1.0,\"im\":0.0}],\"data\":{\"cbor\":[191,255],\"args\":[]}}");
+    }
+
+    #[test]
+    fn with_gate_controls() {
+        let targets = vec![qref(1), qref(2)];
+        let controls = vec![];
+        let matrix = vec![
+            Complex64::new(1f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            //
+            Complex64::new(0f64, 0f64),
+            Complex64::new(1f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            //
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(1f64, 0f64),
+            //
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(1f64, 0f64),
+            Complex64::new(0f64, 0f64),
+        ];
+        let cnot = Gate::new_unitary(targets, controls, matrix).unwrap();
+        assert_eq!(cnot.get_controls(), &[]);
+        let x = cnot.with_gate_controls(0.001, false);
+        assert_eq!(x.get_controls(), &[qref(1)]);
+    }
+
+    #[test]
+    fn with_matrix_controls() {
+        let targets = vec![qref(1)];
+        let controls = vec![qref(2)];
+        let matrix = vec![
+            Complex64::new(0f64, 0f64),
+            Complex64::new(1f64, 0f64),
+            Complex64::new(1f64, 0f64),
+            Complex64::new(0f64, 0f64),
+        ];
+        let x = Gate::new_unitary(targets, controls, matrix).unwrap();
+        assert_eq!(x.get_controls(), &[qref(2)]);
+        let cnot = x.with_matrix_controls();
+        assert_eq!(cnot.get_controls(), &[]);
+        assert_eq!(cnot.get_targets(), &[qref(2), qref(1)]);
     }
 }
