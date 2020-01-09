@@ -411,16 +411,15 @@ pub extern "C" fn dqcs_gate_matrix_len(gate: dqcs_handle_t) -> ssize_t {
 #[no_mangle]
 pub extern "C" fn dqcs_gate_reduce_control(
     gate: dqcs_handle_t,
-    _epsilon: c_double,
-    _ignore_gphase: bool,
+    epsilon: c_double,
+    ignore_gphase: bool,
 ) -> dqcs_handle_t {
     api_return(0, || {
         resolve!(gate as &Gate);
         if gate.get_matrix().is_none() {
             inv_arg("no matrix associated with gate")
         } else {
-            todo!()
-            // let (matrix, control) = gate.get_matrix().unwrap().strip_control(epsilon, ignore_gphase);
+            Ok(insert(gate.with_gate_controls(epsilon, ignore_gphase)))
         }
     })
 }
@@ -445,7 +444,7 @@ pub extern "C" fn dqcs_gate_expand_control(gate: dqcs_handle_t) -> dqcs_handle_t
         if gate.get_matrix().is_none() {
             inv_arg("no matrix associated with gate")
         } else {
-            todo!()
+            Ok(insert(gate.with_matrix_controls()))
         }
     })
 }
