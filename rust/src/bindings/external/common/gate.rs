@@ -341,10 +341,9 @@ pub extern "C" fn dqcs_gate_has_matrix(gate: dqcs_handle_t) -> dqcs_bool_return_
 pub extern "C" fn dqcs_gate_matrix(gate: dqcs_handle_t) -> dqcs_handle_t {
     api_return(0, || {
         resolve!(gate as &Gate);
-        Ok(insert(
-            gate.get_matrix()
-                .ok_or_else(oe_inv_arg("no matrix associated with gate"))?,
-        ))
+        Ok(insert(gate.get_matrix().ok_or_else(oe_inv_arg(
+            "no matrix associated with gate",
+        ))?))
     })
 }
 
