@@ -1,6 +1,4 @@
 use super::*;
-use std::mem::size_of;
-use std::ptr::null_mut;
 
 /// Constructs a new unitary gate.
 ///
@@ -10,13 +8,7 @@ use std::ptr::null_mut;
 /// `controls` optionally specifies a set of control qubits. You may pass 0 or
 /// an empty qubit set if you don't need control qubits.
 ///
-/// `matrix` must point to an appropriately sized array of doubles,
-/// representing the unitary matrix to be applied to the qubits in the
-/// `targets` set. The matrix is specified in row-major form, using pairs of
-/// doubles for the real vs. imaginary component of each entry. The size must
-/// thus be `4**len(targets)` complex numbers = `2*4**len(targets)` doubles =
-/// `16*4**len(targets)` bytes. `matrix_len` must be set to the number of
-/// complex numbers.
+/// `matrix` must be a handle to an appropriately sized matrix.
 ///
 /// The supplied matrix is only applied to the target qubits if all the control
 /// qubits are or will be determined to be set. For instance, to encode a
@@ -36,14 +28,13 @@ use std::ptr::null_mut;
 /// is NOT checked by DQCsim. The simulator backend may or may not check this.
 ///
 /// This function returns the handle to the gate, or 0 to indicate failure.
-/// The `targets` qubit set and (if specified) the `controls` qubit set are
-/// consumed/deleted by this function if and only if it succeeds.
+/// The `targets` qubit set, (if specified) the `controls` qubit set, and the
+/// matrix are consumed/deleted by this function if and only if it succeeds.
 #[no_mangle]
 pub extern "C" fn dqcs_gate_new_unitary(
     targets: dqcs_handle_t,
     controls: dqcs_handle_t,
-    matrix: *const c_double,
-    matrix_len: size_t,
+    matrix: dqcs_handle_t,
 ) -> dqcs_handle_t {
     api_return(0, || {
         // Interpret target set.
@@ -65,11 +56,15 @@ pub extern "C" fn dqcs_gate_new_unitary(
         };
 
         // Interpret matrix.
-        let matrix = receive_matrix(matrix, matrix_len, target_vec.len())?
-            .ok_or_else(oe_inv_arg("the unitary matrix cannot be null"))?;
+        resolve!(matrix as pending Matrix);
+        let matrix_ref: &Matrix = matrix.as_ref().unwrap();
 
         // Construct the gate.
-        let gate = insert(Gate::new_unitary(target_vec, control_vec, matrix)?);
+        let gate = insert(Gate::new_unitary(
+            target_vec,
+            control_vec,
+            matrix_ref.clone(),
+        )?);
 
         // Everything went OK. Now make sure that the target and control set
         // handles are deleted.
@@ -77,6 +72,7 @@ pub extern "C" fn dqcs_gate_new_unitary(
         if let Some(mut controls) = controls {
             delete!(resolved controls);
         }
+        delete!(resolved matrix);
         Ok(gate)
     })
 }
@@ -131,14 +127,8 @@ pub extern "C" fn dqcs_gate_new_measurement(measures: dqcs_handle_t) -> dqcs_han
 /// this set; anything else results in a warning and the measurement result
 /// being set to undefined.
 ///
-/// `matrix` can point to an appropriately sized array of doubles, or be `NULL`
-/// if no matrix is required. If a matrix is specified, at least one target
-/// qubit is required, and the matrix must be appropriately sized for the
-/// number of target qubits. The matrix is specified in row-major form, using
-/// pairs of doubles for the real vs. imaginary component of each entry. The
-/// size must thus be `4**len(targets)` complex numbers = `2*4**len(targets)`
-/// doubles = `16*4**len(targets)` bytes. `matrix_len` must be set to the
-/// number of complex numbers.
+/// `matrix` optionally specifies a handle to an appropriately sized matrix
+/// for the `targets` qubit set.
 ///
 /// In addition to the above data, gate objects implement the `arb` interface
 /// to allow user-specified classical information to be attached.
@@ -152,8 +142,7 @@ pub extern "C" fn dqcs_gate_new_custom(
     targets: dqcs_handle_t,
     controls: dqcs_handle_t,
     measures: dqcs_handle_t,
-    matrix: *const c_double,
-    matrix_len: size_t,
+    matrix: dqcs_handle_t,
 ) -> dqcs_handle_t {
     api_return(0, || {
         // Interpret name.
@@ -193,7 +182,15 @@ pub extern "C" fn dqcs_gate_new_custom(
         };
 
         // Interpret matrix.
-        let matrix = receive_matrix(matrix, matrix_len, target_vec.len())?;
+        resolve!(optional matrix as pending Matrix);
+        let matrix_clone: Option<Matrix> = {
+            if let Some(matrix) = matrix.as_ref() {
+                let x: &Matrix = matrix.as_ref().unwrap();
+                Some(x.clone())
+            } else {
+                None
+            }
+        };
 
         // Construct the gate.
         let gate = insert(Gate::new_custom(
@@ -201,7 +198,7 @@ pub extern "C" fn dqcs_gate_new_custom(
             target_vec,
             control_vec,
             measure_vec,
-            matrix,
+            matrix_clone,
             ArbData::default(),
         )?);
 
@@ -215,6 +212,9 @@ pub extern "C" fn dqcs_gate_new_custom(
         }
         if let Some(mut measures) = measures {
             delete!(resolved measures);
+        }
+        if let Some(mut matrix) = matrix {
+            delete!(resolved matrix);
         }
         Ok(gate)
     })
@@ -335,56 +335,16 @@ pub extern "C" fn dqcs_gate_has_matrix(gate: dqcs_handle_t) -> dqcs_bool_return_
 /// Returns a copy of the unitary matrix associated with this gate, if one
 /// exists.
 ///
-/// If this function succeeds, the matrix is returned in row-major form, using
-/// pairs of doubles for the real vs. imaginary component of each entry. The
-/// size will be `4**len(targets)` complex numbers = `2*4**len(targets)`
-/// doubles = `16*4**len(targets)` bytes.
-///
-/// On success, this **returns a newly allocated array containing the matrix.
-/// Free it with `free()` when you're done with it to avoid memory leaks.** On
-/// failure, or if no matrix is associated with this gate, this returns `NULL`.
-/// Use `dqcs_gate_has_matrix()` to disambiguate.
+/// If this function succeeds, a new matrix handle is returned. If it fails,
+/// 0 is returned.
 #[no_mangle]
-pub extern "C" fn dqcs_gate_matrix(gate: dqcs_handle_t) -> *mut c_double {
-    api_return(null_mut(), || {
+pub extern "C" fn dqcs_gate_matrix(gate: dqcs_handle_t) -> dqcs_handle_t {
+    api_return(0, || {
         resolve!(gate as &Gate);
-        let matrix = gate.get_matrix();
-        if let Some(matrix) = matrix {
-            let ffi_matrix =
-                unsafe { calloc(2 * matrix.len(), size_of::<c_double>()) as *mut c_double };
-            if ffi_matrix.is_null() {
-                err("failed to allocate return value")
-            } else {
-                for (i, x) in matrix.into_iter().enumerate() {
-                    unsafe {
-                        *ffi_matrix.add(i * 2) = x.re;
-                        *ffi_matrix.add(i * 2 + 1) = x.im;
-                    }
-                }
-                Ok(ffi_matrix)
-            }
-        } else {
-            inv_arg("no matrix associated with gate")
-        }
-    })
-}
-
-/// Returns the size of the gate matrix associated with this gate.
-///
-/// The size is returned in the form of the number of complex entries. That is,
-/// the number of doubles is two times the return value, and the size in bytes
-/// is 8 times the return value. 0 is returned when there is no matrix. -1 is
-/// used to report errors.
-#[no_mangle]
-pub extern "C" fn dqcs_gate_matrix_len(gate: dqcs_handle_t) -> ssize_t {
-    api_return(-1, || {
-        resolve!(gate as &Gate);
-        let matrix = gate.get_matrix();
-        if let Some(matrix) = matrix {
-            Ok(matrix.len() as ssize_t)
-        } else {
-            Ok(0)
-        }
+        Ok(insert(
+            gate.get_matrix()
+                .ok_or_else(oe_inv_arg("gate has no associated matrix"))?,
+        ))
     })
 }
 
