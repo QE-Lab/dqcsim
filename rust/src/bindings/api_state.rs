@@ -56,6 +56,8 @@ api_object_types!(
     QubitMeasurementResult,
     /// Set of qubit measurement objects.
     QubitMeasurementResultSet,
+    /// Matrix objects.
+    Matrix,
     /// MatrixMap object.
     MatrixMapC,
     /// MatrixMapBuilder object.
@@ -412,6 +414,10 @@ mutate_api_object_as! {QubitReferenceSet, qbset:
 
 mutate_api_object_as! {Gate, gate:
     APIObject::Gate(x) => x, x, x,
+}
+
+mutate_api_object_as! {Matrix, mat:
+    APIObject::Matrix(x) => x, x, x,
 }
 
 mutate_api_object_as! {QubitMeasurementResult, meas:
