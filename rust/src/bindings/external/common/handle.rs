@@ -21,6 +21,7 @@ pub extern "C" fn dqcs_handle_type(handle: dqcs_handle_t) -> dqcs_handle_type_t 
                 Some(APIObject::QubitMeasurementResultSet(_)) => {
                     Ok(dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET)
                 }
+                Some(APIObject::Matrix(_)) => Ok(dqcs_handle_type_t::DQCS_HTYPE_MATRIX),
                 Some(APIObject::MatrixMapC(_)) => Ok(dqcs_handle_type_t::DQCS_HTYPE_MATRIX_MAP),
                 Some(APIObject::MatrixMapBuilderC(_)) => {
                     Ok(dqcs_handle_type_t::DQCS_HTYPE_MATRIX_MAP_BUILDER)
