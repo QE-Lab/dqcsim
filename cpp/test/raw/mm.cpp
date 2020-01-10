@@ -147,12 +147,8 @@ TEST(mm, gate) {
     dqcs_handle_t param;
     dqcs_handle_t targets = dqcs_qbset_new();
     dqcs_qbset_push(targets, 1);
-    dqcs_handle_t gate = dqcs_gate_new_unitary(
-      targets,
-      0,
-      i,
-      4
-    );
+    dqcs_handle_t matrix = dqcs_mat_new(1, i);
+    dqcs_handle_t gate = dqcs_gate_new_unitary(targets, 0, matrix);
     EXPECT_EQ(dqcs_mm_map_gate(mm, gate, &output, &param), dqcs_bool_return_t::DQCS_TRUE);
     EXPECT_EQ(*(int*)output, 42);
     EXPECT_EQ(dqcs_handle_type(param), dqcs_handle_type_t::DQCS_HTYPE_ARB_DATA);
@@ -163,12 +159,8 @@ TEST(mm, gate) {
     dqcs_handle_t param = 42;
     dqcs_handle_t targets = dqcs_qbset_new();
     dqcs_qbset_push(targets, 1);
-    dqcs_handle_t gate = dqcs_gate_new_unitary(
-      targets,
-      0,
-      i,
-      4
-    );
+    dqcs_handle_t matrix = dqcs_mat_new(1, i);
+    dqcs_handle_t gate = dqcs_gate_new_unitary(targets, 0, matrix);
     EXPECT_EQ(dqcs_mm_map_gate(mm, gate, &output, &param), dqcs_bool_return_t::DQCS_TRUE);
     EXPECT_EQ(*(int*)output, 43);
 
@@ -181,7 +173,6 @@ TEST(mm, gate) {
     EXPECT_EQ(lambda, 3.14159265358979323846);
   }
   {
-    double i[] = {0.,0.,1.,0.,1.,0.,0.,0.};
     const void *output = (void *)1234;
     dqcs_handle_t param = 42;
     EXPECT_EQ(dqcs_mm_map_gate(mm, 0, &output, &param), dqcs_bool_return_t::DQCS_BOOL_FAILURE);

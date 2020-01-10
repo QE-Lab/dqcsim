@@ -343,7 +343,7 @@ pub extern "C" fn dqcs_gate_matrix(gate: dqcs_handle_t) -> dqcs_handle_t {
         resolve!(gate as &Gate);
         Ok(insert(
             gate.get_matrix()
-                .ok_or_else(oe_inv_arg("gate has no associated matrix"))?,
+                .ok_or_else(oe_inv_arg("no matrix associated with gate"))?,
         ))
     })
 }

@@ -38,7 +38,7 @@
   QBSET(targets_handle, targets); \
   QBSET(controls_handle, controls); \
   QBSET(measures_handle, measures); \
-  dqcs_handle_t gate = dqcs_gate_new_custom(name, targets_handle, controls_handle, measures_handle, NULL, 0); \
+  dqcs_handle_t gate = dqcs_gate_new_custom(name, targets_handle, controls_handle, measures_handle, 0); \
   if (!gate) return dqcs_return_t::DQCS_FAILURE; \
   if (dqcs_plugin_gate(state, gate) != dqcs_return_t::DQCS_SUCCESS) return dqcs_return_t::DQCS_FAILURE; \
   } while (0)
@@ -214,7 +214,7 @@ dqcs_handle_t op_gate_cb(void *user_data, dqcs_plugin_state_t state, dqcs_handle
 
   dqcs_handle_delete(gate);
 
-  gate = dqcs_gate_new_custom(s, ds_targets, ds_controls, ds_measures, NULL, 0);
+  gate = dqcs_gate_new_custom(s, ds_targets, ds_controls, ds_measures, 0);
   dqcs_plugin_gate(state, gate);
   dqcs_plugin_advance(state, 1);
 
