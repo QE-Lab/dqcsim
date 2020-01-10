@@ -210,3 +210,36 @@ impl<'matrix, T> Detector for MatrixDetector<'matrix, T> {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::common::detector::Detector;
+    use crate::common::gates::GateType;
+
+    #[test]
+    fn matrix_detector() {
+        let matrix = Matrix::new(vec![c!(1.), c!(0.), c!(0.), c!(1.)]);
+        let detector = MatrixDetector::new(&matrix, 0.001, true, &GateType::I);
+        assert_eq!(detector.detect(&matrix).unwrap(), Some(&GateType::I));
+    }
+
+    #[test]
+    fn detector_map() {
+        let matrix = Matrix::new(vec![c!(1.23, 3.45)]);
+        let detector = MatrixDetector::new(&matrix, 0.001, true, &GateType::I);
+        assert_eq!(detector.detect(&matrix).unwrap(), Some(&GateType::I));
+
+        let detector_map = DetectorMap::new().with("test", detector);
+        assert_eq!(
+            detector_map.detect(&matrix).unwrap(),
+            Some(("test", &GateType::I))
+        );
+        assert_eq!(
+            detector_map.detect(&matrix).unwrap(),
+            Some(("test", &GateType::I))
+        );
+
+        assert_eq!(format!("{:?}", detector_map), "{\"test\"}");
+    }
+}
