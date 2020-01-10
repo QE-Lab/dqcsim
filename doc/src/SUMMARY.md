@@ -37,6 +37,7 @@
     - [ArbCmd objects: dqcs_cmd_*](./c-api/cmd.apigen.md)
     - [ArbCmd queues: dqcs_cq_*](./c-api/cq.apigen.md)
   - [Qubits: dqcs_qbset_*](./c-api/qbset.apigen.md)
+  - [Matrices: dqcs_mat_*](./c-api/mat.apigen.md)
   - [Gates: dqcs_gate_*](./c-api/gate.apigen.md)
   - [Matrix maps: dqcs_mm_* and dqcs_mmb_*](./c-api/mm.apigen.md)
   - [Measurements](./c-api/measurements.apigen.md)
