@@ -38,6 +38,7 @@ pub extern "C" fn dqcs_mat_new(num_qubits: size_t, matrix: *const c_double) -> d
 /// Returns the number of complex entries in the given matrix.
 ///>
 ///> This function returns -1 when an error occurs.
+#[no_mangle]
 pub extern "C" fn dqcs_mat_len(mat: dqcs_handle_t) -> ssize_t {
     api_return(-1, || {
         resolve!(mat as &Matrix);
@@ -49,6 +50,7 @@ pub extern "C" fn dqcs_mat_len(mat: dqcs_handle_t) -> ssize_t {
 /// matrix.
 ///>
 ///> This function returns -1 when an error occurs.
+#[no_mangle]
 pub extern "C" fn dqcs_mat_dimension(mat: dqcs_handle_t) -> ssize_t {
     api_return(-1, || {
         resolve!(mat as &Matrix);
@@ -59,6 +61,7 @@ pub extern "C" fn dqcs_mat_dimension(mat: dqcs_handle_t) -> ssize_t {
 /// Returns the number of qubits targeted by the given matrix.
 ///>
 ///> This function returns -1 when an error occurs.
+#[no_mangle]
 pub extern "C" fn dqcs_mat_num_qubits(mat: dqcs_handle_t) -> ssize_t {
     api_return(-1, || {
         resolve!(mat as &Matrix);

@@ -13,6 +13,12 @@ subsequently immutable.
 
 @@@c_api_gen ^dqcs_mat_new$@@@
 
+The following functions can be used to query the size of a matrix.
+
+@@@c_api_gen ^dqcs_mat_len$@@@
+@@@c_api_gen ^dqcs_mat_dimension$@@@
+@@@c_api_gen ^dqcs_mat_num_qubits$@@@
+
 The C array can of course also be recovered again.
 
 @@@c_api_gen ^dqcs_mat_get$@@@
