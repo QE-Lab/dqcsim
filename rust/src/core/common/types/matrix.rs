@@ -1,9 +1,9 @@
-use crate::common::{error::Result, types::Detector, util::log_2};
+use crate::common::util::log_2;
 use integer_sqrt::IntegerSquareRoot;
 use num_complex::Complex64;
 use serde::{Deserialize, Serialize};
-#[cfg(feature = "bindings")]
-use std::os::raw::c_double;
+// #[cfg(feature = "bindings")]
+// use std::os::raw::c_double;
 use std::{
     collections::HashSet,
     fmt,
@@ -147,24 +147,6 @@ impl Display for Matrix {
             writeln!(f)?;
         }
         Ok(())
-    }
-}
-
-impl Matrix {
-    /// Returns a Box<Detector<T>> for this Matrix.
-    pub fn into_detector<T: Clone + 'static>(
-        self,
-        epsilon: f64,
-        ignore_global_phase: bool,
-        value: T,
-    ) -> Box<Detector<T>> {
-        Box::new(move |input: &Matrix| -> Result<Option<T>> {
-            Ok(if self.approx_eq(input, epsilon, ignore_global_phase) {
-                Some(value.clone())
-            } else {
-                None
-            })
-        })
     }
 }
 
@@ -321,10 +303,10 @@ impl Matrix {
         self.data.get(row * self.dimension + column)
     }
 
-    #[cfg(feature = "bindings")]
-    pub(crate) fn as_ptr(&self) -> *const c_double {
-        self.data.as_ptr() as *const c_double
-    }
+    // #[cfg(feature = "bindings")]
+    // pub(crate) fn as_ptr(&self) -> *const c_double {
+    //     self.data.as_ptr() as *const c_double
+    // }
 }
 
 #[cfg(test)]

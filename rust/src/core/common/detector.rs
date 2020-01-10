@@ -6,7 +6,7 @@
 //! [`Detector`]: ./trait.Detector.html
 //! [`DetectorMap`]: ./struct.DetectorMap.html
 
-use crate::common::error::Result;
+use crate::common::{error::Result, types::Matrix};
 use std::{cell::RefCell, collections::HashMap, hash::Hash};
 use std::{fmt, fmt::Debug};
 
@@ -41,7 +41,7 @@ pub trait Detector {
 #[derive(Default)]
 pub struct DetectorMap<'a, K, I, O, C = I>
 where
-    I: Eq + Hash + Into<C>,
+    I: Eq + Hash,
 {
     /// The collection of Detectors are stored in this map as trait objects
     /// with a wrapping tuple including the corresponding key.
@@ -53,7 +53,7 @@ where
 
 impl<'a, K, I, O, C> DetectorMap<'a, K, I, O, C>
 where
-    I: Hash + Eq + Into<C>,
+    I: Hash + Eq,
 {
     /// Constructs a new empty DetectorMap.
     pub fn new() -> Self {
@@ -157,12 +157,56 @@ where
 
 impl<K, I, O, C> Debug for DetectorMap<'_, K, I, O, C>
 where
-    I: Eq + Hash + Into<C>,
+    I: Eq + Hash,
     K: Eq + Hash + Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_set()
             .entries(self.detectors.iter().map(|(k, _)| k))
             .finish()
+    }
+}
+
+/// A MatrixDetector to detect Matrix instances.
+#[derive(Clone, Debug)]
+pub struct MatrixDetector<'matrix, T> {
+    matrix: &'matrix Matrix,
+    epsilon: f64,
+    ignore_global_phase: bool,
+    output: &'matrix T,
+}
+
+impl<'matrix, T> MatrixDetector<'matrix, T> {
+    /// Constructs a new MatrixDetector
+    pub fn new(
+        matrix: &'matrix Matrix,
+        epsilon: f64,
+        ignore_global_phase: bool,
+        output: &'matrix T,
+    ) -> Self {
+        Self {
+            matrix,
+            epsilon,
+            ignore_global_phase,
+            output,
+        }
+    }
+}
+
+impl<'matrix, T> Detector for MatrixDetector<'matrix, T> {
+    type Input = Matrix;
+    type Output = &'matrix T;
+
+    fn detect(&self, input: &Self::Input) -> Result<Option<Self::Output>> {
+        Ok(
+            if self
+                .matrix
+                .approx_eq(input, self.epsilon, self.ignore_global_phase)
+            {
+                Some(self.output)
+            } else {
+                None
+            },
+        )
     }
 }

@@ -1,226 +1,286 @@
-//! Helper functions for common quantum Gates
-use crate::common::{
-    error,
-    types::{
-        detect_r, detect_rk, detect_rx, detect_ry, detect_rz, Detector, Gate, Matrix, QubitRef,
-    },
-};
+//! Gate types and definitions.
+//!
+//! The types defined here are provided to facilitate plugin developers. They
+//! are not to be confused with the [`Gate`] type used in gatestream
+//! [`protocol`], and are not relied on in the core of DQCsim.
+//!
+//! The following gate types are defined in this module:
+//!
+//! - [`GateType`]: An abstract gate type. The variants in this type carry no
+//!                 additional parameters or information about the target
+//!                 qubits, with the exception of the [`GateType::U`] variant
+//!                 that encodes an abstract unitary gate with the number of
+//!                 qubits involved specified.
+//!
+//! - [`UnboundGate`]: An unbound gate type. The variants in this type specify
+//!                    all parameters to determine the behaviour of the gate.
+//!                    However, these variants carry no information about the
+//!                    target qubits.
+//!
+//! - [`BoundGate`]: A bound gate type. The variants in this type specify all
+//!                  parameters and qubits targets to determine the behaviour
+//!                  of the gate.
+//!
+//! The [`BoundGate`] can always be converted to an [`UnboundGate`] that in
+//! turn can always be converted to a [`GateType`]. [`UnboundGate`] variants
+//! without additional parameters can be converted to their [`GateType`]
+//! variants. [`BoundGate`] instances can be converted to [`Gate`] instances.
+//!
+//!
+//! [`Gate`]: ../types/struct.Gate.html
+//! [`protocol`]: ../protocol/index.html
+//!
+//! [`GateType`]: ./enum.GateType.html
+//! [`GateType::U`]: ./enum.GateType.html#variant.U
+//! [`UnboundGate`]: ./enum.UnboundGate.html
+//! [`BoundGate`]: ./enum.BoundGate.html
 
+use crate::common::types::{Gate, Matrix, QubitRef};
 use std::{
-    convert::{TryFrom, TryInto},
+    convert::TryFrom,
     f64::consts::{FRAC_1_SQRT_2, PI},
 };
 
-/// Enumeration of predefined quantum gates.
+/// An abstract gate type.
+///
+/// The variants in this type carry no additional parameters or information
+/// about the target qubits, with the exception of the [`GateType::U`] variant
+/// that encodes an abstract Unitary gate with the number of qubits involved
+/// specified.
+///
+/// [`GateType::U`]: ./enum.GateType.html#variant.U
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum GateType {
+    /// Identity.
     I,
+    /// Pauli-X.
     X,
+    /// Pauli-Y.
     Y,
+    /// Pauli-Z.
     Z,
+    /// Hadamard.
     H,
+    /// Phase.
     S,
+    /// S† (conjugate transpose of S).
     SDAG,
+    /// T.
     T,
+    /// T† (conjugate transpose of T).
     TDAG,
+    /// 90 degree rotation around X-axis.
     RX90,
+    /// minus 90 degree rotation around X-axis.
     RXM90,
+    /// 180 degree rotation around X-axis.
     RX180,
+    /// 90 degree rotation around Y-axis.
     RY90,
+    /// minus 90 degree rotation around Y-axis.
     RYM90,
+    /// 180 degree rotation around Y-axis.
     RY180,
+    /// 90 degree rotation around Y-axis.
     RZ90,
+    /// minus 90 degree rotation around Z-axis.
     RZM90,
+    /// 180 degree rotation around Z-axis.
     RZ180,
+    /// Arbitrary rotation around X-axis.
     RX,
+    /// Arbitrary rotation around Y-axis.
     RY,
-    RK,
+    /// Arbitrary rotation around Z-axis.
     RZ,
+    /// Arbitrary rotation around X-, Y- and Z-axis.
     R,
+    /// Arbitrary phase shift.
+    RK,
+    /// Swap.
     SWAP,
+    /// Square root of Swap.
     SQSWAP,
-    U(usize), // usize represents the number of involved qubits
+    /// Abstract unitary gate with number of target qubits specified.
+    U(usize),
 }
 
-impl GateType {
-    pub fn into_detector(
-        self,
-        epsilon: f64,
-        ignore_global_phase: bool,
-    ) -> Box<Detector<UnboundGate>> {
-        match TryInto::<UnboundGate>::try_into(self) {
-            Ok(gate) => gate.into_detector(epsilon, ignore_global_phase),
-            Err(_) => Box::new(
-                move |input: &Matrix| -> error::Result<Option<UnboundGate>> {
-                    Ok(match self {
-                        GateType::RX => {
-                            detect_rx(input, epsilon, ignore_global_phase).map(UnboundGate::RX)
-                        }
-                        GateType::RY => {
-                            detect_ry(input, epsilon, ignore_global_phase).map(UnboundGate::RY)
-                        }
-                        GateType::RZ => {
-                            detect_rz(input, epsilon, ignore_global_phase).map(UnboundGate::RZ)
-                        }
-                        GateType::RK => {
-                            detect_rk(input, epsilon, ignore_global_phase).map(UnboundGate::RK)
-                        }
-                        GateType::R => detect_r(input, epsilon, ignore_global_phase)
-                            .map(|(theta, phi, lambda)| UnboundGate::R(theta, phi, lambda)),
-                        GateType::U(dim) => {
-                            if input.num_qubits() == Some(dim) {
-                                Some(UnboundGate::U(input.to_owned()))
-                            } else {
-                                None
-                            }
-                        }
-                        _ => None,
-                    })
-                },
-            ),
-        }
-    }
-}
-
-impl UnboundGate {
-    pub fn into_detector(
-        self,
-        epsilon: f64,
-        ignore_global_phase: bool,
-    ) -> Box<Detector<UnboundGate>> {
-        let matrix: Matrix = self.clone().into();
-        matrix.into_detector(epsilon, ignore_global_phase, self)
-    }
-}
-
-impl From<UnboundGate> for GateType {
-    fn from(unbound_gate: UnboundGate) -> Self {
-        match unbound_gate {
-            UnboundGate::I => GateType::I,
-            UnboundGate::X => GateType::X,
-            UnboundGate::Y => GateType::Y,
-            UnboundGate::Z => GateType::Z,
-            UnboundGate::H => GateType::H,
-            UnboundGate::S => GateType::S,
-            UnboundGate::SDAG => GateType::SDAG,
-            UnboundGate::T => GateType::T,
-            UnboundGate::TDAG => GateType::TDAG,
-            UnboundGate::RX90 => GateType::RX90,
-            UnboundGate::RXM90 => GateType::RXM90,
-            UnboundGate::RX180 => GateType::RX180,
-            UnboundGate::RY90 => GateType::RY90,
-            UnboundGate::RYM90 => GateType::RYM90,
-            UnboundGate::RY180 => GateType::RY180,
-            UnboundGate::RZ90 => GateType::RZ90,
-            UnboundGate::RZM90 => GateType::RZM90,
-            UnboundGate::RZ180 => GateType::RZ180,
-            UnboundGate::RX(_) => GateType::RX,
-            UnboundGate::RY(_) => GateType::RY,
-            UnboundGate::RK(_) => GateType::RK,
-            UnboundGate::RZ(_) => GateType::RZ,
-            UnboundGate::R(_, _, _) => GateType::R,
-            UnboundGate::SWAP => GateType::SWAP,
-            UnboundGate::SQSWAP => GateType::SQSWAP,
-            UnboundGate::U(matrix) => GateType::U(matrix.num_qubits().expect("bad matrix")),
-        }
-    }
-}
-
-impl TryFrom<GateType> for UnboundGate {
-    type Error = &'static str;
-    fn try_from(gate_type: GateType) -> Result<Self, Self::Error> {
-        Ok(match gate_type {
-            GateType::I => UnboundGate::I,
-            GateType::X => UnboundGate::X,
-            GateType::Y => UnboundGate::Y,
-            GateType::Z => UnboundGate::Z,
-            GateType::H => UnboundGate::H,
-            GateType::S => UnboundGate::S,
-            GateType::SDAG => UnboundGate::SDAG,
-            GateType::T => UnboundGate::T,
-            GateType::TDAG => UnboundGate::TDAG,
-            GateType::RX90 => UnboundGate::RX90,
-            GateType::RXM90 => UnboundGate::RXM90,
-            GateType::RX180 => UnboundGate::RX180,
-            GateType::RY90 => UnboundGate::RY90,
-            GateType::RYM90 => UnboundGate::RYM90,
-            GateType::RY180 => UnboundGate::RY180,
-            GateType::RZ90 => UnboundGate::RZ90,
-            GateType::RZM90 => UnboundGate::RZM90,
-            GateType::RZ180 => UnboundGate::RZ180,
-            GateType::SWAP => UnboundGate::SWAP,
-            GateType::SQSWAP => UnboundGate::SQSWAP,
-            _ => return Err("gate is parameterized"),
-        })
-    }
-}
-
-// impl From<UnboundGate> for Detector<T> {
-// }
-// impl From<BoundGate> for Detector<T> {}
-// impl TryFrom<Gate> for BoundGate {}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum UnboundGate {
+/// An unbound gate type.
+///
+/// The variants in this type specify all parameters to determine the behaviour
+/// of the gate. However, these variants carry no information about the target
+/// qubits.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum UnboundGate<'matrix> {
+    /// Identity.
     I,
+    /// Pauli-X.
     X,
+    /// Pauli-Y.
     Y,
+    /// Pauli-Z.
     Z,
+    /// Hadamard.
     H,
+    /// Phase.
     S,
+    /// S† (conjugate transpose of S).
     SDAG,
+    /// T.
     T,
+    /// T† (conjugate transpose of T).
     TDAG,
+    /// 90 degree rotation around X-axis.
     RX90,
+    /// minus 90 degree rotation around X-axis.
     RXM90,
+    /// 180 degree rotation around X-axis.
     RX180,
+    /// 90 degree rotation around Y-axis.
     RY90,
+    /// minus 90 degree rotation around Y-axis.
     RYM90,
+    /// 180 degree rotation around Y-axis.
     RY180,
+    /// 90 degree rotation around Y-axis.
     RZ90,
+    /// minus 90 degree rotation around Z-axis.
     RZM90,
+    /// 180 degree rotation around Z-axis.
     RZ180,
+    /// Arbitrary rotation around X-axis with specified angle (θ).
     RX(f64),
+    /// Arbitrary rotation around Y-axis with specified angle (θ).
     RY(f64),
-    RK(usize),
+    /// Arbitrary rotation around Z-axis with specified angle (θ).
     RZ(f64),
+    /// Arbitrary rotation around X-, Y- and Z-axis with specified angles
+    /// (θ, φ, λ).
     R(f64, f64, f64),
+    /// Arbitrary phase swift with angle (θ=π/2^k​) for specified k.
+    RK(usize),
+    /// Swap.
     SWAP,
+    /// Square root of Swap.
     SQSWAP,
-    U(Matrix),
+    /// Abstract unitary gate with a reference to specified unitary matrix.
+    U(&'matrix Matrix),
 }
 
-pub enum BoundGate {
+/// A bound gate type.
+///
+/// The variants in this type specify all parameters and qubits targets to
+/// determine the behaviour of the gate.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum BoundGate<'matrix, 'qref> {
+    /// Identity with specified qubit target.
     I(QubitRef),
+    /// Pauli-X with specified qubit target.
     X(QubitRef),
+    /// Pauli-Y with specified qubit target.
     Y(QubitRef),
+    /// Pauli-Z with specified qubit target.
     Z(QubitRef),
+    /// Hadamard with specified qubit target.
     H(QubitRef),
+    /// Phase with specified qubit target.
     S(QubitRef),
+    /// S† (conjugate transpose of S) with specified qubit target.
     SDAG(QubitRef),
+    /// T with specified qubit target.
     T(QubitRef),
+    /// T† (conjugate transpose of T) with specified qubit target.
     TDAG(QubitRef),
+    /// 90 degree rotation around X-axis with specified qubit target.
     RX90(QubitRef),
+    /// minus 90 degree rotation around X-axi with specified qubit target.
     RXM90(QubitRef),
+    /// 180 degree rotation around X-axis with specified qubit target.
     RX180(QubitRef),
+    /// 90 degree rotation around Y-axis with specified qubit target.
     RY90(QubitRef),
+    /// minus 90 degree rotation around Y-axis with specified qubit target.
     RYM90(QubitRef),
+    /// 180 degree rotation around Y-axis with specified qubit target.
     RY180(QubitRef),
+    /// 90 degree rotation around Y-axis with specified qubit target.
     RZ90(QubitRef),
+    /// minus 90 degree rotation around Z-axis with specified qubit target.
     RZM90(QubitRef),
+    /// 180 degree rotation around Z-axis with specified qubit target.
     RZ180(QubitRef),
+    /// Arbitrary rotation around X-axis with specified angle (θ) and qubit
+    /// target.
     RX(f64, QubitRef),
+    /// Arbitrary rotation around Y-axis with specified angle (θ) and qubit
+    /// target.
     RY(f64, QubitRef),
-    RK(usize, QubitRef),
+    /// Arbitrary rotation around Z-axis with specified angle (θ) and qubit
+    /// target.
     RZ(f64, QubitRef),
+    /// Arbitrary rotation around X-, Y- and Z-axis with specified angles
+    /// (θ, φ, λ) and qubit target.
     R(f64, f64, f64, QubitRef),
+    /// Arbitrary phase swift with angle (θ=π/2^k​) for specified k and qubit
+    /// target.
+    RK(usize, QubitRef),
+    /// Swap with specified qubit targets.
     SWAP(QubitRef, QubitRef),
+    /// Square root of Swap with specified qubit targets.
     SQSWAP(QubitRef, QubitRef),
-    U(Matrix, Vec<QubitRef>),
+    /// Abstract unitary gate with a reference to specified unitary matrix and
+    /// qubit targets.
+    U(&'matrix Matrix, &'qref [QubitRef]),
 }
 
-impl From<BoundGate> for Gate {
-    fn from(bound_gate: BoundGate) -> Gate {
+impl<'matrix> From<BoundGate<'matrix, '_>> for UnboundGate<'matrix> {
+    fn from(bound_gate: BoundGate<'matrix, '_>) -> UnboundGate<'matrix> {
+        match bound_gate {
+            BoundGate::I(_) => UnboundGate::I,
+            BoundGate::X(_) => UnboundGate::X,
+            BoundGate::Y(_) => UnboundGate::Y,
+            BoundGate::Z(_) => UnboundGate::Z,
+            BoundGate::H(_) => UnboundGate::H,
+            BoundGate::S(_) => UnboundGate::S,
+            BoundGate::SDAG(_) => UnboundGate::SDAG,
+            BoundGate::T(_) => UnboundGate::T,
+            BoundGate::TDAG(_) => UnboundGate::TDAG,
+            BoundGate::RX90(_) => UnboundGate::RX90,
+            BoundGate::RXM90(_) => UnboundGate::RXM90,
+            BoundGate::RX180(_) => UnboundGate::RX180,
+            BoundGate::RY90(_) => UnboundGate::RY90,
+            BoundGate::RYM90(_) => UnboundGate::RYM90,
+            BoundGate::RY180(_) => UnboundGate::RY180,
+            BoundGate::RZ90(_) => UnboundGate::RZ90,
+            BoundGate::RZM90(_) => UnboundGate::RZM90,
+            BoundGate::RZ180(_) => UnboundGate::RZ180,
+            BoundGate::RX(theta, _) => UnboundGate::RX(theta),
+            BoundGate::RY(theta, _) => UnboundGate::RY(theta),
+            BoundGate::RZ(theta, _) => UnboundGate::RZ(theta),
+            BoundGate::R(theta, phi, lambda, _) => UnboundGate::R(theta, phi, lambda),
+            BoundGate::RK(k, _) => UnboundGate::RK(k),
+            BoundGate::SWAP(_, _) => UnboundGate::SWAP,
+            BoundGate::SQSWAP(_, _) => UnboundGate::SQSWAP,
+            BoundGate::U(matrix, _) => UnboundGate::U(matrix),
+        }
+    }
+}
+
+impl From<BoundGate<'_, '_>> for GateType {
+    fn from(bound_gate: BoundGate<'_, '_>) -> GateType {
+        UnboundGate::from(bound_gate).into()
+    }
+}
+
+impl From<BoundGate<'_, '_>> for Matrix {
+    fn from(bound_gate: BoundGate<'_, '_>) -> Matrix {
+        UnboundGate::from(bound_gate).into()
+    }
+}
+
+impl From<BoundGate<'_, '_>> for Gate {
+    fn from(bound_gate: BoundGate<'_, '_>) -> Gate {
+        let matrix = Matrix::from(bound_gate);
         match bound_gate {
             BoundGate::I(q)
             | BoundGate::X(q)
@@ -243,127 +303,71 @@ impl From<BoundGate> for Gate {
             | BoundGate::RX(_, q)
             | BoundGate::RY(_, q)
             | BoundGate::RZ(_, q)
-            | BoundGate::RK(_, q)
-            | BoundGate::R(_, _, _, q) => {
-                Gate::new_unitary(vec![q], vec![], Into::<Matrix>::into(bound_gate)).unwrap()
-            }
+            | BoundGate::R(_, _, _, q)
+            | BoundGate::RK(_, q) => Gate::new_unitary(vec![q], vec![], matrix),
             BoundGate::SWAP(q1, q2) | BoundGate::SQSWAP(q1, q2) => {
-                Gate::new_unitary(vec![q1, q2], vec![], Into::<Matrix>::into(bound_gate)).unwrap()
+                Gate::new_unitary(vec![q1, q2], vec![], matrix)
             }
-            BoundGate::U(matrix, q) => Gate::new_unitary(q, vec![], matrix).unwrap(),
+            BoundGate::U(matrix, q) => Gate::new_unitary(q.to_vec(), vec![], matrix.clone()),
         }
+        .unwrap()
     }
 }
 
-impl From<BoundGate> for UnboundGate {
-    fn from(bound_gate: BoundGate) -> UnboundGate {
-        match bound_gate {
-            BoundGate::I(_) => UnboundGate::I,
-            BoundGate::X(_) => UnboundGate::X,
-            BoundGate::Y(_) => UnboundGate::Y,
-            BoundGate::Z(_) => UnboundGate::Z,
-            BoundGate::H(_) => UnboundGate::H,
-            BoundGate::S(_) => UnboundGate::S,
-            BoundGate::SDAG(_) => UnboundGate::SDAG,
-            BoundGate::T(_) => UnboundGate::T,
-            BoundGate::TDAG(_) => UnboundGate::TDAG,
-            BoundGate::RX90(_) => UnboundGate::RX90,
-            BoundGate::RXM90(_) => UnboundGate::RXM90,
-            BoundGate::RX180(_) => UnboundGate::RX180,
-            BoundGate::RY90(_) => UnboundGate::RY90,
-            BoundGate::RYM90(_) => UnboundGate::RYM90,
-            BoundGate::RY180(_) => UnboundGate::RY180,
-            BoundGate::RZ90(_) => UnboundGate::RZ90,
-            BoundGate::RZM90(_) => UnboundGate::RZM90,
-            BoundGate::RZ180(_) => UnboundGate::RZ180,
-            BoundGate::RX(theta, _) => UnboundGate::RX(theta),
-            BoundGate::RY(theta, _) => UnboundGate::RY(theta),
-            BoundGate::RK(k, _) => UnboundGate::RK(k),
-            BoundGate::RZ(theta, _) => UnboundGate::RZ(theta),
-            BoundGate::R(theta, phi, lambda, _) => UnboundGate::R(theta, phi, lambda),
-            BoundGate::SWAP(_, _) => UnboundGate::SWAP,
-            BoundGate::SQSWAP(_, _) => UnboundGate::SQSWAP,
-            BoundGate::U(matrix, _) => UnboundGate::U(matrix),
-        }
-    }
-}
-
-impl From<BoundGate> for Matrix {
-    fn from(bound_gate: BoundGate) -> Matrix {
-        Into::<UnboundGate>::into(bound_gate).into()
-    }
-}
-
-impl From<UnboundGate> for Matrix {
-    fn from(unbound_gate: UnboundGate) -> Matrix {
+impl From<UnboundGate<'_>> for GateType {
+    fn from(unbound_gate: UnboundGate<'_>) -> GateType {
         match unbound_gate {
-            UnboundGate::I => vec![c!(1.), c!(0.), c!(0.), c!(1.)].into(),
-            UnboundGate::X => vec![c!(0.), c!(1.), c!(1.), c!(0.)].into(),
-            UnboundGate::Y => vec![c!(0.), c!(0., -1.), c!(0., 1.), c!(0.)].into(),
-            UnboundGate::Z => vec![c!(1.), c!(0.), c!(0.), c!(-1.)].into(),
-            UnboundGate::H => {
-                let x = c!(FRAC_1_SQRT_2);
-                vec![x, x, x, -x].into()
-            }
-            UnboundGate::S => vec![c!(1.), c!(0.), c!(0.), c!(0., 1.)].into(),
-            UnboundGate::SDAG => vec![c!(1.), c!(0.), c!(0.), c!(0., -1.)].into(),
-            UnboundGate::T => vec![c!(1.), c!(0.), c!(0.), c!(FRAC_1_SQRT_2, FRAC_1_SQRT_2)].into(),
-            UnboundGate::TDAG => {
-                vec![c!(1.), c!(0.), c!(0.), c!(FRAC_1_SQRT_2, -FRAC_1_SQRT_2)].into()
-            }
-            UnboundGate::RX90 => {
-                let x = c!(FRAC_1_SQRT_2);
-                let y = c!(0., -FRAC_1_SQRT_2);
-                vec![x, y, y, x].into()
-            }
-            UnboundGate::RXM90 => {
-                let x = c!(FRAC_1_SQRT_2);
-                let y = c!(0., FRAC_1_SQRT_2);
-                vec![x, y, y, x].into()
-            }
-            UnboundGate::RX180 => {
-                let x = c!(0., -FRAC_1_SQRT_2);
-                vec![c!(0.), x, x, c!(0.)].into()
-            }
-            UnboundGate::RY90 => {
-                let x = c!(FRAC_1_SQRT_2);
-                vec![x, -x, x, x].into()
-            }
-            UnboundGate::RYM90 => {
-                let x = c!(FRAC_1_SQRT_2);
-                vec![x, x, -x, x].into()
-            }
-            UnboundGate::RY180 => vec![c!(0.), c!(-1.), c!(0.), c!(0.)].into(),
-            UnboundGate::RZ90 => {
-                let x = FRAC_1_SQRT_2;
-                vec![c!(x, -x), c!(0.), c!(0.), c!(x, x)].into()
-            }
-            UnboundGate::RZM90 => {
-                let x = FRAC_1_SQRT_2;
-                vec![c!(x, x), c!(0.), c!(0.), c!(x, -x)].into()
-            }
-            UnboundGate::RZ180 => vec![c!(0., -1.), c!(0.), c!(0.), c!(0., 1.)].into(),
+            UnboundGate::I => GateType::I,
+            UnboundGate::X => GateType::X,
+            UnboundGate::Y => GateType::Y,
+            UnboundGate::Z => GateType::Z,
+            UnboundGate::H => GateType::H,
+            UnboundGate::S => GateType::S,
+            UnboundGate::SDAG => GateType::SDAG,
+            UnboundGate::T => GateType::T,
+            UnboundGate::TDAG => GateType::TDAG,
+            UnboundGate::RX90 => GateType::RX90,
+            UnboundGate::RXM90 => GateType::RXM90,
+            UnboundGate::RX180 => GateType::RX180,
+            UnboundGate::RY90 => GateType::RY90,
+            UnboundGate::RYM90 => GateType::RYM90,
+            UnboundGate::RY180 => GateType::RY180,
+            UnboundGate::RZ90 => GateType::RZ90,
+            UnboundGate::RZM90 => GateType::RZM90,
+            UnboundGate::RZ180 => GateType::RZ180,
+            UnboundGate::RX(_) => GateType::RX,
+            UnboundGate::RY(_) => GateType::RY,
+            UnboundGate::RZ(_) => GateType::RZ,
+            UnboundGate::R(_, _, _) => GateType::R,
+            UnboundGate::RK(_) => GateType::RK,
+            UnboundGate::SWAP => GateType::SWAP,
+            UnboundGate::SQSWAP => GateType::SQSWAP,
+            UnboundGate::U(matrix) => GateType::U(matrix.num_qubits().unwrap_or(0)),
+        }
+    }
+}
+
+impl From<UnboundGate<'_>> for Matrix {
+    fn from(unbound_gate: UnboundGate<'_>) -> Matrix {
+        match unbound_gate {
             UnboundGate::RX(theta) => {
                 let a = c!((0.5 * theta).cos());
                 let b = c!(0., -1.) * (0.5 * theta).sin();
                 vec![a, b, b, a].into()
             }
+
             UnboundGate::RY(theta) => {
                 let a = c!((0.5 * theta).cos());
                 let b = c!((0.5 * theta).sin());
                 vec![a, -b, b, a].into()
             }
-            UnboundGate::RK(k) => {
-                let theta = PI / 2usize.pow(k as u32) as f64;
-                let a = c!(0., -0.5 * theta).exp();
-                let b = c!(0., 0.5 * theta).exp();
-                vec![a, c!(0.), c!(0.), b].into()
-            }
+
             UnboundGate::RZ(theta) => {
                 let a = c!(0., -0.5 * theta).exp();
                 let b = c!(0., 0.5 * theta).exp();
                 vec![a, c!(0.), c!(0.), b].into()
             }
+
             UnboundGate::R(theta, phi, lambda) => {
                 let a = (theta / 2.).cos();
                 let b = (theta / 2.).sin();
@@ -377,65 +381,202 @@ impl From<UnboundGate> for Matrix {
                 ]
                 .into()
             }
-            UnboundGate::SWAP => {
-                vec![
-                    c!(1.),
-                    c!(0.),
-                    c!(0.),
-                    c!(0.),
-                    //
-                    c!(0.),
-                    c!(0.),
-                    c!(1.),
-                    c!(0.),
-                    //
-                    c!(0.),
-                    c!(1.),
-                    c!(0.),
-                    c!(0.),
-                    //
-                    c!(0.),
-                    c!(0.),
-                    c!(0.),
-                    c!(1.),
-                ]
-                .into()
+
+            UnboundGate::RK(k) => {
+                let theta = PI / 2usize.pow(k as u32) as f64;
+                let a = c!(0., -0.5 * theta).exp();
+                let b = c!(0., 0.5 * theta).exp();
+                vec![a, c!(0.), c!(0.), b].into()
             }
-            UnboundGate::SQSWAP => {
-                vec![
-                    c!(1.),
-                    c!(0.),
-                    c!(0.),
-                    c!(0.),
-                    //
-                    c!(0.),
-                    c!(0.5, 0.5),
-                    c!(0.5, -0.5),
-                    c!(0.),
-                    //
-                    c!(0.),
-                    c!(0.5, -0.5),
-                    c!(0.5, 0.5),
-                    c!(0.),
-                    //
-                    c!(0.),
-                    c!(0.),
-                    c!(0.),
-                    c!(1.),
-                ]
-                .into()
-            }
-            UnboundGate::U(matrix) => matrix,
+
+            UnboundGate::U(matrix) => matrix.clone(),
+            _ => Matrix::try_from(GateType::try_from(unbound_gate).unwrap()).unwrap(),
         }
     }
 }
+
+// impl TryFrom<GateType> for UnboundGate<'_> {
+//     type Error = ();
+//     fn try_from(gate_type: GateType) -> Result<Self, Self::Error> {
+//     }
+// }
+
+impl TryFrom<GateType> for Matrix {
+    type Error = &'static str;
+    fn try_from(gate_type: GateType) -> Result<Self, Self::Error> {
+        match gate_type {
+            GateType::RX | GateType::RY | GateType::RZ | GateType::R | GateType::RK => {
+                Err("gate is parameterized")
+            }
+            GateType::U(_) => Err("gate is parameterized"),
+            _ => Ok(match gate_type {
+                GateType::I => matrix!(
+                    1., 0.;
+                    0., 1.
+                ),
+
+                GateType::X => matrix!(
+                    0., 1.;
+                    1., 0.
+                ),
+
+                GateType::Y => matrix!(
+                    0.,      (0.,-1.);
+                    (0., 1.), 0.
+                ),
+
+                GateType::Z => matrix!(
+                    1.,  0.;
+                    0., (-1.)
+                ),
+
+                GateType::H => matrix!(
+                    FRAC_1_SQRT_2,   FRAC_1_SQRT_2;
+                    FRAC_1_SQRT_2, (-FRAC_1_SQRT_2)
+                ),
+
+                GateType::S => matrix!(
+                    1.,  0.;
+                    0., (0., 1.)
+                ),
+
+                GateType::SDAG => matrix!(
+                    1.,  0.;
+                    0., (0., -1.)
+                ),
+
+                GateType::T => matrix!(
+                    1.,  0.;
+                    0., (FRAC_1_SQRT_2, FRAC_1_SQRT_2)
+                ),
+
+                GateType::TDAG => matrix!(
+                    1.,  0.;
+                    0., (FRAC_1_SQRT_2, -FRAC_1_SQRT_2)
+                ),
+
+                GateType::RX90 => matrix!(
+                     FRAC_1_SQRT_2,      (0., -FRAC_1_SQRT_2);
+                    (0., -FRAC_1_SQRT_2), FRAC_1_SQRT_2
+                ),
+
+                GateType::RXM90 => matrix!(
+                    FRAC_1_SQRT_2,      (0., FRAC_1_SQRT_2);
+                    (0., FRAC_1_SQRT_2), FRAC_1_SQRT_2
+                ),
+
+                GateType::RX180 => matrix!(
+                     0.,                 (0., -FRAC_1_SQRT_2);
+                    (0., -FRAC_1_SQRT_2), 0.
+                ),
+
+                GateType::RY90 => matrix!(
+                    FRAC_1_SQRT_2, (-FRAC_1_SQRT_2);
+                    FRAC_1_SQRT_2,   FRAC_1_SQRT_2
+                ),
+
+                GateType::RYM90 => matrix!(
+                      FRAC_1_SQRT_2,  FRAC_1_SQRT_2;
+                    (-FRAC_1_SQRT_2), FRAC_1_SQRT_2
+                ),
+
+                GateType::RY180 => matrix!(
+                    0., (-1.);
+                    1.,  0.
+                ),
+
+                GateType::RZ90 => matrix!(
+                    (FRAC_1_SQRT_2, -FRAC_1_SQRT_2),  0.;
+                    0.,                              (FRAC_1_SQRT_2, FRAC_1_SQRT_2)
+                ),
+
+                GateType::RZM90 => matrix!(
+                    (FRAC_1_SQRT_2, FRAC_1_SQRT_2),  0.;
+                    0.,                             (FRAC_1_SQRT_2, -FRAC_1_SQRT_2)
+                ),
+
+                GateType::RZ180 => matrix!(
+                    (0., -1.),  0.;
+                    0.,        (0., 1.)
+                ),
+
+                GateType::SWAP => matrix!(
+                    1., 0., 0., 0.;
+                    0., 0., 1., 0.;
+                    0., 1., 0., 0.;
+                    0., 0., 0., 1.
+                ),
+
+                GateType::SQSWAP => matrix!(
+                    1., 0.,           0.,         0.;
+                    0., (0.5, 0.5),  (0.5, -0.5), 0.;
+                    0., (0.5, -0.5), (0.5, 0.5),  0.;
+                    0., 0.,           0.,         1.
+                ),
+
+                _ => unreachable!(),
+            }),
+        }
+    }
+}
+
+// impl GateType {
+//     pub fn into_detector(
+//         self,
+//         epsilon: f64,
+//         ignore_global_phase: bool,
+//     ) -> Box<Detector<UnboundGate>> {
+//         match TryInto::<UnboundGate>::try_into(self) {
+//             Ok(gate) => gate.into_detector(epsilon, ignore_global_phase),
+//             Err(_) => Box::new(
+//                 move |input: &Matrix| -> error::Result<Option<UnboundGate>> {
+//                     Ok(match self {
+//                         GateType::RX => {
+//                             detect_rx(input, epsilon, ignore_global_phase).map(UnboundGate::RX)
+//                         }
+//                         GateType::RY => {
+//                             detect_ry(input, epsilon, ignore_global_phase).map(UnboundGate::RY)
+//                         }
+//                         GateType::RZ => {
+//                             detect_rz(input, epsilon, ignore_global_phase).map(UnboundGate::RZ)
+//                         }
+//                         GateType::RK => {
+//                             detect_rk(input, epsilon, ignore_global_phase).map(UnboundGate::RK)
+//                         }
+//                         GateType::R => detect_r(input, epsilon, ignore_global_phase)
+//                             .map(|(theta, phi, lambda)| UnboundGate::R(theta, phi, lambda)),
+//                         GateType::U(dim) => {
+//                             if input.num_qubits() == Some(dim) {
+//                                 Some(UnboundGate::U(input.to_owned()))
+//                             } else {
+//                                 None
+//                             }
+//                         }
+//                         _ => None,
+//                     })
+//                 },
+//             ),
+//         }
+//     }
+// }
+
+// impl UnboundGate {
+//     pub fn into_detector(
+//         self,
+//         epsilon: f64,
+//         ignore_global_phase: bool,
+//     ) -> Box<Detector<UnboundGate>> {
+//         let matrix: Matrix = self.clone().into();
+//         matrix.into_detector(epsilon, ignore_global_phase, self)
+//     }
+// }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     fn check(a: UnboundGate, b: UnboundGate) -> bool {
-        Into::<Matrix>::into(a).approx_eq(&b.into(), 1e-15, true)
+        Matrix::from(a).approx_eq(&b.into(), 1e-15, true)
     }
 
     #[test]
@@ -480,7 +621,7 @@ mod tests {
             (UnboundGate::SWAP, GateType::SWAP),
             (UnboundGate::SQSWAP, GateType::SQSWAP),
             (
-                UnboundGate::U(Matrix::new(vec![c!(1.), c!(1.), c!(1.), c!(1.)])),
+                UnboundGate::U(&Matrix::new(vec![c!(1.), c!(1.), c!(1.), c!(1.)])),
                 GateType::U(1),
             ),
         ]
@@ -519,8 +660,8 @@ mod tests {
             (BoundGate::SWAP(a, b), UnboundGate::SWAP),
             (BoundGate::SQSWAP(a, b), UnboundGate::SQSWAP),
             (
-                BoundGate::U(Matrix::new(vec![c!(1.), c!(1.), c!(1.), c!(1.)]), vec![a]),
-                UnboundGate::U(Matrix::new(vec![c!(1.), c!(1.), c!(1.), c!(1.)])),
+                BoundGate::U(&Matrix::new(vec![c!(1.), c!(1.), c!(1.), c!(1.)]), &[a]),
+                UnboundGate::U(&Matrix::new(vec![c!(1.), c!(1.), c!(1.), c!(1.)])),
             ),
         ]
         .into_iter()

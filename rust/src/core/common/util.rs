@@ -49,8 +49,7 @@ macro_rules! c {
 /// Returns a `Matrix` with the given elements.
 ///
 /// Shorthand for `Matrix::new(vec![...])`. The primary use for this is to
-/// prevent `cargo fmt` from making the matrices unreadable.
-#[cfg(test)]
+/// prevent `cargo fmt` from making the matrices unreadable
 macro_rules! matrix {
     ($($($x:tt),+);+) => {
         $crate::core::common::types::Matrix::new(vec![$($(c!($x)),+),+])

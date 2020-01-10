@@ -40,8 +40,3 @@ pub use plugin_metadata::PluginMetadata;
 // Matrix wrapper for gate matrices.
 mod matrix;
 pub use matrix::Matrix;
-
-// MatrixMap type to detect gates based on their matrices.
-mod matrix_map;
-pub use matrix_map::{detect_r, detect_rk, detect_rx, detect_ry, detect_rz};
-pub use matrix_map::{Detector, MatrixMap, MatrixMapBuilder};

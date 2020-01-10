@@ -21,10 +21,6 @@ pub extern "C" fn dqcs_handle_type(handle: dqcs_handle_t) -> dqcs_handle_type_t 
                 Some(APIObject::QubitMeasurementResultSet(_)) => {
                     Ok(dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET)
                 }
-                Some(APIObject::MatrixMapC(_)) => Ok(dqcs_handle_type_t::DQCS_HTYPE_MATRIX_MAP),
-                Some(APIObject::MatrixMapBuilderC(_)) => {
-                    Ok(dqcs_handle_type_t::DQCS_HTYPE_MATRIX_MAP_BUILDER)
-                }
                 Some(APIObject::PluginProcessConfiguration(x)) => match x.get_type() {
                     PluginType::Frontend => Ok(dqcs_handle_type_t::DQCS_HTYPE_FRONT_PROCESS_CONFIG),
                     PluginType::Operator => Ok(dqcs_handle_type_t::DQCS_HTYPE_OPER_PROCESS_CONFIG),

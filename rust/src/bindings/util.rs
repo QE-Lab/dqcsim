@@ -1,5 +1,5 @@
 use super::*;
-use crate::common::util::log_2;
+// use crate::common::util::log_2;
 
 /// Convenience function for converting a C string to a Rust `str`.
 pub fn receive_str<'a>(s: *const c_char) -> Result<&'a str> {
@@ -107,21 +107,21 @@ pub fn receive_matrix(
     }
 }
 
-/// Version of receive_matrix with implicit number of qubits.
-pub fn receive_matrix_raw(
-    ptr: *const c_double,
-    matrix_len: size_t,
-) -> Result<Option<Vec<Complex64>>> {
-    receive_matrix(
-        ptr,
-        matrix_len,
-        if matrix_len % 2 != 0 {
-            inv_arg("invalid matrix size")
-        } else {
-            log_2(matrix_len / 2).ok_or_else(oe_inv_arg("invalid matrix size"))
-        }?,
-    )
-}
+// /// Version of receive_matrix with implicit number of qubits.
+// pub fn receive_matrix_raw(
+//     ptr: *const c_double,
+//     matrix_len: size_t,
+// ) -> Result<Option<Vec<Complex64>>> {
+//     receive_matrix(
+//         ptr,
+//         matrix_len,
+//         if matrix_len % 2 != 0 {
+//             inv_arg("invalid matrix size")
+//         } else {
+//             log_2(matrix_len / 2).ok_or_else(oe_inv_arg("invalid matrix size"))
+//         }?,
+//     )
+// }
 
 /// User data structure for callbacks.
 ///
