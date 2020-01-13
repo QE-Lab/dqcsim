@@ -1,3 +1,6 @@
+## [0.0.9] - 2020-01-13
+-  Add C++ header-only library
+
 ## [0.0.8] - 2020-01-09
 
 -  66e4e6f Fix path to wheels in pypi publish job
