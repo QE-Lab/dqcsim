@@ -1,8 +1,4 @@
 use super::*;
-use crate::common::{
-    detector::{Detector, DetectorMap},
-    gates::GateType,
-};
 use std::rc::Rc;
 
 /// Convenience function for converting a C string to a Rust `str`.
@@ -135,136 +131,33 @@ impl UserData {
     }
 }
 
-/// A GateMap to detect and construct Gates.
-#[derive(Debug)]
-pub struct GateMap<'detectors> {
-    ignore_qubit_refs: bool,
-    ignore_data: bool,
-    key_cmp: Option<extern "C" fn(*const c_void, *const c_void) -> bool>,
-    key_hash: Option<extern "C" fn(*const c_void) -> u64>,
-    detector: DetectorMap<'detectors, UserKey, Gate, ArbData>,
-    constructor: DetectorMap<'detectors, (), BoundUserGate, Gate>,
-}
-
-#[derive(Debug)]
-struct GateTypeDetector {
-    gate_type: GateType,
-    num_controls: Option<i32>,
-    ignore_global_phase: bool,
-    epsilon: f64,
-}
-
-impl GateTypeDetector {
-    fn new(
-        gate_type: GateType,
-        num_controls: Option<i32>,
-        ignore_global_phase: bool,
-        epsilon: f64,
-    ) -> Self {
-        GateTypeDetector {
-            gate_type,
-            num_controls,
-            ignore_global_phase,
-            epsilon,
-        }
-    }
-}
-
-impl Detector for GateTypeDetector {
-    type Input = Gate;
-    type Output = ArbData;
-
-    fn detect(&self, input: &Self::Input) -> Result<Option<Self::Output>> {
-        if let Some(_matrix) = input.get_matrix() {
-            todo!()
-        } else {
-            Ok(None)
-        }
-    }
-}
-
-impl<'gm> GateMap<'gm> {
-    /// Constructs a new empty GateMap.
-    pub fn new(
-        ignore_qubit_refs: bool,
-        ignore_data: bool,
-        key_cmp: Option<extern "C" fn(*const c_void, *const c_void) -> bool>,
-        key_hash: Option<extern "C" fn(*const c_void) -> u64>,
-    ) -> Self {
-        GateMap {
-            ignore_qubit_refs,
-            ignore_data,
-            key_cmp,
-            key_hash,
-            detector: DetectorMap::new(),
-            constructor: DetectorMap::new(),
-        }
-    }
-
-    fn userkey(&self, data: UserKeyData) -> UserKey {
-        UserKey {
-            data,
-            cmp: self.key_cmp,
-            hash: self.key_hash,
-        }
-    }
-
-    /// Inserts a unitary gate mapping using DQCsim gate types.
-    pub fn add_predef_unitary(
-        &mut self,
-        key: UserKeyData,
-        gate_type: GateType,
-        num_controls: i32,
-        epsilon: f64,
-        ignore_global_phase: bool,
-    ) {
-        let num_controls = if num_controls < 0 {
-            None
-        } else {
-            Some(num_controls)
-        };
-        let gate_detector =
-            GateTypeDetector::new(gate_type, num_controls, ignore_global_phase, epsilon);
-        self.detector.push(self.userkey(key), gate_detector);
-        // self.constructor.push();
-    }
-
-    // pub fn detect(&self, gate: &Gate) -> Result<Option<(UserKey, ArbData)>> {
-    //     if let Some(matrix) = gate.get_matrix() {
-    //         if self.ignore_data && self.ignore_qubit_refs {
-    //             let gate = Gate::new_unitary(vec![], vec![], matrix.into_iter())?;
-    //             self.detector.detect(&gate)
-    //         } else if self.ignore_qubit_refs {
-    //             let mut g = Gate::new_unitary(vec![], vec![], matrix.into_iter())?;
-    //             g.data = gate.data.clone();
-    //             self.detector.detect(&g)
-    //         } else if self.ignore_data {
-    //             let mut g = gate.clone();
-    //             g.data = ArbData::default();
-    //             self.detector.detect(&g)
-    //         } else {
-    //             self.detector.detect(gate)
-    //         }
-    //     } else {
-    //         Ok(None)
-    //     }
-    // }
-}
-
 /// Helper device for UserKey struct used within gate maps. Contains an owned
 /// or borrowed void* from the user. If owned, also includes its deletion
 /// callback function pointer.
 #[derive(Clone, Debug)]
 pub enum UserKeyData {
     Owned(Rc<UserData>),
-    // Borrowed(*const c_void),
+    Borrowed(*const c_void),
 }
 
 impl UserKeyData {
+    /// Constructs a wrapper for an owned key, i.e. with an (optional) deletion
+    /// function.
+    pub fn new(key_free: Option<extern "C" fn(*mut c_void)>, key_data: *mut c_void) -> UserKeyData {
+        UserKeyData::Owned(Rc::new(UserData::new(key_free, key_data)))
+    }
+
+    /// Constructs a wrapper for a borrowed key, i.e. immutable and without
+    /// a deletion function.
+    pub fn new_borrowed(key_data: *const c_void) -> UserKeyData {
+        UserKeyData::Borrowed(key_data)
+    }
+
+    /// Returns the contained raw pointer for comparisons and so on.
     pub fn raw(&self) -> *const c_void {
         match self {
             UserKeyData::Owned(data) => data.data,
-            // UserKeyData::Borrowed(data) => *data,
+            UserKeyData::Borrowed(data) => *data,
         }
     }
 }
@@ -302,15 +195,18 @@ impl std::hash::Hash for UserKey {
     }
 }
 
-/// Rust representation of the user-defined parameters needed to construct a
-/// gate.
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
-pub struct BoundUserGate {
-    /// The constructor function key, i.e. the type of gate.
-    key: UserKey,
-    /// The qubits that the gate operates on.
-    qubits: Vec<QubitRef>,
-    /// Classical parameterization data for the gate, such as rotation angles
-    /// or error parameters.
-    data: ArbData,
+impl UserKey {
+    /// Constructs a new UserKey.
+    pub fn new(
+        data: UserKeyData,
+        cmp: Option<extern "C" fn(*const c_void, *const c_void) -> bool>,
+        hash: Option<extern "C" fn(*const c_void) -> u64>,
+    ) -> UserKey {
+        UserKey { data, cmp, hash }
+    }
+
+    /// Returns the contained raw pointer.
+    pub fn raw(&self) -> *const c_void {
+        self.data.raw()
+    }
 }
