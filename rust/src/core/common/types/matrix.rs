@@ -223,38 +223,74 @@ impl Matrix {
     /// Returns new Matrix with control behavior removed from the Matrix, and
     /// the control indices corresponding to the target qubits acting as
     /// control in the original Matrix.
-    /// `epsilon` specifies the maximum element-wise deviation from the
-    /// identity matrix for the relevant array elements for a qubit to be
-    /// considered a control qubit. Note that if this is greater than zero, the
-    /// resulting gate may not be exactly equivalent. If `ignore_global_phase` is
-    /// set, any global phase in the matrix is ignored, but the global phase of
-    /// the non-control submatrix is not changed.
+    ///
+    /// `epsilon` specifies the maximum magitude of the difference between the
+    /// column vectors of the input matrix and the identity matrix (after
+    /// dephasing if `ignore_phase` is set) for the column vector to be
+    /// considered to not affect the respective entry in the quantum state
+    /// vector. Note that if this is greater than zero, the resulting gate may
+    /// not be exactly equivalent. If `ignore_global_phase` is set, any global
+    /// phase in the matrix is ignored, but note that if control qubits are
+    /// stripped the "global" phase of the resulting submatrix is always
+    /// significant.
+    ///
+    /// This function assumes that the incoming matrix is unitary (within
+    /// `epsilon`) without verifying that this is the case. The results may
+    /// thus be invalid if it was not.
+    ///
+    /// The identity matrix special case is handled by interpreting all qubits
+    /// as non-control (any set of qubits would satisfy the controlled matrix
+    /// criterium).
     pub fn strip_control(
         &self,
         epsilon: f64,
         ignore_global_phase: bool,
     ) -> (HashSet<usize>, Matrix) {
+        // If we're to ignore the global phase of the matrix, we dephase using
+        // the phase of the first matrix entry; for any controlled matrix, this
+        // entry will have a unit magnitude.
         let phase = if ignore_global_phase {
             Complex64::from_polar(&1.0, &self[(0, 0)].arg())
         } else {
             c!(1.0)
         };
 
+        // Determine which qubits are control qubits. This is done by detecting
+        // which column vectors match the column vectors of the identity matrix
+        // phased by `phase`. If a column vector is not approximately equal, it
+        // may indicate that some qubits cannot be controls. Note that the last
+        // column vector is never checked, because it never rules out anything.
+        // Note also that we short-circuit to returning the original matrix
+        // when all qubits are ruled out as being controls.
+        let epsilon_sqr = epsilon.powi(2);
         let mut controls_int = self.dimension() - 1;
         for i in 0..self.dimension() - 1 {
-            if (self[(i, i)] - phase).norm_sqr() > epsilon.powi(2) {
-                controls_int &= i;
-                if controls_int == 0 {
-                    return (HashSet::new(), self.clone());
+            let mut error_sqr = 0.0;
+            for j in 0..self.dimension() {
+                if i == j {
+                    error_sqr += (self[(i, j)] - phase).norm_sqr();
+                } else {
+                    error_sqr += self[(i, j)].norm_sqr();
+                }
+                if error_sqr > epsilon_sqr {
+                    controls_int &= i;
+                    if controls_int == 0 {
+                        return (HashSet::new(), self.clone());
+                    }
+                    break;
                 }
             }
         }
 
-        // check for identity matrix
+        // If all qubits could be control qubits, we're actually dealing with
+        // an identity matrix.
         if controls_int == self.dimension() - 1 {
             return (HashSet::new(), self.clone());
         }
 
+        // Construct a HashSet of the qubits that were found to be controls.
+        // Note that the qubit indices used in DQCsim are reversed with respect
+        // to the matrix indices, so we do said reversal here.
         let mut controls = HashSet::new();
         let num_qubits = self.num_qubits().unwrap();
         for q in 0..num_qubits {
@@ -263,7 +299,9 @@ impl Matrix {
             }
         }
 
-        let mut entries = vec![];
+        // Compute the submatrix.
+        let mut entries =
+            Vec::with_capacity((self.dimension() / 2_usize.pow(controls.len() as u32)).pow(2));
         for row in 0..self.dimension() {
             if row & controls_int == controls_int {
                 for col in 0..self.dimension() {

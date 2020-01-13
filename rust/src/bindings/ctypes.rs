@@ -136,15 +136,20 @@ pub enum dqcs_handle_type_t {
     /// This means that the handle supports the `handle` and `mset` interfaces.
     DQCS_HTYPE_MEAS_SET = 106,
 
+    /// Indicates that the given handle belongs to a matrix.
+    ///>
+    ///> This means that the handle supports the `handle` and `mat` interfaces.
+    DQCS_HTYPE_MATRIX = 107,
+
     /// Indicates that the given handle belongs to a matrix map.
     ///>
     ///> This means that the handle supports the `handle` and `mm` interfaces.
-    DQCS_HTYPE_MATRIX_MAP = 107,
+    DQCS_HTYPE_MATRIX_MAP = 108,
 
     /// Indicates that the given handle belongs to a matrix map builder.
     ///>
     ///> This means that the handle supports the `handle` and `mmb` interfaces.
-    DQCS_HTYPE_MATRIX_MAP_BUILDER = 108,
+    DQCS_HTYPE_MATRIX_MAP_BUILDER = 109,
 
     /// Indicates that the given handle belongs to a frontend plugin process
     /// configuration object.

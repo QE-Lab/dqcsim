@@ -51,6 +51,8 @@ api_object_types!(
     QubitMeasurementResult,
     /// Set of qubit measurement objects.
     QubitMeasurementResultSet,
+    /// Matrix objects.
+    Matrix,
     /// `PluginProcessConfiguration` object.
     PluginProcessConfiguration,
     /// `PluginThreadConfiguration` object.
@@ -403,6 +405,10 @@ mutate_api_object_as! {QubitReferenceSet, qbset:
 
 mutate_api_object_as! {Gate, gate:
     APIObject::Gate(x) => x, x, x,
+}
+
+mutate_api_object_as! {Matrix, mat:
+    APIObject::Matrix(x) => x, x, x,
 }
 
 mutate_api_object_as! {QubitMeasurementResult, meas:
