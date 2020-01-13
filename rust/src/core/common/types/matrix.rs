@@ -2,8 +2,8 @@ use crate::common::util::log_2;
 use integer_sqrt::IntegerSquareRoot;
 use num_complex::Complex64;
 use serde::{Deserialize, Serialize};
-// #[cfg(feature = "bindings")]
-// use std::os::raw::c_double;
+#[cfg(feature = "bindings")]
+use std::os::raw::c_double;
 use std::{
     collections::HashSet,
     fmt,
@@ -341,10 +341,10 @@ impl Matrix {
         self.data.get(row * self.dimension + column)
     }
 
-    // #[cfg(feature = "bindings")]
-    // pub(crate) fn as_ptr(&self) -> *const c_double {
-    //     self.data.as_ptr() as *const c_double
-    // }
+    #[cfg(feature = "bindings")]
+    pub(crate) fn as_ptr(&self) -> *const c_double {
+        self.data.as_ptr() as *const c_double
+    }
 }
 
 #[cfg(test)]

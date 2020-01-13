@@ -1,5 +1,4 @@
 use super::*;
-// use crate::common::util::log_2;
 
 /// Convenience function for converting a C string to a Rust `str`.
 pub fn receive_str<'a>(s: *const c_char) -> Result<&'a str> {
@@ -77,51 +76,6 @@ pub fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t
         inv_arg(format!("index out of range: {}", index))
     }
 }
-
-/// Convenience function for converting a C array of doubles representing a
-/// unitary matrix to its Rust representation.
-pub fn receive_matrix(
-    ptr: *const c_double,
-    matrix_len: size_t,
-    num_qubits: usize,
-) -> Result<Option<Vec<Complex64>>> {
-    if matrix_len == 0 {
-        Ok(None)
-    } else if num_qubits == 0 {
-        inv_arg("cannot read matrix for 0 qubits")
-    } else {
-        let num_entries = 2usize.pow(2 * num_qubits as u32);
-        if matrix_len != num_entries {
-            inv_arg("matrix has the wrong number of entries")
-        } else if ptr.is_null() {
-            inv_arg("matrix pointer is null")
-        } else {
-            let mut vec = Vec::with_capacity(num_entries);
-            for i in 0..num_entries {
-                let re: f64 = unsafe { *ptr.add(i * 2) };
-                let im: f64 = unsafe { *ptr.add(i * 2 + 1) };
-                vec.push(Complex64::new(re, im));
-            }
-            Ok(Some(vec))
-        }
-    }
-}
-
-// /// Version of receive_matrix with implicit number of qubits.
-// pub fn receive_matrix_raw(
-//     ptr: *const c_double,
-//     matrix_len: size_t,
-// ) -> Result<Option<Vec<Complex64>>> {
-//     receive_matrix(
-//         ptr,
-//         matrix_len,
-//         if matrix_len % 2 != 0 {
-//             inv_arg("invalid matrix size")
-//         } else {
-//             log_2(matrix_len / 2).ok_or_else(oe_inv_arg("invalid matrix size"))
-//         }?,
-//     )
-// }
 
 /// User data structure for callbacks.
 ///
