@@ -34,6 +34,10 @@ pub use mat::*;
 mod gate;
 pub use gate::*;
 
+// dqcs_gm_* functions, for operating on gate maps.
+mod gm;
+pub use gm::*;
+
 // dqcs_meas_* functions, for operating on qubit measurement objects.
 mod meas;
 pub use meas::*;

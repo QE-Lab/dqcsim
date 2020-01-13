@@ -13,19 +13,8 @@ pub type PluginJoinHandle = JoinHandle<Result<()>>;
 
 pub type BoxedPluginConfiguration = Box<dyn PluginConfiguration>;
 
-macro_rules! api_object_types {
+macro_rules! api_object_types_convert {
     ($($(#[$m:meta])* $i:ident,)+) => (
-        /// Enumeration of all objects that can be associated with an handle, including
-        /// the object data.
-        #[derive(Debug)]
-        #[allow(dead_code, clippy::large_enum_variant)]
-        pub enum APIObject {
-            $(
-                $(#[$m])*
-                $i($i),
-            )+
-        }
-
         $(
             impl From<$i> for APIObject {
                 fn from(x: $i) -> APIObject {
@@ -36,34 +25,61 @@ macro_rules! api_object_types {
     )
 }
 
-api_object_types!(
+impl From<GateMap<'static>> for APIObject {
+    fn from(x: GateMap<'static>) -> APIObject {
+        APIObject::GateMap(x)
+    }
+}
+
+#[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
+pub enum APIObject {
     /// `ArbData` object.
-    ArbData,
+    ArbData(ArbData),
     /// `ArbCmd` object.
-    ArbCmd,
+    ArbCmd(ArbCmd),
     /// Queue of `ArbCmd` objects.
-    ArbCmdQueue,
+    ArbCmdQueue(ArbCmdQueue),
     /// Set of qubit references.
-    QubitReferenceSet,
+    QubitReferenceSet(QubitReferenceSet),
     /// Quantum gate object.
-    Gate,
+    Gate(Gate),
     /// Qubit measurement object.
-    QubitMeasurementResult,
+    QubitMeasurementResult(QubitMeasurementResult),
     /// Set of qubit measurement objects.
-    QubitMeasurementResultSet,
+    QubitMeasurementResultSet(QubitMeasurementResultSet),
     /// Matrix objects.
-    Matrix,
+    Matrix(Matrix),
+    /// GateMap object.
+    GateMap(GateMap<'static>),
     /// `PluginProcessConfiguration` object.
-    PluginProcessConfiguration,
+    PluginProcessConfiguration(PluginProcessConfiguration),
     /// `PluginThreadConfiguration` object.
-    PluginThreadConfiguration,
+    PluginThreadConfiguration(PluginThreadConfiguration),
     /// `SimulatorConfiguration` object.
-    SimulatorConfiguration,
+    SimulatorConfiguration(SimulatorConfiguration),
     /// DQCsim simulation instance, behaving as an accelerator.
-    Simulator,
+    Simulator(Simulator),
     /// `PluginDefinition` object.
-    PluginDefinition,
+    PluginDefinition(PluginDefinition),
     /// Join handle for a plugin thread.
+    PluginJoinHandle(PluginJoinHandle),
+}
+
+api_object_types_convert!(
+    ArbData,
+    ArbCmd,
+    ArbCmdQueue,
+    QubitReferenceSet,
+    Gate,
+    QubitMeasurementResult,
+    QubitMeasurementResultSet,
+    Matrix,
+    PluginProcessConfiguration,
+    PluginThreadConfiguration,
+    SimulatorConfiguration,
+    Simulator,
+    PluginDefinition,
     PluginJoinHandle,
 );
 
@@ -409,6 +425,10 @@ mutate_api_object_as! {Gate, gate:
 
 mutate_api_object_as! {Matrix, mat:
     APIObject::Matrix(x) => x, x, x,
+}
+
+mutate_api_object_as! {GateMap<'static>, gm:
+    APIObject::GateMap(x) => x, x, x,
 }
 
 mutate_api_object_as! {QubitMeasurementResult, meas:

@@ -1,4 +1,9 @@
 use super::*;
+use crate::common::{
+    detector::{Detector, DetectorMap},
+    gates::GateType,
+};
+use std::rc::Rc;
 
 /// Convenience function for converting a C string to a Rust `str`.
 pub fn receive_str<'a>(s: *const c_char) -> Result<&'a str> {
@@ -102,6 +107,7 @@ pub fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t
 /// let data = UserData::new(user_free, user_data);
 /// let cb = move || callback(data.data());
 /// ```
+#[derive(Debug)]
 pub struct UserData {
     user_free: Option<extern "C" fn(*mut c_void)>,
     data: *mut c_void,
@@ -127,4 +133,184 @@ impl UserData {
     pub fn data(&self) -> *mut c_void {
         self.data
     }
+}
+
+/// A GateMap to detect and construct Gates.
+#[derive(Debug)]
+pub struct GateMap<'detectors> {
+    ignore_qubit_refs: bool,
+    ignore_data: bool,
+    key_cmp: Option<extern "C" fn(*const c_void, *const c_void) -> bool>,
+    key_hash: Option<extern "C" fn(*const c_void) -> u64>,
+    detector: DetectorMap<'detectors, UserKey, Gate, ArbData>,
+    constructor: DetectorMap<'detectors, (), BoundUserGate, Gate>,
+}
+
+#[derive(Debug)]
+struct GateTypeDetector {
+    gate_type: GateType,
+    num_controls: Option<i32>,
+    ignore_global_phase: bool,
+    epsilon: f64,
+}
+
+impl GateTypeDetector {
+    fn new(
+        gate_type: GateType,
+        num_controls: Option<i32>,
+        ignore_global_phase: bool,
+        epsilon: f64,
+    ) -> Self {
+        GateTypeDetector {
+            gate_type,
+            num_controls,
+            ignore_global_phase,
+            epsilon,
+        }
+    }
+}
+
+impl Detector for GateTypeDetector {
+    type Input = Gate;
+    type Output = ArbData;
+
+    fn detect(&self, input: &Self::Input) -> Result<Option<Self::Output>> {
+        if let Some(_matrix) = input.get_matrix() {
+            todo!()
+        } else {
+            Ok(None)
+        }
+    }
+}
+
+impl<'gm> GateMap<'gm> {
+    /// Constructs a new empty GateMap.
+    pub fn new(
+        ignore_qubit_refs: bool,
+        ignore_data: bool,
+        key_cmp: Option<extern "C" fn(*const c_void, *const c_void) -> bool>,
+        key_hash: Option<extern "C" fn(*const c_void) -> u64>,
+    ) -> Self {
+        GateMap {
+            ignore_qubit_refs,
+            ignore_data,
+            key_cmp,
+            key_hash,
+            detector: DetectorMap::new(),
+            constructor: DetectorMap::new(),
+        }
+    }
+
+    fn userkey(&self, data: UserKeyData) -> UserKey {
+        UserKey {
+            data,
+            cmp: self.key_cmp,
+            hash: self.key_hash,
+        }
+    }
+
+    /// Inserts a unitary gate mapping using DQCsim gate types.
+    pub fn add_predef_unitary(
+        &mut self,
+        key: UserKeyData,
+        gate_type: GateType,
+        num_controls: i32,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) {
+        let num_controls = if num_controls < 0 {
+            None
+        } else {
+            Some(num_controls)
+        };
+        let gate_detector =
+            GateTypeDetector::new(gate_type, num_controls, ignore_global_phase, epsilon);
+        self.detector.push(self.userkey(key), gate_detector);
+        // self.constructor.push();
+    }
+
+    // pub fn detect(&self, gate: &Gate) -> Result<Option<(UserKey, ArbData)>> {
+    //     if let Some(matrix) = gate.get_matrix() {
+    //         if self.ignore_data && self.ignore_qubit_refs {
+    //             let gate = Gate::new_unitary(vec![], vec![], matrix.into_iter())?;
+    //             self.detector.detect(&gate)
+    //         } else if self.ignore_qubit_refs {
+    //             let mut g = Gate::new_unitary(vec![], vec![], matrix.into_iter())?;
+    //             g.data = gate.data.clone();
+    //             self.detector.detect(&g)
+    //         } else if self.ignore_data {
+    //             let mut g = gate.clone();
+    //             g.data = ArbData::default();
+    //             self.detector.detect(&g)
+    //         } else {
+    //             self.detector.detect(gate)
+    //         }
+    //     } else {
+    //         Ok(None)
+    //     }
+    // }
+}
+
+/// Helper device for UserKey struct used within gate maps. Contains an owned
+/// or borrowed void* from the user. If owned, also includes its deletion
+/// callback function pointer.
+#[derive(Clone, Debug)]
+pub enum UserKeyData {
+    Owned(Rc<UserData>),
+    // Borrowed(*const c_void),
+}
+
+impl UserKeyData {
+    pub fn raw(&self) -> *const c_void {
+        match self {
+            UserKeyData::Owned(data) => data.data,
+            // UserKeyData::Borrowed(data) => *data,
+        }
+    }
+}
+
+/// An owned or borrowed user-defined key, including optional deletion (if
+/// owned), equality, and hash callback functions, exposed through PartialEq
+/// and Hash.
+#[derive(Clone, Debug)]
+pub struct UserKey {
+    data: UserKeyData,
+    cmp: Option<extern "C" fn(*const c_void, *const c_void) -> bool>,
+    hash: Option<extern "C" fn(*const c_void) -> u64>,
+}
+
+impl PartialEq for UserKey {
+    fn eq(&self, other: &Self) -> bool {
+        assert_eq!(self.cmp, other.cmp);
+        assert_eq!(self.hash, other.hash);
+        if let Some(cmp) = self.cmp {
+            cmp(self.data.raw(), other.data.raw())
+        } else {
+            self.data.raw() == other.data.raw()
+        }
+    }
+}
+impl Eq for UserKey {}
+
+impl std::hash::Hash for UserKey {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        if let Some(hash) = self.hash {
+            hash(self.data.raw()).hash(state)
+        } else if self.cmp.is_none() {
+            self.data.raw().hash(state)
+        }
+    }
+}
+
+/// Rust representation of the user-defined parameters needed to construct a
+/// gate.
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub struct BoundUserGate {
+    /// The constructor function key, i.e. the type of gate.
+    key: UserKey,
+    /// The qubits that the gate operates on.
+    qubits: Vec<QubitRef>,
+    /// Classical parameterization data for the gate, such as rotation angles
+    /// or error parameters.
+    data: ArbData,
 }

@@ -26,6 +26,16 @@ pub trait Detector {
     fn detect(&self, input: &Self::Input) -> Result<Option<Self::Output>>;
 }
 
+/// A conversion trait for types implementing Detector.
+///
+/// This allow specifiying additional arguments in contrast to std::convert
+/// methods.
+pub trait IntoDetector {
+    type Arguments;
+    type Detector: Detector;
+    fn into_detector(&self, args: Self::Arguments) -> Self::Detector;
+}
+
 /// A collection of Detector types can be stored in a DetectorMap. The
 /// DetectorMap in turn implements the Detector trait to enable cached
 /// detection using multiple Detectors.

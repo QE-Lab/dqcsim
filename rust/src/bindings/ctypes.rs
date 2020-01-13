@@ -1,5 +1,6 @@
 use super::*;
-use crate::core::common::gates::GateType;
+use crate::core::common::{error::Error, gates::GateType};
+use std::convert::TryFrom;
 
 /// Type for a handle.
 ///
@@ -141,15 +142,10 @@ pub enum dqcs_handle_type_t {
     ///> This means that the handle supports the `handle` and `mat` interfaces.
     DQCS_HTYPE_MATRIX = 107,
 
-    /// Indicates that the given handle belongs to a matrix map.
+    /// Indicates that the given handle belongs to a gate map.
     ///>
-    ///> This means that the handle supports the `handle` and `mm` interfaces.
-    DQCS_HTYPE_MATRIX_MAP = 108,
-
-    /// Indicates that the given handle belongs to a matrix map builder.
-    ///>
-    ///> This means that the handle supports the `handle` and `mmb` interfaces.
-    DQCS_HTYPE_MATRIX_MAP_BUILDER = 109,
+    ///> This means that the handle supports the `handle` and `gm` interfaces.
+    DQCS_HTYPE_GATE_MAP = 108,
 
     /// Indicates that the given handle belongs to a frontend plugin process
     /// configuration object.
@@ -614,6 +610,41 @@ pub enum dqcs_internal_gate_t {
 
     /// Square-root of swap gate.
     DQCS_GATE_SQRT_SWAP = 201,
+}
+
+impl TryFrom<dqcs_internal_gate_t> for GateType {
+    type Error = Error;
+    fn try_from(gate_type: dqcs_internal_gate_t) -> Result<Self> {
+        match gate_type {
+            dqcs_internal_gate_t::DQCS_GATE_PAULI_I => Ok(GateType::I),
+            dqcs_internal_gate_t::DQCS_GATE_PAULI_X => Ok(GateType::X),
+            dqcs_internal_gate_t::DQCS_GATE_PAULI_Y => Ok(GateType::Y),
+            dqcs_internal_gate_t::DQCS_GATE_PAULI_Z => Ok(GateType::Z),
+            dqcs_internal_gate_t::DQCS_GATE_H => Ok(GateType::H),
+            dqcs_internal_gate_t::DQCS_GATE_S => Ok(GateType::S),
+            dqcs_internal_gate_t::DQCS_GATE_S_DAG => Ok(GateType::SDAG),
+            dqcs_internal_gate_t::DQCS_GATE_T => Ok(GateType::T),
+            dqcs_internal_gate_t::DQCS_GATE_T_DAG => Ok(GateType::TDAG),
+            dqcs_internal_gate_t::DQCS_GATE_RX_90 => Ok(GateType::RX90),
+            dqcs_internal_gate_t::DQCS_GATE_RX_M90 => Ok(GateType::RXM90),
+            dqcs_internal_gate_t::DQCS_GATE_RX_180 => Ok(GateType::RX180),
+            dqcs_internal_gate_t::DQCS_GATE_RY_90 => Ok(GateType::RY90),
+            dqcs_internal_gate_t::DQCS_GATE_RY_M90 => Ok(GateType::RYM90),
+            dqcs_internal_gate_t::DQCS_GATE_RY_180 => Ok(GateType::RY180),
+            dqcs_internal_gate_t::DQCS_GATE_RZ_90 => Ok(GateType::RZ90),
+            dqcs_internal_gate_t::DQCS_GATE_RZ_M90 => Ok(GateType::RZM90),
+            dqcs_internal_gate_t::DQCS_GATE_RZ_180 => Ok(GateType::RZ180),
+            dqcs_internal_gate_t::DQCS_GATE_RX => Ok(GateType::RX),
+            dqcs_internal_gate_t::DQCS_GATE_RY => Ok(GateType::RY),
+            dqcs_internal_gate_t::DQCS_GATE_RK => Ok(GateType::RK),
+            dqcs_internal_gate_t::DQCS_GATE_RZ => Ok(GateType::RZ),
+            dqcs_internal_gate_t::DQCS_GATE_U => Ok(GateType::U(1)),
+            dqcs_internal_gate_t::DQCS_GATE_R => Ok(GateType::R),
+            dqcs_internal_gate_t::DQCS_GATE_SWAP => Ok(GateType::SWAP),
+            dqcs_internal_gate_t::DQCS_GATE_SQRT_SWAP => Ok(GateType::SQSWAP),
+            dqcs_internal_gate_t::DQCS_GATE_INVALID => inv_arg("invalid gate"),
+        }
+    }
 }
 
 impl From<dqcs_internal_gate_t> for Option<GateType> {

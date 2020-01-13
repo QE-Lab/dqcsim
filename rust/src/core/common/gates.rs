@@ -396,8 +396,9 @@ impl From<UnboundGate<'_>> for Matrix {
 }
 
 // impl TryFrom<GateType> for UnboundGate<'_> {
-//     type Error = ();
+//     type Error = &'static str;
 //     fn try_from(gate_type: GateType) -> Result<Self, Self::Error> {
+//         Ok(UnboundGate::I)
 //     }
 // }
 
