@@ -331,7 +331,6 @@
 <span id="331">331</span>
 <span id="332">332</span>
 <span id="333">333</span>
-<span id="334">334</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>;
@@ -662,8 +661,7 @@
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">src</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">ArbData</span>);
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">dest</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ArbData</span>);
-        <span class="ident">dest</span>.<span class="ident">set_cbor_unchecked</span>(<span class="ident">src</span>.<span class="ident">get_cbor</span>());
-        <span class="ident">dest</span>.<span class="ident">set_args</span>(<span class="ident">src</span>.<span class="ident">get_args</span>());
+        <span class="ident">dest</span>.<span class="ident">copy_from</span>(<span class="ident">src</span>);
         <span class="prelude-val">Ok</span>(())
     })
 }
