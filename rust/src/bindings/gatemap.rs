@@ -1,8 +1,5 @@
 use super::*;
-use crate::common::{
-    detector::{Detector, DetectorMap},
-    gates::GateType,
-};
+use crate::common::gates::GateType;
 
 /// Rust representation of the user-defined parameters needed to construct a
 /// gate.
@@ -43,12 +40,14 @@ pub struct GateMap<'detectors> {
     ignore_data: bool,
     key_cmp: Option<extern "C" fn(*const c_void, *const c_void) -> bool>,
     key_hash: Option<extern "C" fn(*const c_void) -> u64>,
-    detector: DetectorMap<'detectors, UserKey, Gate, ArbData>,
-    constructor: DetectorMap<'detectors, (), BoundUserGate, Gate>,
+    x: std::marker::PhantomData<&'detectors ()>,
+    // detector: DetectorMap<'detectors, UserKey, Gate, ArbData>,
+    // constructor: DetectorMap<'detectors, (), BoundUserGate, Gate>,
 }
 
 impl<'gm> GateMap<'gm> {
     /// Constructs a new empty GateMap.
+    #[allow(dead_code)]
     pub fn new(
         ignore_qubit_refs: bool,
         ignore_data: bool,
@@ -60,11 +59,13 @@ impl<'gm> GateMap<'gm> {
             ignore_data,
             key_cmp,
             key_hash,
-            detector: DetectorMap::new(),
-            constructor: DetectorMap::new(),
+            x: std::marker::PhantomData,
+            // detector: DetectorMap::new(),
+            // constructor: DetectorMap::new(),
         }
     }
 
+    #[allow(dead_code)]
     fn make_user_key(&self, data: UserKeyData) -> UserKey {
         UserKey::new(data, self.key_cmp, self.key_hash)
     }
@@ -72,16 +73,13 @@ impl<'gm> GateMap<'gm> {
     /// Inserts a unitary gate mapping using DQCsim gate types.
     pub fn add_predefined_unitary(
         &mut self,
-        key: UserKeyData,
-        gate_type: GateType,
-        num_controls: Option<usize>,
-        epsilon: f64,
-        ignore_global_phase: bool,
+        _key: UserKeyData,
+        _gate_type: GateType,
+        _num_controls: Option<usize>,
+        _epsilon: f64,
+        _ignore_global_phase: bool,
     ) {
-        let gate_detector =
-            GateTypeDetector::new(gate_type, num_controls, ignore_global_phase, epsilon);
-        self.detector.push(self.make_user_key(key), gate_detector);
-        // self.constructor.push();
+        todo!()
     }
 
     /// Inserts a unitary gate mapping using a fixed matrix.
@@ -130,107 +128,5 @@ impl<'gm> GateMap<'gm> {
         _param_data: ArbData,
     ) -> Result<Option<Gate>> {
         todo!();
-    }
-}
-
-#[derive(Debug)]
-struct MatrixConverter {
-    matrix: Matrix,
-    num_controls: Option<usize>,
-    epsilon: f64,
-    ignore_global_phase: bool,
-}
-
-/// Reverse detector trait for `MatrixMaps`s.
-impl<T> Detector<Matrix, T> for MatrixConverter
-where
-    T: Default,
-{
-    fn detect(&self, matrix: &Matrix) -> Result<Option<T>> {
-        if matrix.approx_eq(&self.matrix, self.epsilon, self.ignore_global_phase) {
-            // Matrix match.
-            Ok(Some(T::default()))
-        } else {
-            // Matrix mismatch.
-            Ok(None)
-        }
-    }
-}
-
-/// Detector trait for `GateMap`s.
-impl Detector<Gate, ArbData> for MatrixConverter {
-    fn detect(&self, gate: &Gate) -> Result<Option<ArbData>> {
-        if gate.get_name().is_some() {
-            // Custom gate; not a unitary so no match.
-            Ok(None)
-        } else if let Some(matrix) = gate.get_matrix() {
-            // Unitary gate. Check conditions.
-            if let Some(num_controls) = self.num_controls {
-                if num_controls != gate.get_controls().len() {
-                    // Mismatch in expected number of control qubits.
-                    return Ok(None);
-                }
-            }
-            if matrix.approx_eq(&self.matrix, self.epsilon, self.ignore_global_phase) {
-                // Matrix matches; return the gate's ArbData.
-                Ok(Some(gate.data.clone()))
-            } else {
-                // Mismatch in matrix.
-                Ok(None)
-            }
-        } else {
-            // Measurement gate; not a unitary so no match.
-            Ok(None)
-        }
-    }
-}
-
-/// Reverse detector trait for `GateMap`s.
-impl Detector<BoundUserGate, Gate> for MatrixConverter {
-    fn detect(&self, _input: &BoundUserGate) -> Result<Option<Gate>> {
-        todo! {}
-    }
-}
-
-// NOTE(jvs): instead of below, it probably makes a lot more sense to implement
-// a MatrixConverter (impl Detector and Constructor) for gates with fixed
-// matrices, specific converters for the others (RxConverter, RyConverter,
-// RzConverter, RzkConverter, RConverter), a MeasureConverter for
-// measurements, and a CustomConverter taking lambdas for constructing the
-// converters for the two customizable functions. Or, the way I would
-// personally do it, only make the latter and solve it all using lambdas
-// in `gm.rs`.
-
-#[derive(Debug)]
-struct GateTypeDetector {
-    gate_type: GateType,
-    num_controls: Option<usize>,
-    ignore_global_phase: bool,
-    epsilon: f64,
-}
-
-impl GateTypeDetector {
-    fn new(
-        gate_type: GateType,
-        num_controls: Option<usize>,
-        ignore_global_phase: bool,
-        epsilon: f64,
-    ) -> Self {
-        GateTypeDetector {
-            gate_type,
-            num_controls,
-            ignore_global_phase,
-            epsilon,
-        }
-    }
-}
-
-impl Detector<Gate, ArbData> for GateTypeDetector {
-    fn detect(&self, input: &Gate) -> Result<Option<ArbData>> {
-        if let Some(_matrix) = input.get_matrix() {
-            todo!()
-        } else {
-            Ok(None)
-        }
     }
 }
