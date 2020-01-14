@@ -40,7 +40,7 @@ jobs:
         docker build --cache-from dqcsim -t dqcsim - < python/tools/Dockerfile
         docker save dqcsim $(docker history -q dqcsim | awk '!/<missing>/{print}') > dqcsim.tar
         mkdir docker-cache
-        split -b 100m dqcsim.tar docker-cache/x
+        split -b 2g dqcsim.tar docker-cache/x
     - name: Run container
       run: docker run --rm -v `pwd`:/io -e DQCSIM_DEBUG= dqcsim
     - name: Install
