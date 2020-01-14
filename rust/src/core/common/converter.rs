@@ -204,7 +204,7 @@ where
 }
 
 /// Matrix converter object for fixed matrices.
-struct FixedMatrixConverter {
+pub struct FixedMatrixConverter {
     matrix: Matrix,
 }
 
@@ -235,6 +235,16 @@ impl MatrixConverter for FixedMatrixConverter {
     }
 }
 
+/// Normalizes the given complex number, defaulting to 1 if the norm is zero.
+fn try_normalize(x: Complex64) -> Complex64 {
+    let x = x.unscale(x.norm());
+    if x.is_nan() {
+        Complex64::new(1.0, 0.0)
+    } else {
+        x
+    }
+}
+
 /// Assuming that there is an x and y for which the inputs are equal to the
 /// following equations:
 ///
@@ -249,7 +259,8 @@ fn detect_angle(a: f64, b: f64, c: f64, d: f64) -> f64 {
 }
 
 /// Matrix converter object for the RX matrix.
-struct RxMatrixConverter {}
+#[derive(Default)]
+pub struct RxMatrixConverter {}
 
 impl MatrixConverter for RxMatrixConverter {
     type Parameters = f64;
@@ -279,7 +290,8 @@ impl MatrixConverter for RxMatrixConverter {
 }
 
 /// Matrix converter object for the RY matrix.
-struct RyMatrixConverter {}
+#[derive(Default)]
+pub struct RyMatrixConverter {}
 
 impl MatrixConverter for RyMatrixConverter {
     type Parameters = f64;
@@ -309,7 +321,8 @@ impl MatrixConverter for RyMatrixConverter {
 }
 
 /// Matrix converter object for the RZ matrix.
-struct RzMatrixConverter {}
+#[derive(Default)]
+pub struct RzMatrixConverter {}
 
 impl MatrixConverter for RzMatrixConverter {
     type Parameters = f64;
@@ -340,7 +353,8 @@ impl MatrixConverter for RzMatrixConverter {
 }
 
 /// Matrix converter object for the phase submatrix.
-struct PhaseMatrixConverter {}
+#[derive(Default)]
+pub struct PhaseMatrixConverter {}
 
 impl MatrixConverter for PhaseMatrixConverter {
     type Parameters = f64;
@@ -371,7 +385,8 @@ impl MatrixConverter for PhaseMatrixConverter {
 }
 
 /// Matrix converter object for the phase submatrix using θ = π/2^k​.
-struct PhaseKMatrixConverter {}
+#[derive(Default)]
+pub struct PhaseKMatrixConverter {}
 
 impl MatrixConverter for PhaseKMatrixConverter {
     type Parameters = u64;
@@ -406,9 +421,57 @@ impl MatrixConverter for PhaseKMatrixConverter {
     }
 }
 
+/// Matrix converter object for the R (= IBM U) gate.
+#[derive(Default)]
+pub struct RMatrixConverter {}
+
+impl MatrixConverter for RMatrixConverter {
+    type Parameters = (f64, f64, f64);
+
+    fn detect_matrix(
+        &self,
+        matrix: &Matrix,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> Result<Option<Self::Parameters>> {
+        let m00 = matrix[(0, 0)];
+        let m01 = matrix[(0, 1)];
+        let m10 = matrix[(1, 0)];
+        let m11 = matrix[(1, 1)];
+
+        let theta = Complex64::new(m00.norm() + m11.norm(), m01.norm() + m10.norm()).arg() * 2.0;
+
+        let phi_phase = try_normalize(m10 * m00.conj());
+        let lambda_phase = if theta < 0.5 * PI {
+            try_normalize(m11 * m00.conj()) * phi_phase.conj()
+        } else {
+            try_normalize(-m01 * m10.conj()) * phi_phase
+        };
+        let lambda = lambda_phase.arg();
+        let phi = phi_phase.arg();
+
+        let theta = if (m10 * m00.conj() * phi_phase.conj()).re < 0.0 {
+            -theta
+        } else {
+            theta
+        };
+
+        let expected: Matrix = self.construct_matrix(&(theta, phi, lambda))?;
+        if matrix.approx_eq(&expected, epsilon, ignore_global_phase) {
+            Ok(Some((theta, phi, lambda)))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn construct_matrix(&self, params: &Self::Parameters) -> Result<Matrix> {
+        Ok(UnboundGate::R(params.0, params.1, params.2).into())
+    }
+}
+
 /// Matrix converter object for any matrix of a certain size - simply has the
 /// matrix itself as its parameter type.
-struct UMatrixConverter {
+pub struct UMatrixConverter {
     /// The number of qubits that the matrix should have, or None if don't
     /// care.
     num_qubits: Option<usize>,
@@ -454,8 +517,8 @@ impl MatrixConverter for UMatrixConverter {
     }
 }
 
-/// Converter implementation for controlled matrices.
-pub struct ControlledMatrixConverter<T>
+/// Converter implementation for regular unitary gate matrices.
+pub struct UnitaryConverter<T>
 where
     T: MatrixConverter,
 {
@@ -472,7 +535,7 @@ where
     ignore_global_phase: bool,
 }
 
-impl<T> ControlledMatrixConverter<T>
+impl<T> UnitaryConverter<T>
 where
     T: MatrixConverter,
 {
@@ -491,7 +554,7 @@ where
     }
 }
 
-impl<T> Converter for ControlledMatrixConverter<T>
+impl<T> Converter for UnitaryConverter<T>
 where
     T: MatrixConverter,
 {
@@ -685,7 +748,7 @@ where
     pub fn push(
         &mut self,
         key: impl Into<K>,
-        converter: impl Converter<Input = I, Output = O> + 'c,
+        converter: Box<dyn Converter<Input = I, Output = O> + 'c>,
     ) {
         let key: K = key.into();
         self.cache.borrow_mut().retain(|_, v| {
@@ -697,7 +760,7 @@ where
         });
         if self
             .converters
-            .insert(key.clone(), Box::new(converter))
+            .insert(key.clone(), converter)
             .is_some()
         {
             self.order.retain(|k| k != &key);
@@ -712,13 +775,13 @@ where
         &mut self,
         index: usize,
         key: impl Into<K>,
-        converter: impl Converter<Input = I, Output = O> + 'c,
+        converter: Box<dyn Converter<Input = I, Output = O> + 'c>,
     ) {
         self.clear_cache();
         let key: K = key.into();
         if self
             .converters
-            .insert(key.clone(), Box::new(converter))
+            .insert(key.clone(), converter)
             .is_some()
         {
             self.order.retain(|k| k != &key);
@@ -731,7 +794,7 @@ where
     pub fn with(
         mut self,
         key: impl Into<K>,
-        converter: impl Converter<Input = I, Output = O> + 'c,
+        converter: Box<dyn Converter<Input = I, Output = O> + 'c>,
     ) -> Self {
         self.push(key, converter);
         self

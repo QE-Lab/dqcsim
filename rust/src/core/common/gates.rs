@@ -35,7 +35,14 @@
 //! [`UnboundGate`]: ./enum.UnboundGate.html
 //! [`BoundGate`]: ./enum.BoundGate.html
 
-use crate::common::types::{Gate, Matrix, QubitRef};
+use crate::common::{
+    converter::{
+        Converter, FixedMatrixConverter, PhaseKMatrixConverter, PhaseMatrixConverter,
+        RMatrixConverter, RxMatrixConverter, RyMatrixConverter, RzMatrixConverter,
+        UMatrixConverter, UnitaryConverter, UnitaryGateConverter,
+    },
+    types::{ArbData, Gate, Matrix, QubitRef},
+};
 use std::{
     convert::TryFrom,
     f64::consts::{FRAC_1_SQRT_2, PI},
@@ -546,6 +553,66 @@ impl TryFrom<GateType> for Matrix {
     type Error = &'static str;
     fn try_from(gate_type: GateType) -> Result<Self, Self::Error> {
         UnboundGate::try_from(gate_type).map(|unbound_gate| unbound_gate.into())
+    }
+}
+
+impl GateType {
+    pub fn into_converter(
+        self,
+        num_controls: Option<usize>,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> Box<dyn Converter<Input = Gate, Output = (Vec<QubitRef>, ArbData)>> {
+        match self {
+            GateType::RX => Box::new(UnitaryGateConverter::from(UnitaryConverter::new(
+                RxMatrixConverter::default(),
+                num_controls,
+                epsilon,
+                ignore_global_phase,
+            ))),
+            GateType::RY => Box::new(UnitaryGateConverter::from(UnitaryConverter::new(
+                RyMatrixConverter::default(),
+                num_controls,
+                epsilon,
+                ignore_global_phase,
+            ))),
+            GateType::RZ => Box::new(UnitaryGateConverter::from(UnitaryConverter::new(
+                RzMatrixConverter::default(),
+                num_controls,
+                epsilon,
+                ignore_global_phase,
+            ))),
+            GateType::Phase => Box::new(UnitaryGateConverter::from(UnitaryConverter::new(
+                PhaseMatrixConverter::default(),
+                num_controls,
+                epsilon,
+                ignore_global_phase,
+            ))),
+            GateType::PhaseK => Box::new(UnitaryGateConverter::from(UnitaryConverter::new(
+                PhaseKMatrixConverter::default(),
+                num_controls,
+                epsilon,
+                ignore_global_phase,
+            ))),
+            GateType::R => Box::new(UnitaryGateConverter::from(UnitaryConverter::new(
+                RMatrixConverter::default(),
+                num_controls,
+                epsilon,
+                ignore_global_phase,
+            ))),
+            GateType::U(num_qubits) => Box::new(UnitaryGateConverter::from(UnitaryConverter::new(
+                UMatrixConverter::new(Some(num_qubits)),
+                num_controls,
+                epsilon,
+                ignore_global_phase,
+            ))),
+            _ => Box::new(UnitaryGateConverter::from(UnitaryConverter::new(
+                FixedMatrixConverter::from(Matrix::try_from(self).unwrap()),
+                num_controls,
+                epsilon,
+                ignore_global_phase,
+            ))),
+        }
     }
 }
 
