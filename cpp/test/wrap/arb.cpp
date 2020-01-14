@@ -13,19 +13,19 @@ TEST(arb, json) {
   data.set_arb_json_string("{\"hello\": \"world\"}");
   EXPECT_ERROR(data.set_arb_json_string("invalid JSON"), "Invalid argument: expected value at line 1 column 1");
   EXPECT_EQ(data.get_arb_json_string(), "{\"hello\":\"world\"}");
-  EXPECT_EQ(data.get_arb_cbor_string(), "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF");
+  EXPECT_EQ(data.get_arb_cbor_string(), "\xA1\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64");
 }
 
 // Test JSON access by means of CBOR objects.
 TEST(arb, cbor) {
   wrap::ArbData data;
-  EXPECT_EQ(data.get_arb_cbor_string(), "\xBF\xFF");
+  EXPECT_EQ(data.get_arb_cbor_string(), "\xA0");
   data.set_arb_cbor_string("\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF");
-  EXPECT_ERROR(data.set_arb_cbor_string("\xFF"), "Invalid argument: unexpected code at offset 1");
+  EXPECT_ERROR(data.set_arb_cbor_string("\xFF"), "Invalid argument: invalid CBOR: unexpected break");
   EXPECT_EQ(data.get_arb_json_string(), "{\"hello\":\"world\"}");
-  EXPECT_EQ(data.get_arb_cbor_string(), "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF");
-  EXPECT_ERROR(data.set_arb_cbor_string("this is not CBOR"), "Invalid argument: EOF while parsing a value at offset 16");
-  EXPECT_EQ(data.get_arb_cbor_string(), "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF");
+  EXPECT_EQ(data.get_arb_cbor_string(), "\xA1\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64");
+  EXPECT_ERROR(data.set_arb_cbor_string("this is not CBOR"), "Invalid argument: invalid CBOR: incomplete bytes/utf8");
+  EXPECT_EQ(data.get_arb_cbor_string(), "\xA1\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64");
 }
 
 // Test JSON access by means of `nlohmann::json` objects.

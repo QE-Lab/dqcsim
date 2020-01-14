@@ -40,6 +40,7 @@ jobs:
         - '3.5'
         - '3.6'
         - '3.7'
+        - '3.8'
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
@@ -68,9 +69,11 @@ jobs:
         - '35'
         - '36'
         - '37'
+        - '38'
         manylinux:
         - '1'
         - '2010'
+        - '2014'
     runs-on: ubuntu-latest
     env:
       PYTHON_VERSION: ${{ matrix.python }}
@@ -104,6 +107,9 @@ jobs:
         name: dqcsim-py37-manylinux1
     - uses: actions/download-artifact@v1
       with:
+        name: dqcsim-py38-manylinux1
+    - uses: actions/download-artifact@v1
+      with:
         name: dqcsim-py35-manylinux2010
     - uses: actions/download-artifact@v1
       with:
@@ -113,6 +119,21 @@ jobs:
         name: dqcsim-py37-manylinux2010
     - uses: actions/download-artifact@v1
       with:
+        name: dqcsim-py38-manylinux2010
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py35-manylinux2014
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py36-manylinux2014
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py37-manylinux2014
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py38-manylinux2014
+    - uses: actions/download-artifact@v1
+      with:
         name: dqcsim-py3.5-macos
     - uses: actions/download-artifact@v1
       with:
@@ -120,6 +141,9 @@ jobs:
     - uses: actions/download-artifact@v1
       with:
         name: dqcsim-py3.7-macos
+    - uses: actions/download-artifact@v1
+      with:
+        name: dqcsim-py3.8-macos
     - name: Move
       run: |
         mkdir -p dist/
