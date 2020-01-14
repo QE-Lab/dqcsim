@@ -93,10 +93,13 @@ pub enum GateType {
     RY,
     /// Arbitrary rotation around Z-axis.
     RZ,
+    /// Arbitrary rotation around Z-axis, global phase chosen such that it
+    /// works as a submatrix for controlled phase operations.
+    Phase,
+    /// Same as Phase, but with θ = π/2^k​.
+    PhaseK,
     /// Arbitrary rotation around X-, Y- and Z-axis.
     R,
-    /// Arbitrary phase shift.
-    RK,
     /// Swap.
     SWAP,
     /// Square root of Swap.
@@ -154,11 +157,14 @@ pub enum UnboundGate<'matrix> {
     RY(f64),
     /// Arbitrary rotation around Z-axis with specified angle (θ).
     RZ(f64),
+    /// Arbitrary rotation around Z-axis, global phase chosen such that it
+    /// works as a submatrix for controlled phase operations.
+    Phase(f64),
+    /// Same as Phase, but with θ = π/2^k​.
+    PhaseK(usize),
     /// Arbitrary rotation around X-, Y- and Z-axis with specified angles
     /// (θ, φ, λ).
     R(f64, f64, f64),
-    /// Arbitrary phase swift with angle (θ=π/2^k​) for specified k.
-    RK(usize),
     /// Swap.
     SWAP,
     /// Square root of Swap.
@@ -218,12 +224,14 @@ pub enum BoundGate<'matrix, 'qref> {
     /// Arbitrary rotation around Z-axis with specified angle (θ) and qubit
     /// target.
     RZ(f64, QubitRef),
+    /// Arbitrary rotation around Z-axis, global phase chosen such that it
+    /// works as a submatrix for controlled phase operations.
+    Phase(f64, QubitRef),
+    /// Same as Phase, but with θ = π/2^k​.
+    PhaseK(usize, QubitRef),
     /// Arbitrary rotation around X-, Y- and Z-axis with specified angles
     /// (θ, φ, λ) and qubit target.
     R(f64, f64, f64, QubitRef),
-    /// Arbitrary phase swift with angle (θ=π/2^k​) for specified k and qubit
-    /// target.
-    RK(usize, QubitRef),
     /// Swap with specified qubit targets.
     SWAP(QubitRef, QubitRef),
     /// Square root of Swap with specified qubit targets.
@@ -257,8 +265,9 @@ impl<'matrix> From<BoundGate<'matrix, '_>> for UnboundGate<'matrix> {
             BoundGate::RX(theta, _) => UnboundGate::RX(theta),
             BoundGate::RY(theta, _) => UnboundGate::RY(theta),
             BoundGate::RZ(theta, _) => UnboundGate::RZ(theta),
+            BoundGate::Phase(theta, _) => UnboundGate::Phase(theta),
+            BoundGate::PhaseK(k, _) => UnboundGate::PhaseK(k),
             BoundGate::R(theta, phi, lambda, _) => UnboundGate::R(theta, phi, lambda),
-            BoundGate::RK(k, _) => UnboundGate::RK(k),
             BoundGate::SWAP(_, _) => UnboundGate::SWAP,
             BoundGate::SQSWAP(_, _) => UnboundGate::SQSWAP,
             BoundGate::U(matrix, _) => UnboundGate::U(matrix),
@@ -303,8 +312,9 @@ impl From<BoundGate<'_, '_>> for Gate {
             | BoundGate::RX(_, q)
             | BoundGate::RY(_, q)
             | BoundGate::RZ(_, q)
-            | BoundGate::R(_, _, _, q)
-            | BoundGate::RK(_, q) => Gate::new_unitary(vec![q], vec![], matrix),
+            | BoundGate::Phase(_, q)
+            | BoundGate::PhaseK(_, q)
+            | BoundGate::R(_, _, _, q) => Gate::new_unitary(vec![q], vec![], matrix),
             BoundGate::SWAP(q1, q2) | BoundGate::SQSWAP(q1, q2) => {
                 Gate::new_unitary(vec![q1, q2], vec![], matrix)
             }
@@ -338,8 +348,9 @@ impl From<UnboundGate<'_>> for GateType {
             UnboundGate::RX(_) => GateType::RX,
             UnboundGate::RY(_) => GateType::RY,
             UnboundGate::RZ(_) => GateType::RZ,
+            UnboundGate::Phase(_) => GateType::Phase,
+            UnboundGate::PhaseK(_) => GateType::PhaseK,
             UnboundGate::R(_, _, _) => GateType::R,
-            UnboundGate::RK(_) => GateType::RK,
             UnboundGate::SWAP => GateType::SWAP,
             UnboundGate::SQSWAP => GateType::SQSWAP,
             UnboundGate::U(matrix) => GateType::U(matrix.num_qubits().unwrap_or(0)),
@@ -368,25 +379,23 @@ impl From<UnboundGate<'_>> for Matrix {
                 vec![a, c!(0.), c!(0.), b].into()
             }
 
+            UnboundGate::Phase(theta) => vec![c!(1.), c!(0.), c!(0.), c!(0., theta).exp()].into(),
+
+            UnboundGate::PhaseK(k) => {
+                let theta = PI / 2usize.pow(k as u32) as f64;
+                vec![c!(1.), c!(0.), c!(0.), c!(0., theta).exp()].into()
+            }
+
             UnboundGate::R(theta, phi, lambda) => {
                 let a = (theta / 2.).cos();
                 let b = (theta / 2.).sin();
-                let c = (phi + lambda) / 2.;
-                let d = (phi - lambda) / 2.;
                 vec![
-                    c!(0., -c).exp() * a,
-                    -c!(0., -d).exp() * b,
-                    c!(0., d).exp() * b,
-                    c!(0., c).exp() * a,
+                    c!(0., 0.).exp() * a,
+                    -c!(0., lambda).exp() * b,
+                    c!(0., phi).exp() * b,
+                    c!(0., lambda + phi).exp() * a,
                 ]
                 .into()
-            }
-
-            UnboundGate::RK(k) => {
-                let theta = PI / 2usize.pow(k as u32) as f64;
-                let a = c!(0., -0.5 * theta).exp();
-                let b = c!(0., 0.5 * theta).exp();
-                vec![a, c!(0.), c!(0.), b].into()
             }
 
             UnboundGate::U(matrix) => matrix.clone(),
@@ -406,9 +415,12 @@ impl TryFrom<GateType> for Matrix {
     type Error = &'static str;
     fn try_from(gate_type: GateType) -> Result<Self, Self::Error> {
         match gate_type {
-            GateType::RX | GateType::RY | GateType::RZ | GateType::R | GateType::RK => {
-                Err("gate is parameterized")
-            }
+            GateType::RX
+            | GateType::RY
+            | GateType::RZ
+            | GateType::Phase
+            | GateType::PhaseK
+            | GateType::R => Err("gate is parameterized"),
             GateType::U(_) => Err("gate is parameterized"),
             _ => Ok(match gate_type {
                 GateType::I => matrix!(
@@ -520,57 +532,6 @@ impl TryFrom<GateType> for Matrix {
         }
     }
 }
-
-// impl GateType {
-//     pub fn into_detector(
-//         self,
-//         epsilon: f64,
-//         ignore_global_phase: bool,
-//     ) -> Box<Detector<UnboundGate>> {
-//         match TryInto::<UnboundGate>::try_into(self) {
-//             Ok(gate) => gate.into_detector(epsilon, ignore_global_phase),
-//             Err(_) => Box::new(
-//                 move |input: &Matrix| -> error::Result<Option<UnboundGate>> {
-//                     Ok(match self {
-//                         GateType::RX => {
-//                             detect_rx(input, epsilon, ignore_global_phase).map(UnboundGate::RX)
-//                         }
-//                         GateType::RY => {
-//                             detect_ry(input, epsilon, ignore_global_phase).map(UnboundGate::RY)
-//                         }
-//                         GateType::RZ => {
-//                             detect_rz(input, epsilon, ignore_global_phase).map(UnboundGate::RZ)
-//                         }
-//                         GateType::RK => {
-//                             detect_rk(input, epsilon, ignore_global_phase).map(UnboundGate::RK)
-//                         }
-//                         GateType::R => detect_r(input, epsilon, ignore_global_phase)
-//                             .map(|(theta, phi, lambda)| UnboundGate::R(theta, phi, lambda)),
-//                         GateType::U(dim) => {
-//                             if input.num_qubits() == Some(dim) {
-//                                 Some(UnboundGate::U(input.to_owned()))
-//                             } else {
-//                                 None
-//                             }
-//                         }
-//                         _ => None,
-//                     })
-//                 },
-//             ),
-//         }
-//     }
-// }
-
-// impl UnboundGate {
-//     pub fn into_detector(
-//         self,
-//         epsilon: f64,
-//         ignore_global_phase: bool,
-//     ) -> Box<Detector<UnboundGate>> {
-//         let matrix: Matrix = self.clone().into();
-//         matrix.into_detector(epsilon, ignore_global_phase, self)
-//     }
-// }
 
 #[cfg(test)]
 mod tests {

@@ -592,11 +592,16 @@ pub enum dqcs_internal_gate_t {
     /// Parameterized RY gate with radian angle.
     DQCS_GATE_RY = 151,
 
-    /// Parameterized RZ gate with 2*pi/2^k angle, where k is an integer.
-    DQCS_GATE_RK = 152,
-
     /// Parameterized RZ gate with radian angle.
-    DQCS_GATE_RZ = 153,
+    DQCS_GATE_RZ = 152,
+
+    /// Parameterized phase gate with pi/2^k angle, where k is an integer.
+    DQCS_GATE_PHASE_K = 153,
+
+    /// Parameterized phase gate. Phase is equivalent to RZ, but with its
+    /// global phase defined such that using it as a submatrix for a controlled
+    /// gate forms a proper controlled phase gate.
+    DQCS_GATE_PHASE = 154,
 
     /// Any single-qubit unitary gate, parameterized as a full unitary matrix.
     DQCS_GATE_U = 190,
@@ -636,7 +641,8 @@ impl TryFrom<dqcs_internal_gate_t> for GateType {
             dqcs_internal_gate_t::DQCS_GATE_RZ_180 => Ok(GateType::RZ180),
             dqcs_internal_gate_t::DQCS_GATE_RX => Ok(GateType::RX),
             dqcs_internal_gate_t::DQCS_GATE_RY => Ok(GateType::RY),
-            dqcs_internal_gate_t::DQCS_GATE_RK => Ok(GateType::RK),
+            dqcs_internal_gate_t::DQCS_GATE_PHASE => Ok(GateType::Phase),
+            dqcs_internal_gate_t::DQCS_GATE_PHASE_K => Ok(GateType::PhaseK),
             dqcs_internal_gate_t::DQCS_GATE_RZ => Ok(GateType::RZ),
             dqcs_internal_gate_t::DQCS_GATE_U => Ok(GateType::U(1)),
             dqcs_internal_gate_t::DQCS_GATE_R => Ok(GateType::R),
@@ -671,8 +677,9 @@ impl From<dqcs_internal_gate_t> for Option<GateType> {
             dqcs_internal_gate_t::DQCS_GATE_RZ_180 => Some(GateType::RZ180),
             dqcs_internal_gate_t::DQCS_GATE_RX => Some(GateType::RX),
             dqcs_internal_gate_t::DQCS_GATE_RY => Some(GateType::RY),
-            dqcs_internal_gate_t::DQCS_GATE_RK => Some(GateType::RK),
             dqcs_internal_gate_t::DQCS_GATE_RZ => Some(GateType::RZ),
+            dqcs_internal_gate_t::DQCS_GATE_PHASE => Some(GateType::Phase),
+            dqcs_internal_gate_t::DQCS_GATE_PHASE_K => Some(GateType::PhaseK),
             dqcs_internal_gate_t::DQCS_GATE_U => Some(GateType::U(1)),
             dqcs_internal_gate_t::DQCS_GATE_R => Some(GateType::R),
             dqcs_internal_gate_t::DQCS_GATE_SWAP => Some(GateType::SWAP),

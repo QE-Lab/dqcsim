@@ -8,9 +8,11 @@
 
 use crate::common::{
     error::{inv_arg, oe_err, oe_inv_arg, Result},
+    gates::UnboundGate,
     types::{ArbData, Gate, Matrix, QubitRef},
 };
-use std::{cell::RefCell, collections::HashMap, hash::Hash};
+use num_complex::Complex64;
+use std::{cell::RefCell, collections::HashMap, convert::TryInto, hash::Hash};
 
 /// A type that can be constructed from (part of) an ArbData object.
 pub trait FromArb
@@ -22,10 +24,55 @@ where
     fn from_arb(src: &mut ArbData) -> Result<Self>;
 }
 
+impl FromArb for () {
+    fn from_arb(_: &mut ArbData) -> Result<Self> {
+        Ok(())
+    }
+}
+
+impl FromArb for f64 {
+    fn from_arb(src: &mut ArbData) -> Result<Self> {
+        let mut args = src.get_args_mut().drain(..1);
+        let theta = args
+            .nth(0)
+            .ok_or_else(oe_inv_arg("expected double argument in ArbData"))?;
+        Ok(f64::from_ne_bytes(theta[..].try_into().ok().ok_or_else(
+            oe_inv_arg("expected double argument in ArbData"),
+        )?))
+    }
+}
+
+impl FromArb for (f64, f64, f64) {
+    fn from_arb(src: &mut ArbData) -> Result<Self> {
+        let a = f64::from_arb(src)?;
+        let b = f64::from_arb(src)?;
+        let c = f64::from_arb(src)?;
+        Ok((a, b, c))
+    }
+}
+
 /// A type that can be converted into an ArbData object.
 pub trait ToArb {
     /// Convert self to ArbData parameters and add them to the data object.
     fn to_arb(self, dest: &mut ArbData);
+}
+
+impl ToArb for () {
+    fn to_arb(self, _: &mut ArbData) {}
+}
+
+impl ToArb for f64 {
+    fn to_arb(self, dest: &mut ArbData) {
+        dest.get_args_mut().insert(0, self.to_ne_bytes().to_vec());
+    }
+}
+
+impl ToArb for (f64, f64, f64) {
+    fn to_arb(self, dest: &mut ArbData) {
+        self.2.to_arb(dest);
+        self.1.to_arb(dest);
+        self.0.to_arb(dest);
+    }
 }
 
 /// A type that can be used as a Converter.
@@ -57,30 +104,303 @@ pub trait Converter {
     fn construct(&self, input: &Self::Output) -> Result<Self::Input>;
 }
 
-/// Converter implementation for unitary gates based on a matrix converter.
-pub struct UnitaryGateConverter<M>
-where
-    M: Converter<Input = Matrix>,
-{
-    matrix_converter: M,
-    num_controls: Option<usize>,
+pub trait MatrixConverter {
+    // For parameterized matrices, this is the type of the parameters needed
+    // for construction/returned by detection.
+    type Parameters;
+    fn detect_matrix(
+        &self,
+        matrix: &Matrix,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> Result<Option<Self::Parameters>>;
+    fn construct_matrix(&self, parameters: &Self::Parameters) -> Result<Matrix>;
 }
 
-impl<M> UnitaryGateConverter<M>
+impl<T> Converter for T
 where
-    M: Converter<Input = Matrix>,
+    T: MatrixConverter,
 {
-    pub fn new(matrix_converter: M, num_controls: Option<usize>) -> Self {
-        Self {
-            matrix_converter,
-            num_controls,
+    type Input = (Matrix, f64, bool);
+    type Output = T::Parameters;
+
+    fn detect(&self, input: &Self::Input) -> Result<Option<Self::Output>> {
+        let (matrix, epsilon, ignore_global_phase) = input;
+        self.detect_matrix(matrix, *epsilon, *ignore_global_phase)
+    }
+
+    fn construct(&self, parameters: &Self::Output) -> Result<Self::Input> {
+        self.construct_matrix(parameters)
+            .map(|matrix| (matrix, 0., false))
+    }
+}
+
+/// Matrix converter object for fixed matrices.
+struct FixedMatrixConverter {
+    matrix: Matrix,
+}
+
+impl From<Matrix> for FixedMatrixConverter {
+    fn from(matrix: Matrix) -> FixedMatrixConverter {
+        FixedMatrixConverter { matrix }
+    }
+}
+
+impl MatrixConverter for FixedMatrixConverter {
+    type Parameters = ();
+
+    fn detect_matrix(
+        &self,
+        matrix: &Matrix,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> Result<Option<Self::Parameters>> {
+        if self.matrix.approx_eq(matrix, epsilon, ignore_global_phase) {
+            Ok(Some(()))
+        } else {
+            Ok(None)
         }
+    }
+
+    fn construct_matrix(&self, _: &Self::Parameters) -> Result<Matrix> {
+        Ok(self.matrix.clone())
+    }
+}
+
+/// Assuming that there is an x and y for which the inputs are equal to the
+/// following equations:
+///
+/// a = sin(x) sin(y) + cos(x) cos(y) = Re(e^(iy - ix))
+/// b = cos(x) sin(y) - sin(x) cos(y) = Im(e^(iy - ix))
+/// c = cos(x) cos(y) - sin(x) sin(y) = Re(e^(iy + ix))
+/// d = sin(x) cos(y) + cos(x) sin(y) = Im(e^(iy + ix))
+///
+/// computes and returns x.
+fn detect_angle(a: f64, b: f64, c: f64, d: f64) -> f64 {
+    (Complex64::new(a, -b) * Complex64::new(c, d)).arg()
+}
+
+/// Matrix converter object for the RX matrix.
+struct RxMatrixConverter {}
+
+impl MatrixConverter for RxMatrixConverter {
+    type Parameters = f64;
+
+    fn detect_matrix(
+        &self,
+        matrix: &Matrix,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> Result<Option<Self::Parameters>> {
+        let cc = matrix[(0, 0)].re;
+        let cs = matrix[(0, 0)].im;
+        let ss = matrix[(1, 0)].re;
+        let sc = -matrix[(1, 0)].im;
+        let theta = detect_angle(ss + cc, cs - sc, cc - ss, sc + cs);
+        let expected: Matrix = self.construct_matrix(&theta)?;
+        if matrix.approx_eq(&expected, epsilon, ignore_global_phase) {
+            Ok(Some(theta))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn construct_matrix(&self, theta: &Self::Parameters) -> Result<Matrix> {
+        Ok(UnboundGate::RX(*theta).into())
+    }
+}
+
+/// Matrix converter object for the RY matrix.
+struct RyMatrixConverter {}
+
+impl MatrixConverter for RyMatrixConverter {
+    type Parameters = f64;
+
+    fn detect_matrix(
+        &self,
+        matrix: &Matrix,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> Result<Option<Self::Parameters>> {
+        let cc = matrix[(0, 0)].re;
+        let cs = matrix[(0, 0)].im;
+        let ss = -matrix[(1, 0)].im;
+        let sc = -matrix[(1, 0)].re;
+        let theta = -detect_angle(ss + cc, cs - sc, cc - ss, sc + cs);
+        let expected: Matrix = self.construct_matrix(&theta)?;
+        if matrix.approx_eq(&expected, epsilon, ignore_global_phase) {
+            Ok(Some(theta))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn construct_matrix(&self, theta: &Self::Parameters) -> Result<Matrix> {
+        Ok(UnboundGate::RY(*theta).into())
+    }
+}
+
+/// Matrix converter object for the RZ matrix.
+struct RzMatrixConverter {}
+
+impl MatrixConverter for RzMatrixConverter {
+    type Parameters = f64;
+
+    fn detect_matrix(
+        &self,
+        matrix: &Matrix,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> Result<Option<Self::Parameters>> {
+        let theta = detect_angle(
+            matrix[(0, 0)].re,
+            matrix[(0, 0)].im,
+            matrix[(1, 1)].re,
+            matrix[(1, 1)].im,
+        );
+        let expected: Matrix = self.construct_matrix(&theta)?;
+        if matrix.approx_eq(&expected, epsilon, ignore_global_phase) {
+            Ok(Some(theta))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn construct_matrix(&self, theta: &Self::Parameters) -> Result<Matrix> {
+        Ok(UnboundGate::RZ(*theta).into())
+    }
+}
+
+/// Matrix converter object for the phase submatrix.
+struct PhaseMatrixConverter {}
+
+impl MatrixConverter for PhaseMatrixConverter {
+    type Parameters = f64;
+
+    fn detect_matrix(
+        &self,
+        matrix: &Matrix,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> Result<Option<Self::Parameters>> {
+        let theta = detect_angle(
+            matrix[(0, 0)].re,
+            matrix[(0, 0)].im,
+            matrix[(1, 1)].re,
+            matrix[(1, 1)].im,
+        );
+        let expected: Matrix = self.construct_matrix(&theta)?;
+        if matrix.approx_eq(&expected, epsilon, ignore_global_phase) {
+            Ok(Some(theta))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn construct_matrix(&self, theta: &Self::Parameters) -> Result<Matrix> {
+        Ok(UnboundGate::Phase(*theta).into())
+    }
+}
+
+/// Converter implementation for controlled matrices.
+pub struct ControlledMatrixConverter<T>
+where
+    T: MatrixConverter,
+{
+    /// The converter dealing with detection and construction of the matrix.
+    converter: T,
+    /// How many control qubits are expected. If None, no constraint is placed
+    /// on this.
+    num_controls: Option<usize>,
+    /// The max RMS deviation between the given matrix and the input matrix
+    /// during detection.
+    epsilon: f64,
+    /// Whether global phase should be ignored if the matrix has no control
+    /// qubits.
+    ignore_global_phase: bool,
+}
+
+impl<T> ControlledMatrixConverter<T>
+where
+    T: MatrixConverter,
+{
+    pub fn new(
+        converter: T,
+        num_controls: Option<usize>,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> Self {
+        Self {
+            converter,
+            num_controls,
+            epsilon,
+            ignore_global_phase,
+        }
+    }
+}
+
+impl<T> Converter for ControlledMatrixConverter<T>
+where
+    T: MatrixConverter,
+{
+    type Input = (Matrix, Option<usize>);
+    type Output = T::Parameters;
+
+    fn detect(&self, input: &Self::Input) -> Result<Option<Self::Output>> {
+        let (matrix, num_controls) = input;
+        let num_controls = num_controls.unwrap_or(0);
+
+        // Check the number of control qubits.
+        if let Some(expected) = self.num_controls {
+            if num_controls != expected {
+                return Ok(None);
+            }
+        }
+
+        // Check the matrix.
+        self.converter.detect_matrix(
+            matrix,
+            self.epsilon,
+            self.ignore_global_phase && num_controls == 0,
+        )
+    }
+
+    fn construct(&self, parameters: &Self::Output) -> Result<Self::Input> {
+        Ok((
+            self.converter.construct_matrix(parameters)?,
+            self.num_controls,
+        ))
+    }
+}
+
+/// Converter implementation for unitary gates based on a matrix converter.
+///
+/// The matrix converter takes a matrix and a number of control qubits as input
+/// for detection. The number of control qubits is wrapped in an Option, but
+/// in the detection direction this is always Some, so it can just be
+/// unwrapped. In the other direction, None means that the number of control
+/// qubits can be freely derived from the number of qubit arguments, while
+/// Some places a constraint on the number of expected control qubits.
+pub struct UnitaryGateConverter<M>
+where
+    M: Converter<Input = (Matrix, Option<usize>)>,
+{
+    /// The wrapped matrix converter.
+    matrix_converter: M,
+}
+
+impl<M> From<M> for UnitaryGateConverter<M>
+where
+    M: Converter<Input = (Matrix, Option<usize>)>,
+{
+    fn from(matrix_converter: M) -> Self {
+        Self { matrix_converter }
     }
 }
 
 impl<M> Converter for UnitaryGateConverter<M>
 where
-    M: Converter<Input = Matrix>,
+    M: Converter<Input = (Matrix, Option<usize>)>,
     M::Output: FromArb + ToArb,
 {
     type Input = Gate;
@@ -93,13 +413,10 @@ where
             Ok(None)
         } else if let Some(matrix) = gate.get_matrix() {
             // Unitary gate. Check conditions.
-            if let Some(num_controls) = self.num_controls {
-                if num_controls != gate.get_controls().len() {
-                    // Mismatch in expected number of control qubits.
-                    return Ok(None);
-                }
-            }
-            if let Some(params) = self.matrix_converter.detect(&matrix)? {
+            if let Some(params) = self
+                .matrix_converter
+                .detect(&(matrix, Some(gate.get_controls().len())))?
+            {
                 // Matrix match; construct qubit argument vector.
                 let mut qubits = vec![];
                 qubits.extend(gate.get_controls().iter());
@@ -126,7 +443,7 @@ where
         let params = M::Output::from_arb(&mut data)?;
 
         // Construct the matrix.
-        let matrix = self.matrix_converter.construct(&params)?;
+        let (matrix, expected_num_controls) = self.matrix_converter.construct(&params)?;
 
         // Parse qubit argument vector.
         let num_targets = matrix.num_qubits().unwrap();
@@ -134,7 +451,7 @@ where
             .len()
             .checked_sub(num_targets)
             .ok_or_else(oe_inv_arg(format!("need at least {} qubits", num_targets)))?;
-        if let Some(expected) = self.num_controls {
+        if let Some(expected) = expected_num_controls {
             if num_controls != expected {
                 inv_arg(format!(
                     "expected {} control and {} target qubits",
