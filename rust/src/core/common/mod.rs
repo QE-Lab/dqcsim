@@ -4,7 +4,6 @@
 pub mod util;
 pub mod channel;
 pub mod converter;
-pub mod detector;
 pub mod error;
 pub mod gates;
 pub mod log;

@@ -1,8 +1,4 @@
-use crate::common::{
-    detector::{IntoDetector, MatrixDetector},
-    types::ArbData,
-    util::log_2,
-};
+use crate::common::util::log_2;
 use integer_sqrt::IntegerSquareRoot;
 use num_complex::Complex64;
 use serde::{Deserialize, Serialize};
@@ -348,15 +344,6 @@ impl Matrix {
     #[cfg(feature = "bindings")]
     pub(crate) fn as_ptr(&self) -> *const c_double {
         self.data.as_ptr() as *const c_double
-    }
-}
-
-impl<'matrix> IntoDetector<Matrix, ArbData> for &'matrix Matrix {
-    type Detector = MatrixDetector<'matrix, ArbData>;
-    type Arguments = (f64, bool, ArbData);
-
-    fn into_detector(&self, arguments: Self::Arguments) -> Self::Detector {
-        MatrixDetector::new(self, arguments.0, arguments.1, arguments.2)
     }
 }
 

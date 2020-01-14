@@ -361,6 +361,110 @@ impl From<UnboundGate<'_>> for GateType {
 impl From<UnboundGate<'_>> for Matrix {
     fn from(unbound_gate: UnboundGate<'_>) -> Matrix {
         match unbound_gate {
+            UnboundGate::I => matrix!(
+                1., 0.;
+                0., 1.
+            ),
+
+            UnboundGate::X => matrix!(
+                0., 1.;
+                1., 0.
+            ),
+
+            UnboundGate::Y => matrix!(
+                0.,      (0.,-1.);
+                (0., 1.), 0.
+            ),
+
+            UnboundGate::Z => matrix!(
+                1.,  0.;
+                0., (-1.)
+            ),
+
+            UnboundGate::H => matrix!(
+                FRAC_1_SQRT_2,   FRAC_1_SQRT_2;
+                FRAC_1_SQRT_2, (-FRAC_1_SQRT_2)
+            ),
+
+            UnboundGate::S => matrix!(
+                1.,  0.;
+                0., (0., 1.)
+            ),
+
+            UnboundGate::SDAG => matrix!(
+                1.,  0.;
+                0., (0., -1.)
+            ),
+
+            UnboundGate::T => matrix!(
+                1.,  0.;
+                0., (FRAC_1_SQRT_2, FRAC_1_SQRT_2)
+            ),
+
+            UnboundGate::TDAG => matrix!(
+                1.,  0.;
+                0., (FRAC_1_SQRT_2, -FRAC_1_SQRT_2)
+            ),
+
+            UnboundGate::RX90 => matrix!(
+                 FRAC_1_SQRT_2,      (0., -FRAC_1_SQRT_2);
+                (0., -FRAC_1_SQRT_2), FRAC_1_SQRT_2
+            ),
+
+            UnboundGate::RXM90 => matrix!(
+                FRAC_1_SQRT_2,      (0., FRAC_1_SQRT_2);
+                (0., FRAC_1_SQRT_2), FRAC_1_SQRT_2
+            ),
+
+            UnboundGate::RX180 => matrix!(
+                 0.,                 (0., -FRAC_1_SQRT_2);
+                (0., -FRAC_1_SQRT_2), 0.
+            ),
+
+            UnboundGate::RY90 => matrix!(
+                FRAC_1_SQRT_2, (-FRAC_1_SQRT_2);
+                FRAC_1_SQRT_2,   FRAC_1_SQRT_2
+            ),
+
+            UnboundGate::RYM90 => matrix!(
+                  FRAC_1_SQRT_2,  FRAC_1_SQRT_2;
+                (-FRAC_1_SQRT_2), FRAC_1_SQRT_2
+            ),
+
+            UnboundGate::RY180 => matrix!(
+                0., (-1.);
+                1.,  0.
+            ),
+
+            UnboundGate::RZ90 => matrix!(
+                (FRAC_1_SQRT_2, -FRAC_1_SQRT_2),  0.;
+                0.,                              (FRAC_1_SQRT_2, FRAC_1_SQRT_2)
+            ),
+
+            UnboundGate::RZM90 => matrix!(
+                (FRAC_1_SQRT_2, FRAC_1_SQRT_2),  0.;
+                0.,                             (FRAC_1_SQRT_2, -FRAC_1_SQRT_2)
+            ),
+
+            UnboundGate::RZ180 => matrix!(
+                (0., -1.),  0.;
+                0.,        (0., 1.)
+            ),
+
+            UnboundGate::SWAP => matrix!(
+                1., 0., 0., 0.;
+                0., 0., 1., 0.;
+                0., 1., 0., 0.;
+                0., 0., 0., 1.
+            ),
+
+            UnboundGate::SQSWAP => matrix!(
+                1., 0.,           0.,         0.;
+                0., (0.5, 0.5),  (0.5, -0.5), 0.;
+                0., (0.5, -0.5), (0.5, 0.5),  0.;
+                0., 0.,           0.,         1.
+            ),
+
             UnboundGate::RX(theta) => {
                 let a = c!((0.5 * theta).cos());
                 let b = c!(0., -1.) * (0.5 * theta).sin();
@@ -399,19 +503,11 @@ impl From<UnboundGate<'_>> for Matrix {
             }
 
             UnboundGate::U(matrix) => matrix.clone(),
-            _ => Matrix::try_from(GateType::try_from(unbound_gate).unwrap()).unwrap(),
         }
     }
 }
 
-// impl TryFrom<GateType> for UnboundGate<'_> {
-//     type Error = &'static str;
-//     fn try_from(gate_type: GateType) -> Result<Self, Self::Error> {
-//         Ok(UnboundGate::I)
-//     }
-// }
-
-impl TryFrom<GateType> for Matrix {
+impl TryFrom<GateType> for UnboundGate<'_> {
     type Error = &'static str;
     fn try_from(gate_type: GateType) -> Result<Self, Self::Error> {
         match gate_type {
@@ -422,114 +518,34 @@ impl TryFrom<GateType> for Matrix {
             | GateType::PhaseK
             | GateType::R => Err("gate is parameterized"),
             GateType::U(_) => Err("gate is parameterized"),
-            _ => Ok(match gate_type {
-                GateType::I => matrix!(
-                    1., 0.;
-                    0., 1.
-                ),
-
-                GateType::X => matrix!(
-                    0., 1.;
-                    1., 0.
-                ),
-
-                GateType::Y => matrix!(
-                    0.,      (0.,-1.);
-                    (0., 1.), 0.
-                ),
-
-                GateType::Z => matrix!(
-                    1.,  0.;
-                    0., (-1.)
-                ),
-
-                GateType::H => matrix!(
-                    FRAC_1_SQRT_2,   FRAC_1_SQRT_2;
-                    FRAC_1_SQRT_2, (-FRAC_1_SQRT_2)
-                ),
-
-                GateType::S => matrix!(
-                    1.,  0.;
-                    0., (0., 1.)
-                ),
-
-                GateType::SDAG => matrix!(
-                    1.,  0.;
-                    0., (0., -1.)
-                ),
-
-                GateType::T => matrix!(
-                    1.,  0.;
-                    0., (FRAC_1_SQRT_2, FRAC_1_SQRT_2)
-                ),
-
-                GateType::TDAG => matrix!(
-                    1.,  0.;
-                    0., (FRAC_1_SQRT_2, -FRAC_1_SQRT_2)
-                ),
-
-                GateType::RX90 => matrix!(
-                     FRAC_1_SQRT_2,      (0., -FRAC_1_SQRT_2);
-                    (0., -FRAC_1_SQRT_2), FRAC_1_SQRT_2
-                ),
-
-                GateType::RXM90 => matrix!(
-                    FRAC_1_SQRT_2,      (0., FRAC_1_SQRT_2);
-                    (0., FRAC_1_SQRT_2), FRAC_1_SQRT_2
-                ),
-
-                GateType::RX180 => matrix!(
-                     0.,                 (0., -FRAC_1_SQRT_2);
-                    (0., -FRAC_1_SQRT_2), 0.
-                ),
-
-                GateType::RY90 => matrix!(
-                    FRAC_1_SQRT_2, (-FRAC_1_SQRT_2);
-                    FRAC_1_SQRT_2,   FRAC_1_SQRT_2
-                ),
-
-                GateType::RYM90 => matrix!(
-                      FRAC_1_SQRT_2,  FRAC_1_SQRT_2;
-                    (-FRAC_1_SQRT_2), FRAC_1_SQRT_2
-                ),
-
-                GateType::RY180 => matrix!(
-                    0., (-1.);
-                    1.,  0.
-                ),
-
-                GateType::RZ90 => matrix!(
-                    (FRAC_1_SQRT_2, -FRAC_1_SQRT_2),  0.;
-                    0.,                              (FRAC_1_SQRT_2, FRAC_1_SQRT_2)
-                ),
-
-                GateType::RZM90 => matrix!(
-                    (FRAC_1_SQRT_2, FRAC_1_SQRT_2),  0.;
-                    0.,                             (FRAC_1_SQRT_2, -FRAC_1_SQRT_2)
-                ),
-
-                GateType::RZ180 => matrix!(
-                    (0., -1.),  0.;
-                    0.,        (0., 1.)
-                ),
-
-                GateType::SWAP => matrix!(
-                    1., 0., 0., 0.;
-                    0., 0., 1., 0.;
-                    0., 1., 0., 0.;
-                    0., 0., 0., 1.
-                ),
-
-                GateType::SQSWAP => matrix!(
-                    1., 0.,           0.,         0.;
-                    0., (0.5, 0.5),  (0.5, -0.5), 0.;
-                    0., (0.5, -0.5), (0.5, 0.5),  0.;
-                    0., 0.,           0.,         1.
-                ),
-
-                _ => unreachable!(),
-            }),
+            GateType::I => Ok(UnboundGate::I),
+            GateType::X => Ok(UnboundGate::X),
+            GateType::Y => Ok(UnboundGate::Y),
+            GateType::Z => Ok(UnboundGate::Z),
+            GateType::H => Ok(UnboundGate::H),
+            GateType::S => Ok(UnboundGate::S),
+            GateType::SDAG => Ok(UnboundGate::SDAG),
+            GateType::T => Ok(UnboundGate::T),
+            GateType::TDAG => Ok(UnboundGate::TDAG),
+            GateType::RX90 => Ok(UnboundGate::RX90),
+            GateType::RXM90 => Ok(UnboundGate::RXM90),
+            GateType::RX180 => Ok(UnboundGate::RX180),
+            GateType::RY90 => Ok(UnboundGate::RY90),
+            GateType::RYM90 => Ok(UnboundGate::RYM90),
+            GateType::RY180 => Ok(UnboundGate::RY180),
+            GateType::RZ90 => Ok(UnboundGate::RZ90),
+            GateType::RZM90 => Ok(UnboundGate::RZM90),
+            GateType::RZ180 => Ok(UnboundGate::RZ180),
+            GateType::SWAP => Ok(UnboundGate::SWAP),
+            GateType::SQSWAP => Ok(UnboundGate::SQSWAP),
         }
+    }
+}
+
+impl TryFrom<GateType> for Matrix {
+    type Error = &'static str;
+    fn try_from(gate_type: GateType) -> Result<Self, Self::Error> {
+        UnboundGate::try_from(gate_type).map(|unbound_gate| unbound_gate.into())
     }
 }
 
@@ -577,7 +593,8 @@ mod tests {
             (UnboundGate::RZ180, GateType::RZ180),
             (UnboundGate::RX(1.), GateType::RX),
             (UnboundGate::RY(1.), GateType::RY),
-            (UnboundGate::RK(1), GateType::RK),
+            (UnboundGate::Phase(1.), GateType::Phase),
+            (UnboundGate::PhaseK(1), GateType::PhaseK),
             (UnboundGate::RZ(1.), GateType::RZ),
             (UnboundGate::R(1., 1., 1.), GateType::R),
             (UnboundGate::SWAP, GateType::SWAP),
@@ -616,7 +633,7 @@ mod tests {
             (BoundGate::RZ180(a), UnboundGate::RZ180),
             (BoundGate::RX(1., a), UnboundGate::RX(1.)),
             (BoundGate::RY(1., a), UnboundGate::RY(1.)),
-            (BoundGate::RK(1, a), UnboundGate::RK(1)),
+            (BoundGate::PhaseK(1, a), UnboundGate::PhaseK(1)),
             (BoundGate::RZ(1., a), UnboundGate::RZ(1.)),
             (BoundGate::R(1., 1., 1., a), UnboundGate::R(1., 1., 1.)),
             (BoundGate::SWAP(a, b), UnboundGate::SWAP),
