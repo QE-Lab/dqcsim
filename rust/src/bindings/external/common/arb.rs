@@ -327,8 +327,7 @@ pub extern "C" fn dqcs_arb_assign(dest: dqcs_handle_t, src: dqcs_handle_t) -> dq
     api_return_none(|| {
         resolve!(src as &ArbData);
         resolve!(dest as &mut ArbData);
-        dest.set_cbor_unchecked(src.get_cbor());
-        dest.set_args(src.get_args());
+        dest.copy_from(src);
         Ok(())
     })
 }
