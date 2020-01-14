@@ -25,12 +25,6 @@ macro_rules! api_object_types_convert {
     )
 }
 
-impl From<GateMap<'static>> for APIObject {
-    fn from(x: GateMap<'static>) -> APIObject {
-        APIObject::GateMap(x)
-    }
-}
-
 #[derive(Debug)]
 #[allow(clippy::large_enum_variant)]
 pub enum APIObject {
@@ -51,7 +45,7 @@ pub enum APIObject {
     /// Matrix objects.
     Matrix(Matrix),
     /// GateMap object.
-    GateMap(GateMap<'static>),
+    GateMap(GateMap),
     /// `PluginProcessConfiguration` object.
     PluginProcessConfiguration(PluginProcessConfiguration),
     /// `PluginThreadConfiguration` object.
@@ -75,6 +69,7 @@ api_object_types_convert!(
     QubitMeasurementResult,
     QubitMeasurementResultSet,
     Matrix,
+    GateMap,
     PluginProcessConfiguration,
     PluginThreadConfiguration,
     SimulatorConfiguration,
@@ -427,7 +422,7 @@ mutate_api_object_as! {Matrix, mat:
     APIObject::Matrix(x) => x, x, x,
 }
 
-mutate_api_object_as! {GateMap<'static>, gm:
+mutate_api_object_as! {GateMap, gm:
     APIObject::GateMap(x) => x, x, x,
 }
 

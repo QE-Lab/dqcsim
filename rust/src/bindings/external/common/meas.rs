@@ -26,7 +26,7 @@ pub extern "C" fn dqcs_meas_new(qubit: dqcs_qubit_t, value: dqcs_measurement_t) 
 pub extern "C" fn dqcs_meas_qubit_get(meas: dqcs_handle_t) -> dqcs_qubit_t {
     api_return(0, || {
         resolve!(meas as &QubitMeasurementResult);
-        Ok(meas.qubit.to_foreign())
+        meas.qubit.to_foreign()
     })
 }
 

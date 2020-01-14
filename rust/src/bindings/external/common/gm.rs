@@ -81,12 +81,30 @@ pub extern "C" fn dqcs_gm_new(
     key_cmp: Option<extern "C" fn(*const c_void, *const c_void) -> bool>,
     key_hash: Option<extern "C" fn(*const c_void) -> u64>,
 ) -> dqcs_handle_t {
-    insert(GateMap::new(
-        strip_qubit_refs,
-        strip_data,
+    let map = if strip_qubit_refs {
+        if strip_data {
+            ConverterMap::new(Some(Box::new(|gate: &Gate| gate.without_qubit_refs())))
+        } else {
+            ConverterMap::new(Some(Box::new(|gate: &Gate| {
+                let mut gate = gate.without_qubit_refs();
+                gate.data.clear();
+                gate
+            })))
+        }
+    } else if strip_data {
+        ConverterMap::new(Some(Box::new(|gate: &Gate| {
+            let mut gate = gate.clone();
+            gate.data.clear();
+            gate
+        })))
+    } else {
+        ConverterMap::new(None)
+    };
+    insert(GateMap {
+        map,
         key_cmp,
         key_hash,
-    ))
+    })
 }
 
 /// Adds a unitary gate mapping for the given DQCsim-defined gate to the
@@ -134,9 +152,13 @@ pub extern "C" fn dqcs_gm_add_predef_unitary(
     api_return_none(|| {
         let key = UserKeyData::new(key_free, key_data);
         resolve!(gm as &mut GateMap);
+        let key = gm.make_key(key);
         let gate = GateType::try_from(gate)?;
         let num_controls = expected_qubit_count(num_controls);
-        gm.add_predefined_unitary(key, gate, num_controls, epsilon, ignore_gphase);
+        gm.map.push(
+            key,
+            gate.into_converter(num_controls, epsilon, ignore_gphase),
+        );
         Ok(())
     })
 }
@@ -175,9 +197,18 @@ pub extern "C" fn dqcs_gm_add_fixed_unitary(
     api_return_none(|| {
         let key = UserKeyData::new(key_free, key_data);
         resolve!(gm as &mut GateMap);
+        let key = gm.make_key(key);
         take!(matrix as Matrix);
         let num_controls = expected_qubit_count(num_controls);
-        gm.add_fixed_unitary(key, matrix, num_controls, epsilon, ignore_gphase);
+        gm.map.push(
+            key,
+            Box::new(UnitaryGateConverter::from(UnitaryConverter::new(
+                FixedMatrixConverter::from(matrix),
+                num_controls,
+                epsilon,
+                ignore_gphase,
+            ))),
+        );
         Ok(())
     })
 }
@@ -274,6 +305,7 @@ pub extern "C" fn dqcs_gm_add_custom_unitary(
         let detector_user_data = UserData::new(detector_user_free, detector_user_data);
         let constructor_user_data = UserData::new(constructor_user_free, constructor_user_data);
         resolve!(gm as &mut GateMap);
+        let key = gm.make_key(key);
         todo!();
     })
 }
@@ -301,8 +333,10 @@ pub extern "C" fn dqcs_gm_add_measure(
     api_return_none(|| {
         let key = UserKeyData::new(key_free, key_data);
         resolve!(gm as &mut GateMap);
+        let key = gm.make_key(key);
         let num_measures = expected_qubit_count(num_measures);
-        gm.add_measure(key, num_measures);
+        gm.map
+            .push(key, Box::new(MeasurementGateConverter::new(num_measures)));
         Ok(())
     })
 }
@@ -402,6 +436,11 @@ pub extern "C" fn dqcs_gm_add_custom(
 ///> found, the `key_data` specified when the respective detector was added is
 ///> returned here as a `const void *`. If no match is found, `*key_data` is
 ///> not assigned.
+///> `qubits` serves as an optional return value; if non-NULL and a match
+///> is found, it is set to a handle to a new `QubitSet` object representing the
+///> gate's qubits. Ownership of this handle is passed to the user, so it
+///> is up to the user to eventually delete it. If no match is found,
+///> `*qubits` is set to 0.
 ///> `param_data` serves as an optional return value; if non-NULL and a match
 ///> is found, it is set to a handle to a new `ArbData` object representing the
 ///> gate's parameters. Ownership of this handle is passed to the user, so it
@@ -415,17 +454,26 @@ pub extern "C" fn dqcs_gm_detect(
     gm: dqcs_handle_t,
     gate: dqcs_handle_t,
     key_data: *mut *const c_void,
+    qubits: *mut dqcs_handle_t,
     param_data: *mut dqcs_handle_t,
 ) -> dqcs_bool_return_t {
     api_return_bool(|| {
+        if !qubits.is_null() {
+            unsafe { *qubits = 0 };
+        }
         if !param_data.is_null() {
             unsafe { *param_data = 0 };
         }
         resolve!(gm as &GateMap);
         resolve!(gate as &Gate);
-        if let Some((key, data)) = gm.detect(gate)? {
+        if let Some((key, (args, data))) = gm.map.detect(&gate)? {
             if !key_data.is_null() {
                 unsafe { *key_data = key.raw() };
+            }
+            if !qubits.is_null() {
+                let args: QubitReferenceSet = args.iter().cloned().collect();
+                let handle = insert(args);
+                unsafe { *qubits = handle };
             }
             if !param_data.is_null() {
                 let handle = insert(data);
@@ -446,8 +494,9 @@ fn construct_helper(
     qubits: Vec<QubitRef>,
     param_data: dqcs_handle_t,
 ) -> Result<dqcs_handle_t> {
-    resolve!(gm as &GateMap);
     let key = UserKeyData::new_borrowed(key_data);
+    resolve!(gm as &GateMap);
+    let key = gm.make_key(key);
     resolve!(optional param_data as pending ArbData);
     let data: ArbData = {
         if let Some(data) = param_data.as_ref() {
@@ -457,10 +506,7 @@ fn construct_helper(
             ArbData::default()
         }
     };
-    let gate = insert(
-        gm.construct(key, qubits, data)?
-            .ok_or_else(oe_inv_arg("no constructor for the given input"))?,
-    );
+    let gate = insert(gm.map.construct(&(key, (qubits, data)))?);
     if let Some(mut param_data) = param_data {
         delete!(resolved param_data);
     }

@@ -5,7 +5,7 @@
 
 use super::*;
 use crate::{
-    common::{error::*, log::*, types::*},
+    common::{converter::*, error::*, log::*, types::*},
     host::{configuration::*, simulator::Simulator},
     plugin::{definition::*, state::*},
 };
@@ -31,10 +31,6 @@ pub use external::*;
 // owned by any DQCsim instance.
 mod api_state;
 use api_state::*;
-
-// Module containing utility types related to the gate map construct.
-mod gatemap;
-use gatemap::*;
 
 // Module containing utility functions and auxiliary data structures.
 mod util;

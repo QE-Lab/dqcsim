@@ -1,4 +1,5 @@
 use super::*;
+use std::fmt;
 use std::rc::Rc;
 
 /// Convenience function for converting a C string to a Rust `str`.
@@ -208,5 +209,24 @@ impl UserKey {
     /// Returns the contained raw pointer.
     pub fn raw(&self) -> *const c_void {
         self.data.raw()
+    }
+}
+
+/// Wrapping struct for gate maps
+pub struct GateMap {
+    pub map: ConverterMap<'static, UserKey, Gate, (Vec<QubitRef>, ArbData)>,
+    pub key_cmp: Option<extern "C" fn(*const c_void, *const c_void) -> bool>,
+    pub key_hash: Option<extern "C" fn(*const c_void) -> u64>,
+}
+
+impl GateMap {
+    pub fn make_key(&self, key: UserKeyData) -> UserKey {
+        UserKey::new(key, self.key_cmp, self.key_hash)
+    }
+}
+
+impl fmt::Debug for GateMap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "GateMap")
     }
 }

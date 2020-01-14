@@ -604,7 +604,7 @@ pub enum dqcs_internal_gate_t {
     DQCS_GATE_PHASE = 154,
 
     /// Any single-qubit unitary gate, parameterized as a full unitary matrix.
-    DQCS_GATE_U = 190,
+    DQCS_GATE_U1 = 190,
 
     /// Any single-qubit unitary gate, parameterized IBM-style with Z-Y-Z
     /// angles.
@@ -615,6 +615,12 @@ pub enum dqcs_internal_gate_t {
 
     /// Square-root of swap gate.
     DQCS_GATE_SQRT_SWAP = 201,
+
+    /// Any two-qubit unitary gate, parameterized as a full unitary matrix.
+    DQCS_GATE_U2 = 290,
+
+    /// Any three-qubit unitary gate, parameterized as a full unitary matrix.
+    DQCS_GATE_U3 = 390,
 }
 
 impl TryFrom<dqcs_internal_gate_t> for GateType {
@@ -644,10 +650,12 @@ impl TryFrom<dqcs_internal_gate_t> for GateType {
             dqcs_internal_gate_t::DQCS_GATE_PHASE => Ok(GateType::Phase),
             dqcs_internal_gate_t::DQCS_GATE_PHASE_K => Ok(GateType::PhaseK),
             dqcs_internal_gate_t::DQCS_GATE_RZ => Ok(GateType::RZ),
-            dqcs_internal_gate_t::DQCS_GATE_U => Ok(GateType::U(1)),
+            dqcs_internal_gate_t::DQCS_GATE_U1 => Ok(GateType::U(1)),
             dqcs_internal_gate_t::DQCS_GATE_R => Ok(GateType::R),
             dqcs_internal_gate_t::DQCS_GATE_SWAP => Ok(GateType::SWAP),
             dqcs_internal_gate_t::DQCS_GATE_SQRT_SWAP => Ok(GateType::SQSWAP),
+            dqcs_internal_gate_t::DQCS_GATE_U2 => Ok(GateType::U(2)),
+            dqcs_internal_gate_t::DQCS_GATE_U3 => Ok(GateType::U(3)),
             dqcs_internal_gate_t::DQCS_GATE_INVALID => inv_arg("invalid gate"),
         }
     }
@@ -680,10 +688,12 @@ impl From<dqcs_internal_gate_t> for Option<GateType> {
             dqcs_internal_gate_t::DQCS_GATE_RZ => Some(GateType::RZ),
             dqcs_internal_gate_t::DQCS_GATE_PHASE => Some(GateType::Phase),
             dqcs_internal_gate_t::DQCS_GATE_PHASE_K => Some(GateType::PhaseK),
-            dqcs_internal_gate_t::DQCS_GATE_U => Some(GateType::U(1)),
+            dqcs_internal_gate_t::DQCS_GATE_U1 => Some(GateType::U(1)),
             dqcs_internal_gate_t::DQCS_GATE_R => Some(GateType::R),
             dqcs_internal_gate_t::DQCS_GATE_SWAP => Some(GateType::SWAP),
             dqcs_internal_gate_t::DQCS_GATE_SQRT_SWAP => Some(GateType::SQSWAP),
+            dqcs_internal_gate_t::DQCS_GATE_U2 => Some(GateType::U(2)),
+            dqcs_internal_gate_t::DQCS_GATE_U3 => Some(GateType::U(3)),
         }
     }
 }

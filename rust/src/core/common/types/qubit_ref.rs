@@ -1,3 +1,4 @@
+use crate::common::error::{inv_arg, Result};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -19,6 +20,16 @@ impl Into<String> for QubitRef {
 }
 
 impl QubitRef {
+    /// Returns a null qubit reference.
+    pub fn null() -> QubitRef {
+        QubitRef(0)
+    }
+
+    /// Returns whether this reference is null.
+    pub fn is_null(self) -> bool {
+        self.0 == 0
+    }
+
     /// Converts the foreign representation of a qubit reference to the
     /// type-safe Rust representation.
     pub fn from_foreign(qubit: u64) -> Option<QubitRef> {
@@ -31,18 +42,21 @@ impl QubitRef {
 
     /// Converts the type-safe Rust representation of a qubit reference to the
     /// foreign representation.
-    pub fn to_foreign(self) -> u64 {
-        assert_ne!(self.0, 0);
-        self.0 as u64
+    pub fn to_foreign(self) -> Result<u64> {
+        if self.is_null() {
+            inv_arg("making use of null qubit reference")
+        } else {
+            Ok(self.0 as u64)
+        }
     }
 
     /// Converts the type-safe Rust representation of a qubit reference to the
     /// foreign representation.
-    pub fn option_to_foreign(qubit: Option<QubitRef>) -> u64 {
+    pub fn option_to_foreign(qubit: Option<QubitRef>) -> Result<u64> {
         if let Some(x) = qubit {
-            x.0 as u64
+            x.to_foreign()
         } else {
-            0
+            Ok(0)
         }
     }
 }

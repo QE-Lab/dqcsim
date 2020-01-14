@@ -726,7 +726,7 @@ pub struct MeasurementGateConverter {
 }
 
 impl MeasurementGateConverter {
-    fn new(num_measures: Option<usize>) -> Self {
+    pub fn new(num_measures: Option<usize>) -> Self {
         Self { num_measures }
     }
 }

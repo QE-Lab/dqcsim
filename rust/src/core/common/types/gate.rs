@@ -335,6 +335,21 @@ impl Gate {
             self.clone()
         }
     }
+
+    /// Replaces all qubit references in the gate with undefined qubits. This
+    /// is used as a gate detector cache preprocessing step when the detector
+    /// functions do not depend on which qubits are bound to the gate, only the
+    /// amount of each kind,
+    pub fn without_qubit_refs(&self) -> Self {
+        Gate {
+            name: self.name.clone(),
+            targets: vec![QubitRef::null(); self.targets.len()],
+            controls: vec![QubitRef::null(); self.controls.len()],
+            measures: vec![QubitRef::null(); self.measures.len()],
+            matrix: self.matrix.clone(),
+            data: self.data.clone(),
+        }
+    }
 }
 
 #[cfg(test)]
