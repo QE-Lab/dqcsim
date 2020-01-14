@@ -727,6 +727,22 @@ impl ArbData {
         self.args = args.into();
     }
 
+    /// Resets the CBOR to an empty object.
+    pub fn clear_cbor(&mut self) {
+        self.set_cbor(EMPTY_CBOR).unwrap();
+    }
+
+    /// Clears the binary arguments vector.
+    pub fn clear_args(&mut self) {
+        self.args.clear();
+    }
+
+    /// Clears the CBOR object and binary arguments vector.
+    pub fn clear(&mut self) {
+        self.clear_cbor();
+        self.clear_args();
+    }
+
     /// Copies the data from another ArbData to this one.
     pub fn copy_from(&mut self, src: &ArbData) {
         self.cbor = src.get_cbor().to_vec();

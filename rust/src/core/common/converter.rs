@@ -11,8 +11,9 @@ use crate::common::{
     gates::UnboundGate,
     types::{ArbData, Gate, Matrix, QubitRef},
 };
+use integer_sqrt::IntegerSquareRoot;
 use num_complex::Complex64;
-use std::{cell::RefCell, collections::HashMap, convert::TryInto, hash::Hash};
+use std::{cell::RefCell, collections::HashMap, convert::TryInto, f64::consts::PI, hash::Hash};
 
 /// A type that can be constructed from (part of) an ArbData object.
 pub trait FromArb
@@ -30,13 +31,25 @@ impl FromArb for () {
     }
 }
 
+impl FromArb for u64 {
+    fn from_arb(src: &mut ArbData) -> Result<Self> {
+        let mut args = src.get_args_mut().drain(..1);
+        let i = args
+            .nth(0)
+            .ok_or_else(oe_inv_arg("expected 64-bit integer argument in ArbData"))?;
+        Ok(u64::from_le_bytes(i[..].try_into().ok().ok_or_else(
+            oe_inv_arg("expected 64-bit integer argument in ArbData"),
+        )?))
+    }
+}
+
 impl FromArb for f64 {
     fn from_arb(src: &mut ArbData) -> Result<Self> {
         let mut args = src.get_args_mut().drain(..1);
-        let theta = args
+        let f = args
             .nth(0)
             .ok_or_else(oe_inv_arg("expected double argument in ArbData"))?;
-        Ok(f64::from_ne_bytes(theta[..].try_into().ok().ok_or_else(
+        Ok(f64::from_le_bytes(f[..].try_into().ok().ok_or_else(
             oe_inv_arg("expected double argument in ArbData"),
         )?))
     }
@@ -51,6 +64,38 @@ impl FromArb for (f64, f64, f64) {
     }
 }
 
+impl FromArb for Matrix {
+    fn from_arb(src: &mut ArbData) -> Result<Self> {
+        let mut args = src.get_args_mut().drain(..1);
+        let data = args
+            .nth(0)
+            .ok_or_else(oe_inv_arg("expected matrix argument in ArbData"))?;
+        if data.len() % 16 != 0 {
+            inv_arg("invalid matrix size")?;
+        }
+        let num_entries = data.len() / 16;
+        if num_entries != num_entries.integer_sqrt().pow(2) {
+            inv_arg("invalid matrix size")?;
+        }
+        let mut entries = Vec::with_capacity(num_entries);
+        for i in 0..num_entries {
+            let re = f64::from_le_bytes(data[i * 16..i * 16 + 8].try_into().unwrap());
+            let im = f64::from_le_bytes(data[i * 16 + 8..i * 16 + 16].try_into().unwrap());
+            entries.push(Complex64::new(re, im));
+        }
+        Ok(entries.into())
+    }
+}
+
+impl FromArb for ArbData {
+    fn from_arb(src: &mut ArbData) -> Result<Self> {
+        let mut ret = ArbData::default();
+        ret.copy_from(src);
+        src.clear();
+        Ok(ret)
+    }
+}
+
 /// A type that can be converted into an ArbData object.
 pub trait ToArb {
     /// Convert self to ArbData parameters and add them to the data object.
@@ -61,9 +106,15 @@ impl ToArb for () {
     fn to_arb(self, _: &mut ArbData) {}
 }
 
+impl ToArb for u64 {
+    fn to_arb(self, dest: &mut ArbData) {
+        dest.get_args_mut().insert(0, self.to_le_bytes().to_vec());
+    }
+}
+
 impl ToArb for f64 {
     fn to_arb(self, dest: &mut ArbData) {
-        dest.get_args_mut().insert(0, self.to_ne_bytes().to_vec());
+        dest.get_args_mut().insert(0, self.to_le_bytes().to_vec());
     }
 }
 
@@ -72,6 +123,23 @@ impl ToArb for (f64, f64, f64) {
         self.2.to_arb(dest);
         self.1.to_arb(dest);
         self.0.to_arb(dest);
+    }
+}
+
+impl ToArb for Matrix {
+    fn to_arb(self, dest: &mut ArbData) {
+        let mut data = Vec::with_capacity(16 * self.len());
+        for entry in self.into_iter() {
+            data.extend(entry.re.to_le_bytes().iter());
+            data.extend(entry.im.to_le_bytes().iter());
+        }
+        dest.get_args_mut().insert(0, data);
+    }
+}
+
+impl ToArb for ArbData {
+    fn to_arb(self, dest: &mut ArbData) {
+        dest.copy_from(&self)
     }
 }
 
@@ -299,6 +367,90 @@ impl MatrixConverter for PhaseMatrixConverter {
 
     fn construct_matrix(&self, theta: &Self::Parameters) -> Result<Matrix> {
         Ok(UnboundGate::Phase(*theta).into())
+    }
+}
+
+/// Matrix converter object for the phase submatrix using θ = π/2^k​.
+struct PhaseKMatrixConverter {}
+
+impl MatrixConverter for PhaseKMatrixConverter {
+    type Parameters = u64;
+
+    fn detect_matrix(
+        &self,
+        matrix: &Matrix,
+        epsilon: f64,
+        ignore_global_phase: bool,
+    ) -> Result<Option<Self::Parameters>> {
+        let theta = detect_angle(
+            matrix[(0, 0)].re,
+            matrix[(0, 0)].im,
+            matrix[(1, 1)].re,
+            matrix[(1, 1)].im,
+        );
+        let k = if theta <= 0.0 {
+            0u64
+        } else {
+            (-(theta / PI).log(2.0).round()) as u64
+        };
+        let expected: Matrix = self.construct_matrix(&k)?;
+        if matrix.approx_eq(&expected, epsilon, ignore_global_phase) {
+            Ok(Some(k))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn construct_matrix(&self, k: &Self::Parameters) -> Result<Matrix> {
+        Ok(UnboundGate::PhaseK(*k).into())
+    }
+}
+
+/// Matrix converter object for any matrix of a certain size - simply has the
+/// matrix itself as its parameter type.
+struct UMatrixConverter {
+    /// The number of qubits that the matrix should have, or None if don't
+    /// care.
+    num_qubits: Option<usize>,
+}
+
+impl UMatrixConverter {
+    pub fn new(num_qubits: Option<usize>) -> UMatrixConverter {
+        UMatrixConverter { num_qubits }
+    }
+}
+
+impl MatrixConverter for UMatrixConverter {
+    type Parameters = Matrix;
+
+    fn detect_matrix(
+        &self,
+        matrix: &Matrix,
+        _epsilon: f64,
+        _ignore_global_phase: bool,
+    ) -> Result<Option<Self::Parameters>> {
+        if let Some(expected) = self.num_qubits {
+            if matrix.num_qubits().unwrap() != expected {
+                // matrix has incorrect size
+                return Ok(None);
+            }
+        }
+        Ok(Some(matrix.clone()))
+    }
+
+    fn construct_matrix(&self, matrix: &Self::Parameters) -> Result<Matrix> {
+        let num_qubits = matrix
+            .num_qubits()
+            .ok_or_else(oe_inv_arg("matrix has invalid size"))?;
+        if let Some(expected) = self.num_qubits {
+            if num_qubits != expected {
+                inv_arg(format!(
+                    "matrix has incorrect size; expected matrix for {} qubits",
+                    expected
+                ))?;
+            }
+        }
+        Ok(matrix.clone())
     }
 }
 

@@ -161,7 +161,7 @@ pub enum UnboundGate<'matrix> {
     /// works as a submatrix for controlled phase operations.
     Phase(f64),
     /// Same as Phase, but with θ = π/2^k​.
-    PhaseK(usize),
+    PhaseK(u64),
     /// Arbitrary rotation around X-, Y- and Z-axis with specified angles
     /// (θ, φ, λ).
     R(f64, f64, f64),
@@ -228,7 +228,7 @@ pub enum BoundGate<'matrix, 'qref> {
     /// works as a submatrix for controlled phase operations.
     Phase(f64, QubitRef),
     /// Same as Phase, but with θ = π/2^k​.
-    PhaseK(usize, QubitRef),
+    PhaseK(u64, QubitRef),
     /// Arbitrary rotation around X-, Y- and Z-axis with specified angles
     /// (θ, φ, λ) and qubit target.
     R(f64, f64, f64, QubitRef),
