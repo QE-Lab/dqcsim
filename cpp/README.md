@@ -52,5 +52,5 @@ assume that DQCsim is installed in your `/usr` directory though, and will
 always use this installed version rather than the source tree! Nevertheless,
 they test some things that are difficult to test with GoogleTest (multiple
 processes and such) and it's thus a good idea to install DQCsim and run them
-before committing any changes. Just running `make` in the `cpp/examples` folder
+before committing any changes. Just running `make` in the `examples` folder
 will run them all sequentially.
