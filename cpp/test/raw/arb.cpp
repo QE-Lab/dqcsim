@@ -48,8 +48,8 @@ TEST(arb, json) {
   // Check that the ArbData object is what we expect.
   EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Map(\n            {\n                Text(\n                    \"hello\",\n                ): Text(\n                    \"world\",\n                ),\n            },\n        ),\n        args: [],\n    },\n)");
   EXPECT_STREQ(dqcs_arb_json_get(a), "{\"hello\":\"world\"}");
-  EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 14);
-  EXPECT_EQ(memcmp(cbor_buffer, "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF", 14), 0);
+  EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 13);
+  EXPECT_EQ(memcmp(cbor_buffer, "\xA1\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64", 13), 0);
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
@@ -67,8 +67,8 @@ TEST(arb, cbor) {
   ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
   // Check default.
-  EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 2);
-  EXPECT_EQ(memcmp(cbor_buffer, "\xBF\xFF", 2), 0);
+  EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 1);
+  EXPECT_EQ(memcmp(cbor_buffer, "\xA0", 1), 0);
 
   // Check proper object.
   EXPECT_EQ(dqcs_arb_cbor_set(a, "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF", 14), dqcs_return_t::DQCS_SUCCESS);
@@ -79,13 +79,13 @@ TEST(arb, cbor) {
 
   // Check improper object.
   EXPECT_EQ(dqcs_arb_cbor_set(a, "\xFF", 1), dqcs_return_t::DQCS_FAILURE);
-  EXPECT_STREQ(dqcs_error_get(), "Invalid argument: unexpected code at offset 1");
+  EXPECT_STREQ(dqcs_error_get(), "Invalid argument: invalid CBOR: unexpected break");
 
   // Check that the ArbData object is what we expect.
   EXPECT_STREQ(dqcs_handle_dump(a), "ArbData(\n    ArbData {\n        json: Map(\n            {\n                Text(\n                    \"hello\",\n                ): Text(\n                    \"world\",\n                ),\n            },\n        ),\n        args: [],\n    },\n)");
   EXPECT_STREQ(dqcs_arb_json_get(a), "{\"hello\":\"world\"}");
-  EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 14);
-  EXPECT_EQ(memcmp(cbor_buffer, "\xBF\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64\xFF", 14), 0);
+  EXPECT_EQ(dqcs_arb_cbor_get(a, cbor_buffer, 256), 13);
+  EXPECT_EQ(memcmp(cbor_buffer, "\xA1\x65\x68\x65\x6C\x6C\x6F\x65\x77\x6F\x72\x6C\x64", 13), 0);
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
