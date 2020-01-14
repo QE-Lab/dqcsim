@@ -15,24 +15,20 @@ use std::{fmt, fmt::Debug};
 /// Types implementing Detector can be used to detect inputs and link them to
 /// their outputs. A collection of types implementing Detector can be used in a
 /// DetectorMap to convert common types to plugin-specific types.
-pub trait Detector {
-    /// The input type of the Detector function.
-    type Input;
-    /// The output type of the Detector function.
-    type Output;
+pub trait Detector<I, O> {
     /// The detect function implements the detector function. When the detector
     /// matches it returns a success result value with a some option value of
     /// the output type.
-    fn detect(&self, input: &Self::Input) -> Result<Option<Self::Output>>;
+    fn detect(&self, input: &I) -> Result<Option<O>>;
 }
 
 /// A conversion trait for types implementing Detector.
 ///
 /// This allow specifiying additional arguments in contrast to std::convert
 /// methods.
-pub trait IntoDetector {
+pub trait IntoDetector<I, O> {
     type Arguments;
-    type Detector: Detector;
+    type Detector: Detector<I, O>;
     fn into_detector(&self, args: Self::Arguments) -> Self::Detector;
 }
 
@@ -55,7 +51,7 @@ where
 {
     /// The collection of Detectors are stored in this map as trait objects
     /// with a wrapping tuple including the corresponding key.
-    detectors: Vec<(K, Box<dyn Detector<Input = C, Output = O> + 'a>)>,
+    detectors: Vec<(K, Box<dyn Detector<C, O> + 'a>)>,
     /// The cache is stored in a HashMap that maps from input type I to the
     /// output type (K, O).
     map: RefCell<HashMap<I, Option<(K, O)>>>,
@@ -83,7 +79,7 @@ where
 
     /// Appends a Detector with the specified key to the back of the collection
     /// of Detectors in this map.
-    pub fn push(&mut self, key: impl Into<K>, detector: impl Detector<Input = C, Output = O> + 'a) {
+    pub fn push(&mut self, key: impl Into<K>, detector: impl Detector<C, O> + 'a) {
         self.map.borrow_mut().retain(|_, v| v.is_some());
         self.detectors.push((key.into(), Box::new(detector)));
     }
@@ -91,12 +87,7 @@ where
     /// Inserts a Detector at position index within the collection of Detectors
     /// in this map, with the specified key associated to the inserted
     /// Detector.
-    pub fn insert(
-        &mut self,
-        index: usize,
-        key: impl Into<K>,
-        detector: impl Detector<Input = C, Output = O> + 'a,
-    ) {
+    pub fn insert(&mut self, index: usize, key: impl Into<K>, detector: impl Detector<C, O> + 'a) {
         self.clear_cache();
         self.detectors
             .insert(index, (key.into(), Box::new(detector)));
@@ -104,11 +95,7 @@ where
 
     /// Appends the specified Detector with the corresponding specified key to
     /// the collection and returns the updated DetectorMap.
-    pub fn with(
-        mut self,
-        key: impl Into<K>,
-        detector: impl Detector<Input = C, Output = O> + 'a,
-    ) -> Self {
+    pub fn with(mut self, key: impl Into<K>, detector: impl Detector<C, O> + 'a) -> Self {
         self.push(key, detector);
         self
     }
@@ -129,15 +116,12 @@ where
     }
 }
 
-impl<K, I, O, C> Detector for DetectorMap<'_, K, I, O, C>
+impl<K, I, O, C> Detector<I, (K, O)> for DetectorMap<'_, K, I, O, C>
 where
     K: Clone,
     I: Clone + Eq + Hash + Into<C>,
     O: Clone,
 {
-    type Input = I;
-    type Output = (K, O);
-
     fn detect(&self, input: &I) -> Result<Option<(K, O)>> {
         // Check the cache
         let cache = || self.map.borrow().get(input).cloned();
@@ -183,7 +167,7 @@ pub struct MatrixDetector<'matrix, T> {
     matrix: &'matrix Matrix,
     epsilon: f64,
     ignore_global_phase: bool,
-    output: &'matrix T,
+    output: T,
 }
 
 impl<'matrix, T> MatrixDetector<'matrix, T> {
@@ -192,7 +176,7 @@ impl<'matrix, T> MatrixDetector<'matrix, T> {
         matrix: &'matrix Matrix,
         epsilon: f64,
         ignore_global_phase: bool,
-        output: &'matrix T,
+        output: T,
     ) -> Self {
         Self {
             matrix,
@@ -203,17 +187,17 @@ impl<'matrix, T> MatrixDetector<'matrix, T> {
     }
 }
 
-impl<'matrix, T> Detector for MatrixDetector<'matrix, T> {
-    type Input = Matrix;
-    type Output = &'matrix T;
-
-    fn detect(&self, input: &Self::Input) -> Result<Option<Self::Output>> {
+impl<'matrix, T> Detector<Matrix, T> for MatrixDetector<'matrix, T>
+where
+    T: Clone,
+{
+    fn detect(&self, input: &Matrix) -> Result<Option<T>> {
         Ok(
             if self
                 .matrix
                 .approx_eq(input, self.epsilon, self.ignore_global_phase)
             {
-                Some(self.output)
+                Some(self.output.clone())
             } else {
                 None
             },

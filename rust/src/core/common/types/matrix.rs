@@ -351,9 +351,9 @@ impl Matrix {
     }
 }
 
-impl<'matrix> IntoDetector for &'matrix Matrix {
+impl<'matrix> IntoDetector<Matrix, ArbData> for &'matrix Matrix {
     type Detector = MatrixDetector<'matrix, ArbData>;
-    type Arguments = (f64, bool, &'matrix ArbData);
+    type Arguments = (f64, bool, ArbData);
 
     fn into_detector(&self, arguments: Self::Arguments) -> Self::Detector {
         MatrixDetector::new(self, arguments.0, arguments.1, arguments.2)
