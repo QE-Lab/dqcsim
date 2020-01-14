@@ -25,9 +25,9 @@ jobs:
       id: cache
       with:
         path: docker-cache
-        key: ${{ runner.os }}-docker-${{ github.sha }}
+        key: dqcsim-examples-${{ github.sha }}
         restore-keys: |
-          ${{ runner.os }}-docker-
+          dqcsim-examples-
     - name: Load cached Docker layers
       run: |
         if [ -d "docker-cache" ]; then
