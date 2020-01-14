@@ -588,6 +588,39 @@ where
     }
 }
 
+/// Lambda-based converter implementation for unitary gate matrices.
+#[allow(clippy::type_complexity)]
+pub struct CustomUnitaryConverter<'f> {
+    detector: Box<dyn Fn(&Matrix, usize) -> Result<Option<ArbData>> + 'f>,
+    constructor: Box<dyn Fn(&ArbData) -> Result<(Matrix, Option<usize>)> + 'f>,
+}
+
+impl<'f> CustomUnitaryConverter<'f> {
+    pub fn new(
+        detector: impl Fn(&Matrix, usize) -> Result<Option<ArbData>> + 'f,
+        constructor: impl Fn(&ArbData) -> Result<(Matrix, Option<usize>)> + 'f,
+    ) -> CustomUnitaryConverter<'f> {
+        CustomUnitaryConverter {
+            detector: Box::new(detector),
+            constructor: Box::new(constructor),
+        }
+    }
+}
+
+impl<'f> Converter for CustomUnitaryConverter<'f> {
+    type Input = (Matrix, Option<usize>);
+    type Output = ArbData;
+
+    fn detect(&self, input: &Self::Input) -> Result<Option<Self::Output>> {
+        let (matrix, num_controls) = input;
+        (self.detector)(matrix, num_controls.unwrap_or(0))
+    }
+
+    fn construct(&self, data: &Self::Output) -> Result<Self::Input> {
+        (self.constructor)(data)
+    }
+}
+
 /// Converter implementation for unitary gates based on a matrix converter.
 ///
 /// The matrix converter takes a matrix and a number of control qubits as input
@@ -686,58 +719,149 @@ where
     }
 }
 
-/// A type that can be used as a cache key in a Converter.
-///
-/// The cache key must be constructable from a reference to the converter's
-/// input. All types that are Clone can be used as a cache key for themselves.
-pub trait ConverterCacheKey<I> {
-    fn from_input(input: &I) -> Self;
+/// Converter implementation for measurement gates.
+pub struct MeasurementGateConverter {
+    /// The number of expected measurement qubits, or None of not constrained.
+    num_measures: Option<usize>,
 }
 
-/// Blanket ConverterCacheKey implementation for all types that are Clone.
-impl<T> ConverterCacheKey<T> for T
-where
-    T: Clone,
-{
-    fn from_input(input: &T) -> Self {
-        input.clone()
+impl MeasurementGateConverter {
+    fn new(num_measures: Option<usize>) -> Self {
+        Self { num_measures }
+    }
+}
+
+impl Converter for MeasurementGateConverter {
+    type Input = Gate;
+    type Output = (Vec<QubitRef>, ArbData);
+
+    fn detect(&self, gate: &Gate) -> Result<Option<Self::Output>> {
+        if gate.get_name().is_some()
+            || !gate.get_targets().is_empty()
+            || !gate.get_controls().is_empty()
+        {
+            // Custom gate, unitary gate or unitary + measure compound; not
+            // (just) a measurement so no match.
+            Ok(None)
+        } else {
+            // Measurement gate.
+            if let Some(expected) = self.num_measures {
+                if gate.get_measures().len() != expected {
+                    // Measurement qubit count constraint check failed.
+                    return Ok(None);
+                }
+            }
+            Ok(Some((gate.get_measures().to_vec(), gate.data.clone())))
+        }
+    }
+
+    fn construct(&self, output: &Self::Output) -> Result<Gate> {
+        let (qubits, data) = output;
+
+        // Check the number of measurement qubits.
+        if let Some(expected) = self.num_measures {
+            if qubits.len() != expected {
+                inv_arg(format!("expected {} measurement qubits", expected))?;
+            }
+        }
+
+        // Construct the gate.
+        let mut gate = Gate::new_measurement(qubits.clone())?;
+        gate.data.copy_from(&data);
+
+        Ok(gate)
+    }
+}
+
+/// Lambda-based converter implementation for unitary gate matrices.
+#[allow(clippy::type_complexity)]
+pub struct CustomGateConverter<'f> {
+    detector: Box<dyn Fn(&Gate) -> Result<Option<(Vec<QubitRef>, ArbData)>> + 'f>,
+    constructor: Box<dyn Fn(&[QubitRef], &ArbData) -> Result<Gate> + 'f>,
+}
+
+impl<'f> CustomGateConverter<'f> {
+    pub fn new(
+        detector: impl Fn(&Gate) -> Result<Option<(Vec<QubitRef>, ArbData)>> + 'f,
+        constructor: impl Fn(&[QubitRef], &ArbData) -> Result<Gate> + 'f,
+    ) -> CustomGateConverter<'f> {
+        CustomGateConverter {
+            detector: Box::new(detector),
+            constructor: Box::new(constructor),
+        }
+    }
+}
+
+impl<'f> Converter for CustomGateConverter<'f> {
+    type Input = Gate;
+    type Output = (Vec<QubitRef>, ArbData);
+
+    fn detect(&self, gate: &Self::Input) -> Result<Option<Self::Output>> {
+        (self.detector)(gate)
+    }
+
+    fn construct(&self, params: &Self::Output) -> Result<Self::Input> {
+        let (qubits, data) = params;
+        (self.constructor)(qubits, data)
     }
 }
 
 /// K: user-defined key for identifying which converter to use
 /// I: detector input = constructor output
 /// O: detector output = constructor input
-/// C: detector cache key. I is converted to C before being placed in the
-///    detector cache.
-#[derive(Default)]
-pub struct ConverterMap<'c, K, I, O, C = I>
+pub struct ConverterMap<'c, K, I, O>
 where
-    K: Eq + Hash,
-    C: Eq + Hash,
+    K: Eq + Hash + Clone,
+    I: Eq + Hash + Clone,
+    O: Clone,
 {
     /// The collection of `Converter`s are stored in this map as trait objects
     /// with a wrapping tuple including the corresponding key.
     converters: HashMap<K, Box<dyn Converter<Input = I, Output = O> + 'c>>,
     /// The order in which converters are called when
     order: Vec<K>,
+    /// Function that preprocesses the input type to a cache key, removing
+    /// unnecessary information to improve performance.
+    cache_key_generator: Box<dyn Fn(&I) -> I>,
     /// The cache is stored in a HashMap that maps from input type I to the
     /// output type (K, O).
-    cache: RefCell<HashMap<C, Option<(K, O)>>>,
+    cache: RefCell<HashMap<I, Option<(K, O)>>>,
     /// Whether the detector cache should be used to short-circuit straight to
     /// the detection result (true), or only to the converter key (false).
     fully_cached: bool,
 }
 
-impl<'c, K, I, O, C> ConverterMap<'c, K, I, O, C>
+impl<'c, K, I, O> Default for ConverterMap<'c, K, I, O>
 where
     K: Eq + Hash + Clone,
-    C: Eq + Hash,
+    I: Eq + Hash + Clone,
+    O: Clone,
+{
+    fn default() -> Self {
+        ConverterMap::<'c, K, I, O>::new(None)
+    }
+}
+
+impl<'c, K, I, O> ConverterMap<'c, K, I, O>
+where
+    K: Eq + Hash + Clone,
+    I: Eq + Hash + Clone,
+    O: Clone,
 {
     /// Constructs a new empty ConverterMap.
-    pub fn new(fully_cached: bool) -> Self {
+    pub fn new(cache_key_generator: Option<Box<dyn Fn(&I) -> I>>) -> Self {
+        let (cache_key_generator, fully_cached) = if let Some(function) = cache_key_generator {
+            (function, false)
+        } else {
+            (
+                Box::new(|input: &I| input.clone()) as Box<dyn Fn(&I) -> I>,
+                true,
+            )
+        };
         ConverterMap {
             converters: HashMap::new(),
             order: vec![],
+            cache_key_generator,
             cache: RefCell::new(HashMap::new()),
             fully_cached,
         }
@@ -758,11 +882,7 @@ where
                 false
             }
         });
-        if self
-            .converters
-            .insert(key.clone(), converter)
-            .is_some()
-        {
+        if self.converters.insert(key.clone(), converter).is_some() {
             self.order.retain(|k| k != &key);
         }
         self.order.push(key);
@@ -779,11 +899,7 @@ where
     ) {
         self.clear_cache();
         let key: K = key.into();
-        if self
-            .converters
-            .insert(key.clone(), converter)
-            .is_some()
-        {
+        if self.converters.insert(key.clone(), converter).is_some() {
             self.order.retain(|k| k != &key);
         }
         self.order.insert(index, key);
@@ -816,11 +932,10 @@ where
     }
 }
 
-impl<'c, I, K, O, C> Converter for ConverterMap<'c, K, I, O, C>
+impl<'c, I, K, O> Converter for ConverterMap<'c, K, I, O>
 where
-    I: Clone,
     K: Eq + Hash + Clone,
-    C: Eq + Hash + ConverterCacheKey<I>,
+    I: Eq + Hash + Clone,
     O: Clone,
 {
     type Input = I;
@@ -828,7 +943,7 @@ where
 
     fn detect(&self, input: &I) -> Result<Option<(K, O)>> {
         // Get the cache key for this input.
-        let cache_key = C::from_input(input);
+        let cache_key = (self.cache_key_generator)(input);
 
         // Check the cache.
         if let Some(hit) = self.cache.borrow().get(&cache_key) {
