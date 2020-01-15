@@ -36,43 +36,74 @@ impl FromArb for () {
 
 impl FromArb for u64 {
     fn from_arb(src: &mut ArbData) -> Result<Self> {
-        let mut args = src.get_args_mut().drain(..1);
-        let i = args
-            .nth(0)
-            .ok_or_else(oe_inv_arg("expected 64-bit integer argument in ArbData"))?;
-        Ok(u64::from_le_bytes(i[..].try_into().ok().ok_or_else(
-            oe_inv_arg("expected 64-bit integer argument in ArbData"),
-        )?))
+        let args = src.get_args_mut();
+        if args.is_empty() {
+            inv_arg("expected 64-bit integer argument in ArbData")?;
+        }
+        let i = u64::from_le_bytes(
+            args[0][..]
+                .try_into()
+                .ok()
+                .ok_or_else(oe_inv_arg("expected 64-bit integer argument in ArbData"))?,
+        );
+        args.drain(..1);
+        Ok(i)
     }
 }
 
 impl FromArb for f64 {
     fn from_arb(src: &mut ArbData) -> Result<Self> {
-        let mut args = src.get_args_mut().drain(..1);
-        let f = args
-            .nth(0)
-            .ok_or_else(oe_inv_arg("expected double argument in ArbData"))?;
-        Ok(f64::from_le_bytes(f[..].try_into().ok().ok_or_else(
-            oe_inv_arg("expected double argument in ArbData"),
-        )?))
+        let args = src.get_args_mut();
+        if args.is_empty() {
+            inv_arg("expected double argument in ArbData")?;
+        }
+        let f = f64::from_le_bytes(
+            args[0][..]
+                .try_into()
+                .ok()
+                .ok_or_else(oe_inv_arg("expected double argument in ArbData"))?,
+        );
+        args.drain(..1);
+        Ok(f)
     }
 }
 
 impl FromArb for (f64, f64, f64) {
     fn from_arb(src: &mut ArbData) -> Result<Self> {
-        let a = f64::from_arb(src)?;
-        let b = f64::from_arb(src)?;
-        let c = f64::from_arb(src)?;
+        let args = src.get_args_mut();
+        if args.len() < 3 {
+            inv_arg("expected three double arguments in ArbData")?;
+        }
+        let a = f64::from_le_bytes(
+            args[0][..]
+                .try_into()
+                .ok()
+                .ok_or_else(oe_inv_arg("expected double first argument in ArbData"))?,
+        );
+        let b = f64::from_le_bytes(
+            args[1][..]
+                .try_into()
+                .ok()
+                .ok_or_else(oe_inv_arg("expected double second argument in ArbData"))?,
+        );
+        let c = f64::from_le_bytes(
+            args[2][..]
+                .try_into()
+                .ok()
+                .ok_or_else(oe_inv_arg("expected double third argument in ArbData"))?,
+        );
+        args.drain(..3);
         Ok((a, b, c))
     }
 }
 
 impl FromArb for Matrix {
     fn from_arb(src: &mut ArbData) -> Result<Self> {
-        let mut args = src.get_args_mut().drain(..1);
-        let data = args
-            .nth(0)
-            .ok_or_else(oe_inv_arg("expected matrix argument in ArbData"))?;
+        let args = src.get_args_mut();
+        if args.is_empty() {
+            inv_arg("expected matrix argument in ArbData")?;
+        }
+        let data = &args[0];
         if data.len() % 16 != 0 {
             inv_arg("invalid matrix size")?;
         }
@@ -86,6 +117,7 @@ impl FromArb for Matrix {
             let im = f64::from_le_bytes(data[i * 16 + 8..i * 16 + 16].try_into().unwrap());
             entries.push(Complex64::new(re, im));
         }
+        args.drain(..1);
         Ok(entries.into())
     }
 }
@@ -544,8 +576,13 @@ impl MatrixConverter for UMatrixConverter {
         _ignore_global_phase: bool,
     ) -> Result<Option<Self::Parameters>> {
         if let Some(expected) = self.num_qubits {
-            if matrix.num_qubits().unwrap() != expected {
-                // matrix has incorrect size
+            if let Some(num_qubits) = matrix.num_qubits() {
+                if num_qubits != expected {
+                    // matrix has incorrect size
+                    return Ok(None);
+                }
+            } else {
+                // matrix does not have defined number of qubits
                 return Ok(None);
             }
         }
@@ -1018,8 +1055,7 @@ mod tests {
     fn from_arb() {
         assert!(<()>::from_arb(&mut ArbData::default()).is_ok());
 
-        // TODO(mb)
-        // assert!(u64::from_arb(&mut ArbData::default()).is_err());
+        assert!(u64::from_arb(&mut ArbData::default()).is_err());
         let mut u64_arb = ArbData::from_args(
             vec![1u64, 2, 3]
                 .into_iter()
@@ -1029,12 +1065,10 @@ mod tests {
         assert_eq!(u64::from_arb(&mut u64_arb).unwrap(), 1);
         assert_eq!(u64::from_arb(&mut u64_arb).unwrap(), 2);
         assert_eq!(u64::from_arb(&mut u64_arb).unwrap(), 3);
-        // TODO(mb)
-        // assert!(u64::from_arb(&mut u64_arb).is_err());
+        assert!(u64::from_arb(&mut u64_arb).is_err());
         assert!(u64::from_arb(&mut ArbData::from_args(vec![vec![1u8, 2, 3]])).is_err());
 
-        // TODO(mb)
-        // assert!(f64::from_arb(&mut ArbData::default()).is_err());
+        assert!(f64::from_arb(&mut ArbData::default()).is_err());
         let mut f64_arb = ArbData::from_args(
             vec![1f64, 2., 3.]
                 .into_iter()
@@ -1045,19 +1079,16 @@ mod tests {
         approx_eq!(f64, f64::from_arb(&mut f64_arb).unwrap(), 1.);
         approx_eq!(f64, f64::from_arb(&mut f64_arb).unwrap(), 2.);
         approx_eq!(f64, f64::from_arb(&mut f64_arb).unwrap(), 3.);
-        // TODO(mb)
-        // assert!(f64::from_arb(&mut f64_arb).is_err());
+        assert!(f64::from_arb(&mut f64_arb).is_err());
         assert!(f64::from_arb(&mut ArbData::from_args(vec![vec![1u8, 2, 3]])).is_err());
 
-        // TODO(mb)
-        // assert!(<(f64, f64, f64)>::from_arb(&mut ArbData::default()).is_err());
+        assert!(<(f64, f64, f64)>::from_arb(&mut ArbData::default()).is_err());
         assert_eq!(
             <(f64, f64, f64)>::from_arb(&mut f64_tup_arb).unwrap(),
             (1., 2., 3.)
         );
 
-        // TODO(mb)
-        // assert!(Matrix::from_arb(&mut ArbData::default()).is_err());
+        assert!(Matrix::from_arb(&mut ArbData::default()).is_err());
         assert!(Matrix::from_arb(&mut ArbData::from_args(vec![vec![1u8, 2, 3]])).is_err());
         let mut bad_matrix_arb = ArbData::from_args(vec![vec![1f64, 2., 3., 4.]
             .into_iter()
@@ -1306,11 +1337,10 @@ mod tests {
             .unwrap()
             .is_none());
 
-        // TODO(mb)
-        // assert!(u
-        //     .detect_matrix(&Matrix::new_identity(3), 0., false)
-        //     .unwrap()
-        //     .is_none());
+        assert!(u
+            .detect_matrix(&Matrix::new_identity(3), 0., false)
+            .unwrap()
+            .is_none());
 
         let u = UMatrixConverter::new(Some(2));
         assert_eq!(
