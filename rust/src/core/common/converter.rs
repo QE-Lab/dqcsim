@@ -1011,10 +1011,12 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::common::error::ErrorKind;
+    use float_cmp::approx_eq;
 
     #[test]
     fn from_arb() {
-        assert_eq!(<()>::from_arb(&mut ArbData::default()).unwrap(), ());
+        assert!(<()>::from_arb(&mut ArbData::default()).is_ok());
 
         // TODO(mb)
         // assert!(u64::from_arb(&mut ArbData::default()).is_err());
@@ -1040,9 +1042,9 @@ mod tests {
                 .collect::<Vec<Vec<u8>>>(),
         );
         let mut f64_tup_arb = f64_arb.clone();
-        assert_eq!(f64::from_arb(&mut f64_arb).unwrap(), 1.);
-        assert_eq!(f64::from_arb(&mut f64_arb).unwrap(), 2.);
-        assert_eq!(f64::from_arb(&mut f64_arb).unwrap(), 3.);
+        approx_eq!(f64, f64::from_arb(&mut f64_arb).unwrap(), 1.);
+        approx_eq!(f64, f64::from_arb(&mut f64_arb).unwrap(), 2.);
+        approx_eq!(f64, f64::from_arb(&mut f64_arb).unwrap(), 3.);
         // TODO(mb)
         // assert!(f64::from_arb(&mut f64_arb).is_err());
         assert!(f64::from_arb(&mut ArbData::from_args(vec![vec![1u8, 2, 3]])).is_err());
@@ -1076,9 +1078,8 @@ mod tests {
 
     #[test]
     fn to_arb() {
-        let unit = ();
         let mut arb = ArbData::default();
-        unit.to_arb(&mut arb);
+        ().to_arb(&mut arb);
         assert_eq!(arb, ArbData::default());
 
         let x = 8u64;
@@ -1324,5 +1325,360 @@ mod tests {
             Matrix::new_identity(4)
         );
         assert!(u.construct_matrix(&Matrix::new_identity(6)).is_err());
+    }
+
+    #[test]
+    fn unitary_converter() {
+        let rx = UnitaryConverter::new(RxMatrixConverter::default(), Some(0), 0., false);
+        let xrx = UnitaryConverter::new(RxMatrixConverter::default(), None, 0., false);
+        let crx = UnitaryConverter::new(RxMatrixConverter::default(), Some(1), 0., false);
+
+        assert_eq!(
+            rx.detect(&(Matrix::new_identity(2), None)).unwrap(),
+            Some(0f64)
+        );
+        assert_eq!(
+            xrx.detect(&(Matrix::new_identity(2), None)).unwrap(),
+            Some(0f64)
+        );
+        assert!(crx
+            .detect(&(Matrix::new_identity(2), None))
+            .unwrap()
+            .is_none());
+
+        assert_eq!(
+            crx.detect(&(Matrix::new_identity(2), Some(1))).unwrap(),
+            Some(0f64)
+        );
+        assert_eq!(
+            xrx.detect(&(Matrix::new_identity(2), Some(1))).unwrap(),
+            Some(0f64)
+        );
+        assert!(rx
+            .detect(&(Matrix::new_identity(2), Some(1)))
+            .unwrap()
+            .is_none());
+
+        assert_eq!(
+            rx.construct(&PI).unwrap(),
+            (Matrix::from(UnboundGate::RX(PI)), Some(0))
+        );
+        assert_eq!(
+            xrx.construct(&PI).unwrap(),
+            (Matrix::from(UnboundGate::RX(PI)), None)
+        );
+        assert_eq!(
+            crx.construct(&PI).unwrap(),
+            (Matrix::from(UnboundGate::RX(PI)), Some(1))
+        );
+    }
+
+    #[test]
+    fn unitary_gate_converter() {
+        let rx = UnitaryGateConverter::from(UnitaryConverter::new(
+            RxMatrixConverter::default(),
+            Some(0),
+            0.,
+            false,
+        ));
+        let crx = UnitaryGateConverter::from(UnitaryConverter::new(
+            RxMatrixConverter::default(),
+            Some(1),
+            0.,
+            false,
+        ));
+        let xrx = UnitaryGateConverter::from(UnitaryConverter::new(
+            RxMatrixConverter::default(),
+            None,
+            0.,
+            false,
+        ));
+
+        let named_gate = Gate::new_custom(
+            "name",
+            vec![],
+            vec![],
+            vec![],
+            None as Option<Vec<Complex64>>,
+            ArbData::default(),
+        )
+        .unwrap();
+        assert!(rx.detect(&named_gate).unwrap().is_none());
+        assert!(crx.detect(&named_gate).unwrap().is_none());
+        assert!(xrx.detect(&named_gate).unwrap().is_none());
+
+        let measure_gate = Gate::new_measurement(vec![QubitRef::from_foreign(1).unwrap()]).unwrap();
+        assert!(rx.detect(&measure_gate).unwrap().is_none());
+        assert!(crx.detect(&measure_gate).unwrap().is_none());
+        assert!(xrx.detect(&measure_gate).unwrap().is_none());
+
+        let rx_gate = Gate::new_unitary(
+            vec![QubitRef::from_foreign(1).unwrap()],
+            vec![],
+            Matrix::from(UnboundGate::RX(1.234f64)),
+        )
+        .unwrap();
+        let x = 1.234f64;
+        let mut arb = ArbData::default();
+        x.to_arb(&mut arb);
+
+        assert_eq!(
+            rx.detect(&rx_gate).unwrap(),
+            Some((vec![QubitRef::from_foreign(1).unwrap()], arb.clone()))
+        );
+        assert!(crx.detect(&rx_gate).unwrap().is_none());
+        assert_eq!(
+            xrx.detect(&rx_gate).unwrap(),
+            Some((vec![QubitRef::from_foreign(1).unwrap()], arb.clone()))
+        );
+
+        let crx_gate = Gate::new_unitary(
+            vec![QubitRef::from_foreign(1).unwrap()],
+            vec![QubitRef::from_foreign(2).unwrap()],
+            Matrix::from(UnboundGate::RX(1.234f64)),
+        )
+        .unwrap();
+
+        assert!(rx.detect(&crx_gate).unwrap().is_none());
+        assert_eq!(
+            crx.detect(&crx_gate).unwrap(),
+            Some((
+                vec![
+                    QubitRef::from_foreign(2).unwrap(),
+                    QubitRef::from_foreign(1).unwrap()
+                ],
+                arb.clone()
+            ))
+        );
+        assert_eq!(
+            xrx.detect(&crx_gate).unwrap(),
+            Some((
+                vec![
+                    QubitRef::from_foreign(2).unwrap(),
+                    QubitRef::from_foreign(1).unwrap()
+                ],
+                arb.clone()
+            ))
+        );
+
+        assert_eq!(
+            rx.construct(&(
+                vec![
+                    QubitRef::from_foreign(2).unwrap(),
+                    QubitRef::from_foreign(1).unwrap(),
+                ],
+                arb.clone(),
+            ))
+            .unwrap_err()
+            .to_string(),
+            "Invalid argument: expected 0 control and 1 target qubits"
+        );
+        assert_eq!(
+            rx.construct(&(vec![QubitRef::from_foreign(1).unwrap()], arb.clone(),))
+                .unwrap(),
+            rx_gate
+        );
+        assert_eq!(
+            rx.construct(&(vec![], arb.clone()))
+                .unwrap_err()
+                .to_string(),
+            "Invalid argument: need at least 1 qubits"
+        );
+
+        assert_eq!(
+            crx.construct(&(vec![QubitRef::from_foreign(1).unwrap(),], arb.clone(),))
+                .unwrap_err()
+                .to_string(),
+            "Invalid argument: expected 1 control and 1 target qubits"
+        );
+        assert_eq!(
+            crx.construct(&(
+                vec![
+                    QubitRef::from_foreign(2).unwrap(),
+                    QubitRef::from_foreign(1).unwrap()
+                ],
+                arb.clone(),
+            ))
+            .unwrap(),
+            crx_gate
+        );
+        assert_eq!(
+            crx.construct(&(vec![], arb.clone()))
+                .unwrap_err()
+                .to_string(),
+            "Invalid argument: need at least 1 qubits"
+        );
+
+        assert_eq!(
+            xrx.construct(&(vec![QubitRef::from_foreign(1).unwrap(),], arb.clone(),))
+                .unwrap(),
+            rx_gate
+        );
+        assert_eq!(
+            xrx.construct(&(
+                vec![
+                    QubitRef::from_foreign(2).unwrap(),
+                    QubitRef::from_foreign(1).unwrap()
+                ],
+                arb.clone(),
+            ))
+            .unwrap(),
+            crx_gate
+        );
+        assert_eq!(
+            xrx.construct(&(
+                vec![
+                    QubitRef::from_foreign(2).unwrap(),
+                    QubitRef::from_foreign(3).unwrap(),
+                    QubitRef::from_foreign(1).unwrap()
+                ],
+                arb.clone()
+            ))
+            .unwrap(),
+            Gate::new_unitary(
+                vec![QubitRef::from_foreign(1).unwrap()],
+                vec![
+                    QubitRef::from_foreign(2).unwrap(),
+                    QubitRef::from_foreign(3).unwrap()
+                ],
+                Matrix::from(UnboundGate::RX(1.234f64)),
+            )
+            .unwrap()
+        );
+        assert_eq!(
+            xrx.construct(&(vec![], arb)).unwrap_err().to_string(),
+            "Invalid argument: need at least 1 qubits"
+        );
+    }
+
+    #[test]
+    fn measurement_gate_converter() {
+        let mn = MeasurementGateConverter::new(None);
+        let m0 = MeasurementGateConverter::new(Some(0));
+        let m1 = MeasurementGateConverter::new(Some(1));
+
+        let named_gate = Gate::new_custom(
+            "name",
+            vec![],
+            vec![],
+            vec![],
+            None as Option<Vec<Complex64>>,
+            ArbData::default(),
+        )
+        .unwrap();
+        let named_gate_m = Gate::new_custom(
+            "name",
+            vec![],
+            vec![],
+            vec![QubitRef::from_foreign(1).unwrap()],
+            None as Option<Vec<Complex64>>,
+            ArbData::default(),
+        )
+        .unwrap();
+
+        assert!(mn.detect(&named_gate).unwrap().is_none());
+        assert!(mn.detect(&named_gate_m).unwrap().is_none());
+        assert!(m0.detect(&named_gate).unwrap().is_none());
+        assert!(m0.detect(&named_gate_m).unwrap().is_none());
+        assert!(m1.detect(&named_gate).unwrap().is_none());
+        assert!(m1.detect(&named_gate_m).unwrap().is_none());
+
+        let measure_gate_0 = Gate::new_measurement(vec![]).unwrap();
+        let measure_gate_1 =
+            Gate::new_measurement(vec![QubitRef::from_foreign(1).unwrap()]).unwrap();
+        let measure_gate_2 = Gate::new_measurement(vec![
+            QubitRef::from_foreign(1).unwrap(),
+            QubitRef::from_foreign(2).unwrap(),
+        ])
+        .unwrap();
+
+        assert_eq!(
+            mn.detect(&measure_gate_0).unwrap(),
+            Some((vec![], ArbData::default()))
+        );
+        assert_eq!(
+            mn.detect(&measure_gate_1).unwrap(),
+            Some((vec![QubitRef::from_foreign(1).unwrap()], ArbData::default()))
+        );
+        assert_eq!(
+            mn.detect(&measure_gate_2).unwrap(),
+            Some((
+                vec![
+                    QubitRef::from_foreign(1).unwrap(),
+                    QubitRef::from_foreign(2).unwrap()
+                ],
+                ArbData::default()
+            ))
+        );
+        assert_eq!(
+            m0.detect(&measure_gate_0).unwrap(),
+            Some((vec![], ArbData::default()))
+        );
+        assert!(m0.detect(&measure_gate_1).unwrap().is_none());
+        assert!(m0.detect(&measure_gate_2).unwrap().is_none());
+        assert!(m1.detect(&measure_gate_0).unwrap().is_none());
+        assert_eq!(
+            m1.detect(&measure_gate_1).unwrap(),
+            Some((vec![QubitRef::from_foreign(1).unwrap()], ArbData::default()))
+        );
+        assert!(m1.detect(&measure_gate_2).unwrap().is_none());
+
+        let empty = (vec![], ArbData::default());
+        let one = (vec![QubitRef::from_foreign(1).unwrap()], ArbData::default());
+        let two = (
+            vec![
+                QubitRef::from_foreign(1).unwrap(),
+                QubitRef::from_foreign(2).unwrap(),
+            ],
+            ArbData::default(),
+        );
+
+        assert_eq!(mn.construct(&empty).unwrap(), measure_gate_0);
+        assert_eq!(mn.construct(&one).unwrap(), measure_gate_1);
+        assert_eq!(mn.construct(&two).unwrap(), measure_gate_2);
+        assert_eq!(m0.construct(&empty).unwrap(), measure_gate_0);
+        assert!(m0.construct(&one).is_err());
+        assert!(m0.construct(&two).is_err());
+        assert!(m1.construct(&empty).is_err());
+        assert_eq!(m1.construct(&one).unwrap(), measure_gate_1);
+        assert!(m1.construct(&two).is_err());
+    }
+
+    #[test]
+    fn custom_gate_converter() {
+        let gate = Gate::new_measurement(vec![QubitRef::from_foreign(42).unwrap()]).unwrap();
+        let yes = CustomGateConverter::new(
+            |_gate: &Gate| {
+                Ok(Some((
+                    vec![QubitRef::from_foreign(42).unwrap()],
+                    ArbData::default(),
+                )))
+            },
+            |_q: &[QubitRef], _data: &ArbData| Ok(gate.clone()),
+        );
+        let no = CustomGateConverter::new(
+            |_| Ok(None),
+            |_, _| Err(ErrorKind::Other("no".to_string()).into()),
+        );
+
+        assert_eq!(
+            yes.detect(&gate).unwrap(),
+            Some((
+                vec![QubitRef::from_foreign(42).unwrap()],
+                ArbData::default(),
+            ))
+        );
+        assert_eq!(
+            yes.construct(&((&[]).to_vec(), ArbData::default()))
+                .unwrap(),
+            gate
+        );
+        assert_eq!(no.detect(&gate).unwrap(), None);
+        assert_eq!(
+            no.construct(&((&[]).to_vec(), ArbData::default()))
+                .unwrap_err()
+                .to_string(),
+            "no"
+        );
     }
 }
