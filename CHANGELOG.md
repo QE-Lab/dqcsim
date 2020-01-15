@@ -1,3 +1,6 @@
+## [0.0.11] - 2020-01-15
+-  8ac019f Fix python path in manylinux image
+
 ## [0.0.10] - 2020-01-15
 -  19cfa7a Add macos-py38 and manylinux2014 wheels
 -  a054a59 Make internal CBOR representation canonical
