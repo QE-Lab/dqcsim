@@ -243,38 +243,29 @@ pub extern "C" fn dqcs_gm_add_fixed_unitary(
 ///> that exist besides the matrix (that is, if nonzero, the matrix is actually
 ///> only the non-controlled submatrix of the controlled gate). `param_data` is
 ///> given a borrowed `ArbData` handle initialized with the `ArbData` attached
-///> to the gate.
-///>
-///> If the gate matches, the detector function must return `DQCS_TRUE`. In
-///> this case, it can mutate the `param_data` to add the detected gate
-///> parameters. If it doesn't match, it must return `DQCS_FALSE`. If an error
-///> occurs, it must call `dqcs_error_set()` with the error message and return
-///> `DQCS_BOOL_FAILURE`.
+///> to the gate. If the gate matches, the detector function must return
+///> `DQCS_TRUE`. In this case, it can mutate the `param_data` to add the
+///> detected gate parameters. If it doesn't match, it must return
+///> `DQCS_FALSE`. If an error occurs, it must call `dqcs_error_set()` with the
+///> error message and return `DQCS_BOOL_FAILURE`.
 ///>
 ///> The constructor callback performs the reverse operation. It receives an
 ///> `ArbData` handle containing the parameterization data, and must construct
 ///> the matrix, return the bound on the number of control qubits, and must
-///> return the `ArbData` associated with the matrix by mutating the
-///> `param_data` handle. `matrix` and `num_controls` will point to
-///> zero-initialized variables through which the matrix handle and control
-///> qubit bound may be returned. The control qubit bound works as follows:
-///> if negative, any number of qubits is allowed; if zero or positive, only
-///> that number is allowed.
-///>
-///> If construction succeeds, the constructor function must return
-///> `DQCS_TRUE`. If it doesn't know how to handle the given input, it may
-///> return either `DQCS_FALSE` or call `dqcs_error_set()` with an error
-///> message and return `DQCS_BOOL_FAILURE`. The difference is that in the
-///> former case subsequent constructors with the same key will still be
-///> called (keys don't need to be unique), whereas in the latter case
-///> `dqcs_gm_construct*()` will immediately propagate the failure.
+///> return the `ArbData` associated with the gate by mutating the `param_data`
+///> handle. `num_controls` will point to a variable initialized to -1
+///> representing a constraint on the number of control qubits. This works as
+///> follows: if negative, any number of qubits is allowed; if zero or
+///> positive, only that number is allowed. If construction succeeds, the
+///> constructor function must return a handle to the constructed matrix. If
+///> it fails, it must call `dqcs_error_set()` with an error message and return
+///> 0.
 ///>
 ///> It is up to the user how to do the matching and constructing, but the
 ///> converter functions must always return the same value for the same input.
 ///> In other words, they must be pure functions. Otherwise, the caching
 ///> behavior of the `GateMap` will make the results inconsistent.
 #[no_mangle]
-#[allow(unused_variables)] // TODO
 pub extern "C" fn dqcs_gm_add_custom_unitary(
     gm: dqcs_handle_t,
     key_free: Option<extern "C" fn(key_data: *mut c_void)>,
@@ -293,9 +284,8 @@ pub extern "C" fn dqcs_gm_add_custom_unitary(
         extern "C" fn(
             user_data: *const c_void,
             param_data: dqcs_handle_t,
-            matrix: *mut dqcs_handle_t,
             num_controls: *mut isize,
-        ) -> dqcs_return_t,
+        ) -> dqcs_handle_t,
     >,
     constructor_user_free: Option<extern "C" fn(user_data: *mut c_void)>,
     constructor_user_data: *mut c_void,
@@ -306,7 +296,100 @@ pub extern "C" fn dqcs_gm_add_custom_unitary(
         let constructor_user_data = UserData::new(constructor_user_free, constructor_user_data);
         resolve!(gm as &mut GateMap);
         let key = gm.make_key(key);
-        todo!();
+        gm.map.push(
+            key,
+            Box::new(CustomGateConverter::new(
+                move |gate| {
+                    if let Some(detector) = detector {
+                        if gate.get_name().is_some() || !gate.get_measures().is_empty() {
+                            // Custom gate, measurement gate or unitary + measure compound; not
+                            // (just) a unitary so no match.
+                            Ok(None)
+                        } else if let Some(matrix) = gate.get_matrix() {
+                            // Unitary gate. Check conditions.
+                            let matrix = insert(matrix);
+                            let num_controls = gate.get_controls().len();
+                            let param_data = insert(gate.data.clone());
+                            let result = detector(
+                                detector_user_data.data(),
+                                matrix,
+                                num_controls,
+                                param_data,
+                            );
+                            delete!(matrix);
+                            take!(param_data as ArbData);
+                            if cb_return_bool(result)? {
+                                // Matrix match; construct qubit argument vector.
+                                let mut qubits = vec![];
+                                qubits.extend(gate.get_controls().iter());
+                                qubits.extend(gate.get_targets().iter());
+                                Ok(Some((qubits, param_data)))
+                            } else {
+                                // Matrix didn't match.
+                                Ok(None)
+                            }
+                        } else {
+                            // A gate with no name, matrix, or measured qubits is illegal.
+                            unreachable!();
+                        }
+                    } else {
+                        // No detector defined.
+                        Ok(None)
+                    }
+                },
+                move |qubits, param_data| {
+                    if let Some(constructor) = constructor {
+                        // Construct the matrix and data.
+                        let param_data = insert(param_data.clone());
+                        let mut expected_num_controls = -1isize;
+                        let result = constructor(
+                            constructor_user_data.data(),
+                            param_data,
+                            &mut expected_num_controls as *mut isize,
+                        );
+                        take!(param_data as ArbData);
+                        let matrix = cb_return(0, result)?;
+                        take!(matrix as Matrix);
+
+                        // Parse qubit argument vector.
+                        let expected_num_controls = expected_qubit_count(expected_num_controls);
+                        let num_targets = matrix.num_qubits().unwrap();
+                        let num_controls =
+                            qubits
+                                .len()
+                                .checked_sub(num_targets)
+                                .ok_or_else(oe_inv_arg(format!(
+                                    "need at least {} qubits",
+                                    num_targets
+                                )))?;
+                        if let Some(expected) = expected_num_controls {
+                            if num_controls != expected {
+                                inv_arg(format!(
+                                    "expected {} control and {} target qubits",
+                                    expected, num_targets
+                                ))?;
+                            }
+                        }
+                        let controls = &qubits[..num_controls];
+                        let targets = &qubits[num_controls..];
+
+                        // Construct the gate.
+                        let mut gate = Gate::new_unitary(
+                            targets.iter().cloned(),
+                            controls.iter().cloned(),
+                            matrix,
+                        )?;
+                        gate.data.copy_from(&param_data);
+
+                        Ok(gate)
+                    } else {
+                        // No constructor defined.
+                        inv_arg("no constructor function defined")
+                    }
+                },
+            )),
+        );
+        Ok(())
     })
 }
 
@@ -416,65 +499,64 @@ pub extern "C" fn dqcs_gm_add_custom(
         let constructor_user_data = UserData::new(constructor_user_free, constructor_user_data);
         resolve!(gm as &mut GateMap);
         let key = gm.make_key(key);
-        gm.map.push(key, Box::new(CustomGateConverter::new(
-            move |gate| {
-                if let Some(detector) = detector {
-                    let gate = insert(gate.clone());
-                    let mut qubits: dqcs_handle_t = 0;
-                    let mut param_data: dqcs_handle_t = 0;
-                    let result = detector(
-                        detector_user_data.data(),
-                        gate,
-                        &mut qubits as *mut dqcs_handle_t,
-                        &mut param_data as *mut dqcs_handle_t,
-                    );
-                    let param_data = if param_data == 0 {
-                        take!(gate as Gate);
-                        gate.data
+        gm.map.push(
+            key,
+            Box::new(CustomGateConverter::new(
+                move |gate| {
+                    if let Some(detector) = detector {
+                        let gate = insert(gate.clone());
+                        let mut qubits: dqcs_handle_t = 0;
+                        let mut param_data: dqcs_handle_t = 0;
+                        let result = detector(
+                            detector_user_data.data(),
+                            gate,
+                            &mut qubits as *mut dqcs_handle_t,
+                            &mut param_data as *mut dqcs_handle_t,
+                        );
+                        let param_data = if param_data == 0 {
+                            take!(gate as Gate);
+                            gate.data
+                        } else {
+                            delete!(gate);
+                            take!(param_data as ArbData);
+                            param_data
+                        };
+                        let qubits = if qubits == 0 {
+                            vec![]
+                        } else {
+                            take!(qubits as QubitReferenceSet);
+                            qubits.into_iter().collect()
+                        };
+                        if cb_return_bool(result)? {
+                            // Detector returned match.
+                            Ok(Some((qubits, param_data)))
+                        } else {
+                            // Detector returned no match.
+                            Ok(None)
+                        }
                     } else {
-                        delete!(gate);
-                        take!(param_data as ArbData);
-                        param_data
-                    };
-                    let qubits = if qubits == 0 {
-                        vec![]
-                    } else {
-                        take!(qubits as QubitReferenceSet);
-                        qubits.into_iter().collect()
-                    };
-                    if cb_return_bool(result)? {
-                        // Detector returned match.
-                        Ok(Some((qubits, param_data)))
-                    } else {
-                        // Detector returned no match.
+                        // No detector defined.
                         Ok(None)
                     }
-                } else {
-                    // No detector defined.
-                    Ok(None)
-                }
-            },
-            move |qubits, param_data| {
-                if let Some(constructor) = constructor{
-                    let qubits: QubitReferenceSet = qubits.iter().cloned().collect();
-                    let qubits = insert(qubits);
-                    let param_data = insert(param_data.clone());
-                    let result = constructor(
-                        constructor_user_data.data(),
-                        qubits,
-                        param_data,
-                    );
-                    delete!(param_data);
-                    delete!(qubits);
-                    let gate = cb_return(0, result)?;
-                    take!(gate as Gate);
-                    Ok(gate)
-                } else {
-                    // No constructor defined.
-                    inv_arg("no constructor function defined")
-                }
-            },
-        )));
+                },
+                move |qubits, param_data| {
+                    if let Some(constructor) = constructor {
+                        let qubits: QubitReferenceSet = qubits.iter().cloned().collect();
+                        let qubits = insert(qubits);
+                        let param_data = insert(param_data.clone());
+                        let result = constructor(constructor_user_data.data(), qubits, param_data);
+                        delete!(param_data);
+                        delete!(qubits);
+                        let gate = cb_return(0, result)?;
+                        take!(gate as Gate);
+                        Ok(gate)
+                    } else {
+                        // No constructor defined.
+                        inv_arg("no constructor function defined")
+                    }
+                },
+            )),
+        );
         Ok(())
     })
 }

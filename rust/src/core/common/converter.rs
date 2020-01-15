@@ -16,6 +16,9 @@ use num_complex::Complex64;
 use std::{cell::RefCell, collections::HashMap, convert::TryInto, f64::consts::PI, hash::Hash};
 
 /// A type that can be constructed from (part of) an ArbData object.
+///
+/// Any data not consumed by the construction stays in the ArbData object for
+/// further interpretation.
 pub trait FromArb
 where
     Self: std::marker::Sized,
@@ -87,16 +90,12 @@ impl FromArb for Matrix {
     }
 }
 
-impl FromArb for ArbData {
-    fn from_arb(src: &mut ArbData) -> Result<Self> {
-        let mut ret = ArbData::default();
-        ret.copy_from(src);
-        src.clear();
-        Ok(ret)
-    }
-}
-
-/// A type that can be converted into an ArbData object.
+/// A type that can be converted into (part of) an ArbData object.
+///
+/// This is the reverse of `FromArb`. Generally, constructing an arb from a
+/// number of `ToArb` objects in a certain order should make the objects
+/// recoverable using `FromArb` in the reverse order, assuming all involved
+/// types implement both directions.
 pub trait ToArb {
     /// Convert self to ArbData parameters and add them to the data object.
     fn to_arb(self, dest: &mut ArbData);
@@ -134,12 +133,6 @@ impl ToArb for Matrix {
             data.extend(entry.im.to_le_bytes().iter());
         }
         dest.get_args_mut().insert(0, data);
-    }
-}
-
-impl ToArb for ArbData {
-    fn to_arb(self, dest: &mut ArbData) {
-        dest.copy_from(&self)
     }
 }
 
@@ -595,39 +588,6 @@ where
             self.converter.construct_matrix(parameters)?,
             self.num_controls,
         ))
-    }
-}
-
-/// Lambda-based converter implementation for unitary gate matrices.
-#[allow(clippy::type_complexity)]
-pub struct CustomUnitaryConverter<'f> {
-    detector: Box<dyn Fn(&Matrix, usize) -> Result<Option<ArbData>> + 'f>,
-    constructor: Box<dyn Fn(&ArbData) -> Result<(Matrix, Option<usize>)> + 'f>,
-}
-
-impl<'f> CustomUnitaryConverter<'f> {
-    pub fn new(
-        detector: impl Fn(&Matrix, usize) -> Result<Option<ArbData>> + 'f,
-        constructor: impl Fn(&ArbData) -> Result<(Matrix, Option<usize>)> + 'f,
-    ) -> CustomUnitaryConverter<'f> {
-        CustomUnitaryConverter {
-            detector: Box::new(detector),
-            constructor: Box::new(constructor),
-        }
-    }
-}
-
-impl<'f> Converter for CustomUnitaryConverter<'f> {
-    type Input = (Matrix, Option<usize>);
-    type Output = ArbData;
-
-    fn detect(&self, input: &Self::Input) -> Result<Option<Self::Output>> {
-        let (matrix, num_controls) = input;
-        (self.detector)(matrix, num_controls.unwrap_or(0))
-    }
-
-    fn construct(&self, data: &Self::Output) -> Result<Self::Input> {
-        (self.constructor)(data)
     }
 }
 
