@@ -172,16 +172,26 @@ pub trait Converter {
     fn construct(&self, input: &Self::Output) -> Result<Self::Input>;
 }
 
+/// A type that represents a possibly parameterized matrix form, allowing
+/// conversion between the parameters and the complete matrix.
+///
+/// `Converter<(Matrix, f64, bool), Self::Parameters>` is automatically
+/// implemented for types with this trait.
 pub trait MatrixConverter {
-    // For parameterized matrices, this is the type of the parameters needed
-    // for construction/returned by detection.
+    /// For parameterized matrices, this is the type of the parameters needed
+    /// for construction/returned by detection. `FromArb` and `ToArb` must
+    /// typically be defined for it
     type Parameters;
+    /// Detects the whether the given matrix has a recognized form and returns
+    /// the parameters that can be used to reconstruct it, within the given
+    /// error margin, and optionally ignoring differences in global phase.
     fn detect_matrix(
         &self,
         matrix: &Matrix,
         epsilon: f64,
         ignore_global_phase: bool,
     ) -> Result<Option<Self::Parameters>>;
+    /// Constructs a matrix from the given parameter set.
     fn construct_matrix(&self, parameters: &Self::Parameters) -> Result<Matrix>;
 }
 
