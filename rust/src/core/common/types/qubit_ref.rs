@@ -137,7 +137,10 @@ mod tests {
         let qr = QubitRef::from_foreign(1).unwrap();
         assert_eq!(qr, (q.allocate(1))[0]);
 
-        assert_eq!(42, QubitRef::from_foreign(42).unwrap().to_foreign().unwrap());
+        assert_eq!(
+            42,
+            QubitRef::from_foreign(42).unwrap().to_foreign().unwrap()
+        );
 
         assert_eq!(0, QubitRef::option_to_foreign(None).unwrap());
         assert_eq!(
