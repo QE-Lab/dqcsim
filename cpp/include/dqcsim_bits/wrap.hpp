@@ -252,6 +252,11 @@ namespace wrap {
     Matrix = 107,
 
     /**
+     * Indicates that a handle is a `GateMap`.
+     */
+    GateMap = 108,
+
+    /**
      * Indicates that a handle is a `PluginProcessConfiguration` for a frontend
      * plugin.
      */
@@ -334,6 +339,7 @@ namespace wrap {
       case HandleType::Measurement:           return raw::dqcs_handle_type_t::DQCS_HTYPE_MEAS;
       case HandleType::MeasurementSet:        return raw::dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET;
       case HandleType::Matrix:                return raw::dqcs_handle_type_t::DQCS_HTYPE_MATRIX;
+      case HandleType::GateMap:               return raw::dqcs_handle_type_t::DQCS_HTYPE_GATE_MAP;
       case HandleType::FrontendProcessConfig: return raw::dqcs_handle_type_t::DQCS_HTYPE_FRONT_PROCESS_CONFIG;
       case HandleType::OperatorProcessConfig: return raw::dqcs_handle_type_t::DQCS_HTYPE_OPER_PROCESS_CONFIG;
       case HandleType::BackendProcessConfig:  return raw::dqcs_handle_type_t::DQCS_HTYPE_BACK_PROCESS_CONFIG;
@@ -370,8 +376,7 @@ namespace wrap {
       case raw::dqcs_handle_type_t::DQCS_HTYPE_MEAS:                 return HandleType::Measurement;
       case raw::dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET:             return HandleType::MeasurementSet;
       case raw::dqcs_handle_type_t::DQCS_HTYPE_MATRIX:               return HandleType::Matrix;
-      case raw::dqcs_handle_type_t::DQCS_HTYPE_MATRIX_MAP_BUILDER:   return HandleType::Matrix; // TODO
-      case raw::dqcs_handle_type_t::DQCS_HTYPE_MATRIX_MAP:           return HandleType::Matrix; // TODO
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_GATE_MAP:             return HandleType::GateMap;
       case raw::dqcs_handle_type_t::DQCS_HTYPE_FRONT_PROCESS_CONFIG: return HandleType::FrontendProcessConfig;
       case raw::dqcs_handle_type_t::DQCS_HTYPE_OPER_PROCESS_CONFIG:  return HandleType::OperatorProcessConfig;
       case raw::dqcs_handle_type_t::DQCS_HTYPE_BACK_PROCESS_CONFIG:  return HandleType::BackendProcessConfig;
