@@ -1,4 +1,169 @@
 use super::*;
+use crate::common::gates::GateType;
+use std::convert::TryFrom;
+
+/// Helper function for the `dqcs_gate_new_predef*()` functions.
+fn new_predef_helper(
+    gate_type: dqcs_internal_gate_t,
+    qubits: Vec<QubitRef>,
+    param_data: dqcs_handle_t,
+) -> Result<dqcs_handle_t> {
+    // Interpret gate type.
+    let gate_type = GateType::try_from(gate_type)?;
+
+    // Interpret data.
+    resolve!(optional param_data as pending ArbData);
+    let data: ArbData = {
+        if let Some(data) = param_data.as_ref() {
+            let x: &ArbData = data.as_ref().unwrap();
+            x.clone()
+        } else {
+            ArbData::default()
+        }
+    };
+
+    // Construct the gate.
+    let gate = insert(
+        gate_type
+            .into_converter(None, 0., false)
+            .construct(&(qubits, data))?,
+    );
+
+    // Delete consumed handles.
+    if let Some(mut param_data) = param_data {
+        delete!(resolved param_data);
+    }
+
+    Ok(gate)
+}
+
+/// Constructs a new predefined unitary gate.
+///
+/// `gate_type` specifies which kind of gate should be constructed.
+///
+/// `targets` must be a handle to a non-empty qubit set, containing at least
+/// as many qubits as needed for the specified gate type. If more qubits are
+/// specified, the rightmost qubits become the targets, and the remaining
+/// qubits become control qubits to make a controlled gate.
+///
+/// `param_data` takes an optional `ArbData` object used to parameterize the
+/// gate if necessary. If not specified, an empty object is used. Some of the
+/// gate types are parameterized, and use values from this `ArbData` as
+/// follows; anything remaining in the `ArbData` afterwards is placed in the
+/// gate object.
+///
+///  - `DQCS_GATE_RX`, `DQCS_GATE_RY`, `DQCS_GATE_RZ`, and `DQCS_GATE_PHASE`
+///    pop a 64-bit double floating point with the angle at binary string index
+///    0.
+///  - `DQCS_GATE_PHASE_K` pops a 64-bit unsigned integer with the k value at
+///    binary string index 0.
+///  - `DQCS_GATE_R` pops theta at binary string index 0, phi at index 1, and
+///    lambda at index 2. They represent 64-bit double floating points.
+///  - `DQCS_GATE_U` pops the entire matrix as a single argument at index 0,
+///    consisting of 2**N * 2**N * 2 doubles, in real-first row-major format
+///    (same as the other matrix definitions in DQCsim).
+///
+/// This function returns the handle to the gate, or 0 to indicate failure.
+/// The qubit set and parameterization data (if specified) are consumed/deleted
+/// by this function if and only if it succeeds.
+#[no_mangle]
+pub extern "C" fn dqcs_gate_new_predef(
+    gate_type: dqcs_internal_gate_t,
+    qubits: dqcs_handle_t,
+    param_data: dqcs_handle_t,
+) -> dqcs_handle_t {
+    api_return(0, || {
+        // Interpret qubits.
+        resolve!(qubits as pending QubitReferenceSet);
+        let qubit_vec: Vec<QubitRef> = {
+            let x: &QubitReferenceSet = qubits.as_ref().unwrap();
+            x.iter().cloned().collect()
+        };
+
+        // Call the helper for the rest of the logic.
+        let gate = new_predef_helper(gate_type, qubit_vec, param_data)?;
+
+        // Delete consumed handles.
+        delete!(resolved qubits);
+        Ok(gate)
+    })
+}
+
+/// Constructs a new predefined unitary one-qubit gate.
+///
+/// This function is simply a shorthand for `dqcs_gate_new_predef()` with
+/// one qubit in the `qubits` set, to make constructing one-qubit gates more
+/// ergonomic. Refer to its documentation for more information.
+#[no_mangle]
+pub extern "C" fn dqcs_gate_new_predef_one(
+    gate_type: dqcs_internal_gate_t,
+    qa: dqcs_qubit_t,
+    param_data: dqcs_handle_t,
+) -> dqcs_handle_t {
+    api_return(0, || {
+        let qubits_vec = vec![QubitRef::from_foreign(qa)
+            .ok_or_else(oe_inv_arg("0 is not a valid qubit reference"))?];
+        new_predef_helper(gate_type, qubits_vec, param_data)
+    })
+}
+
+/// Constructs a new predefined unitary two-qubit gate.
+///
+/// This function is simply a shorthand for `dqcs_gate_new_predef()` with
+/// two qubit in the `qubits` set, to make constructing two-qubit gates more
+/// ergonomic. Refer to its documentation for more information.
+#[no_mangle]
+pub extern "C" fn dqcs_gate_new_predef_two(
+    gate_type: dqcs_internal_gate_t,
+    qa: dqcs_qubit_t,
+    qb: dqcs_qubit_t,
+    param_data: dqcs_handle_t,
+) -> dqcs_handle_t {
+    api_return(0, || {
+        let qubits_vec = vec![
+            QubitRef::from_foreign(qa)
+                .ok_or_else(oe_inv_arg("0 is not a valid qubit reference"))?,
+            QubitRef::from_foreign(qb)
+                .ok_or_else(oe_inv_arg("0 is not a valid qubit reference"))?,
+        ];
+        if qa == qb {
+            inv_arg(format!("cannot use qubit {} twice", qa))?;
+        }
+        new_predef_helper(gate_type, qubits_vec, param_data)
+    })
+}
+
+/// Constructs a new predefined unitary three-qubit gate.
+///
+/// This function is simply a shorthand for `dqcs_gate_new_predef()` with
+/// three qubit in the `qubits` set, to make constructing three-qubit gates
+/// more ergonomic. Refer to its documentation for more information.
+#[no_mangle]
+pub extern "C" fn dqcs_gate_new_predef_three(
+    gate_type: dqcs_internal_gate_t,
+    qa: dqcs_qubit_t,
+    qb: dqcs_qubit_t,
+    qc: dqcs_qubit_t,
+    param_data: dqcs_handle_t,
+) -> dqcs_handle_t {
+    api_return(0, || {
+        let qubits_vec = vec![
+            QubitRef::from_foreign(qa)
+                .ok_or_else(oe_inv_arg("0 is not a valid qubit reference"))?,
+            QubitRef::from_foreign(qb)
+                .ok_or_else(oe_inv_arg("0 is not a valid qubit reference"))?,
+            QubitRef::from_foreign(qc)
+                .ok_or_else(oe_inv_arg("0 is not a valid qubit reference"))?,
+        ];
+        if qa == qb || qa == qc {
+            inv_arg(format!("cannot use qubit {} twice", qa))?;
+        }
+        if qb == qc {
+            inv_arg(format!("cannot use qubit {} twice", qb))?;
+        }
+        new_predef_helper(gate_type, qubits_vec, param_data)
+    })
+}
 
 /// Constructs a new unitary gate.
 ///
