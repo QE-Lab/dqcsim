@@ -44,18 +44,8 @@ pub extern "C" fn dqcs_mat_new(num_qubits: size_t, matrix: *const c_double) -> d
 ///>
 ///> `param_data` takes an optional `ArbData` object used to parameterize the
 ///> matrix if necessary. If not specified, an empty object is used. The
-///> following values are used for the given gate types:
-///>
-///>  - `DQCS_GATE_RX`, `DQCS_GATE_RY`, `DQCS_GATE_RZ`, and `DQCS_GATE_PHASE`
-///>    require a 64-bit double floating point with the angle at binary string
-///>    index 0.
-///>  - `DQCS_GATE_PHASE_K` requires a 64-bit unsigned integer with the k value
-///>    at binary string index 0.
-///>  - `DQCS_GATE_R` requires theta at binary string index 0, phi at index 1,
-///>    and lambda at index 2. They represent 64-bit double floating points.
-///>  - `DQCS_GATE_U*` requires the entire matrix as a single argument at index 0,
-///>    consisting of 2**N * 2**N * 2 doubles, in real-first row-major format
-///>    (same as the other matrix definitions in DQCsim).
+///> `ArbData` representation for each gate can be found in the docs for
+///> `dqcs_predefined_gate_t`. If nothing is specified, no `ArbData` is used.
 ///>
 ///> This function returns the handle to the matrix, or 0 to indicate failure.
 ///> The parameterization data (if specified) is consumed/deleted by this
@@ -191,18 +181,8 @@ pub extern "C" fn dqcs_mat_approx_eq(
 ///> parameterization data, or an empty `ArbData` if the gate is not
 ///> parameterized; the caller must delete this object when it is done with
 ///> it. This function always writes the 0 handle to this return parameter if
-///> it fails. The following values are returned for the given gate types:
-///>
-///>  - `DQCS_GATE_RX`, `DQCS_GATE_RY`, `DQCS_GATE_RZ`, and `DQCS_GATE_PHASE`
-///>    return a 64-bit double floating point with the angle at binary string
-///>    index 0.
-///>  - `DQCS_GATE_PHASE_K` returns a 64-bit unsigned integer with the k value
-///>    at binary string index 0.
-///>  - `DQCS_GATE_R` returns theta at binary string index 0, phi at index 1,
-///>    and lambda at index 2. They represent 64-bit double floating points.
-///>  - `DQCS_GATE_U*` returns the entire matrix as a single argument at index 0,
-///>    consisting of 2**N * 2**N * 2 doubles, in real-first row-major format
-///>    (same as the other matrix definitions in DQCsim).
+///> it fails. The `ArbData` representation can be found in the documentation
+///> for `dqcs_predefined_gate_t`.
 ///>
 ///> `epsilon` specifies the maximum element-wise root-mean-square error
 ///> between the matrices that results in a positive match. `ignore_gphase`

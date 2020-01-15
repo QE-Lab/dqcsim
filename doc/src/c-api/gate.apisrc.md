@@ -11,8 +11,13 @@ DQCsim provides three types of gates:
    and measured in the Z basis.
  - Custom gates: anything else that the downstream plugin supports.
 
-These are constructed using the following functions.
+These are constructed using the following functions. The predefined gates are
+[as described earlier](mat.apigen.md).
 
+@@@c_api_gen ^dqcs_gate_new_predef$@@@
+@@@c_api_gen ^dqcs_gate_new_predef_one$@@@
+@@@c_api_gen ^dqcs_gate_new_predef_two$@@@
+@@@c_api_gen ^dqcs_gate_new_predef_three$@@@
 @@@c_api_gen ^dqcs_gate_new_unitary$@@@
 @@@c_api_gen ^dqcs_gate_new_measurement$@@@
 @@@c_api_gen ^dqcs_gate_new_custom$@@@

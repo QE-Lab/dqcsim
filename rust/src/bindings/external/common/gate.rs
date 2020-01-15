@@ -49,19 +49,8 @@ fn new_predef_helper(
 /// `param_data` takes an optional `ArbData` object used to parameterize the
 /// gate if necessary. If not specified, an empty object is used. Some of the
 /// gate types are parameterized, and use values from this `ArbData` as
-/// follows; anything remaining in the `ArbData` afterwards is placed in the
-/// gate object.
-///
-///  - `DQCS_GATE_RX`, `DQCS_GATE_RY`, `DQCS_GATE_RZ`, and `DQCS_GATE_PHASE`
-///    pop a 64-bit double floating point with the angle at binary string index
-///    0.
-///  - `DQCS_GATE_PHASE_K` pops a 64-bit unsigned integer with the k value at
-///    binary string index 0.
-///  - `DQCS_GATE_R` pops theta at binary string index 0, phi at index 1, and
-///    lambda at index 2. They represent 64-bit double floating points.
-///  - `DQCS_GATE_U*` pops the entire matrix as a single argument at index 0,
-///    consisting of 2**N * 2**N * 2 doubles, in real-first row-major format
-///    (same as the other matrix definitions in DQCsim).
+/// defined in the docs for `dqcs_predefined_gate_t`. Anything remaining in
+/// the `ArbData` afterwards is placed in the gate object.
 ///
 /// This function returns the handle to the gate, or 0 to indicate failure.
 /// The qubit set and parameterization data (if specified) are consumed/deleted

@@ -38,6 +38,7 @@
   - [Qubits: dqcs_qbset_*](./c-api/qbset.apigen.md)
   - [Matrices: dqcs_mat_*](./c-api/mat.apigen.md)
   - [Gates: dqcs_gate_*](./c-api/gate.apigen.md)
+  - [Gate maps: dqcs_gm_*](./c-api/gm.apigen.md)
   - [Measurements](./c-api/measurements.apigen.md)
     - [Singular measurements: dqcs_meas_*](./c-api/meas.apigen.md)
     - [Measurement sets: dqcs_mset_*](./c-api/mset.apigen.md)

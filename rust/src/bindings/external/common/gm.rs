@@ -130,18 +130,8 @@ pub extern "C" fn dqcs_gm_new(
 ///> data of the gate in the DQCsim-protocol. Some of the detectors however
 ///> detect parameterized gate matrices. These detectors prefix a fixed number
 ///> of binary string arguments to the `ArbData` upon detection, and pop these
-///> when constructing. The specs for this are as follows:
-///>
-///>  - `DQCS_GATE_RX`, `DQCS_GATE_RY`, `DQCS_GATE_RZ`, and `DQCS_GATE_PHASE`
-///>    insert/pop a 64-bit double floating point with the angle at binary
-///>    string index 0.
-///>  - `DQCS_GATE_PHASE_K` inserts/pops a 64-bit unsigned integer with the k
-///>    value at binary string index 0.
-///>  - `DQCS_GATE_R` inserts/pops theta at binary string index 0, phi at index
-///>    1, and lambda at index 2. They represent 64-bit double floating points.
-///>  - `DQCS_GATE_U*` inserts/pops the entire matrix as a single argument at
-///>    index 0, consisting of 2**N * 2**N * 2 doubles, in real-first row-major
-///>    format (same as the other matrix definitions in DQCsim).
+///> when constructing. The specs for this can be found in the docs for
+///> `dqcs_predefined_gate_t`.
 #[no_mangle]
 pub extern "C" fn dqcs_gm_add_predef_unitary(
     gm: dqcs_handle_t,

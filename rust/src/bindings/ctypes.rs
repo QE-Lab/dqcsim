@@ -529,97 +529,357 @@ impl From<ReproductionPathStyle> for dqcs_path_style_t {
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[allow(non_camel_case_types)]
 pub enum dqcs_predefined_gate_t {
-    /// Invalid gate.
+    /// Invalid gate. Used as an error return value.
     DQCS_GATE_INVALID = 0,
 
-    /// Identity gate.
+    /// The identity gate for a single qubit.
+    ///
+    /// \f[
+    /// I = \sigma_0 = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & 1
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_PAULI_I = 100,
 
-    /// Identity gate.
+    /// The Pauli X matrix.
+    ///
+    /// \f[
+    /// X = \sigma_1 = \begin{bmatrix}
+    /// 0 & 1 \\
+    /// 1 & 0
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_PAULI_X = 101,
 
-    /// Identity gate.
+    /// The Pauli Y matrix.
+    ///
+    /// \f[
+    /// Y = \sigma_2 = \begin{bmatrix}
+    /// 0 & -i \\
+    /// i & 0
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_PAULI_Y = 102,
 
-    /// Identity gate.
+    /// The Pauli Z matrix.
+    ///
+    /// \f[
+    /// Z = \sigma_3 = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & -1
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_PAULI_Z = 103,
 
-    /// Hadamard gate.
+    /// The hadamard gate matrix. That is, a 180-degree Y rotation, followed by
+    /// a 90-degree X rotation.
+    ///
+    /// \f[
+    /// H = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1 & 1 \\
+    /// 1 & -1
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_H = 104,
 
-    /// S gate.
+    /// The S matrix, also known as a 90 degree Z rotation.
+    ///
+    /// \f[
+    /// S = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & i
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_S = 105,
 
-    /// S-dagger gate.
+    /// The S-dagger matrix, also known as a negative 90 degree Z rotation.
+    ///
+    /// \f[
+    /// S^\dagger = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & -i
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_S_DAG = 106,
 
-    /// T gate.
+    /// The T matrix, also known as a 45 degree Z rotation.
+    ///
+    /// \f[
+    /// T = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & e^{i\frac{\pi}{4}}
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_T = 107,
 
-    /// T-dagger gate.
+    /// The T-dagger matrix, also known as a negative 45 degree Z rotation.
+    ///
+    /// \f[
+    /// T^\dagger = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & e^{-i\frac{\pi}{4}}
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_T_DAG = 108,
 
-    /// RX(pi) gate.
+    /// Rx(90°) gate.
+    ///
+    /// \f[
+    /// R_x\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1 & -i \\
+    /// -i & 1
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_RX_90 = 109,
 
-    /// RX(-pi) gate.
+    /// Rx(-90°) gate.
+    ///
+    /// \f[
+    /// R_x\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1 & i \\
+    /// i & 1
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_RX_M90 = 110,
 
-    /// RX(2pi) gate.
+    /// Rx(180°) gate.
+    ///
+    /// \f[
+    /// R_x(\pi) = \begin{bmatrix}
+    /// 0 & -i \\
+    /// -i & 0
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// This matrix is equivalent to the Pauli X gate, but differs in global
+    /// phase. Note that this difference is significant when it is used as a
+    /// submatrix for a controlled gate.
     DQCS_GATE_RX_180 = 111,
 
-    /// RX(pi) gate.
+    /// Ry(90°) gate.
+    ///
+    /// \f[
+    /// R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1 & -1 \\
+    /// 1 & 1
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_RY_90 = 112,
 
-    /// RX(-pi) gate.
+    /// Ry(-90°) gate.
+    ///
+    /// \f[
+    /// R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1 & 1 \\
+    /// -1 & 1
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_RY_M90 = 113,
 
-    /// RX(2pi) gate.
+    /// Ry(180°) gate.
+    ///
+    /// \f[
+    /// R_y(\pi) = \begin{bmatrix}
+    /// 0 & -1 \\
+    /// 1 & 0
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// This matrix is equivalent to the Pauli Y gate, but differs in global
+    /// phase. Note that this difference is significant when it is used as a
+    /// submatrix for a controlled gate.
     DQCS_GATE_RY_180 = 114,
 
-    /// RX(pi) gate.
+    /// Rz(90°) gate.
+    ///
+    /// \f[
+    /// R_z\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1-i & 0 \\
+    /// 0 & 1+i
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// This matrix is equivalent to the S gate, but differs in global phase.
+    /// Note that this difference is significant when it is used as a submatrix
+    /// for a controlled gate.
     DQCS_GATE_RZ_90 = 115,
 
-    /// RX(-pi) gate.
+    /// Rz(-90°) gate.
+    ///
+    /// \f[
+    /// R_z\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1+i & 0 \\
+    /// 0 & 1-i
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// This matrix is equivalent to the S-dagger gate, but differs in global
+    /// phase. Note that this difference is significant when it is used as a
+    /// submatrix for a controlled gate.
     DQCS_GATE_RZ_M90 = 116,
 
-    /// RX(2pi) gate.
+    /// Rz(180°) gate.
+    ///
+    /// \f[
+    /// R_z(\pi) = \begin{bmatrix}
+    /// -i & 0 \\
+    /// 0 & i
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// This matrix is equivalent to the Pauli Z gate, but differs in global
+    /// phase. Note that this difference is significant when it is used as a
+    /// submatrix for a controlled gate.
     DQCS_GATE_RZ_180 = 117,
 
-    /// Parameterized RX gate with radian angle.
+    /// The matrix for an arbitrary X rotation.
+    ///
+    /// \f[
+    /// R_x(\theta) = \begin{bmatrix}
+    /// \cos{\frac{\theta}{2}} & -i\sin{\frac{\theta}{2}} \\
+    /// -i\sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// θ is specified or returned through the first binary string argument
+    /// of the parameterization ArbData object. It is represented as a
+    /// little-endian double floating point value, specified in radians.
     DQCS_GATE_RX = 150,
 
-    /// Parameterized RY gate with radian angle.
+    /// The matrix for an arbitrary Y rotation.
+    ///
+    /// \f[
+    /// R_y(\theta) = \begin{bmatrix}
+    /// \cos{\frac{\theta}{2}} & -\sin{\frac{\theta}{2}} \\
+    /// \sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// θ is specified or returned through the first binary string argument
+    /// of the parameterization ArbData object. It is represented as a
+    /// little-endian double floating point value, specified in radians.
     DQCS_GATE_RY = 151,
 
-    /// Parameterized RZ gate with radian angle.
+    /// The matrix for an arbitrary Z rotation.
+    ///
+    /// \f[
+    /// R_z(\theta) = \begin{bmatrix}
+    /// e^{-i\frac{\theta}{2}} & 0 \\
+    /// 0 & e^{i\frac{\theta}{2}}
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// θ is specified or returned through the first binary string argument
+    /// of the parameterization ArbData object. It is represented as a
+    /// little-endian double floating point value, specified in radians.
     DQCS_GATE_RZ = 152,
 
-    /// Parameterized phase gate with pi/2^k angle, where k is an integer.
+    /// The matrix for a Z rotation with angle π/2^k.
+    ///
+    /// \f[
+    /// \textit{PhaseK}(k) = \textit{Phase}\left(\frac{\pi}{2^k}\right) = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & e^{i\pi / 2^k}
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// k is specified or returned through the first binary string argument
+    /// of the parameterization ArbData object. It is represented as a
+    /// little-endian unsigned 64-bit integer.
     DQCS_GATE_PHASE_K = 153,
 
-    /// Parameterized phase gate. Phase is equivalent to RZ, but with its
-    /// global phase defined such that using it as a submatrix for a controlled
-    /// gate forms a proper controlled phase gate.
+    /// The matrix for an arbitrary Z rotation.
+    ///
+    /// \f[
+    /// \textit{Phase}(\theta) = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & e^{i\theta}
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// θ is specified or returned through the first binary string argument
+    /// of the parameterization ArbData object. It is represented as a
+    /// little-endian double floating point value, specified in radians.
+    ///
+    /// This matrix is equivalent to the Rz gate, but differs in global phase.
+    /// Note that this difference is significant when it is used as a submatrix
+    /// for a controlled gate. Specifically, controlled phase gates use the
+    /// phase as specified by this gate, whereas Rz follows the usual algebraic
+    /// notation.
     DQCS_GATE_PHASE = 154,
 
     /// Any single-qubit unitary gate, parameterized as a full unitary matrix.
+    ///
+    /// The full matrix is specified or returned through the first binary string
+    /// argument of the parameterization ArbData object. It is represented as an
+    /// array of little-endian double floating point values, structured as
+    /// real/imag pairs, with the pairs in row-major order.
     DQCS_GATE_U1 = 190,
 
-    /// Any single-qubit unitary gate, parameterized IBM-style with Z-Y-Z
-    /// angles.
+    /// Arbitrary rotation matrix.
+    ///
+    /// \f[
+    /// R(\theta, \phi, \lambda) = \begin{bmatrix}
+    /// \cos{\frac{\theta}{2}} & -\sin{\frac{\theta}{2}} e^{i\lambda} \\
+    /// \sin{\frac{\theta}{2}} e^{i\phi} & \cos{\frac{\theta}{2}} e^{i\phi + i\lambda}
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// This is equivalent to the following:
+    ///
+    /// \f[
+    /// R(\theta, \phi, \lambda) = \textit{Phase}(\phi) \cdot R_y(\theta) \cdot \textit{Phase}(\lambda)
+    /// \f]
+    ///
+    /// The rotation order and phase is taken from Qiskit's U3 gate. Ignoring
+    /// global phase, any unitary single-qubit gate can be represented with this
+    /// notation.
+    ///
+    /// θ, φ, and λ are specified or returned through the first three binary
+    /// string arguments of the parameterization ArbData object. They are
+    /// represented as little-endian double floating point values, specified in
+    /// radians.
     DQCS_GATE_R = 191,
 
-    /// Swap gate.
+    /// The swap gate matrix.
+    ///
+    /// \f[
+    /// \textit{SWAP} = \begin{bmatrix}
+    /// 1 & 0 & 0 & 0 \\
+    /// 0 & 0 & 1 & 0 \\
+    /// 0 & 1 & 0 & 0 \\
+    /// 0 & 0 & 0 & 1
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_SWAP = 200,
 
-    /// Square-root of swap gate.
+    /// The square-root of a swap gate matrix.
+    ///
+    /// \f[
+    /// \sqrt{\textit{SWAP}} = \begin{bmatrix}
+    /// 1 & 0 & 0 & 0 \\
+    /// 0 & \frac{i+1}{2} & \frac{i-1}{2} & 0 \\
+    /// 0 & \frac{i-1}{2} & \frac{i+1}{2} & 0 \\
+    /// 0 & 0 & 0 & 1
+    /// \end{bmatrix}
+    /// \f]
     DQCS_GATE_SQRT_SWAP = 201,
 
     /// Any two-qubit unitary gate, parameterized as a full unitary matrix.
+    ///
+    /// The full matrix is specified or returned through the first binary string
+    /// argument of the parameterization ArbData object. It is represented as an
+    /// array of little-endian double floating point values, structured as
+    /// real/imag pairs, with the pairs in row-major order.
     DQCS_GATE_U2 = 290,
 
     /// Any three-qubit unitary gate, parameterized as a full unitary matrix.
+    ///
+    /// The full matrix is specified or returned through the first binary string
+    /// argument of the parameterization ArbData object. It is represented as an
+    /// array of little-endian double floating point values, structured as
+    /// real/imag pairs, with the pairs in row-major order.
     DQCS_GATE_U3 = 390,
 }
 
