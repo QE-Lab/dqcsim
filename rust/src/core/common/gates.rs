@@ -56,7 +56,7 @@ use std::{
 /// specified.
 ///
 /// [`GateType::U`]: ./enum.GateType.html#variant.U
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Hash, Eq)]
 pub enum GateType {
     /// Identity.
     I,

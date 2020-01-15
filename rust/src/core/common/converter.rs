@@ -971,33 +971,32 @@ where
             // If there was no such match, we can return that there is no
             // match without calling anything.
             if self.fully_cached {
-                Ok(hit.clone())
+                return Ok(hit.clone());
             } else if let Some((key, _)) = hit {
-                Ok(Some((
+                return Ok(Some((
                     key.clone(),
                     self.converters[key]
                         .detect(input)?
                         .ok_or_else(oe_err("unstable detector function"))?,
-                )))
+                )));
             } else {
-                Ok(None)
+                return Ok(None);
             }
-        } else {
-            // Cache miss. Check all converters in order.
-            self.order
-                .iter()
-                .find_map(|k| {
-                    self.converters[k]
-                        .detect(input)
-                        .map(|res| res.map(|output| (k.clone(), output)))
-                        .transpose()
-                })
-                .transpose()
-                .and_then(|output| {
-                    self.cache.borrow_mut().insert(cache_key, output.clone());
-                    Ok(output)
-                })
         }
+        // Cache miss. Check all converters in order.
+        self.order
+            .iter()
+            .find_map(|k| {
+                self.converters[k]
+                    .detect(input)
+                    .map(|res| res.map(|output| (k.clone(), output)))
+                    .transpose()
+            })
+            .transpose()
+            .and_then(|output| {
+                self.cache.borrow_mut().insert(cache_key, output.clone());
+                Ok(output)
+            })
     }
 
     fn construct(&self, input: &(K, O)) -> Result<I> {
@@ -1011,7 +1010,10 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::error::ErrorKind;
+    use crate::common::{
+        error::ErrorKind,
+        gates::{BoundGate, GateType},
+    };
     use float_cmp::approx_eq;
 
     #[test]
@@ -1679,6 +1681,130 @@ mod tests {
                 .unwrap_err()
                 .to_string(),
             "no"
+        );
+    }
+
+    #[test]
+    fn converter_map() {
+        let mut default_map: ConverterMap<(GateType, usize), Gate, (Vec<QubitRef>, ArbData)> =
+            ConverterMap::default()
+                .with(
+                    (GateType::X, 1),
+                    GateType::X.into_gate_converter(Some(1), 0., false),
+                )
+                .with(
+                    (GateType::X, 0),
+                    GateType::X.into_gate_converter(None, 0., false),
+                )
+                .with(
+                    (GateType::Y, 0),
+                    GateType::Y.into_gate_converter(None, 0., false),
+                )
+                .with(
+                    (GateType::Z, 0),
+                    GateType::Z.into_gate_converter(None, 0., false),
+                )
+                .with(
+                    (GateType::R, 0),
+                    Box::new(UnitaryGateConverter::from(UnitaryConverter::new(
+                        RMatrixConverter::default(),
+                        None,
+                        0.,
+                        false,
+                    ))),
+                );
+        default_map.insert(
+            0,
+            (GateType::I, 0),
+            GateType::I.into_gate_converter(None, 0., false),
+        );
+
+        let target = vec![QubitRef::from_foreign(1).unwrap()];
+        let control = vec![QubitRef::from_foreign(2).unwrap()];
+
+        let i_gate = Gate::from(BoundGate::I(target[0]));
+        let x_gate = Gate::from(BoundGate::X(target[0]));
+        let cnot_gate = Gate::new_unitary(
+            target.clone(),
+            control.clone(),
+            Matrix::from(UnboundGate::X),
+        )
+        .unwrap();
+        let y_gate = Gate::from(BoundGate::Y(target[0]));
+        let z_gate = Gate::from(BoundGate::Z(target[0]));
+        let r_gate = Gate::from(BoundGate::R(1., 2., 3., target[0]));
+
+        assert_eq!(
+            default_map.detect(&i_gate).unwrap(),
+            Some(((GateType::I, 0), (target.clone(), ArbData::default())))
+        );
+        assert_eq!(
+            default_map.detect(&i_gate).unwrap(),
+            Some(((GateType::I, 0), (target.clone(), ArbData::default())))
+        );
+        assert_eq!(
+            default_map.detect(&x_gate).unwrap(),
+            Some(((GateType::X, 0), (target.clone(), ArbData::default())))
+        );
+        assert_eq!(
+            default_map.detect(&cnot_gate).unwrap(),
+            Some((
+                (GateType::X, 1),
+                (vec![control[0], target[0]], ArbData::default())
+            ))
+        );
+        assert_eq!(
+            default_map.detect(&y_gate).unwrap(),
+            Some(((GateType::Y, 0), (target.clone(), ArbData::default())))
+        );
+        assert_eq!(
+            default_map.detect(&z_gate).unwrap(),
+            Some(((GateType::Z, 0), (target.clone(), ArbData::default())))
+        );
+        let mut arb = ArbData::default();
+        (1., 2., 3.).to_arb(&mut arb);
+        assert_eq!(
+            default_map.detect(&r_gate).unwrap(),
+            Some(((GateType::R, 0), (target.clone(), arb)))
+        );
+
+        assert_eq!(
+            default_map
+                .construct(&((GateType::X, 0), (target.clone(), ArbData::default())))
+                .unwrap(),
+            x_gate
+        );
+        assert_eq!(
+            default_map
+                .construct(&((GateType::Z, 1), (target, ArbData::default())))
+                .unwrap_err()
+                .to_string(),
+            "Invalid argument: key does not map to any converter"
+        );
+
+        let advanced_map: ConverterMap<GateType, Gate, (Vec<QubitRef>, ArbData)> =
+            ConverterMap::new(Some(Box::new(|gate: &Gate| -> Gate {
+                gate.without_qubit_refs()
+            })))
+            .with(
+                GateType::X,
+                GateType::X.into_gate_converter(None, 0., false),
+            );
+        let a = Gate::from(BoundGate::X(QubitRef::from_foreign(3).unwrap()));
+        let b = Gate::from(BoundGate::X(QubitRef::from_foreign(2).unwrap()));
+        assert_eq!(
+            advanced_map.detect(&a).unwrap(),
+            Some((
+                GateType::X,
+                (vec![QubitRef::from_foreign(3).unwrap()], ArbData::default())
+            ))
+        );
+        assert_eq!(
+            advanced_map.detect(&b).unwrap(),
+            Some((
+                GateType::X,
+                (vec![QubitRef::from_foreign(2).unwrap()], ArbData::default())
+            ))
         );
     }
 }
