@@ -257,14 +257,14 @@ pub fn cb_return_none(actual_value: dqcs_return_t) -> Result<()> {
     cb_return(dqcs_return_t::DQCS_FAILURE, actual_value).map(|_| ())
 }
 
-// /// Same as `cb_return()`, but specialized for `bool`.
-// pub fn cb_return_bool(actual_value: dqcs_bool_return_t) -> Result<bool> {
-//     cb_return(dqcs_bool_return_t::DQCS_BOOL_FAILURE, actual_value).map(|b| match b {
-//         dqcs_bool_return_t::DQCS_FALSE => false,
-//         dqcs_bool_return_t::DQCS_TRUE => true,
-//         _ => unreachable!(),
-//     })
-// }
+/// Same as `cb_return()`, but specialized for `bool`.
+pub fn cb_return_bool(actual_value: dqcs_bool_return_t) -> Result<bool> {
+    cb_return(dqcs_bool_return_t::DQCS_BOOL_FAILURE, actual_value).map(|b| match b {
+        dqcs_bool_return_t::DQCS_FALSE => false,
+        dqcs_bool_return_t::DQCS_TRUE => true,
+        _ => unreachable!(),
+    })
+}
 
 /// Structure used to access objects stored in the thread-local object pool.
 ///

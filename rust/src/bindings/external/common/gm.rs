@@ -365,17 +365,12 @@ pub extern "C" fn dqcs_gm_add_measure(
 ///> function is no-op (besides possibly calling the `*_free()` callbacks.
 ///>
 ///> The detector callback receives the complete gate passed to the gate map
-///> for it to match as it pleases, after preprocessing occurs based on the
-///> `strip_qubit_refs` and `strip_data` flags passed when the matrix map was
-///> constructed. If `strip_qubit_refs` was set, all qubit references in the
-///> qubit sets are set to 0 (invalid) but the size of the sets is left
-///> intact; if `strip_data` was set, the `ArbData` associated with the gate
-///> will be empty. The gate handle is borrowed; it should not be deleted by
-///> the callback. The `ArbData` attached to this gate is furthermore used to
-///> return the parameterization data. The callback may thus mutate it as it
-///> pleases, for instance to add detected gate parameters.
-///>
-///> If the gate matches, the detector function must return `DQCS_TRUE`. If it
+///> for it to match as it pleases. If the gate matches, the detector function
+///> must return `DQCS_TRUE`. It may  assign `qubits` to a `qbset` object
+///> representing the qubit arguments (substituted with an empty set if it
+///> doesn't), and may assign `param_data` to an `arb` handle with the
+///> parameterization data (if it doesn't, the data from the gate is used; if
+///> this was modified by the callback, the modified data is used). If the gate
 ///> doesn't match, it must return `DQCS_FALSE`. If an error occurs, it must
 ///> call `dqcs_error_set()` with the error message and return
 ///> `DQCS_BOOL_FAILURE`.
@@ -383,36 +378,34 @@ pub extern "C" fn dqcs_gm_add_measure(
 ///> The constructor callback performs the reverse operation. It receives an
 ///> `ArbData` handle containing the parameterization data and a qubit set, and
 ///> must construct a gate based on this information. If construction succeeds,
-///> the constructor function must return `DQCS_TRUE`, and return the handle of
-///> the constructed gate through `*gate`. If it doesn't know how to handle the
-///> given input, it may return either `DQCS_FALSE` or call `dqcs_error_set()`
-///> with an error message and return `DQCS_BOOL_FAILURE`. The difference is
-///> that in the former case subsequent constructors with the same key will
-///> still be called (keys don't need to be unique), whereas in the latter case
-///> `dqcs_gm_construct*()` will immediately propagate the failure.
+///> the constructor function must return the gate handle. If an error occurs,
+///> it must call `dqcs_error_set()` with the error message and return 0.
 ///>
 ///> It is up to the user how to do the matching and constructing, but the
 ///> converter functions must always return the same value for the same input.
 ///> In other words, they must be pure functions. Otherwise, the caching
 ///> behavior of the `GateMap` will make the results inconsistent.
 #[no_mangle]
-#[allow(unused_variables)] // TODO
 pub extern "C" fn dqcs_gm_add_custom(
     gm: dqcs_handle_t,
     key_free: Option<extern "C" fn(key_data: *mut c_void)>,
     key_data: *mut c_void,
     detector: Option<
-        extern "C" fn(user_data: *const c_void, gate: dqcs_handle_t) -> dqcs_bool_return_t,
+        extern "C" fn(
+            user_data: *const c_void,
+            gate: dqcs_handle_t,
+            qubits: *mut dqcs_handle_t,
+            param_data: *mut dqcs_handle_t,
+        ) -> dqcs_bool_return_t,
     >,
     detector_user_free: Option<extern "C" fn(user_data: *mut c_void)>,
     detector_user_data: *mut c_void,
     constructor: Option<
         extern "C" fn(
             user_data: *const c_void,
-            param_data: dqcs_handle_t,
             qubits: dqcs_handle_t,
-            gate: *mut dqcs_handle_t,
-        ) -> dqcs_return_t,
+            param_data: dqcs_handle_t,
+        ) -> dqcs_handle_t,
     >,
     constructor_user_free: Option<extern "C" fn(user_data: *mut c_void)>,
     constructor_user_data: *mut c_void,
@@ -422,7 +415,67 @@ pub extern "C" fn dqcs_gm_add_custom(
         let detector_user_data = UserData::new(detector_user_free, detector_user_data);
         let constructor_user_data = UserData::new(constructor_user_free, constructor_user_data);
         resolve!(gm as &mut GateMap);
-        todo!();
+        let key = gm.make_key(key);
+        gm.map.push(key, Box::new(CustomGateConverter::new(
+            move |gate| {
+                if let Some(detector) = detector {
+                    let gate = insert(gate.clone());
+                    let mut qubits: dqcs_handle_t = 0;
+                    let mut param_data: dqcs_handle_t = 0;
+                    let result = detector(
+                        detector_user_data.data(),
+                        gate,
+                        &mut qubits as *mut dqcs_handle_t,
+                        &mut param_data as *mut dqcs_handle_t,
+                    );
+                    let param_data = if param_data == 0 {
+                        take!(gate as Gate);
+                        gate.data
+                    } else {
+                        delete!(gate);
+                        take!(param_data as ArbData);
+                        param_data
+                    };
+                    let qubits = if qubits == 0 {
+                        vec![]
+                    } else {
+                        take!(qubits as QubitReferenceSet);
+                        qubits.into_iter().collect()
+                    };
+                    if cb_return_bool(result)? {
+                        // Detector returned match.
+                        Ok(Some((qubits, param_data)))
+                    } else {
+                        // Detector returned no match.
+                        Ok(None)
+                    }
+                } else {
+                    // No detector defined.
+                    Ok(None)
+                }
+            },
+            move |qubits, param_data| {
+                if let Some(constructor) = constructor{
+                    let qubits: QubitReferenceSet = qubits.iter().cloned().collect();
+                    let qubits = insert(qubits);
+                    let param_data = insert(param_data.clone());
+                    let result = constructor(
+                        constructor_user_data.data(),
+                        qubits,
+                        param_data,
+                    );
+                    delete!(param_data);
+                    delete!(qubits);
+                    let gate = cb_return(0, result)?;
+                    take!(gate as Gate);
+                    Ok(gate)
+                } else {
+                    // No constructor defined.
+                    inv_arg("no constructor function defined")
+                }
+            },
+        )));
+        Ok(())
     })
 }
 
