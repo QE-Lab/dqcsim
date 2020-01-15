@@ -1,3 +1,10 @@
+## [0.0.11] - 2020-01-15
+-  8ac019f Fix python path in manylinux image
+
+## [0.0.10] - 2020-01-15
+-  19cfa7a Add macos-py38 and manylinux2014 wheels
+-  a054a59 Make internal CBOR representation canonical
+
 ## [0.0.9] - 2020-01-13
 -  Add C++ header-only library
 
@@ -376,3 +383,6 @@
 [0.0.5]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.5
 [0.0.6]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.6
 [0.0.7]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.7
+[0.0.8]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.8
+[0.0.9]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.9
+[0.0.10]: https://github.com/mbrobbel/dqcsim/releases/tag/0.0.10
