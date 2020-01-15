@@ -147,7 +147,7 @@ pub extern "C" fn dqcs_gm_add_predef_unitary(
     gm: dqcs_handle_t,
     key_free: Option<extern "C" fn(user_data: *mut c_void)>,
     key_data: *mut c_void,
-    gate: dqcs_internal_gate_t,
+    gate: dqcs_predefined_gate_t,
     num_controls: isize,
     epsilon: c_double,
     ignore_gphase: bool,

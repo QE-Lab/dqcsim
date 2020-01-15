@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 
 /// Helper function for the `dqcs_gate_new_predef*()` functions.
 fn new_predef_helper(
-    gate_type: dqcs_internal_gate_t,
+    gate_type: dqcs_predefined_gate_t,
     qubits: Vec<QubitRef>,
     param_data: dqcs_handle_t,
 ) -> Result<dqcs_handle_t> {
@@ -68,7 +68,7 @@ fn new_predef_helper(
 /// by this function if and only if it succeeds.
 #[no_mangle]
 pub extern "C" fn dqcs_gate_new_predef(
-    gate_type: dqcs_internal_gate_t,
+    gate_type: dqcs_predefined_gate_t,
     qubits: dqcs_handle_t,
     param_data: dqcs_handle_t,
 ) -> dqcs_handle_t {
@@ -96,7 +96,7 @@ pub extern "C" fn dqcs_gate_new_predef(
 /// ergonomic. Refer to its documentation for more information.
 #[no_mangle]
 pub extern "C" fn dqcs_gate_new_predef_one(
-    gate_type: dqcs_internal_gate_t,
+    gate_type: dqcs_predefined_gate_t,
     qa: dqcs_qubit_t,
     param_data: dqcs_handle_t,
 ) -> dqcs_handle_t {
@@ -114,7 +114,7 @@ pub extern "C" fn dqcs_gate_new_predef_one(
 /// ergonomic. Refer to its documentation for more information.
 #[no_mangle]
 pub extern "C" fn dqcs_gate_new_predef_two(
-    gate_type: dqcs_internal_gate_t,
+    gate_type: dqcs_predefined_gate_t,
     qa: dqcs_qubit_t,
     qb: dqcs_qubit_t,
     param_data: dqcs_handle_t,
@@ -140,7 +140,7 @@ pub extern "C" fn dqcs_gate_new_predef_two(
 /// more ergonomic. Refer to its documentation for more information.
 #[no_mangle]
 pub extern "C" fn dqcs_gate_new_predef_three(
-    gate_type: dqcs_internal_gate_t,
+    gate_type: dqcs_predefined_gate_t,
     qa: dqcs_qubit_t,
     qb: dqcs_qubit_t,
     qc: dqcs_qubit_t,
