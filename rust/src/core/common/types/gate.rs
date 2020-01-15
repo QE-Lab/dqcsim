@@ -665,7 +665,7 @@ mod tests {
             Complex64::new(1f64, 0f64),
         ];
         let g = Gate::new_unitary(targets, controls, matrix).unwrap();
-        assert_eq!(serde_json::to_string(&g).unwrap(), "{\"name\":null,\"targets\":[1],\"controls\":[2],\"measures\":[],\"matrix\":[{\"re\":1.0,\"im\":0.0},{\"re\":0.0,\"im\":0.0},{\"re\":0.0,\"im\":0.0},{\"re\":1.0,\"im\":0.0}],\"data\":{\"cbor\":[191,255],\"args\":[]}}");
+        assert_eq!(serde_json::to_string(&g).unwrap(), "{\"name\":null,\"targets\":[1],\"controls\":[2],\"measures\":[],\"matrix\":[{\"re\":1.0,\"im\":0.0},{\"re\":0.0,\"im\":0.0},{\"re\":0.0,\"im\":0.0},{\"re\":1.0,\"im\":0.0}],\"data\":{\"cbor\":[160],\"args\":[]}}");
     }
 
     #[test]
