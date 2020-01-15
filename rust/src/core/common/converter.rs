@@ -1007,3 +1007,322 @@ where
             .construct(&input.1)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_arb() {
+        assert_eq!(<()>::from_arb(&mut ArbData::default()).unwrap(), ());
+
+        // TODO(mb)
+        // assert!(u64::from_arb(&mut ArbData::default()).is_err());
+        let mut u64_arb = ArbData::from_args(
+            vec![1u64, 2, 3]
+                .into_iter()
+                .map(|x| x.to_le_bytes().to_vec())
+                .collect::<Vec<Vec<u8>>>(),
+        );
+        assert_eq!(u64::from_arb(&mut u64_arb).unwrap(), 1);
+        assert_eq!(u64::from_arb(&mut u64_arb).unwrap(), 2);
+        assert_eq!(u64::from_arb(&mut u64_arb).unwrap(), 3);
+        // TODO(mb)
+        // assert!(u64::from_arb(&mut u64_arb).is_err());
+        assert!(u64::from_arb(&mut ArbData::from_args(vec![vec![1u8, 2, 3]])).is_err());
+
+        // TODO(mb)
+        // assert!(f64::from_arb(&mut ArbData::default()).is_err());
+        let mut f64_arb = ArbData::from_args(
+            vec![1f64, 2., 3.]
+                .into_iter()
+                .map(|x| x.to_le_bytes().to_vec())
+                .collect::<Vec<Vec<u8>>>(),
+        );
+        let mut f64_tup_arb = f64_arb.clone();
+        assert_eq!(f64::from_arb(&mut f64_arb).unwrap(), 1.);
+        assert_eq!(f64::from_arb(&mut f64_arb).unwrap(), 2.);
+        assert_eq!(f64::from_arb(&mut f64_arb).unwrap(), 3.);
+        // TODO(mb)
+        // assert!(f64::from_arb(&mut f64_arb).is_err());
+        assert!(f64::from_arb(&mut ArbData::from_args(vec![vec![1u8, 2, 3]])).is_err());
+
+        // TODO(mb)
+        // assert!(<(f64, f64, f64)>::from_arb(&mut ArbData::default()).is_err());
+        assert_eq!(
+            <(f64, f64, f64)>::from_arb(&mut f64_tup_arb).unwrap(),
+            (1., 2., 3.)
+        );
+
+        // TODO(mb)
+        // assert!(Matrix::from_arb(&mut ArbData::default()).is_err());
+        assert!(Matrix::from_arb(&mut ArbData::from_args(vec![vec![1u8, 2, 3]])).is_err());
+        let mut bad_matrix_arb = ArbData::from_args(vec![vec![1f64, 2., 3., 4.]
+            .into_iter()
+            .map(|x| x.to_le_bytes().to_vec())
+            .flatten()
+            .collect::<Vec<u8>>()]);
+        assert!(Matrix::from_arb(&mut bad_matrix_arb).is_err());
+        let mut matrix_arb = ArbData::from_args(vec![vec![1f64, 0., 0., 0., 0., 0., 1., 0.]
+            .into_iter()
+            .map(|x| x.to_le_bytes().to_vec())
+            .flatten()
+            .collect::<Vec<u8>>()]);
+        assert_eq!(
+            Matrix::from_arb(&mut matrix_arb).unwrap(),
+            matrix!(1., 0., 0., 1.)
+        );
+    }
+
+    #[test]
+    fn to_arb() {
+        let unit = ();
+        let mut arb = ArbData::default();
+        unit.to_arb(&mut arb);
+        assert_eq!(arb, ArbData::default());
+
+        let x = 8u64;
+        x.to_arb(&mut arb);
+        assert_eq!(arb, ArbData::from_args(vec![8u64.to_le_bytes().to_vec()]));
+
+        let x = 8f64;
+        let mut arb = ArbData::default();
+        x.to_arb(&mut arb);
+        assert_eq!(arb, ArbData::from_args(vec![8f64.to_le_bytes().to_vec()]));
+
+        let x = (1f64, 2., 8f64);
+        x.to_arb(&mut arb);
+        assert_eq!(
+            arb,
+            ArbData::from_args(
+                vec![1f64, 2., 8., 8.]
+                    .into_iter()
+                    .map(|x| x.to_le_bytes().to_vec())
+                    .collect::<Vec<Vec<u8>>>()
+            )
+        );
+
+        let x = matrix!(1., 0., 0., 1.);
+        let mut arb = ArbData::default();
+        x.to_arb(&mut arb);
+        assert_eq!(
+            arb,
+            ArbData::from_args(vec![vec![1f64, 0., 0., 0., 0., 0., 1., 0.]
+                .into_iter()
+                .map(|x| x.to_le_bytes().to_vec())
+                .flatten()
+                .collect::<Vec<u8>>()])
+        );
+    }
+
+    #[test]
+    fn fixed_matrix_converter() {
+        let fmc = FixedMatrixConverter::from(Matrix::new_identity(5));
+        assert!(fmc
+            .detect_matrix(&Matrix::new_identity(4), 0., false)
+            .unwrap()
+            .is_none());
+        assert_eq!(
+            fmc.detect_matrix(&Matrix::new_identity(5), 0., false)
+                .unwrap(),
+            Some(())
+        );
+        assert_eq!(fmc.construct_matrix(&()).unwrap(), Matrix::new_identity(5));
+    }
+
+    #[test]
+    fn rx_matrix_converter() {
+        let rx = RxMatrixConverter::default();
+        assert!(rx
+            .detect_matrix(&Matrix::new_identity(4), 0., false)
+            .unwrap()
+            .is_none());
+        assert!(rx
+            .detect_matrix(&Matrix::from(UnboundGate::RY(1.234f64)), 0.001, false)
+            .unwrap()
+            .is_none());
+        assert_eq!(
+            rx.detect_matrix(&Matrix::new_identity(2), 0., false)
+                .unwrap(),
+            Some(0.)
+        );
+        assert_eq!(
+            rx.detect_matrix(&Matrix::from(UnboundGate::RX(1.234f64)), 0.001, false)
+                .unwrap(),
+            Some(1.234f64)
+        );
+        assert_eq!(
+            rx.construct_matrix(&1.234f64).unwrap(),
+            Matrix::from(UnboundGate::RX(1.234f64))
+        );
+    }
+
+    #[test]
+    fn ry_matrix_converter() {
+        let ry = RyMatrixConverter::default();
+        assert!(ry
+            .detect_matrix(&Matrix::new_identity(4), 0., false)
+            .unwrap()
+            .is_none());
+        assert!(ry
+            .detect_matrix(&Matrix::from(UnboundGate::RX(1.234f64)), 0.001, false)
+            .unwrap()
+            .is_none());
+        assert_eq!(
+            ry.detect_matrix(&Matrix::new_identity(2), 0., false)
+                .unwrap(),
+            Some(0.)
+        );
+        assert_eq!(
+            ry.detect_matrix(&Matrix::from(UnboundGate::RY(1.234f64)), 0.001, false)
+                .unwrap(),
+            Some(1.234f64)
+        );
+        assert_eq!(
+            ry.construct_matrix(&1.234f64).unwrap(),
+            Matrix::from(UnboundGate::RY(1.234f64))
+        );
+    }
+
+    #[test]
+    fn rz_matrix_converter() {
+        let rz = RzMatrixConverter::default();
+        assert!(rz
+            .detect_matrix(&Matrix::new_identity(4), 0., false)
+            .unwrap()
+            .is_none());
+        assert!(rz
+            .detect_matrix(&Matrix::from(UnboundGate::RX(1.234f64)), 0.001, false)
+            .unwrap()
+            .is_none());
+        assert_eq!(
+            rz.detect_matrix(&Matrix::new_identity(2), 0., false)
+                .unwrap(),
+            Some(0.)
+        );
+        assert_eq!(
+            rz.detect_matrix(&Matrix::from(UnboundGate::RZ(1.234f64)), 0.001, false)
+                .unwrap(),
+            Some(1.234f64)
+        );
+        assert_eq!(
+            rz.construct_matrix(&1.234f64).unwrap(),
+            Matrix::from(UnboundGate::RZ(1.234f64))
+        );
+    }
+
+    #[test]
+    fn phase_matrix_converter() {
+        let phase = PhaseMatrixConverter::default();
+        assert!(phase
+            .detect_matrix(&Matrix::new_identity(4), 0., false)
+            .unwrap()
+            .is_none());
+        assert!(phase
+            .detect_matrix(&Matrix::from(UnboundGate::RX(1.234f64)), 0.001, false)
+            .unwrap()
+            .is_none());
+        assert_eq!(
+            phase
+                .detect_matrix(&Matrix::new_identity(2), 0., false)
+                .unwrap(),
+            Some(0.)
+        );
+        assert_eq!(
+            phase
+                .detect_matrix(&Matrix::from(UnboundGate::Phase(1.234f64)), 0.001, false)
+                .unwrap(),
+            Some(1.234f64)
+        );
+        assert_eq!(
+            phase.construct_matrix(&1.234f64).unwrap(),
+            Matrix::from(UnboundGate::Phase(1.234f64))
+        );
+    }
+
+    #[test]
+    fn phasek_matrix_converter() {
+        let phasek = PhaseKMatrixConverter::default();
+        assert!(phasek
+            .detect_matrix(&Matrix::new_identity(4), 0., false)
+            .unwrap()
+            .is_none());
+        assert!(phasek
+            .detect_matrix(&Matrix::from(UnboundGate::RX(1.234f64)), 0.001, false)
+            .unwrap()
+            .is_none());
+        assert_eq!(
+            phasek
+                .detect_matrix(&Matrix::new_identity(2), 0., true)
+                .unwrap(),
+            None
+        );
+        assert_eq!(
+            phasek
+                .detect_matrix(&Matrix::from(UnboundGate::PhaseK(1)), 0.001, false)
+                .unwrap(),
+            Some(1)
+        );
+        assert_eq!(
+            phasek.construct_matrix(&1).unwrap(),
+            Matrix::from(UnboundGate::PhaseK(1))
+        );
+    }
+
+    #[test]
+    fn r_matrix_converter() {
+        let r = RMatrixConverter::default();
+        assert!(r
+            .detect_matrix(&Matrix::new_identity(4), 0., false)
+            .unwrap()
+            .is_none());
+        assert_eq!(
+            r.detect_matrix(&Matrix::from(UnboundGate::RX(1.234f64)), 0.001, false)
+                .unwrap(),
+            Some((1.234f64, -PI / 2., PI / 2.))
+        );
+        assert_eq!(
+            r.detect_matrix(&Matrix::new_identity(2), 0., false)
+                .unwrap(),
+            Some((0., 0., 0.))
+        );
+        assert_eq!(
+            r.detect_matrix(&Matrix::from(UnboundGate::R(1f64, 2., 3.)), 0.001, false)
+                .unwrap(),
+            Some((1f64, 2., 3.))
+        );
+        assert_eq!(
+            r.construct_matrix(&(1f64, 3., 2.)).unwrap(),
+            Matrix::from(UnboundGate::R(1f64, 3., 2.))
+        );
+    }
+
+    #[test]
+    fn u_matrix_converter() {
+        let u = UMatrixConverter::new(Some(3));
+        assert!(u
+            .detect_matrix(&Matrix::new_identity(4), 0., false)
+            .unwrap()
+            .is_none());
+
+        // TODO(mb)
+        // assert!(u
+        //     .detect_matrix(&Matrix::new_identity(3), 0., false)
+        //     .unwrap()
+        //     .is_none());
+
+        let u = UMatrixConverter::new(Some(2));
+        assert_eq!(
+            u.detect_matrix(&Matrix::new_identity(4), 0., false)
+                .unwrap(),
+            Some(Matrix::new_identity(4))
+        );
+
+        assert!(u.construct_matrix(&Matrix::new_identity(3)).is_err());
+        assert_eq!(
+            u.construct_matrix(&Matrix::new_identity(4)).unwrap(),
+            Matrix::new_identity(4)
+        );
+        assert!(u.construct_matrix(&Matrix::new_identity(6)).is_err());
+    }
+}

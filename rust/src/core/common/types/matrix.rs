@@ -160,7 +160,7 @@ impl Matrix {
         }
     }
 
-    /// Returns a new identify Matrix with given dimension.
+    /// Returns a new identity Matrix with given dimension.
     pub fn new_identity(dimension: usize) -> Self {
         let mut output = Matrix::new(vec![c!(0.); dimension.pow(2)]);
         for i in 0..dimension {
