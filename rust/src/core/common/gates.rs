@@ -37,9 +37,9 @@
 
 use crate::common::{
     converter::{
-        Converter, FixedMatrixConverter, PhaseKMatrixConverter, PhaseMatrixConverter,
-        RMatrixConverter, RxMatrixConverter, RyMatrixConverter, RzMatrixConverter,
-        UMatrixConverter, UnitaryConverter, UnitaryGateConverter,
+        Converter, FixedMatrixConverter, MatrixConverterArb, PhaseKMatrixConverter,
+        PhaseMatrixConverter, RMatrixConverter, RxMatrixConverter, RyMatrixConverter,
+        RzMatrixConverter, UMatrixConverter, UnitaryConverter, UnitaryGateConverter,
     },
     types::{ArbData, Gate, Matrix, QubitRef},
 };
@@ -556,8 +556,25 @@ impl TryFrom<GateType> for Matrix {
     }
 }
 
+impl From<GateType> for Box<dyn MatrixConverterArb> {
+    fn from(gate_type: GateType) -> Box<dyn MatrixConverterArb> {
+        match gate_type {
+            GateType::RX => Box::new(RxMatrixConverter::default()),
+            GateType::RY => Box::new(RyMatrixConverter::default()),
+            GateType::RZ => Box::new(RzMatrixConverter::default()),
+            GateType::Phase => Box::new(PhaseMatrixConverter::default()),
+            GateType::PhaseK => Box::new(PhaseKMatrixConverter::default()),
+            GateType::R => Box::new(RMatrixConverter::default()),
+            GateType::U(num_qubits) => Box::new(UMatrixConverter::new(Some(num_qubits))),
+            _ => Box::new(FixedMatrixConverter::from(
+                Matrix::try_from(gate_type).unwrap(),
+            )),
+        }
+    }
+}
+
 impl GateType {
-    pub fn into_converter(
+    pub fn into_gate_converter(
         self,
         num_controls: Option<usize>,
         epsilon: f64,

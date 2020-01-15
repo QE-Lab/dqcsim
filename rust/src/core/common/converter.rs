@@ -175,7 +175,7 @@ pub trait MatrixConverter {
     /// for construction/returned by detection. `FromArb` and `ToArb` must
     /// typically be defined for it
     type Parameters;
-    /// Detects the whether the given matrix has a recognized form and returns
+    /// Detects whether the given matrix has a recognized form and returns
     /// the parameters that can be used to reconstruct it, within the given
     /// error margin, and optionally ignoring differences in global phase.
     fn detect_matrix(
@@ -203,6 +203,54 @@ where
     fn construct(&self, parameters: &Self::Output) -> Result<Self::Input> {
         self.construct_matrix(parameters)
             .map(|matrix| (matrix, 0., false))
+    }
+}
+
+/// A type that represents a possibly parameterized matrix form, allowing
+/// conversion between parameters wrapped into an ArbData and the complete
+/// matrix.
+///
+/// This is just an extension of `MatrixConverter` that is automatically
+/// implemented for any `MatrixConverter` with `FromArb`/`ToArb` implemented
+/// for its parameter type. This allows the trait to be boxed.
+pub trait MatrixConverterArb {
+    /// Detects whether the given matrix has a recognized form and returns
+    /// the parameters that can be used to reconstruct by mutating the given
+    /// ArbData object, within the given error margin, and optionally ignoring
+    /// differences in global phase.
+    fn detect_matrix_arb(
+        &self,
+        matrix: &Matrix,
+        epsilon: f64,
+        ignore_global_phase: bool,
+        data: &mut ArbData,
+    ) -> Result<bool>;
+    /// Constructs a matrix by taking information from the given ArbData.
+    fn construct_matrix_arb(&self, data: &mut ArbData) -> Result<Matrix>;
+}
+
+impl<T> MatrixConverterArb for T
+where
+    T: MatrixConverter,
+    T::Parameters: FromArb + ToArb,
+{
+    fn detect_matrix_arb(
+        &self,
+        matrix: &Matrix,
+        epsilon: f64,
+        ignore_global_phase: bool,
+        data: &mut ArbData,
+    ) -> Result<bool> {
+        if let Some(params) = self.detect_matrix(matrix, epsilon, ignore_global_phase)? {
+            params.to_arb(data);
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn construct_matrix_arb(&self, data: &mut ArbData) -> Result<Matrix> {
+        self.construct_matrix(&T::Parameters::from_arb(data)?)
     }
 }
 

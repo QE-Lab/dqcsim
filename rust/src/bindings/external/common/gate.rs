@@ -25,7 +25,7 @@ fn new_predef_helper(
     // Construct the gate.
     let gate = insert(
         gate_type
-            .into_converter(None, 0., false)
+            .into_gate_converter(None, 0., false)
             .construct(&(qubits, data))?,
     );
 
@@ -59,7 +59,7 @@ fn new_predef_helper(
 ///    binary string index 0.
 ///  - `DQCS_GATE_R` pops theta at binary string index 0, phi at index 1, and
 ///    lambda at index 2. They represent 64-bit double floating points.
-///  - `DQCS_GATE_U` pops the entire matrix as a single argument at index 0,
+///  - `DQCS_GATE_U*` pops the entire matrix as a single argument at index 0,
 ///    consisting of 2**N * 2**N * 2 doubles, in real-first row-major format
 ///    (same as the other matrix definitions in DQCsim).
 ///

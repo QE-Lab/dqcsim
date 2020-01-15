@@ -139,7 +139,7 @@ pub extern "C" fn dqcs_gm_new(
 ///>    value at binary string index 0.
 ///>  - `DQCS_GATE_R` inserts/pops theta at binary string index 0, phi at index
 ///>    1, and lambda at index 2. They represent 64-bit double floating points.
-///>  - `DQCS_GATE_U` inserts/pops the entire matrix as a single argument at
+///>  - `DQCS_GATE_U*` inserts/pops the entire matrix as a single argument at
 ///>    index 0, consisting of 2**N * 2**N * 2 doubles, in real-first row-major
 ///>    format (same as the other matrix definitions in DQCsim).
 #[no_mangle]
@@ -160,7 +160,7 @@ pub extern "C" fn dqcs_gm_add_predef_unitary(
         let num_controls = expected_qubit_count(num_controls);
         gm.map.push(
             key,
-            gate.into_converter(num_controls, epsilon, ignore_gphase),
+            gate.into_gate_converter(num_controls, epsilon, ignore_gphase),
         );
         Ok(())
     })
