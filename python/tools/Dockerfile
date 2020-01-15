@@ -1,7 +1,7 @@
-ARG MANYLINUX=2014
+ARG MANYLINUX=1
 FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64
 
-ARG PYTHON_VERSION=38
+ARG PYTHON_VERSION=36
 ENV PYBIN /opt/python/cp${PYTHON_VERSION}-cp${PYTHON_VERSION}*/bin
 
 RUN curl -sSf https://sh.rustup.rs | sh -s -- -y && \
