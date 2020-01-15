@@ -1007,3 +1007,111 @@ where
             .construct(&input.1)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_arb() {
+        assert_eq!(<()>::from_arb(&mut ArbData::default()).unwrap(), ());
+
+        // TODO(mb)
+        // assert!(u64::from_arb(&mut ArbData::default()).is_err());
+        let mut u64_arb = ArbData::from_args(
+            vec![1u64, 2, 3]
+                .into_iter()
+                .map(|x| x.to_le_bytes().to_vec())
+                .collect::<Vec<Vec<u8>>>(),
+        );
+        assert_eq!(u64::from_arb(&mut u64_arb).unwrap(), 1);
+        assert_eq!(u64::from_arb(&mut u64_arb).unwrap(), 2);
+        assert_eq!(u64::from_arb(&mut u64_arb).unwrap(), 3);
+        // TODO(mb)
+        // assert!(u64::from_arb(&mut u64_arb).is_err());
+        assert!(u64::from_arb(&mut ArbData::from_args(vec![vec![1u8, 2, 3]])).is_err());
+
+        // TODO(mb)
+        // assert!(f64::from_arb(&mut ArbData::default()).is_err());
+        let mut f64_arb = ArbData::from_args(
+            vec![1f64, 2., 3.]
+                .into_iter()
+                .map(|x| x.to_le_bytes().to_vec())
+                .collect::<Vec<Vec<u8>>>(),
+        );
+        let mut f64_tup_arb = f64_arb.clone();
+        assert_eq!(f64::from_arb(&mut f64_arb).unwrap(), 1.);
+        assert_eq!(f64::from_arb(&mut f64_arb).unwrap(), 2.);
+        assert_eq!(f64::from_arb(&mut f64_arb).unwrap(), 3.);
+        // TODO(mb)
+        // assert!(f64::from_arb(&mut f64_arb).is_err());
+        assert!(f64::from_arb(&mut ArbData::from_args(vec![vec![1u8, 2, 3]])).is_err());
+
+        // TODO(mb)
+        // assert!(<(f64, f64, f64)>::from_arb(&mut ArbData::default()).is_err());
+        assert_eq!(
+            <(f64, f64, f64)>::from_arb(&mut f64_tup_arb).unwrap(),
+            (1., 2., 3.)
+        );
+
+        // TODO(mb)
+        // assert!(Matrix::from_arb(&mut ArbData::default()).is_err());
+        assert!(Matrix::from_arb(&mut ArbData::from_args(vec![vec![1u8, 2, 3]])).is_err());
+        let mut bad_matrix_arb = ArbData::from_args(vec![vec![1f64, 2., 3., 4.]
+            .into_iter()
+            .map(|x| x.to_le_bytes().to_vec())
+            .flatten()
+            .collect::<Vec<u8>>()]);
+        assert!(Matrix::from_arb(&mut bad_matrix_arb).is_err());
+        let mut matrix_arb = ArbData::from_args(vec![vec![1f64, 0., 0., 0., 0., 0., 1., 0.]
+            .into_iter()
+            .map(|x| x.to_le_bytes().to_vec())
+            .flatten()
+            .collect::<Vec<u8>>()]);
+        assert_eq!(
+            Matrix::from_arb(&mut matrix_arb).unwrap(),
+            matrix!(1., 0., 0., 1.)
+        );
+    }
+
+    #[test]
+    fn to_arb() {
+        let unit = ();
+        let mut arb = ArbData::default();
+        unit.to_arb(&mut arb);
+        assert_eq!(arb, ArbData::default());
+
+        let x = 8u64;
+        x.to_arb(&mut arb);
+        assert_eq!(arb, ArbData::from_args(vec![8u64.to_le_bytes().to_vec()]));
+
+        let x = 8f64;
+        let mut arb = ArbData::default();
+        x.to_arb(&mut arb);
+        assert_eq!(arb, ArbData::from_args(vec![8f64.to_le_bytes().to_vec()]));
+
+        let x = (1f64, 2., 8f64);
+        x.to_arb(&mut arb);
+        assert_eq!(
+            arb,
+            ArbData::from_args(
+                vec![1f64, 2., 8., 8.]
+                    .into_iter()
+                    .map(|x| x.to_le_bytes().to_vec())
+                    .collect::<Vec<Vec<u8>>>()
+            )
+        );
+
+        let x = matrix!(1., 0., 0., 1.);
+        let mut arb = ArbData::default();
+        x.to_arb(&mut arb);
+        assert_eq!(
+            arb,
+            ArbData::from_args(vec![vec![1f64, 0., 0., 0., 0., 0., 1., 0.]
+                .into_iter()
+                .map(|x| x.to_le_bytes().to_vec())
+                .flatten()
+                .collect::<Vec<u8>>()])
+        );
+    }
+}
