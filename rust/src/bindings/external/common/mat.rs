@@ -62,7 +62,7 @@ pub extern "C" fn dqcs_mat_new(num_qubits: size_t, matrix: *const c_double) -> d
 ///> function if and only if it succeeds.
 #[no_mangle]
 pub extern "C" fn dqcs_mat_predef(
-    gate_type: dqcs_internal_gate_t,
+    gate_type: dqcs_predefined_gate_t,
     param_data: dqcs_handle_t,
 ) -> dqcs_handle_t {
     api_return(0, || {
@@ -215,7 +215,7 @@ pub extern "C" fn dqcs_mat_approx_eq(
 #[no_mangle]
 pub extern "C" fn dqcs_mat_is_predef(
     mat: dqcs_handle_t,
-    gate_type: dqcs_internal_gate_t,
+    gate_type: dqcs_predefined_gate_t,
     param_data: *mut dqcs_handle_t,
     epsilon: c_double,
     ignore_gphase: bool,
