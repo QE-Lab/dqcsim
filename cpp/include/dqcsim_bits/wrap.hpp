@@ -710,6 +710,511 @@ namespace wrap {
   }
 
   /**
+   * Enumeration of gates defined by DQCsim.
+   *
+   * This wraps `raw::dqcs_predefined_gate_t`, not including the `invalid`
+   * option (since we use exceptions to communicate failure).
+   */
+  enum class PredefinedGate {
+
+    /**
+     * The identity gate for a single qubit.
+     *
+     * \f[
+     * I = \sigma_0 = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    I = 100,
+
+    /**
+     * The Pauli X matrix.
+     *
+     * \f[
+     * X = \sigma_1 = \begin{bmatrix}
+     * 0 & 1 \\
+     * 1 & 0
+     * \end{bmatrix}
+     * \f]
+     */
+    X = 101,
+
+    /**
+     * The Pauli Y matrix.
+     *
+     * \f[
+     * Y = \sigma_2 = \begin{bmatrix}
+     * 0 & -i \\
+     * i & 0
+     * \end{bmatrix}
+     * \f]
+     */
+    Y = 102,
+
+    /**
+     * The Pauli Z matrix.
+     *
+     * \f[
+     * Z = \sigma_3 = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & -1
+     * \end{bmatrix}
+     * \f]
+     */
+    Z = 103,
+
+    /**
+     * The hadamard gate matrix. That is, a 180-degree Y rotation, followed by
+     * a 90-degree X rotation.
+     *
+     * \f[
+     * H = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & 1 \\
+     * 1 & -1
+     * \end{bmatrix}
+     * \f]
+     */
+    H = 104,
+
+    /**
+     * The S matrix, also known as a 90 degree Z rotation.
+     *
+     * \f[
+     * S = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & i
+     * \end{bmatrix}
+     * \f]
+     */
+    S = 105,
+
+    /**
+     * The S-dagger matrix, also known as a negative 90 degree Z rotation.
+     *
+     * \f[
+     * S^\dagger = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & -i
+     * \end{bmatrix}
+     * \f]
+     */
+    S_DAG = 106,
+
+    /**
+     * The T matrix, also known as a 45 degree Z rotation.
+     *
+     * \f[
+     * T = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & e^{i\frac{\pi}{4}}
+     * \end{bmatrix}
+     * \f]
+     */
+    T = 107,
+
+    /**
+     * The T-dagger matrix, also known as a negative 45 degree Z rotation.
+     *
+     * \f[
+     * T^\dagger = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & e^{-i\frac{\pi}{4}}
+     * \end{bmatrix}
+     * \f]
+     */
+    T_DAG = 108,
+
+    /**
+     * Rx(90°) gate.
+     *
+     * \f[
+     * R_x\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & -i \\
+     * -i & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    RX_90 = 109,
+
+    /**
+     * Rx(-90°) gate.
+     *
+     * \f[
+     * R_x\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & i \\
+     * i & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    RX_M90 = 110,
+
+    /**
+     * Rx(180°) gate.
+     *
+     * \f[
+     * R_x(\pi) = \begin{bmatrix}
+     * 0 & -i \\
+     * -i & 0
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the Pauli X gate, but differs in global
+     * phase. Note that this difference is significant when it is used as a
+     * submatrix for a controlled gate.
+     */
+    RX_180 = 111,
+
+    /**
+     * Ry(90°) gate.
+     *
+     * \f[
+     * R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & -1 \\
+     * 1 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    RY_90 = 112,
+
+    /**
+     * Ry(-90°) gate.
+     *
+     * \f[
+     * R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & 1 \\
+     * -1 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    RY_M90 = 113,
+
+    /**
+     * Ry(180°) gate.
+     *
+     * \f[
+     * R_y(\pi) = \begin{bmatrix}
+     * 0 & -1 \\
+     * 1 & 0
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the Pauli Y gate, but differs in global
+     * phase. Note that this difference is significant when it is used as a
+     * submatrix for a controlled gate.
+     */
+    RY_180 = 114,
+
+    /**
+     * Rz(90°) gate.
+     *
+     * \f[
+     * R_z\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1-i & 0 \\
+     * 0 & 1+i
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the S gate, but differs in global phase.
+     * Note that this difference is significant when it is used as a submatrix
+     * for a controlled gate.
+     */
+    RZ_90 = 115,
+
+    /**
+     * Rz(-90°) gate.
+     *
+     * \f[
+     * R_z\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1+i & 0 \\
+     * 0 & 1-i
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the S-dagger gate, but differs in global
+     * phase. Note that this difference is significant when it is used as a
+     * submatrix for a controlled gate.
+     */
+    RZ_M90 = 116,
+
+    /**
+     * Rz(180°) gate.
+     *
+     * \f[
+     * R_z(\pi) = \begin{bmatrix}
+     * -i & 0 \\
+     * 0 & i
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the Pauli Z gate, but differs in global
+     * phase. Note that this difference is significant when it is used as a
+     * submatrix for a controlled gate.
+     */
+    RZ_180 = 117,
+
+    /**
+     * The matrix for an arbitrary X rotation.
+     *
+     * \f[
+     * R_x(\theta) = \begin{bmatrix}
+     * \cos{\frac{\theta}{2}} & -i\sin{\frac{\theta}{2}} \\
+     * -i\sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
+     * \end{bmatrix}
+     * \f]
+     *
+     * θ is specified or returned through the first binary string argument
+     * of the parameterization ArbData object. It is represented as a
+     * little-endian double floating point value, specified in radians.
+     */
+    RX = 150,
+
+    /**
+     * The matrix for an arbitrary Y rotation.
+     *
+     * \f[
+     * R_y(\theta) = \begin{bmatrix}
+     * \cos{\frac{\theta}{2}} & -\sin{\frac{\theta}{2}} \\
+     * \sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
+     * \end{bmatrix}
+     * \f]
+     *
+     * θ is specified or returned through the first binary string argument
+     * of the parameterization ArbData object. It is represented as a
+     * little-endian double floating point value, specified in radians.
+     */
+    RY = 151,
+
+    /**
+     * The matrix for an arbitrary Z rotation.
+     *
+     * \f[
+     * R_z(\theta) = \begin{bmatrix}
+     * e^{-i\frac{\theta}{2}} & 0 \\
+     * 0 & e^{i\frac{\theta}{2}}
+     * \end{bmatrix}
+     * \f]
+     *
+     * θ is specified or returned through the first binary string argument
+     * of the parameterization ArbData object. It is represented as a
+     * little-endian double floating point value, specified in radians.
+     */
+    RZ = 152,
+
+    /**
+     * The matrix for a Z rotation with angle π/2^k.
+     *
+     * \f[
+     * \textit{PhaseK}(k) = \textit{Phase}\left(\frac{\pi}{2^k}\right) = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & e^{i\pi / 2^k}
+     * \end{bmatrix}
+     * \f]
+     *
+     * k is specified or returned through the first binary string argument
+     * of the parameterization ArbData object. It is represented as a
+     * little-endian unsigned 64-bit integer.
+     */
+    PhaseK = 153,
+
+    /**
+     * The matrix for an arbitrary Z rotation.
+     *
+     * \f[
+     * \textit{Phase}(\theta) = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & e^{i\theta}
+     * \end{bmatrix}
+     * \f]
+     *
+     * θ is specified or returned through the first binary string argument
+     * of the parameterization ArbData object. It is represented as a
+     * little-endian double floating point value, specified in radians.
+     *
+     * This matrix is equivalent to the Rz gate, but differs in global phase.
+     * Note that this difference is significant when it is used as a submatrix
+     * for a controlled gate. Specifically, controlled phase gates use the
+     * phase as specified by this gate, whereas Rz follows the usual algebraic
+     * notation.
+     */
+    Phase = 154,
+
+    /**
+     * Any single-qubit unitary gate, parameterized as a full unitary matrix.
+     *
+     * The full matrix is specified or returned through the first binary string
+     * argument of the parameterization ArbData object. It is represented as an
+     * array of little-endian double floating point values, structured as
+     * real/imag pairs, with the pairs in row-major order.
+     */
+    U1 = 190,
+
+    /**
+     * Arbitrary rotation matrix.
+     *
+     * \f[
+     * R(\theta, \phi, \lambda) = \begin{bmatrix}
+     * \cos{\frac{\theta}{2}} & -\sin{\frac{\theta}{2}} e^{i\lambda} \\
+     * \sin{\frac{\theta}{2}} e^{i\phi} & \cos{\frac{\theta}{2}} e^{i\phi + i\lambda}
+     * \end{bmatrix}
+     * \f]
+     *
+     * This is equivalent to the following:
+     *
+     * \f[
+     * R(\theta, \phi, \lambda) = \textit{Phase}(\phi) \cdot R_y(\theta) \cdot \textit{Phase}(\lambda)
+     * \f]
+     *
+     * The rotation order and phase is taken from Qiskit's U3 gate. Ignoring
+     * global phase, any unitary single-qubit gate can be represented with this
+     * notation.
+     *
+     * θ, φ, and λ are specified or returned through the first three binary
+     * string arguments of the parameterization ArbData object. They are
+     * represented as little-endian double floating point values, specified in
+     * radians.
+     */
+    R = 191,
+
+    /**
+     * The swap gate matrix.
+     *
+     * \f[
+     * \textit{SWAP} = \begin{bmatrix}
+     * 1 & 0 & 0 & 0 \\
+     * 0 & 0 & 1 & 0 \\
+     * 0 & 1 & 0 & 0 \\
+     * 0 & 0 & 0 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    Swap = 200,
+
+    /**
+     * The square-root of a swap gate matrix.
+     *
+     * \f[
+     * \sqrt{\textit{SWAP}} = \begin{bmatrix}
+     * 1 & 0 & 0 & 0 \\
+     * 0 & \frac{i+1}{2} & \frac{i-1}{2} & 0 \\
+     * 0 & \frac{i-1}{2} & \frac{i+1}{2} & 0 \\
+     * 0 & 0 & 0 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    SqSwap = 201,
+
+    /**
+     * Any two-qubit unitary gate, parameterized as a full unitary matrix.
+     *
+     * The full matrix is specified or returned through the first binary string
+     * argument of the parameterization ArbData object. It is represented as an
+     * array of little-endian double floating point values, structured as
+     * real/imag pairs, with the pairs in row-major order.
+     */
+    U2 = 290,
+
+    /**
+     * Any three-qubit unitary gate, parameterized as a full unitary matrix.
+     *
+     * The full matrix is specified or returned through the first binary string
+     * argument of the parameterization ArbData object. It is represented as an
+     * array of little-endian double floating point values, structured as
+     * real/imag pairs, with the pairs in row-major order.
+     */
+    U3 = 390,
+
+  };
+
+  /**
+   * Converts a `PredefinedGate` to its raw C enum.
+   *
+   * \param type The C++ predefined gate to convert.
+   * \returns The raw predefined gate type.
+   */
+  inline raw::dqcs_predefined_gate_t to_raw(PredefinedGate type) noexcept {
+    switch (type) {
+      case PredefinedGate::I:       return raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_I;
+      case PredefinedGate::X:       return raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_X;
+      case PredefinedGate::Y:       return raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_Y;
+      case PredefinedGate::Z:       return raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_Z;
+      case PredefinedGate::H:       return raw::dqcs_predefined_gate_t::DQCS_GATE_H;
+      case PredefinedGate::S:       return raw::dqcs_predefined_gate_t::DQCS_GATE_S;
+      case PredefinedGate::S_DAG:   return raw::dqcs_predefined_gate_t::DQCS_GATE_S_DAG;
+      case PredefinedGate::T:       return raw::dqcs_predefined_gate_t::DQCS_GATE_T;
+      case PredefinedGate::T_DAG:   return raw::dqcs_predefined_gate_t::DQCS_GATE_T_DAG;
+      case PredefinedGate::RX_90:   return raw::dqcs_predefined_gate_t::DQCS_GATE_RX_90;
+      case PredefinedGate::RX_M90:  return raw::dqcs_predefined_gate_t::DQCS_GATE_RX_M90;
+      case PredefinedGate::RX_180:  return raw::dqcs_predefined_gate_t::DQCS_GATE_RX_180;
+      case PredefinedGate::RY_90:   return raw::dqcs_predefined_gate_t::DQCS_GATE_RY_90;
+      case PredefinedGate::RY_M90:  return raw::dqcs_predefined_gate_t::DQCS_GATE_RY_M90;
+      case PredefinedGate::RY_180:  return raw::dqcs_predefined_gate_t::DQCS_GATE_RY_180;
+      case PredefinedGate::RZ_90:   return raw::dqcs_predefined_gate_t::DQCS_GATE_RZ_90;
+      case PredefinedGate::RZ_M90:  return raw::dqcs_predefined_gate_t::DQCS_GATE_RZ_M90;
+      case PredefinedGate::RZ_180:  return raw::dqcs_predefined_gate_t::DQCS_GATE_RZ_180;
+      case PredefinedGate::RX:      return raw::dqcs_predefined_gate_t::DQCS_GATE_RX;
+      case PredefinedGate::RY:      return raw::dqcs_predefined_gate_t::DQCS_GATE_RY;
+      case PredefinedGate::RZ:      return raw::dqcs_predefined_gate_t::DQCS_GATE_RZ;
+      case PredefinedGate::PhaseK:  return raw::dqcs_predefined_gate_t::DQCS_GATE_PHASE_K;
+      case PredefinedGate::Phase:   return raw::dqcs_predefined_gate_t::DQCS_GATE_PHASE;
+      case PredefinedGate::U1:      return raw::dqcs_predefined_gate_t::DQCS_GATE_U1;
+      case PredefinedGate::R:       return raw::dqcs_predefined_gate_t::DQCS_GATE_R;
+      case PredefinedGate::Swap:    return raw::dqcs_predefined_gate_t::DQCS_GATE_SWAP;
+      case PredefinedGate::SqSwap:  return raw::dqcs_predefined_gate_t::DQCS_GATE_SQRT_SWAP;
+      case PredefinedGate::U2:      return raw::dqcs_predefined_gate_t::DQCS_GATE_U2;
+      case PredefinedGate::U3:      return raw::dqcs_predefined_gate_t::DQCS_GATE_U3;
+    }
+    std::cerr << "unknown plugin type" << std::endl;
+    std::terminate();
+  }
+
+  /**
+   * Checks a `dqcs_predefined_gate_t` return value and converts it to its C++
+   * enum representation; if failure, throws a runtime error with DQCsim's
+   * error message.
+   *
+   * \param type The raw function return code.
+   * \returns The wrapped predefined gate type.
+   * \throws std::runtime_error When the return code indicated failure.
+   */
+  inline PredefinedGate check(raw::dqcs_predefined_gate_t type) {
+    switch (type) {
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_I:    return PredefinedGate::I;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_X:    return PredefinedGate::X;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_Y:    return PredefinedGate::Y;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_Z:    return PredefinedGate::Z;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_H:          return PredefinedGate::H;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_S:          return PredefinedGate::S;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_S_DAG:      return PredefinedGate::S_DAG;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_T:          return PredefinedGate::T;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_T_DAG:      return PredefinedGate::T_DAG;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RX_90:      return PredefinedGate::RX_90;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RX_M90:     return PredefinedGate::RX_M90;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RX_180:     return PredefinedGate::RX_180;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RY_90:      return PredefinedGate::RY_90;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RY_M90:     return PredefinedGate::RY_M90;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RY_180:     return PredefinedGate::RY_180;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RZ_90:      return PredefinedGate::RZ_90;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RZ_M90:     return PredefinedGate::RZ_M90;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RZ_180:     return PredefinedGate::RZ_180;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RX:         return PredefinedGate::RX;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RY:         return PredefinedGate::RY;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RZ:         return PredefinedGate::RZ;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_PHASE_K:    return PredefinedGate::PhaseK;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_PHASE:      return PredefinedGate::Phase;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_U1:         return PredefinedGate::U1;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_R:          return PredefinedGate::R;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_SWAP:       return PredefinedGate::Swap;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_SQRT_SWAP:  return PredefinedGate::SqSwap;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_U2:         return PredefinedGate::U2;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_U3:         return PredefinedGate::U3;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_INVALID:    throw std::runtime_error(raw::dqcs_error_get());
+    }
+    throw std::invalid_argument("unknown plugin type");
+  }
+
+  /**
    * Checks a pointer return value; if failure, throws a runtime error with
    * DQCsim's error message.
    *
@@ -2340,6 +2845,60 @@ namespace wrap {
     }
 
     /**
+     * Constructs a non-parameterized predefined matrix.
+     *
+     * \param gate The gate to construct the matrix for.
+     * \returns A new matrix containing the desired data.
+     * \throws std::runtime_error When the matrix for a parameterized gate type
+     * is requested, or constructing the matrix failed.
+     */
+    Matrix(PredefinedGate gate)
+      : Handle(check(raw::dqcs_mat_predef(to_raw(gate), 0))) {
+    }
+
+    /**
+     * Constructs a predefined matrix, using `ArbData` to represent the
+     * parameters for parameterized gates.
+     *
+     * The `ArbData` needed for the rotation gates can be trivially constructed
+     * in-line. Here's the relevant code:
+     *
+     * ```cpp
+     * double theta, phi, lambda;
+     * uint64_t k;
+     * Matrix(PredefinedGate::RX, ArbData.with_arg(theta));
+     * Matrix(PredefinedGate::RY, ArbData.with_arg(theta));
+     * Matrix(PredefinedGate::RZ, ArbData.with_arg(theta));
+     * Matrix(PredefinedGate::Phase, ArbData.with_arg(theta));
+     * Matrix(PredefinedGate::PhaseK, ArbData.with_arg(k));
+     * Matrix(PredefinedGate::R, ArbData.with_arg(theta).with_arg(phi).with_arg(lambda));
+     * ```
+     *
+     * \param gate The gate to construct the matrix for.
+     * \param parameters The parameters for the gate; refer to the docs for
+     * `PredefinedGate` for more information.
+     * \returns A new matrix containing the desired data.
+     * \throws std::runtime_error When constructing the matrix failed.
+     */
+    Matrix(PredefinedGate gate, ArbData &&parameters)
+      : Handle(check(raw::dqcs_mat_predef(to_raw(gate), parameters.get_handle()))) {
+    }
+
+    /**
+     * Constructs a predefined matrix, using `ArbData` to represent the
+     * parameters for parameterized gates.
+     *
+     * \param gate The gate to construct the matrix for.
+     * \param parameters The parameters for the gate; refer to the docs for
+     * `PredefinedGate` for more information.
+     * \returns A new matrix containing the desired data.
+     * \throws std::runtime_error When constructing the matrix failed.
+     */
+    Matrix(PredefinedGate gate, const ArbData &parameters)
+      : Handle(check(raw::dqcs_mat_predef(to_raw(gate), ArbData(parameters).get_handle()))) {
+    }
+
+    /**
      * Copy-constructs a matrix.
      *
      * \param src The object to copy from.
@@ -2435,7 +2994,7 @@ namespace wrap {
     }
 
     /**
-     * Matrix fuzzy equality operator.
+     * Approximate equality operator for two matrices.
      *
      * \param other The matrix to compare to.
      * \param epsilon The maximum tolerated RMS variation of the elements.
@@ -2444,12 +3003,48 @@ namespace wrap {
      * \returns Whether the matrices are approximately equal.
      * \throws std::runtime_error When either handle is invalid.
      */
-    bool fuzzy_equal(
+    bool approx_eq(
       const Matrix &other,
       double epsilon = 0.000001,
       bool ignore_global_phase = true
     ) const {
       return check(raw::dqcs_mat_approx_eq(handle, other.get_handle(), epsilon, ignore_global_phase));
+    }
+
+    /**
+     * Detects whether this matrix is approximately equal to (some
+     * parameterization of) the given predefined gate.
+     *
+     * The detected parameters are optionally returned as an `ArbData` if the
+     * matrix matches. If you want to compare to a specific parameterization of
+     * a predefined gate (for instance, an X rotation of 45 degrees), construct
+     * its matrix first, and then compare with `approx_eq()`.
+     *
+     * \param gate The predefined gate matrix to detect.
+     * \param epsilon The maximum tolerated RMS variation of the elements.
+     * \param ignore_global_phase Whether global phase differences should be
+     * ignored in the comparison.
+     * \param parameters If non-null, the detected parameters (if any) are
+     * written into the referenced `ArbData`. Any previous contents are
+     * discarded.
+     * \returns Whether the matrix matches the given predefined gate type.
+     * \throws std::runtime_error When the current handle is invalid, detection
+     * fails, or `parameters` could not be updated.
+     */
+    bool is_predefined(
+      PredefinedGate gate,
+      double epsilon = 0.000001,
+      bool ignore_global_phase = true,
+      ArbData *parameters = nullptr
+    ) const {
+      if (parameters) {
+        raw::dqcs_handle_t param_data = 0;
+        bool match = check(raw::dqcs_mat_is_predef(handle, to_raw(gate), &param_data, epsilon, ignore_global_phase));
+        if (!match) return false;
+        *parameters = ArbData(param_data);
+        return true;
+      }
+      return check(raw::dqcs_mat_is_predef(handle, to_raw(gate), nullptr, epsilon, ignore_global_phase));
     }
 
     /**
@@ -2492,633 +3087,6 @@ namespace wrap {
         result.first.push_back(*indices++);
       }
       return result;
-    }
-
-  };
-
-  /**
-   * Contains shorthand methods for a variety of commonly used gate matrices.
-   *
-   * \note This is a class an not a namespace because it has global constants,
-   * and this is a header-only library.
-   */
-  class GateMatrix {
-  private:
-
-    /**
-     * Dummy constructor. There is no point in ever constructing this class,
-     * all members are static.
-     */
-    GateMatrix() {};
-
-  public:
-
-    /**
-     * The Pauli I matrix.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * I = \sigma_0 = \begin{bmatrix}
-     * 1 & 0 \\
-     * 0 & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the Pauli I gate.
-     */
-    static const Matrix &I() noexcept {
-      const double values[8] = {
-        1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    1.0,  0.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * The Pauli X matrix.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * X = \sigma_1 = \begin{bmatrix}
-     * 0 & 1 \\
-     * 1 & 0
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the Pauli X gate.
-     */
-    static const Matrix &X() noexcept {
-      const double values[8] = {
-        0.0,  0.0,    1.0,  0.0,
-        1.0,  0.0,    0.0,  0.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * The Pauli Y matrix.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * Y = \sigma_2 = \begin{bmatrix}
-     * 0 & -i \\
-     * i & 0
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the Pauli Y gate.
-     */
-    static const Matrix &Y() noexcept {
-      const double values[8] = {
-        0.0,  0.0,    0.0,  -1.0,
-        0.0,  1.0,    0.0,  0.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * The Pauli Z matrix.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * Z = \sigma_3 = \begin{bmatrix}
-     * 1 & 0 \\
-     * 0 & -1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the Pauli Z gate.
-     */
-    static const Matrix &Z() noexcept {
-      const double values[8] = {
-        1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    -1.0, 0.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * Hadamard gate.
-     *
-     * This represents a 180-degree Y rotation, followed by a 90-degree X
-     * rotation. The matrix is as follows:
-     *
-     * \f[
-     * H = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1 & 1 \\
-     * 1 & -1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the Hadamard gate.
-     */
-    static const Matrix &H() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  0.0,    IR2,  0.0,
-        IR2,  0.0,    -IR2, 0.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * The S matrix.
-     *
-     * This represents a 90 degree Z rotation. The matrix is as follows:
-     *
-     * \f[
-     * S = \begin{bmatrix}
-     * 1 & 0 \\
-     * 0 & i
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the S gate.
-     */
-    static const Matrix &S() noexcept {
-      const double values[8] = {
-        1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    0.0,  1.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * The S-dagger matrix.
-     *
-     * This represents a negative 90 degree Z rotation. The matrix is as
-     * follows:
-     *
-     * \f[
-     * S^\dagger = \begin{bmatrix}
-     * 1 & 0 \\
-     * 0 & -i
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the S-dagger gate.
-     */
-    static const Matrix &SDAG() noexcept {
-      const double values[8] = {
-        1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    0.0,  -1.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * The T matrix.
-     *
-     * This represents a 45 degree Z rotation. The matrix is as follows:
-     *
-     * \f[
-     * T = \begin{bmatrix}
-     * 1 & 0 \\
-     * 0 & e^{i\frac{\pi}{4}}
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the T gate.
-     */
-    static const Matrix &T() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    IR2,  IR2,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * The T-dagger matrix.
-     *
-     * This represents a negative 45 degree Z rotation. The matrix is as follows:
-     *
-     * \f[
-     * T^\dagger = \begin{bmatrix}
-     * 1 & 0 \\
-     * 0 & e^{-i\frac{\pi}{4}}
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the T-dagger gate.
-     */
-    static const Matrix &TDAG() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    IR2,  -IR2,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * Computes the matrix for an arbitrary X rotation.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_x(\theta) = \begin{bmatrix}
-     * \cos{\frac{\theta}{2}} & -i\sin{\frac{\theta}{2}} \\
-     * -i\sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
-     * \end{bmatrix}
-     * \f]
-     *
-     * \param theta The rotation angle in radians.
-     * \returns The matrix for an X rotation gate with angle theta.
-     */
-    static Matrix RX(double theta) noexcept {
-      double co = std::cos(0.5 * theta);
-      double si = std::sin(0.5 * theta);
-      double values[8] = {
-        co,   0.0,    0.0,  -si,
-        0.0,  -si,    co,   0.0,
-      };
-      return Matrix(4, values);
-    }
-
-    /**
-     * Precomputed 90-degree X rotation gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_x\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1 & -i \\
-     * -i & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for a postive 90-degree X rotation.
-     */
-    static const Matrix &RX90() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  0.0,    0.0,  -IR2,
-        0.0,  -IR2,   IR2,  0.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * Precomputed negative 90-degree X rotation gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_x\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1 & i \\
-     * i & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for a negative 90-degree X rotation.
-     */
-    static const Matrix &RXM90() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  0.0,    0.0,  IR2,
-        0.0,  IR2,    IR2,  0.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * Precomputed 180-degree RX gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_x(\pi) = \begin{bmatrix}
-     * 0 & -i \\
-     * -i & 0
-     * \end{bmatrix}
-     * \f]
-     *
-     * This matrix is equivalent to the Pauli X gate, but differs in global
-     * phase.
-     *
-     * \returns The matrix for a positive 180-degree X rotation.
-     */
-    static const Matrix &RX180() noexcept {
-      const double values[8] = {
-        0.0,  0.0,    0.0,  -1.0,
-        0.0,  -1.0,   0.0,  0.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * Computes the matrix for an arbitrary Y rotation.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_y(\theta) = \begin{bmatrix}
-     * \cos{\frac{\theta}{2}} & -\sin{\frac{\theta}{2}} \\
-     * \sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
-     * \end{bmatrix}
-     * \f]
-     *
-     * \param theta The rotation angle in radians.
-     * \returns The matrix for an Y rotation gate with angle theta.
-     */
-    static Matrix RY(double theta) noexcept {
-      double co = std::cos(0.5 * theta);
-      double si = std::sin(0.5 * theta);
-      double values[8] = {
-        co,   0.0,    -si,  0.0,
-        si,   0.0,    co,   0.0,
-      };
-      return Matrix(4, values);
-    }
-
-    /**
-     * Precomputed 90-degree Y rotation gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1 & -1 \\
-     * 1 & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for a positive 90-degree Y rotation.
-     */
-    static const Matrix &RY90() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  0.0,    -IR2, 0.0,
-        IR2,  0.0,    IR2,  0.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * Precomputed negative 90-degree RY gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1 & 1 \\
-     * -1 & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for a negative 90-degree Y rotation.
-     */
-    static const Matrix &RYM90() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  0.0,    IR2,  0.0,
-        -IR2, 0.0,    IR2,  0.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * Precomputed 180-degree RY gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_y(\pi) = \begin{bmatrix}
-     * 0 & -1 \\
-     * 1 & 0
-     * \end{bmatrix}
-     * \f]
-     *
-     * This matrix is equivalent to the Pauli Y gate, but differs in global
-     * phase.
-     *
-     * \returns The matrix for a positive 180-degree Y rotation.
-     */
-    static const Matrix &RY180() noexcept {
-      const double values[8] = {
-        0.0,  0.0,    -1.0, 0.0,
-        1.0,  0.0,    0.0,  0.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * Computes the matrix for an arbitrary Z rotation.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_z(\theta) = \begin{bmatrix}
-     * e^{-i\frac{\theta}{2}} & 0 \\
-     * 0 & e^{i\frac{\theta}{2}}
-     * \end{bmatrix}
-     * \f]
-     *
-     * \param theta The rotation angle in radians.
-     * \returns The matrix for a Z rotation gate with angle theta.
-     */
-    static Matrix RZ(double theta) noexcept {
-      double co = std::cos(0.5 * theta);
-      double si = std::sin(0.5 * theta);
-      double values[8] = {
-        co,   -si,    0.0,  0.0,
-        0.0,  0.0,    co,   si,
-      };
-      return Matrix(4, values);
-    }
-
-    /**
-     * Precomputed 90-degree RZ gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_z\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1-i & 0 \\
-     * 0 & 1+i
-     * \end{bmatrix}
-     * \f]
-     *
-     * This matrix is equivalent to the S gate, but differs in global phase.
-     *
-     * \returns The matrix for a positive 90-degree Z rotation.
-     */
-    static const Matrix &RZ90() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  -IR2,   0.0,  0.0,
-        0.0,  0.0,    IR2,  IR2,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * Precomputed negative 90-degree RZ gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_z\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1+i & 0 \\
-     * 0 & 1-i
-     * \end{bmatrix}
-     * \f]
-     *
-     * This matrix is equivalent to the S-dagger gate, but differs in global
-     * phase.
-     *
-     * \returns The matrix for a negative 90-degree Z rotation.
-     */
-    static const Matrix &RZM90() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  IR2,    0.0,  0.0,
-        0.0,  0.0,    IR2,  -IR2,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * Precomputed 180-degree RZ gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_z(\pi) = \begin{bmatrix}
-     * -i & 0 \\
-     * 0 & i
-     * \end{bmatrix}
-     * \f]
-     *
-     * This matrix is equivalent to the Pauli Z gate, but differs in global
-     * phase.
-     *
-     * \returns The matrix for a positive 180-degree Z rotation.
-     */
-    static const Matrix &RZ180() noexcept {
-      const double values[8] = {
-        0.0,  -1.0,   0.0,  0.0,
-        0.0,  0.0,    0.0,  1.0,
-      };
-      static const Matrix matrix(1, values);
-      return matrix;
-    }
-
-    /**
-     * Computes the matrix for an arbitrary rotation.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * U(\theta, \phi, \lambda) = \begin{bmatrix}
-     * e^{i\frac{-\phi - \lambda}{2}} \cos{\frac{\theta}{2}} & e^{i\frac{-\phi + \lambda}{2}} \sin{\frac{\theta}{2}} \\
-     * e^{i\frac{ \phi - \lambda}{2}} \sin{\frac{\theta}{2}} & e^{i\frac{ \phi + \lambda}{2}} \cos{\frac{\theta}{2}}
-     * \end{bmatrix}
-     * \f]
-     *
-     * This is equivalent to the following:
-     *
-     * \f[
-     * U(\theta, \phi, \lambda) = R_z(\phi) \cdot R_y(\theta) \cdot R_z(\lambda)
-     * \f]
-     *
-     * The rotation order is taken from Qiskit's U3 gate, but the global phase
-     * is defined differently.
-     *
-     * The rotation angles are specified in radians.
-     *
-     * \param theta The rotation angle in radians for the Y rotation.
-     * \param phi The rotation angle in radians for the pre-Y Z rotation.
-     * \param lambda The rotation angle in radians for the post-Y Z rotation.
-     * \returns The matrix for a Z rotation gate with angle theta.
-     */
-    static Matrix R(double theta, double phi, double lambda) noexcept {
-      double co = std::cos(0.5 * theta);
-      double si = std::sin(0.5 * theta);
-      complex values[4] = {
-        +co * std::exp(std::complex<double>(0.0, 0.5 * (- lambda - phi))),
-        -si * std::exp(std::complex<double>(0.0, 0.5 * (+ lambda - phi))),
-        +si * std::exp(std::complex<double>(0.0, 0.5 * (- lambda + phi))),
-        +co * std::exp(std::complex<double>(0.0, 0.5 * (+ lambda + phi))),
-      };
-      return Matrix(4, values);
-    }
-
-    /**
-     * The matrix for a swap gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * \textit{SWAP} = \begin{bmatrix}
-     * 1 & 0 & 0 & 0 \\
-     * 0 & 0 & 1 & 0 \\
-     * 0 & 1 & 0 & 0 \\
-     * 0 & 0 & 0 & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for a swap gate.
-     */
-    static const Matrix &SWAP() noexcept {
-      const double values[32] = {
-        1.0,  0.0,    0.0,  0.0,    0.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    0.0,  0.0,    1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    1.0,  0.0,    0.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    0.0,  0.0,    0.0,  0.0,    1.0,  0.0,
-      };
-      static const Matrix matrix(2, values);
-      return matrix;
-    }
-
-    /**
-     * The square-root of a swap gate matrix.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * \sqrt{\textit{SWAP}} = \begin{bmatrix}
-     * 1 & 0 & 0 & 0 \\
-     * 0 & \frac{i+1}{2} & \frac{i-1}{2} & 0 \\
-     * 0 & \frac{i-1}{2} & \frac{i+1}{2} & 0 \\
-     * 0 & 0 & 0 & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for a square-root-of-swap gate.
-     */
-    static const Matrix &SQSWAP() noexcept {
-      const double values[32] = {
-        1.0,  0.0,    0.0,  0.0,    0.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    0.5,  0.5,    0.5,  -0.5,   0.0,  0.0,
-        0.0,  0.0,    0.5,  -0.5,   0.5,  0.5,    0.0,  0.0,
-        0.0,  0.0,    0.0,  0.0,    0.0,  0.0,    1.0,  0.0,
-      };
-      static const Matrix matrix(2, values);
-      return matrix;
     }
 
   };
@@ -3195,7 +3163,91 @@ namespace wrap {
     Gate &operator=(Gate&&) = default;
 
     /**
-     * Constructs a new unitary gate.
+     * Constructs a new predefined gate.
+     *
+     * \param gate The type of gate to construct.
+     * \param qubits The qubits that the gate should operate on. This should be
+     * at least the number of qubits required by the gate type; any additional
+     * qubits added on the left-hand side will serve as control qubits for a
+     * controlled gate using the specified gate matrix as its non-controlled
+     * submatrix.
+     * \param parameters An `ArbData` object containing the parameterization
+     * data for the predefined gate, if it requires parameters. Refer to the
+     * docs for `PredefinedGate` for more info. Any additional data in the
+     * `ArbData` object will be added to the gate's `ArbData` attachment.
+     * \returns The requested unitary gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate predefined(PredefinedGate gate, QubitSet &&qubits, ArbData &&parameters) {
+      return Gate(check(raw::dqcs_gate_new_predef(
+        to_raw(gate),
+        qubits.get_handle(),
+        parameters.get_handle()
+      )));
+    }
+
+    /**
+     * Constructs a new predefined gate.
+     *
+     * \param gate The type of gate to construct.
+     * \param qubits The qubits that the gate should operate on. This should be
+     * at least the number of qubits required by the gate type; any additional
+     * qubits added on the left-hand side will serve as control qubits for a
+     * controlled gate using the specified gate matrix as its non-controlled
+     * submatrix.
+     * \param parameters An `ArbData` object containing the parameterization
+     * data for the predefined gate, if it requires parameters. Refer to the
+     * docs for `PredefinedGate` for more info. Any additional data in the
+     * `ArbData` object will be added to the gate's `ArbData` attachment.
+     * \returns The requested unitary gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate predefined(PredefinedGate gate, const QubitSet &qubits, const ArbData &parameters) {
+      return predefined(gate, QubitSet(qubits), ArbData(parameters));
+    }
+
+    /**
+     * Constructs a new non-parameterized predefined gate.
+     *
+     * \param gate The type of gate to construct.
+     * \param qubits The qubits that the gate should operate on. This should be
+     * at least the number of qubits required by the gate type; any additional
+     * qubits added on the left-hand side will serve as control qubits for a
+     * controlled gate using the specified gate matrix as its non-controlled
+     * submatrix.
+     * \returns The requested unitary gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate predefined(PredefinedGate gate, QubitSet &&qubits) {
+      return Gate(check(raw::dqcs_gate_new_predef(
+        to_raw(gate),
+        qubits.get_handle(),
+        0
+      )));
+    }
+
+    /**
+     * Constructs a new non-parameterized predefined gate.
+     *
+     * \param gate The type of gate to construct.
+     * \param qubits The qubits that the gate should operate on. This should be
+     * at least the number of qubits required by the gate type; any additional
+     * qubits added on the left-hand side will serve as control qubits for a
+     * controlled gate using the specified gate matrix as its non-controlled
+     * submatrix.
+     * \returns The requested unitary gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate predefined(PredefinedGate gate, const QubitSet &qubits) {
+      return predefined(gate, QubitSet(qubits));
+    }
+
+    /**
+     * Constructs a new custom unitary gate.
      *
      * \param targets A qubit reference set with the target qubits.
      * \param matrix The matrix to be applied to the target qubits. It must be
@@ -3213,7 +3265,7 @@ namespace wrap {
     }
 
     /**
-     * Constructs a new unitary gate.
+     * Constructs a new custom unitary gate.
      *
      * \param targets A qubit reference set with the target qubits, passed by
      * copy.
@@ -3228,7 +3280,7 @@ namespace wrap {
     }
 
     /**
-     * Constructs a new unitary gate with control qubits.
+     * Constructs a new custom unitary gate with control qubits.
      *
      * \param targets A qubit reference set with the target qubits.
      * \param controls A qubit reference set with the target qubits. The
@@ -3250,7 +3302,7 @@ namespace wrap {
     }
 
     /**
-     * Constructs a new unitary gate with control qubits.
+     * Constructs a new custom unitary gate with control qubits.
      *
      * \param targets A qubit reference set with the target qubits, passed by
      * copy.
@@ -4550,9 +4602,9 @@ namespace wrap {
      * each qubit:
      *
      * ```C++
-     * gate(GateMatrix::H(), q);
+     * gate(Matrix(PredefinedGate::H), q);
      * measure_z(q);
-     * gate(GateMatrix::H(), q);
+     * gate(Matrix(PredefinedGate::H), q);
      * ```
      *
      * \param q The qubit to measure.
@@ -4564,9 +4616,9 @@ namespace wrap {
      * plugin will not be (immediately) visible.
      */
     void measure_x(const QubitRef &q) {
-      gate(GateMatrix::H(), q);
+      gate(Matrix(PredefinedGate::H), q);
       measure_z(q);
-      gate(GateMatrix::H(), q);
+      gate(Matrix(PredefinedGate::H), q);
     }
 
     /**
@@ -4577,9 +4629,9 @@ namespace wrap {
      * each qubit:
      *
      * ```C++
-     * for (q : qs) gate(GateMatrix::H(), q);
+     * for (q : qs) gate(Matrix(PredefinedGate::H), q);
      * measure_z(qs);
-     * for (q : qs) gate(GateMatrix::H(), q);
+     * for (q : qs) gate(Matrix(PredefinedGate::H), q);
      * ```
      *
      * \param qs The qubits to measure.
@@ -4593,9 +4645,9 @@ namespace wrap {
      */
     void measure_x(const QubitSet &qs) {
       auto qs_vec = qs.copy_into_vector();
-      for (auto &q : qs_vec) gate(GateMatrix::H(), q);
+      for (auto &q : qs_vec) gate(Matrix(PredefinedGate::H), q);
       measure_z(qs);
-      for (auto &q : qs_vec) gate(GateMatrix::H(), q);
+      for (auto &q : qs_vec) gate(Matrix(PredefinedGate::H), q);
     }
 
     /**
@@ -4606,10 +4658,10 @@ namespace wrap {
      * each qubit:
      *
      * ```C++
-     * gate(GateMatrix::S(), q);
-     * gate(GateMatrix::Z(), q);
-     * measure_z(q);
-     * gate(GateMatrix::S(), q);
+     * gate(Matrix(PredefinedGate::S), q);
+     * gate(Matrix(PredefinedGate::Z), q);
+     * measure_x(q);
+     * gate(Matrix(PredefinedGate::S), q);
      * ```
      *
      * \param q The qubit to measure.
@@ -4621,10 +4673,10 @@ namespace wrap {
      * plugin will not be (immediately) visible.
      */
     void measure_y(const QubitRef &q) {
-      gate(GateMatrix::S(), q);
-      gate(GateMatrix::Z(), q);
-      measure_z(q);
-      gate(GateMatrix::S(), q);
+      gate(Matrix(PredefinedGate::S), q);
+      gate(Matrix(PredefinedGate::Z), q);
+      measure_x(q);
+      gate(Matrix(PredefinedGate::S), q);
     }
 
     /**
@@ -4635,10 +4687,10 @@ namespace wrap {
      * each qubit:
      *
      * ```C++
-     * for (q : qs) gate(GateMatrix::S(), q);
-     * for (q : qs) gate(GateMatrix::Z(), q);
-     * measure_z(qs);
-     * for (q : qs) gate(GateMatrix::S(), q);
+     * for (q : qs) gate(Matrix(PredefinedGate::S), q);
+     * for (q : qs) gate(Matrix(PredefinedGate::Z), q);
+     * measure_x(qs);
+     * for (q : qs) gate(Matrix(PredefinedGate::S), q);
      * ```
      *
      * \param qs The qubits to measure.
@@ -4652,10 +4704,10 @@ namespace wrap {
      */
     void measure_y(const QubitSet &qs) {
       auto qs_vec = qs.copy_into_vector();
-      for (auto &q : qs_vec) gate(GateMatrix::S(), q);
-      for (auto &q : qs_vec) gate(GateMatrix::Z(), q);
-      measure_z(qs);
-      for (auto &q : qs_vec) gate(GateMatrix::S(), q);
+      for (auto &q : qs_vec) gate(Matrix(PredefinedGate::S), q);
+      for (auto &q : qs_vec) gate(Matrix(PredefinedGate::Z), q);
+      measure_x(qs);
+      for (auto &q : qs_vec) gate(Matrix(PredefinedGate::S), q);
     }
 
     /**
