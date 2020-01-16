@@ -449,7 +449,6 @@ class Tests(unittest.TestCase):
         ])
 
         # measure_x(1, 2, 3)
-        # meas_y = H, meas_z, H
         self.assert_unitary(log.pop(0), [1+u], [
             0.707+0.000j,  0.707+0.000j,
             0.707+0.000j, -0.707+0.000j,
@@ -480,8 +479,15 @@ class Tests(unittest.TestCase):
         ])
 
         # measure_y(1, 2, 3)
-        # meas_y = S, Z, meas_z, S
         self.assert_unitary(log.pop(0), [1+u], [
+            1.000+0.000j, 0.000+0.000j,
+            0.000+0.000j, 0.000+1.000j,
+        ])
+        self.assert_unitary(log.pop(0), [2+u], [
+            1.000+0.000j, 0.000+0.000j,
+            0.000+0.000j, 0.000+1.000j,
+        ])
+        self.assert_unitary(log.pop(0), [3+u], [
             1.000+0.000j, 0.000+0.000j,
             0.000+0.000j, 0.000+1.000j,
         ])
@@ -490,25 +496,41 @@ class Tests(unittest.TestCase):
             0.000+0.000j, -1.000+0.000j,
         ])
         self.assert_unitary(log.pop(0), [2+u], [
-            1.000+0.000j, 0.000+0.000j,
-            0.000+0.000j, 0.000+1.000j,
+            1.000+0.000j,  0.000-0.000j,
+            0.000+0.000j, -1.000+0.000j,
+        ])
+        self.assert_unitary(log.pop(0), [3+u], [
+            1.000+0.000j,  0.000-0.000j,
+            0.000+0.000j, -1.000+0.000j,
+        ])
+        self.assert_unitary(log.pop(0), [1+u], [
+            0.707+0.000j,  0.707+0.000j,
+            0.707+0.000j, -0.707+0.000j,
         ])
         self.assert_unitary(log.pop(0), [2+u], [
-            1.000+0.000j,  0.000-0.000j,
-            0.000+0.000j, -1.000+0.000j,
+            0.707+0.000j,  0.707+0.000j,
+            0.707+0.000j, -0.707+0.000j,
         ])
         self.assert_unitary(log.pop(0), [3+u], [
-            1.000+0.000j, 0.000+0.000j,
-            0.000+0.000j, 0.000+1.000j,
-        ])
-        self.assert_unitary(log.pop(0), [3+u], [
-            1.000+0.000j,  0.000-0.000j,
-            0.000+0.000j, -1.000+0.000j,
+            0.707+0.000j,  0.707+0.000j,
+            0.707+0.000j, -0.707+0.000j,
         ])
         self.assertEqual(log.pop(0), {
             'cmd': 'measurement',
             'measures': [1+m, 2+m, 3+m],
         })
+        self.assert_unitary(log.pop(0), [1+u], [
+            0.707+0.000j,  0.707+0.000j,
+            0.707+0.000j, -0.707+0.000j,
+        ])
+        self.assert_unitary(log.pop(0), [2+u], [
+            0.707+0.000j,  0.707+0.000j,
+            0.707+0.000j, -0.707+0.000j,
+        ])
+        self.assert_unitary(log.pop(0), [3+u], [
+            0.707+0.000j,  0.707+0.000j,
+            0.707+0.000j, -0.707+0.000j,
+        ])
         self.assert_unitary(log.pop(0), [1+u], [
             1.000+0.000j, 0.000+0.000j,
             0.000+0.000j, 0.000+1.000j,

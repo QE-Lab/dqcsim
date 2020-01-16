@@ -1,0 +1,52 @@
+name: Examples
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    paths:
+    - 'examples/**'
+    - 'rust/**'
+    - '**/Cargo.toml'
+    - 'Cargo.lock'
+    - 'cpp/**'
+    - '**/CMakeLists.txt'
+    - 'python/**'
+    - '**/setup.py'
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v1
+      id: cache
+      with:
+        path: docker-cache
+        key: dqcsim-examples-${{ github.sha }}
+        restore-keys: |
+          dqcsim-examples-
+    - name: Load cached Docker layers
+      run: |
+        if [ -d "docker-cache" ]; then
+          docker load < docker-cache/dqcsim.tar
+          rm -fr docker-cache
+        fi
+    - name: Build image
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        docker build --pull --cache-from dqcsim -t dqcsim - < python/tools/Dockerfile
+        mkdir docker-cache
+        docker save dqcsim $(docker history -q dqcsim | awk '!/<missing>/{print}') > docker-cache/dqcsim.tar
+    - name: Run container
+      run: docker run --rm -v `pwd`:/io -e DQCSIM_DEBUG= dqcsim
+    - name: Install
+      run: |
+        sudo -H python3 -m pip install -U setuptools wheel
+        sudo -H python3 -m pip install target/python/dist/dqcsim*manylinux*.whl
+        sudo ldconfig
+    - name: Examples
+      run: make
+      working-directory: examples

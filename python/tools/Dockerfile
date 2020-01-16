@@ -1,8 +1,8 @@
-ARG MANYLINUX=2010
+ARG MANYLINUX=1
 FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64
 
-ARG PYTHON_VERSION=38
-ENV PYBIN /opt/python/cp${PYTHON_VERSION}-cp${PYTHON_VERSION}m/bin
+ARG PYTHON_VERSION=36
+ENV PYBIN /opt/python/cp${PYTHON_VERSION}-cp${PYTHON_VERSION}*/bin
 
 RUN curl -sSf https://sh.rustup.rs | sh -s -- -y && \
 	curl -sSfL https://github.com/swig/swig/archive/rel-4.0.1.zip -o swig.zip && \
