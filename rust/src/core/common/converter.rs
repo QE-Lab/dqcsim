@@ -1150,6 +1150,28 @@ mod tests {
     }
 
     #[test]
+    fn matrix_converter_arb() {
+        let rx = RxMatrixConverter::default();
+        let mut arb = ArbData::default();
+        assert!(!rx
+            .detect_matrix_arb(&Matrix::new_identity(4), 0., false, &mut arb)
+            .unwrap());
+        assert_eq!(arb, ArbData::default());
+        assert!(rx
+            .detect_matrix_arb(&Matrix::new_identity(2), 0., false, &mut arb)
+            .unwrap());
+        let mut res = ArbData::default();
+        0f64.to_arb(&mut res);
+        assert_eq!(arb, res);
+
+        assert!(Matrix::new_identity(2).approx_eq(
+            &rx.construct_matrix_arb(&mut arb).unwrap(),
+            0.,
+            true
+        ));
+    }
+
+    #[test]
     fn fixed_matrix_converter() {
         let fmc = FixedMatrixConverter::from(Matrix::new_identity(5));
         assert!(fmc
@@ -1324,6 +1346,15 @@ mod tests {
             r.detect_matrix(&Matrix::from(UnboundGate::R(1f64, 2., 3.)), 0.001, false)
                 .unwrap(),
             Some((1f64, 2., 3.))
+        );
+        assert_eq!(
+            r.detect_matrix(
+                &Matrix::from(UnboundGate::R(0.4 * PI, 2., 3.)),
+                0.001,
+                false
+            )
+            .unwrap(),
+            Some((0.4 * PI, 2., 3.))
         );
         assert_eq!(
             r.construct_matrix(&(1f64, 3., 2.)).unwrap(),
