@@ -230,16 +230,16 @@ pub extern "C" fn dqcs_gm_add_fixed_unitary(
 ///> function is no-op (besides possibly calling the `*_free()` callbacks.
 ///>
 ///> The detector callback receives a matrix and control qubit information for
-///> the user to match. The matrix is passed through the borrowed `matrix`
-///> handle. `num_controls` is passed the number of explicit control qubits
-///> that exist besides the matrix (that is, if nonzero, the matrix is actually
-///> only the non-controlled submatrix of the controlled gate). `param_data` is
-///> given a borrowed `ArbData` handle initialized with the `ArbData` attached
-///> to the gate. If the gate matches, the detector function must return
-///> `DQCS_TRUE`. In this case, it can mutate the `param_data` to add the
-///> detected gate parameters. If it doesn't match, it must return
-///> `DQCS_FALSE`. If an error occurs, it must call `dqcs_error_set()` with the
-///> error message and return `DQCS_BOOL_FAILURE`.
+///> the user to match. The matrix is passed through the `matrix` handle.
+///> `num_controls` is passed the number of explicit control qubits that exist
+///> besides the matrix (that is, if nonzero, the matrix is actually only the
+///> non-controlled submatrix of the controlled gate). `param_data` is given an
+///> `ArbData` handle initialized with the `ArbData` attached to the gate. If
+///> the gate matches, the detector function must return `DQCS_TRUE`. In this
+///> case, it can mutate the `param_data` to add the detected gate parameters.
+///> If it doesn't match, it must return `DQCS_FALSE`. If an error occurs, it
+///> must call `dqcs_error_set()` with the error message and return
+///> `DQCS_BOOL_FAILURE`.
 ///>
 ///> The constructor callback performs the reverse operation. It receives an
 ///> `ArbData` handle containing the parameterization data, and must construct
@@ -267,7 +267,7 @@ pub extern "C" fn dqcs_gm_add_custom_unitary(
             user_data: *const c_void,
             matrix: dqcs_handle_t,
             num_controls: size_t,
-            param_data: dqcs_handle_t,
+            param_data: *mut dqcs_handle_t,
         ) -> dqcs_bool_return_t,
     >,
     detector_user_free: Option<extern "C" fn(user_data: *mut c_void)>,
@@ -275,7 +275,7 @@ pub extern "C" fn dqcs_gm_add_custom_unitary(
     constructor: Option<
         extern "C" fn(
             user_data: *const c_void,
-            param_data: dqcs_handle_t,
+            param_data: *mut dqcs_handle_t,
             num_controls: *mut isize,
         ) -> dqcs_handle_t,
     >,
@@ -301,24 +301,25 @@ pub extern "C" fn dqcs_gm_add_custom_unitary(
                             // Unitary gate. Check conditions.
                             let matrix = insert(matrix);
                             let num_controls = gate.get_controls().len();
-                            let param_data = insert(gate.data.clone());
-                            let result = detector(
+                            let mut param_data = insert(gate.data.clone());
+                            let result = cb_return_bool(detector(
                                 detector_user_data.data(),
                                 matrix,
                                 num_controls,
-                                param_data,
-                            );
+                                &mut param_data as *mut dqcs_handle_t,
+                            ));
                             delete!(matrix);
-                            take!(param_data as ArbData);
-                            if cb_return_bool(result)? {
+                            if let Ok(true) = result {
                                 // Matrix match; construct qubit argument vector.
+                                take!(param_data as ArbData);
                                 let mut qubits = vec![];
                                 qubits.extend(gate.get_controls().iter());
                                 qubits.extend(gate.get_targets().iter());
                                 Ok(Some((qubits, param_data)))
                             } else {
-                                // Matrix didn't match.
-                                Ok(None)
+                                // Matrix didn't match or there was an error.
+                                delete!(param_data);
+                                result.map(|_| None)
                             }
                         } else {
                             // A gate with no name, matrix, or measured qubits is illegal.
@@ -332,16 +333,22 @@ pub extern "C" fn dqcs_gm_add_custom_unitary(
                 move |qubits, param_data| {
                     if let Some(constructor) = constructor {
                         // Construct the matrix and data.
-                        let param_data = insert(param_data.clone());
+                        let mut param_data = insert(param_data.clone());
                         let mut expected_num_controls = -1isize;
                         let result = constructor(
                             constructor_user_data.data(),
-                            param_data,
+                            &mut param_data as *mut dqcs_handle_t,
                             &mut expected_num_controls as *mut isize,
                         );
-                        take!(param_data as ArbData);
-                        let matrix = cb_return(0, result)?;
+                        let matrix = match cb_return(0, result) {
+                            Ok(matrix) => matrix,
+                            Err(err) => {
+                                delete!(param_data);
+                                return Err(err);
+                            }
+                        };
                         take!(matrix as Matrix);
+                        take!(param_data as ArbData);
 
                         // Parse qubit argument vector.
                         let expected_num_controls = expected_qubit_count(expected_num_controls);

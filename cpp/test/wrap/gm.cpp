@@ -29,6 +29,19 @@ class MyCustomGateConverter : public CustomGateConverter {
   }
 };
 
+class MyCustomUnitaryGateConverter : public CustomUnitaryGateConverter {
+  bool detect(Matrix &&matrix, ssize_t num_controls, ArbData &params) const override {
+    if (!Matrix(PredefinedGate::H).approx_eq(matrix, 0.001, false)) return false;
+    params.push_arb_arg((int)num_controls);
+    return true;
+  }
+
+  Matrix construct(ArbData &params, ssize_t &num_controls) const override {
+    num_controls = params.pop_arb_arg_as<int>();
+    return Matrix(PredefinedGate::H);
+  }
+};
+
 class MyBoundGate;
 
 class MyUnboundGate {
@@ -89,6 +102,7 @@ TEST(gatemap, test) {{
     .with_unitary(MyUnboundGate("x"), PredefinedGate::X, 0)
     .with_unitary(MyUnboundGate("cnot"), PredefinedGate::X, 1)
     .with_unitary(MyUnboundGate("z"), Matrix(PredefinedGate::Z))
+    .with_unitary(MyUnboundGate("h"), std::make_shared<MyCustomUnitaryGateConverter>())
     .with_measure(MyUnboundGate("meas"))
     .with_custom(MyUnboundGate("custom"), std::make_shared<MyCustomGateConverter>());
 
@@ -202,6 +216,51 @@ Gate(\n\
   EXPECT_EQ(key->name, "z");
   EXPECT_EQ(qubits.dump(), "QubitReferenceSet(\n    [\n        QubitRef(\n            1,\n        ),\n        QubitRef(\n            2,\n        ),\n    ],\n)");
   EXPECT_EQ(params.dump(), "ArbData(\n    ArbData {\n        json: Map(\n            {},\n        ),\n        args: [],\n    },\n)");
+
+  key = &dflt;
+  EXPECT_EQ(map.detect(
+    Gate::measure(QubitSet().with(1_q)),
+    &key, &qubits, &params
+  ), true);
+  EXPECT_EQ(key->name, "meas");
+  EXPECT_EQ(qubits.dump(), "QubitReferenceSet(\n    [\n        QubitRef(\n            1,\n        ),\n    ],\n)");
+  EXPECT_EQ(params.dump(), "ArbData(\n    ArbData {\n        json: Map(\n            {},\n        ),\n        args: [],\n    },\n)");
+
+  EXPECT_EQ(
+    map.construct(MyUnboundGate("meas"), QubitSet().with(3_q).with(4_q)).dump(),
+    Gate::measure(QubitSet().with(3_q).with(4_q)).dump()
+  );
+
+  EXPECT_EQ(
+    map.construct(MyUnboundGate("h"), QubitSet().with(3_q).with(4_q), ArbData().with_arg(1)).dump(),
+    Gate::predefined(PredefinedGate::H, QubitSet().with(3_q).with(4_q)).dump()
+  );
+
+  EXPECT_ERROR(map.construct(MyUnboundGate("h"), QubitSet().with(3_q).with(4_q)), "Invalid argument: index out of range: -1");
+  EXPECT_ERROR(map.construct(MyUnboundGate("h"), QubitSet().with(3_q).with(4_q), ArbData().with_arg(2)), "Invalid argument: expected 2 control and 1 target qubits");
+  EXPECT_ERROR(map.construct(MyUnboundGate("h"), QubitSet().with(3_q).with(4_q), ArbData().with_arg(0)), "Invalid argument: expected 0 control and 1 target qubits");
+  EXPECT_EQ(map.detect(
+    Gate::predefined(PredefinedGate::H, QubitSet().with(3_q).with(4_q)),
+    &key, &qubits, &params
+  ), true);
+  EXPECT_EQ(key->name, "h");
+  EXPECT_EQ(qubits.dump(), "QubitReferenceSet(\n    [\n        QubitRef(\n            3,\n        ),\n        QubitRef(\n            4,\n        ),\n    ],\n)");
+  EXPECT_EQ(params.dump(), "\
+ArbData(\n\
+    ArbData {\n\
+        json: Map(\n\
+            {},\n\
+        ),\n\
+        args: [\n\
+            [\n\
+                1,\n\
+                0,\n\
+                0,\n\
+                0,\n\
+            ],\n\
+        ],\n\
+    },\n\
+)");
 
   EXPECT_ERROR(map.construct(MyUnboundGate("custom"), QubitSet().with(1_q).with(2_q)), "Invalid argument: index out of range: -1");
   EXPECT_ERROR(map.construct(MyUnboundGate("custom"), QubitSet().with(1_q).with(2_q), ArbData().with_arg(33)), "the last arg of this custom gate needs to be 42");

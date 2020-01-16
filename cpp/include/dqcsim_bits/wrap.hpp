@@ -3947,6 +3947,118 @@ namespace wrap {
   };
 
   /**
+   * Class that you can inherit from to make your own unitary gate converter
+   * for use within DQCsim.
+   */
+  class CustomUnitaryGateConverter {
+  private:
+
+    // `GateMap`s are a friend, so they can take pointers to the static
+    // callback entry points.
+    template <class Unbound, class Bound>
+    friend class GateMap;
+
+    /**
+     * C callback entry point for the detector.
+     */
+    static raw::dqcs_bool_return_t raw_detector(
+      const void *user_data,
+      raw::dqcs_handle_t matrix,
+      size_t num_controls,
+      raw::dqcs_handle_t *params
+    ) noexcept {
+      try {
+        auto converter = reinterpret_cast<const std::shared_ptr<CustomUnitaryGateConverter>*>(user_data);
+        ArbData params_wrapper = ArbData(*params);
+        if (!(*converter)->detect(Matrix(matrix), num_controls, params_wrapper)) {
+          return raw::dqcs_bool_return_t::DQCS_FALSE;
+        }
+        *params = params_wrapper.take_handle();
+        return raw::dqcs_bool_return_t::DQCS_TRUE;
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return raw::dqcs_bool_return_t::DQCS_BOOL_FAILURE;
+    }
+
+    /**
+     * C callback entry point for the constructor.
+     */
+    static raw::dqcs_handle_t raw_constructor(
+      const void *user_data,
+      raw::dqcs_handle_t *params,
+      ssize_t *num_controls
+    ) noexcept {
+      try {
+        auto converter = reinterpret_cast<const std::shared_ptr<CustomUnitaryGateConverter>*>(user_data);
+        ArbData params_wrapper = ArbData(*params);
+        Matrix matrix = (*converter)->construct(params_wrapper, *num_controls);
+        *params = params_wrapper.take_handle();
+        return matrix.take_handle();
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return 0;
+    }
+
+    /**
+     * C callback entry point for the deleter.
+     */
+    static void raw_deleter(void *user_data) noexcept {
+      auto converter = reinterpret_cast<const std::shared_ptr<CustomUnitaryGateConverter>*>(user_data);
+      delete converter;
+    }
+
+  public:
+
+    // We're using inheritance, so ensure that the destructor as virtual.
+    virtual ~CustomUnitaryGateConverter() = default;
+
+    /**
+     * The to-be-implemented detector function.
+     *
+     * \param matrix The matrix to match.
+     * \param num_controls The number of control qubits associated with the
+     * matrix; these qubits are implicit in the matrix. That is, to get the
+     * full matrix, you need to expand the given matrix with this many qubits.
+     * \param params If the gate matches, its parameters should be pushed into
+     * or assigned to this `ArbData`. This data object is initially a copy of
+     * the incoming gate's `ArbData` attachment.
+     * \returns Whether the incoming gate matches.
+     * \throws std::exception When an exception is thrown, its `what()` is
+     * returned to the user immediately. That is, any remaining detectors are
+     * not called.
+     *
+     * The default implementation simply returns `false`, i.e. it never
+     * matches.
+     */
+    virtual bool detect(Matrix &&matrix, ssize_t num_controls, ArbData &params) const {
+      return false;
+    }
+
+    /**
+     * The to-be-implemented constructor function.
+     *
+     * \param params The parameters for the gate. Anything left in here is
+     * attached to the gate.
+     * \param num_controls If this gate only accepts a specific number of
+     * control qubits during construction, write the expected amount here.
+     * Assigning a negative number or not assigning it means there is no
+     * constraint.
+     * \returns The constructed matrix.
+     * \throws std::exception When an exception is thrown, its `what()` is
+     * returned to the user.
+     *
+     * The default implementation throws an exception indicating that no
+     * constructor is defined.
+     */
+    virtual Matrix construct(ArbData &params, ssize_t &num_controls) const {
+      throw std::runtime_error("detector function not implemented");
+    }
+
+  };
+
+  /**
    * Gate map wrapper class.
    *
    * Gate maps are used to convert between DQCsim's gate representation and
@@ -4222,6 +4334,70 @@ namespace wrap {
     }
 
     /**
+     * Adds a custom unitary gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param converter An object deriving from `CustomUnitaryGateConverter`,
+     * implemented by you to handle the conversion, wrapped in a
+     * `std::shared_ptr`.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_unitary(
+      Unbound &&key,
+      const std::shared_ptr<CustomUnitaryGateConverter> &converter
+    ) {
+      check(raw::dqcs_gm_add_custom_unitary(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        CustomUnitaryGateConverter::raw_detector,
+        CustomUnitaryGateConverter::raw_deleter,
+        new std::shared_ptr<CustomUnitaryGateConverter>(converter),
+        CustomUnitaryGateConverter::raw_constructor,
+        CustomUnitaryGateConverter::raw_deleter,
+        new std::shared_ptr<CustomUnitaryGateConverter>(converter)
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a custom unitary gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param converter An object deriving from `CustomUnitaryGateConverter`,
+     * implemented by you to handle the conversion.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * copy constructor.
+     */
+    GateMap &&with_unitary(
+      const Unbound &key,
+      const std::shared_ptr<CustomUnitaryGateConverter> &converter
+    ) {
+      check(raw::dqcs_gm_add_custom_unitary(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        CustomUnitaryGateConverter::raw_detector,
+        CustomUnitaryGateConverter::raw_deleter,
+        new std::shared_ptr<CustomUnitaryGateConverter>(converter),
+        CustomUnitaryGateConverter::raw_constructor,
+        CustomUnitaryGateConverter::raw_deleter,
+        new std::shared_ptr<CustomUnitaryGateConverter>(converter)
+      ));
+      return std::move(*this);
+    }
+
+    /**
      * Adds a measurement gate mapping.
      *
      * \param key The `Unbound` object that refers to this type of gate in your
@@ -4342,8 +4518,6 @@ namespace wrap {
       ));
       return std::move(*this);
     }
-
-    // TODO: other kinds of converters
 
     /**
      * Uses the gate map to convert an incoming DQCsim gate to the plugin's
