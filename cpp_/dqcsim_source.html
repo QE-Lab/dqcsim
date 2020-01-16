@@ -5091,7 +5091,7 @@ $(function() {
 <div class="line"><a name="l05017"></a><span class="lineno"> 5017</span>&#160;     * ```C++</div>
 <div class="line"><a name="l05018"></a><span class="lineno"> 5018</span>&#160;     * gate(GateMatrix::S(), q);</div>
 <div class="line"><a name="l05019"></a><span class="lineno"> 5019</span>&#160;     * gate(GateMatrix::Z(), q);</div>
-<div class="line"><a name="l05020"></a><span class="lineno"> 5020</span>&#160;     * measure_z(q);</div>
+<div class="line"><a name="l05020"></a><span class="lineno"> 5020</span>&#160;     * measure_x(q);</div>
 <div class="line"><a name="l05021"></a><span class="lineno"> 5021</span>&#160;     * gate(GateMatrix::S(), q);</div>
 <div class="line"><a name="l05022"></a><span class="lineno"> 5022</span>&#160;     * ```</div>
 <div class="line"><a name="l05023"></a><span class="lineno"> 5023</span>&#160;     *</div>
@@ -5106,7 +5106,7 @@ $(function() {
 <div class="line"><a name="l05032"></a><span class="lineno"> 5032</span>&#160;    void measure_y(const QubitRef &amp;q) {</div>
 <div class="line"><a name="l05033"></a><span class="lineno"> 5033</span>&#160;      gate(GateMatrix::S(), q);</div>
 <div class="line"><a name="l05034"></a><span class="lineno"> 5034</span>&#160;      gate(GateMatrix::Z(), q);</div>
-<div class="line"><a name="l05035"></a><span class="lineno"> 5035</span>&#160;      measure_z(q);</div>
+<div class="line"><a name="l05035"></a><span class="lineno"> 5035</span>&#160;      measure_x(q);</div>
 <div class="line"><a name="l05036"></a><span class="lineno"> 5036</span>&#160;      gate(GateMatrix::S(), q);</div>
 <div class="line"><a name="l05037"></a><span class="lineno"> 5037</span>&#160;    }</div>
 <div class="line"><a name="l05038"></a><span class="lineno"> 5038</span>&#160; </div>
@@ -5120,7 +5120,7 @@ $(function() {
 <div class="line"><a name="l05046"></a><span class="lineno"> 5046</span>&#160;     * ```C++</div>
 <div class="line"><a name="l05047"></a><span class="lineno"> 5047</span>&#160;     * for (q : qs) gate(GateMatrix::S(), q);</div>
 <div class="line"><a name="l05048"></a><span class="lineno"> 5048</span>&#160;     * for (q : qs) gate(GateMatrix::Z(), q);</div>
-<div class="line"><a name="l05049"></a><span class="lineno"> 5049</span>&#160;     * measure_z(qs);</div>
+<div class="line"><a name="l05049"></a><span class="lineno"> 5049</span>&#160;     * measure_x(qs);</div>
 <div class="line"><a name="l05050"></a><span class="lineno"> 5050</span>&#160;     * for (q : qs) gate(GateMatrix::S(), q);</div>
 <div class="line"><a name="l05051"></a><span class="lineno"> 5051</span>&#160;     * ```</div>
 <div class="line"><a name="l05052"></a><span class="lineno"> 5052</span>&#160;     *</div>
@@ -5137,7 +5137,7 @@ $(function() {
 <div class="line"><a name="l05063"></a><span class="lineno"> 5063</span>&#160;      auto qs_vec = qs.copy_into_vector();</div>
 <div class="line"><a name="l05064"></a><span class="lineno"> 5064</span>&#160;      for (auto &amp;q : qs_vec) gate(GateMatrix::S(), q);</div>
 <div class="line"><a name="l05065"></a><span class="lineno"> 5065</span>&#160;      for (auto &amp;q : qs_vec) gate(GateMatrix::Z(), q);</div>
-<div class="line"><a name="l05066"></a><span class="lineno"> 5066</span>&#160;      measure_z(qs);</div>
+<div class="line"><a name="l05066"></a><span class="lineno"> 5066</span>&#160;      measure_x(qs);</div>
 <div class="line"><a name="l05067"></a><span class="lineno"> 5067</span>&#160;      for (auto &amp;q : qs_vec) gate(GateMatrix::S(), q);</div>
 <div class="line"><a name="l05068"></a><span class="lineno"> 5068</span>&#160;    }</div>
 <div class="line"><a name="l05069"></a><span class="lineno"> 5069</span>&#160; </div>
