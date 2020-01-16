@@ -424,8 +424,8 @@ impl From<UnboundGate<'_>> for Matrix {
             ),
 
             UnboundGate::RX180 => matrix!(
-                 0.,                 (0., -FRAC_1_SQRT_2);
-                (0., -FRAC_1_SQRT_2), 0.
+                 0.,      (0., -1.);
+                (0., -1.), 0.
             ),
 
             UnboundGate::RY90 => matrix!(
@@ -697,40 +697,111 @@ mod tests {
         let a = QubitRef::from_foreign(1).unwrap();
         let b = QubitRef::from_foreign(2).unwrap();
         for gate in vec![
-            (BoundGate::I(a), UnboundGate::I),
-            (BoundGate::X(a), UnboundGate::X),
-            (BoundGate::Y(a), UnboundGate::Y),
-            (BoundGate::Z(a), UnboundGate::Z),
-            (BoundGate::H(a), UnboundGate::H),
-            (BoundGate::S(a), UnboundGate::S),
-            (BoundGate::SDAG(a), UnboundGate::SDAG),
-            (BoundGate::T(a), UnboundGate::T),
-            (BoundGate::TDAG(a), UnboundGate::TDAG),
-            (BoundGate::RX90(a), UnboundGate::RX90),
-            (BoundGate::RXM90(a), UnboundGate::RXM90),
-            (BoundGate::RX180(a), UnboundGate::RX180),
-            (BoundGate::RY90(a), UnboundGate::RY90),
-            (BoundGate::RYM90(a), UnboundGate::RYM90),
-            (BoundGate::RY180(a), UnboundGate::RY180),
-            (BoundGate::RZ90(a), UnboundGate::RZ90),
-            (BoundGate::RZM90(a), UnboundGate::RZM90),
-            (BoundGate::RZ180(a), UnboundGate::RZ180),
-            (BoundGate::RX(1., a), UnboundGate::RX(1.)),
-            (BoundGate::RY(1., a), UnboundGate::RY(1.)),
-            (BoundGate::PhaseK(1, a), UnboundGate::PhaseK(1)),
-            (BoundGate::RZ(1., a), UnboundGate::RZ(1.)),
-            (BoundGate::R(1., 1., 1., a), UnboundGate::R(1., 1., 1.)),
-            (BoundGate::SWAP(a, b), UnboundGate::SWAP),
-            (BoundGate::SQSWAP(a, b), UnboundGate::SQSWAP),
+            (BoundGate::I(a), UnboundGate::I, GateType::I),
+            (BoundGate::X(a), UnboundGate::X, GateType::X),
+            (BoundGate::Y(a), UnboundGate::Y, GateType::Y),
+            (BoundGate::Z(a), UnboundGate::Z, GateType::Z),
+            (BoundGate::H(a), UnboundGate::H, GateType::H),
+            (BoundGate::S(a), UnboundGate::S, GateType::S),
+            (BoundGate::SDAG(a), UnboundGate::SDAG, GateType::SDAG),
+            (BoundGate::T(a), UnboundGate::T, GateType::T),
+            (BoundGate::TDAG(a), UnboundGate::TDAG, GateType::TDAG),
+            (BoundGate::RX90(a), UnboundGate::RX90, GateType::RX90),
+            (BoundGate::RXM90(a), UnboundGate::RXM90, GateType::RXM90),
+            (BoundGate::RX180(a), UnboundGate::RX180, GateType::RX180),
+            (BoundGate::RY90(a), UnboundGate::RY90, GateType::RY90),
+            (BoundGate::RYM90(a), UnboundGate::RYM90, GateType::RYM90),
+            (BoundGate::RY180(a), UnboundGate::RY180, GateType::RY180),
+            (BoundGate::RZ90(a), UnboundGate::RZ90, GateType::RZ90),
+            (BoundGate::RZM90(a), UnboundGate::RZM90, GateType::RZM90),
+            (BoundGate::RZ180(a), UnboundGate::RZ180, GateType::RZ180),
+            (BoundGate::RX(1., a), UnboundGate::RX(1.), GateType::RX),
+            (BoundGate::RY(1., a), UnboundGate::RY(1.), GateType::RY),
+            (
+                BoundGate::Phase(1., a),
+                UnboundGate::Phase(1.),
+                GateType::Phase,
+            ),
+            (
+                BoundGate::PhaseK(1, a),
+                UnboundGate::PhaseK(1),
+                GateType::PhaseK,
+            ),
+            (BoundGate::RZ(1., a), UnboundGate::RZ(1.), GateType::RZ),
+            (
+                BoundGate::R(1., 1., 1., a),
+                UnboundGate::R(1., 1., 1.),
+                GateType::R,
+            ),
+            (BoundGate::SWAP(a, b), UnboundGate::SWAP, GateType::SWAP),
+            (
+                BoundGate::SQSWAP(a, b),
+                UnboundGate::SQSWAP,
+                GateType::SQSWAP,
+            ),
             (
                 BoundGate::U(&Matrix::new(vec![c!(1.), c!(1.), c!(1.), c!(1.)]), &[a]),
                 UnboundGate::U(&Matrix::new(vec![c!(1.), c!(1.), c!(1.), c!(1.)])),
+                GateType::U(1),
             ),
         ]
         .into_iter()
         {
             let unbound_gate: UnboundGate = gate.0.into();
+            let gate_type: GateType = gate.0.into();
             assert_eq!(unbound_gate, gate.1);
+            assert_eq!(gate_type, gate.2);
         }
+
+        for bound_gate in vec![
+            BoundGate::I(a),
+            BoundGate::X(a),
+            BoundGate::Y(a),
+            BoundGate::Z(a),
+            BoundGate::H(a),
+            BoundGate::S(a),
+            BoundGate::SDAG(a),
+            BoundGate::T(a),
+            BoundGate::TDAG(a),
+            BoundGate::RX90(a),
+            BoundGate::RXM90(a),
+            BoundGate::RX180(a),
+            BoundGate::RY90(a),
+            BoundGate::RYM90(a),
+            BoundGate::RY180(a),
+            BoundGate::RZ90(a),
+            BoundGate::RZM90(a),
+            BoundGate::RZ180(a),
+            BoundGate::RX(1., a),
+            BoundGate::RY(1., a),
+            BoundGate::RZ(1., a),
+            BoundGate::R(1., 2., 3., a),
+            BoundGate::Phase(1., a),
+            BoundGate::PhaseK(2, a),
+        ]
+        .into_iter()
+        {
+            assert_eq!(
+                Gate::new_unitary(vec![a], vec![], Matrix::from(UnboundGate::from(bound_gate)))
+                    .unwrap(),
+                Gate::from(bound_gate)
+            );
+        }
+        for bound_gate in vec![BoundGate::SWAP(a, b), BoundGate::SQSWAP(a, b)].into_iter() {
+            assert_eq!(
+                Gate::new_unitary(
+                    vec![a, b],
+                    vec![],
+                    Matrix::from(UnboundGate::from(bound_gate))
+                )
+                .unwrap(),
+                Gate::from(bound_gate)
+            );
+        }
+
+        assert_eq!(
+            Gate::from(BoundGate::U(&Matrix::new_identity(2), &[a])),
+            Gate::new_unitary(vec![a], vec![], Matrix::new_identity(2)).unwrap()
+        );
     }
 }
