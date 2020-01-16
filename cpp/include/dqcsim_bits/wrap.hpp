@@ -3839,6 +3839,689 @@ namespace wrap {
   };
 
   /**
+   * Class that you can inherit from to make your own custom gate converter for
+   * use within DQCsim.
+   */
+  class CustomGateConverter {
+  private:
+
+    // `GateMap`s are a friend, so they can take pointers to the static
+    // callback entry points.
+    template <class Unbound, class Bound>
+    friend class GateMap;
+
+    /**
+     * C callback entry point for the detector.
+     */
+    static raw::dqcs_bool_return_t raw_detector(
+      const void *user_data,
+      raw::dqcs_handle_t gate,
+      raw::dqcs_handle_t *qubits,
+      raw::dqcs_handle_t *params
+    ) noexcept {
+      try {
+        auto converter = reinterpret_cast<const std::shared_ptr<CustomGateConverter>*>(user_data);
+        Gate gate_wrapper = Gate(gate);
+        QubitSet qubits_wrapper = QubitSet();
+        ArbData params_wrapper = ArbData();
+        params_wrapper.set_arb(gate_wrapper);
+        if (!(*converter)->detect(std::move(gate_wrapper), qubits_wrapper, params_wrapper)) {
+          return raw::dqcs_bool_return_t::DQCS_FALSE;
+        }
+        *qubits = qubits_wrapper.take_handle();
+        *params = params_wrapper.take_handle();
+        return raw::dqcs_bool_return_t::DQCS_TRUE;
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return raw::dqcs_bool_return_t::DQCS_BOOL_FAILURE;
+    }
+
+    /**
+     * C callback entry point for the constructor.
+     */
+    static raw::dqcs_handle_t raw_constructor(
+      const void *user_data,
+      raw::dqcs_handle_t qubits,
+      raw::dqcs_handle_t params
+    ) noexcept {
+      try {
+        auto converter = reinterpret_cast<const std::shared_ptr<CustomGateConverter>*>(user_data);
+        return (*converter)->construct(QubitSet(qubits), ArbData(params)).take_handle();
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return 0;
+    }
+
+    /**
+     * C callback entry point for the deleter.
+     */
+    static void raw_deleter(void *user_data) noexcept {
+      auto converter = reinterpret_cast<const std::shared_ptr<CustomGateConverter>*>(user_data);
+      delete converter;
+    }
+
+  public:
+
+    // We're using inheritance, so ensure that the destructor as virtual.
+    virtual ~CustomGateConverter() = default;
+
+    /**
+     * The to-be-implemented detector function.
+     *
+     * \param gate The gate to match.
+     * \param qubits If the gate matches, its qubit arguments should be pushed
+     * into or assigned to this set. The set is initially empty.
+     * \param params If the gate matches, its parameters should be pushed into
+     * or assigned to this `ArbData`. This data object is initially a copy of
+     * the incoming gate's `ArbData` attachment.
+     * \returns Whether the incoming gate matches.
+     * \throws std::exception When an exception is thrown, its `what()` is
+     * returned to the user immediately. That is, any remaining detectors are
+     * not called.
+     *
+     * The default implementation simply returns `false`, i.e. it never
+     * matches.
+     */
+    virtual bool detect(Gate &&gate, QubitSet &qubits, ArbData &params) const {
+      return false;
+    }
+
+    /**
+     * The to-be-implemented constructor function.
+     *
+     * \param qubits The qubit arguments for the gate.
+     * \param params The parameters for the gate.
+     * \returns The constructed gate.
+     * \throws std::exception When an exception is thrown, its `what()` is
+     * returned to the user.
+     *
+     * The default implementation throws an exception indicating that no
+     * constructor is defined.
+     */
+    virtual Gate construct(QubitSet &&qubits, ArbData &&params) const {
+      throw std::runtime_error("detector function not implemented");
+    }
+
+  };
+
+  /**
+   * Gate map wrapper class.
+   *
+   * Gate maps are used to convert between DQCsim's gate representation and
+   * your own, given that your representation consists of the following:
+   *
+   *  - a hashable `Unbound` type representing a kind of gate with some amount
+   *    of quantum and/or classical arguments that have not been bound yet;
+   *  - a number of qubit arguments, representable as a `QubitSet`;
+   *  - a number of classical arguments, representable as an `ArbData`.
+   *
+   * The template expects that the `Unbound` and `Bound` types define the
+   * following methods:
+   *
+   *  - `Unbound` must define a move or copy constructor.
+   *  - `Unbound::operator==` must be implemented properly.
+   *  - `std::hash<Unbound>` must be implemented properly.
+   *  - If `Bound Unbound::bind(QubitSet &&qubits, ArbData &&params) const` is
+   *    implemented, you can use the `Bound convert(Gate &&gate)` method. This
+   *    is just a shorthand for `detect()`, which you can always use.
+   *  - If `Unbound Bound::get_unbound() const`,
+   *    `QubitSet Bound::get_qubits() const`, and
+   *    `ArbData Bound::get_params() const` are implemented, you can use the
+   *    `Gate convert(Bound &&bound)` method. This is just a shorthand for
+   *    `construct()`, which you can always use.
+   *
+   * Note that the `Unbound` and `Bound` types can be one and the same, and by
+   * default are.
+   *
+   * DQCsim provides a number of predefined converters to detect and construct
+   * commonly used gates, but for more complex gates you'll of course have to
+   * define your own conversion functions.
+   *
+   * For more information, refer to the C API documentation.
+   */
+  template <class Unbound, class Bound=Unbound>
+  class GateMap : public Handle {
+  private:
+
+    /**
+     * Static equality function for the Unbound type, to be passed to DQCsim
+     * as callback.
+     */
+    static bool unbound_equality(const void *a, const void *b) {
+      return *(const Unbound*)a == *(const Unbound*)b;
+    }
+
+    /**
+     * Static equality function for the Unbound type, to be passed as callback.
+     */
+    static uint64_t unbound_hash(const void *a) {
+      return (uint64_t)std::hash<Unbound>{}(*(const Unbound*)a);
+    }
+
+    /**
+     * Static deletion function for the Unbound type, to be passed as callback.
+     */
+    static void unbound_delete(void *a) {
+      delete (Unbound*)a;
+    }
+
+  public:
+
+    /**
+     * Wraps the given gate map handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
+     */
+    GateMap(HandleIndex handle) noexcept : Handle(handle) {
+    }
+
+    /**
+     * Constructs a new gate map.
+     *
+     * Gate maps objects retain a cache to speed up detection of similar DQCsim
+     * gates: if a gate is received for the second time, the cache will hit,
+     * avoiding recomputation of the detector functions. What constitutes
+     * "similar gates" is defined by the two booleans passed to this function.
+     *
+     * \param strip_qubit_refs If set, all qubit references associated with the
+     * gate will be invalidated (i.e., set to 0), such that for instance an X
+     * gate applied to qubit 1 will be considered equal to an X gate applied to
+     * qubit 2.
+     * \param strip_data If set, the `ArbData` associated with the incoming
+     * gate is removed.
+     * \returns The constructed gate map.
+     * \throws std::runtime_error When construction of the gate map fails.
+     * \note If you get template errors, ensure that your `Unbound` type is
+     * hashable with `std::hash` and has a defined equality operator.
+     */
+    GateMap(bool strip_qubit_refs = false, bool strip_data = false)
+      : Handle(check(raw::dqcs_gm_new(strip_qubit_refs, strip_data, unbound_equality, unbound_hash))) {
+    }
+
+    // Delete copy construct/assign.
+    GateMap(const GateMap&) = delete;
+    void operator=(const GateMap&) = delete;
+
+    /**
+     * Default move constructor.
+     */
+    GateMap(GateMap&&) = default;
+
+    /**
+     * Default move assignment.
+     */
+    GateMap &operator=(GateMap&&) = default;
+
+    /**
+     * Adds a unitary gate mapping for the given DQCsim-defined gate.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param gate The predefined DQCsim gate to detect.
+     * \param num_controls The number of control qubits for this type of gate.
+     * If negative, the gate can be controlled with any number of qubits or not
+     * controlled; disambiguation is done based on the number of qubit
+     * arguments. If zero, the gate is always non-controlled. If positive, the
+     * gate always has the specified number of control qubits.
+     * \param epsilon The maximum RMS error used when detecting incoming gate
+     * matrices. Defaults to 1 ppm.
+     * \param ignore_global_phase Whether global phase should be ignored when
+     * detecting incoming gate matrices.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_unitary(
+      Unbound &&key,
+      PredefinedGate gate,
+      int num_controls = -1,
+      double epsilon = 0.000001,
+      bool ignore_global_phase = true
+    ) {
+      check(raw::dqcs_gm_add_predef_unitary(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        to_raw(gate),
+        num_controls,
+        epsilon,
+        ignore_global_phase
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a unitary gate mapping for the given DQCsim-defined gate.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param gate The predefined DQCsim gate to detect.
+     * \param num_controls The number of control qubits for this type of gate.
+     * If negative, the gate can be controlled with any number of qubits or not
+     * controlled; disambiguation is done based on the number of qubit
+     * arguments. If zero, the gate is always non-controlled. If positive, the
+     * gate always has the specified number of control qubits.
+     * \param epsilon The maximum RMS error used when detecting incoming gate
+     * matrices. Defaults to 1 ppm.
+     * \param ignore_global_phase Whether global phase should be ignored when
+     * detecting incoming gate matrices.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * copy constructor.
+     */
+    GateMap &&with_unitary(
+      const Unbound &key,
+      PredefinedGate gate,
+      int num_controls = -1,
+      double epsilon = 0.000001,
+      bool ignore_global_phase = true
+    ) {
+      check(raw::dqcs_gm_add_predef_unitary(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        to_raw(gate),
+        num_controls,
+        epsilon,
+        ignore_global_phase
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a unitary gate mapping for the given unitary matrix.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param matrix The matrix to detect.
+     * \param num_controls The number of control qubits for this type of gate.
+     * If negative, the gate can be controlled with any number of qubits or not
+     * controlled; disambiguation is done based on the number of qubit
+     * arguments. If zero, the gate is always non-controlled. If positive, the
+     * gate always has the specified number of control qubits.
+     * \param epsilon The maximum RMS error used when detecting incoming gate
+     * matrices. Defaults to 1 ppm.
+     * \param ignore_global_phase Whether global phase should be ignored when
+     * detecting incoming gate matrices.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_unitary(
+      Unbound &&key,
+      Matrix &&matrix,
+      int num_controls = -1,
+      double epsilon = 0.000001,
+      bool ignore_global_phase = true
+    ) {
+      check(raw::dqcs_gm_add_fixed_unitary(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        matrix.get_handle(),
+        num_controls,
+        epsilon,
+        ignore_global_phase
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a unitary gate mapping for the given unitary matrix.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param matrix The matrix to detect.
+     * \param num_controls The number of control qubits for this type of gate.
+     * If negative, the gate can be controlled with any number of qubits or not
+     * controlled; disambiguation is done based on the number of qubit
+     * arguments. If zero, the gate is always non-controlled. If positive, the
+     * gate always has the specified number of control qubits.
+     * \param epsilon The maximum RMS error used when detecting incoming gate
+     * matrices. Defaults to 1 ppm.
+     * \param ignore_global_phase Whether global phase should be ignored when
+     * detecting incoming gate matrices.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * copy constructor.
+     */
+    GateMap &&with_unitary(
+      const Unbound &key,
+      const Matrix &matrix,
+      int num_controls = -1,
+      double epsilon = 0.000001,
+      bool ignore_global_phase = true
+    ) {
+      check(raw::dqcs_gm_add_fixed_unitary(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        Matrix(matrix).get_handle(),
+        num_controls,
+        epsilon,
+        ignore_global_phase
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a measurement gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param num_measures The number of measurement qubits for this type of
+     * gate. If negative, the gate can measure any number of qubits at a time.
+     * If positive, the gate always has the specified number of measurement
+     * qubits.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_measure(
+      Unbound &&key,
+      int num_measures = -1
+    ) {
+      check(raw::dqcs_gm_add_measure(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        num_measures
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a measurement gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param num_measures The number of measurement qubits for this type of
+     * gate. If negative, the gate can measure any number of qubits at a time.
+     * If positive, the gate always has the specified number of measurement
+     * qubits.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * copy constructor.
+     */
+    GateMap &&with_measure(
+      const Unbound &key,
+      int num_measures = -1
+    ) {
+      check(raw::dqcs_gm_add_measure(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        num_measures
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a custom gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param converter An object deriving from `CustomGateConverter`,
+     * implemented by you to handle the conversion, wrapped in a
+     * `std::shared_ptr`.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_custom(
+      Unbound &&key,
+      const std::shared_ptr<CustomGateConverter> &converter
+    ) {
+      check(raw::dqcs_gm_add_custom(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        CustomGateConverter::raw_detector,
+        CustomGateConverter::raw_deleter,
+        new std::shared_ptr<CustomGateConverter>(converter),
+        CustomGateConverter::raw_constructor,
+        CustomGateConverter::raw_deleter,
+        new std::shared_ptr<CustomGateConverter>(converter)
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a custom gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param converter An object deriving from `CustomGateConverter`,
+     * implemented by you to handle the conversion.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * copy constructor.
+     */
+    GateMap &&with_custom(
+      const Unbound &key,
+      const std::shared_ptr<CustomGateConverter> &converter
+    ) {
+      check(raw::dqcs_gm_add_custom(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        CustomGateConverter::raw_detector,
+        CustomGateConverter::raw_deleter,
+        new std::shared_ptr<CustomGateConverter>(converter),
+        CustomGateConverter::raw_constructor,
+        CustomGateConverter::raw_deleter,
+        new std::shared_ptr<CustomGateConverter>(converter)
+      ));
+      return std::move(*this);
+    }
+
+    // TODO: other kinds of converters
+
+    /**
+     * Uses the gate map to convert an incoming DQCsim gate to the plugin's
+     * `Unbound` representation.
+     *
+     * \param gate The gate to detect.
+     * \param unbound If non-null and the incoming gate matches one of the
+     * detectors, this receives a const pointer to the internal `Unbound`
+     * record corresponding with the first detector that matched. If there
+     * is no match, this is left unchanged, allowing a default value to be
+     * supplied.
+     * \param qubits If non-null and the incoming gate matches one of the
+     * detectors, the given `QubitSet` is set to the qubit arguments for the
+     * matched gate.
+     * \param params If non-null and the incoming gate matches one of the
+     * detectors, the given `ArbData` is set to the parameterization data
+     * object returned by the detector function.
+     * \returns Whether a match occurred.
+     * \throws std::runtime_error When one of the handles is invalid or one of
+     * the detector functions returned an error.
+     */
+    bool detect(
+      const Gate &gate,
+      const Unbound **unbound,
+      QubitSet *qubits,
+      ArbData *params
+    ) {
+      raw::dqcs_handle_t qubits_handle = 0;
+      raw::dqcs_handle_t *qubits_handle_ptr = qubits ? &qubits_handle : nullptr;
+      raw::dqcs_handle_t params_handle = 0;
+      raw::dqcs_handle_t *params_handle_ptr = params ? &params_handle : nullptr;
+      bool match = check(raw::dqcs_gm_detect(
+        handle,
+        gate.get_handle(),
+        (const void**)unbound,
+        qubits_handle_ptr,
+        params_handle_ptr
+      ));
+      if (qubits && qubits_handle) *qubits = QubitSet(qubits_handle);
+      if (params && params_handle) *params = ArbData(params_handle);
+      return match;
+    }
+
+    /**
+     * Uses a gate map object to construct a DQCsim gate from the plugin's
+     * representation.
+     *
+     * \param unbound The plugin's representation of the unbound gate.
+     * \param qubits The qubit arguments for the gate.
+     * \param params The parameterization data for the gate.
+     * \returns The constructed DQCsim gate.
+     * \throws std::runtime_error When `unbound` does not map to any converter
+     * function, the converter function returns an error, or one of the
+     * involved handles is invalid.
+     */
+    Gate construct(
+      const Unbound &unbound,
+      QubitSet &&qubits,
+      ArbData &&params
+    ) {
+      return Gate(check(raw::dqcs_gm_construct(
+        handle,
+        &unbound,
+        qubits.get_handle(),
+        params.get_handle()
+      )));
+    }
+
+    /**
+     * Uses a gate map object to construct a DQCsim gate from the plugin's
+     * representation.
+     *
+     * \param unbound The plugin's representation of the unbound gate.
+     * \param qubits The qubit arguments for the gate.
+     * \param params The parameterization data for the gate.
+     * \returns The constructed DQCsim gate.
+     * \throws std::runtime_error When `unbound` does not map to any converter
+     * function, the converter function returns an error, or one of the
+     * involved handles is invalid.
+     */
+    Gate construct(
+      const Unbound &unbound,
+      const QubitSet &qubits,
+      const ArbData &params
+    ) {
+      return construct(unbound, QubitSet(qubits), ArbData(params));
+    }
+
+    /**
+     * Uses a gate map object to construct a DQCsim gate from the plugin's
+     * representation.
+     *
+     * \param unbound The plugin's representation of the unbound gate.
+     * \param qubits The qubit arguments for the gate.
+     * \throws std::runtime_error When `unbound` does not map to any converter
+     * function, the converter function returns an error, or one of the
+     * involved handles is invalid.
+     */
+    Gate construct(
+      const Unbound &unbound,
+      QubitSet &&qubits
+    ) {
+      return Gate(check(raw::dqcs_gm_construct(
+        handle,
+        &unbound,
+        qubits.get_handle(),
+        0
+      )));
+    }
+
+    /**
+     * Uses a gate map object to construct a DQCsim gate from the plugin's
+     * representation.
+     *
+     * \param unbound The plugin's representation of the unbound gate.
+     * \param qubits The qubit arguments for the gate.
+     * \returns The constructed DQCsim gate.
+     * \throws std::runtime_error When `unbound` does not map to any converter
+     * function, the converter function returns an error, or one of the
+     * involved handles is invalid.
+     */
+    Gate construct(
+      const Unbound &unbound,
+      const QubitSet &qubits
+    ) {
+      return construct(unbound, QubitSet(qubits));
+    }
+
+    /**
+     * Wrapper function for `detect()`, converting from DQCsim's gate
+     * representation directly to the plugin's `Bound` gate type.
+     *
+     * \param gate The gate to convert.
+     * \returns The converted gate.
+     * \throws std::runtime_error When the DQCsim gate cannot be represented in
+     * the plugin's representation, one of the handles is invalid, or one of
+     * the detector functions returned an error.
+     * \note If you get template errors, ensure that
+     * `Bound Unbound::bind(QubitSet &&qubits, ArbData &&params) const` exists.
+     * This method is used to convert from the return values of `detect()` to
+     * an instance of `Bound`.
+     */
+    Bound convert(const Gate &gate) {
+      const Unbound *unbound = nullptr;
+      QubitSet qubits(0);
+      ArbData params(0);
+      if (!detect(gate, &unbound, &qubits, &params)) {
+        throw std::runtime_error("unknown gate");
+      }
+      return unbound->bind(std::move(qubits), std::move(params));
+    }
+
+    /**
+     * Wrapper function for `construct()`, converting directly from the
+     * plugin's `Bound` gate type to DQCsim's gate representation.
+     *
+     * \param bound The plugin's gate representation.
+     * \returns DQCsim's gate representation for the above.
+     * \throws std::runtime_error When `bound` does not map to any converter
+     * function, the converter function returns an error, or one of the
+     * involved handles is invalid.
+     * \note If you get template errors, ensure that
+     * `Unbound Bound::get_unbound() const`, `QubitSet Bound::get_qubits() const`,
+     * and `ArbData Bound::get_params() const` are implemented. These methods
+     * are used to convert from the `Bound` gate to the inputs of
+     * `construct()`.
+     */
+    Gate convert(const Bound &bound) {
+      return construct(
+        bound.get_unbound(),
+        bound.get_qubits(),
+        bound.get_params()
+      );
+    }
+
+  };
+
+  /**
    * Class representation of the measurement result for a single qubit.
    *
    * Measurement objects carry the following information:

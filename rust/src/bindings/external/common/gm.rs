@@ -28,8 +28,7 @@ fn expected_qubit_count(num_qubits: isize) -> Option<usize> {
 ///> will be invalidated (i.e., set to 0), such that for instance an X gate
 ///> applied to qubit 1 will be considered equal to an X gate applied to qubit
 ///> 2. If `strip_data` is set, the `ArbData` associated with the incoming
-///> gate is removed. Note that this also means that the `ArbData` returned by
-///> `dqcs_gm_map()` will be based on an empty `ArbData` object.
+///> gate is removed.
 ///>
 ///> Gates are identified through user-defined `void*` keys. To do the above,
 ///> however, DQCsim needs to know the following things:
@@ -500,32 +499,39 @@ pub extern "C" fn dqcs_gm_add_custom(
                         let gate = insert(gate.clone());
                         let mut qubits: dqcs_handle_t = 0;
                         let mut param_data: dqcs_handle_t = 0;
-                        let result = detector(
+                        let result = cb_return_bool(detector(
                             detector_user_data.data(),
                             gate,
                             &mut qubits as *mut dqcs_handle_t,
                             &mut param_data as *mut dqcs_handle_t,
-                        );
-                        let param_data = if param_data == 0 {
-                            take!(gate as Gate);
-                            gate.data
-                        } else {
-                            delete!(gate);
-                            take!(param_data as ArbData);
-                            param_data
-                        };
-                        let qubits = if qubits == 0 {
-                            vec![]
-                        } else {
-                            take!(qubits as QubitReferenceSet);
-                            qubits.into_iter().collect()
-                        };
-                        if cb_return_bool(result)? {
+                        ));
+                        if let Ok(true) = result {
                             // Detector returned match.
+                            let param_data = if param_data == 0 {
+                                take!(gate as Gate);
+                                gate.data
+                            } else {
+                                delete!(gate);
+                                take!(param_data as ArbData);
+                                param_data
+                            };
+                            let qubits = if qubits == 0 {
+                                vec![]
+                            } else {
+                                take!(qubits as QubitReferenceSet);
+                                qubits.into_iter().collect()
+                            };
                             Ok(Some((qubits, param_data)))
                         } else {
-                            // Detector returned no match.
-                            Ok(None)
+                            // Detector returned no match or an error.
+                            delete!(gate);
+                            if param_data != 0 {
+                                delete!(param_data);
+                            }
+                            if qubits != 0 {
+                                delete!(qubits);
+                            }
+                            result.map(|_| None)
                         }
                     } else {
                         // No detector defined.
