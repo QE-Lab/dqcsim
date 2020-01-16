@@ -1803,6 +1803,25 @@ mod tests {
             default_map.detect(&i_gate).unwrap(),
             Some(((GateType::I, 0), (target.clone(), ArbData::default())))
         );
+        default_map.insert(
+            0,
+            (GateType::I, 0),
+            GateType::I.into_gate_converter(None, 0., false),
+        );
+        assert_eq!(
+            default_map.detect(&i_gate).unwrap(),
+            Some(((GateType::I, 0), (target.clone(), ArbData::default())))
+        );
+        default_map.push(
+            (GateType::I, 0),
+            GateType::I.into_gate_converter(None, 0., false),
+        );
+        let mut arb = ArbData::default();
+        (0., 0., 0.).to_arb(&mut arb);
+        assert_eq!(
+            default_map.detect(&i_gate).unwrap(),
+            Some(((GateType::R, 0), (target.clone(), arb)))
+        );
         assert_eq!(
             default_map.detect(&x_gate).unwrap(),
             Some(((GateType::X, 0), (target.clone(), ArbData::default())))
