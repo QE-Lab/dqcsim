@@ -4695,7 +4695,7 @@ namespace wrap {
      * ```C++
      * gate(GateMatrix::S(), q);
      * gate(GateMatrix::Z(), q);
-     * measure_z(q);
+     * measure_x(q);
      * gate(GateMatrix::S(), q);
      * ```
      *
@@ -4710,7 +4710,7 @@ namespace wrap {
     void measure_y(const QubitRef &q) {
       gate(GateMatrix::S(), q);
       gate(GateMatrix::Z(), q);
-      measure_z(q);
+      measure_x(q);
       gate(GateMatrix::S(), q);
     }
 
@@ -4724,7 +4724,7 @@ namespace wrap {
      * ```C++
      * for (q : qs) gate(GateMatrix::S(), q);
      * for (q : qs) gate(GateMatrix::Z(), q);
-     * measure_z(qs);
+     * measure_x(qs);
      * for (q : qs) gate(GateMatrix::S(), q);
      * ```
      *
@@ -4741,7 +4741,7 @@ namespace wrap {
       auto qs_vec = qs.copy_into_vector();
       for (auto &q : qs_vec) gate(GateMatrix::S(), q);
       for (auto &q : qs_vec) gate(GateMatrix::Z(), q);
-      measure_z(qs);
+      measure_x(qs);
       for (auto &q : qs_vec) gate(GateMatrix::S(), q);
     }
 

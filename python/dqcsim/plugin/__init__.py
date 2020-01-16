@@ -680,7 +680,9 @@ class GateStreamSource(Plugin):
 
             s_gate(qubit)
             z_gate(qubit)
+            h_gate(qubit)
             measure(qubit)
+            h_gate(qubit)
             s_gate(qubit)
 
         This function takes either one or more qubits as its positional
@@ -690,8 +692,9 @@ class GateStreamSource(Plugin):
             qubits = list(qubits[0])
         for qubit in qubits:
             self.s_gate(qubit)
+        for qubit in qubits:
             self.z_gate(qubit)
-        self.measure(qubits)
+        self.measure_x(qubits)
         for qubit in qubits:
             self.s_gate(qubit)
 
