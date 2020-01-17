@@ -10,7 +10,7 @@ on:
     - '**/Cargo.toml'
     - 'Cargo.lock'
     - 'python/**'
-    - '**/setup.py'
+    - 'setup.py'
 
 jobs:
   test:
