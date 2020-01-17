@@ -74,6 +74,6 @@ install(
 
 # Install shared object.
 install(
-    FILES ${CMAKE_SOURCE_DIR}/target/${BUILD_DIR}/libdqcsim.so
+    FILES ${CMAKE_SOURCE_DIR}/target/${BUILD_DIR}/libdqcsim${CMAKE_SHARED_LIBRARY_SUFFIX}
     DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )

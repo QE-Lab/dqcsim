@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12.0 FATAL_ERROR)
 
 project(dqcsim-cmake-example
     VERSION 0.0.1
@@ -50,9 +50,9 @@ if (DQCSIM_FROM_SOURCE)
     )
     get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
     if ("${LIB64}" STREQUAL "TRUE")
-        set(DQCSIM "${CMAKE_CURRENT_BINARY_DIR}/dqcsim/lib64/libdqcsim.so")
+        set(DQCSIM "${CMAKE_CURRENT_BINARY_DIR}/dqcsim/lib64/libdqcsim${CMAKE_SHARED_LIBRARY_SUFFIX}")
     else()
-        set(DQCSIM "${CMAKE_CURRENT_BINARY_DIR}/dqcsim/lib/libdqcsim.so")
+        set(DQCSIM "${CMAKE_CURRENT_BINARY_DIR}/dqcsim/lib/libdqcsim${CMAKE_SHARED_LIBRARY_SUFFIX}")
     endif()
     set(DQCSIM_INC "${CMAKE_CURRENT_BINARY_DIR}/dqcsim/include")
 else()
