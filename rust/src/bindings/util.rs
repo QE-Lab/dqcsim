@@ -1,4 +1,6 @@
 use super::*;
+use std::fmt;
+use std::rc::Rc;
 
 /// Convenience function for converting a C string to a Rust `str`.
 pub fn receive_str<'a>(s: *const c_char) -> Result<&'a str> {
@@ -77,35 +79,6 @@ pub fn receive_index(len: size_t, index: ssize_t, insert: bool) -> Result<size_t
     }
 }
 
-/// Convenience function for converting a C array of doubles representing a
-/// unitary matrix to its Rust representation.
-pub fn receive_matrix(
-    ptr: *const c_double,
-    matrix_len: size_t,
-    num_qubits: usize,
-) -> Result<Option<Vec<Complex64>>> {
-    if matrix_len == 0 {
-        Ok(None)
-    } else if num_qubits == 0 {
-        inv_arg("cannot read matrix for 0 qubits")
-    } else {
-        let num_entries = 2usize.pow(2 * num_qubits as u32);
-        if matrix_len != num_entries {
-            inv_arg("matrix has the wrong number of entries")
-        } else if ptr.is_null() {
-            inv_arg("matrix pointer is null")
-        } else {
-            let mut vec = Vec::with_capacity(num_entries);
-            for i in 0..num_entries {
-                let re: f64 = unsafe { *ptr.add(i * 2) };
-                let im: f64 = unsafe { *ptr.add(i * 2 + 1) };
-                vec.push(Complex64::new(re, im));
-            }
-            Ok(Some(vec))
-        }
-    }
-}
-
 /// User data structure for callbacks.
 ///
 /// All callbacks carry a user-defined `void*` with them, which is passed to
@@ -128,17 +101,18 @@ pub fn receive_matrix(
 /// closure! For example:
 ///
 /// ```ignore
-/// let data = CallbackUserData::new(user_free, user_data);
+/// let data = UserData::new(user_free, user_data);
 /// let cb = move || callback(data.data());
 /// ```
-pub struct CallbackUserData {
+#[derive(Debug)]
+pub struct UserData {
     user_free: Option<extern "C" fn(*mut c_void)>,
     data: *mut c_void,
 }
 
-unsafe impl Send for CallbackUserData {}
+unsafe impl Send for UserData {}
 
-impl Drop for CallbackUserData {
+impl Drop for UserData {
     fn drop(&mut self) {
         if let Some(user_free) = self.user_free {
             user_free(self.data);
@@ -146,17 +120,113 @@ impl Drop for CallbackUserData {
     }
 }
 
-impl CallbackUserData {
-    /// Constructs a `CallbackUserData` object.
-    pub fn new(
-        user_free: Option<extern "C" fn(*mut c_void)>,
-        data: *mut c_void,
-    ) -> CallbackUserData {
-        CallbackUserData { user_free, data }
+impl UserData {
+    /// Constructs a `UserData` object.
+    pub fn new(user_free: Option<extern "C" fn(*mut c_void)>, data: *mut c_void) -> UserData {
+        UserData { user_free, data }
     }
 
     /// Returns the user data pointer.
     pub fn data(&self) -> *mut c_void {
         self.data
+    }
+}
+
+/// Helper device for UserKey struct used within gate maps. Contains an owned
+/// or borrowed void* from the user. If owned, also includes its deletion
+/// callback function pointer.
+#[derive(Clone, Debug)]
+pub enum UserKeyData {
+    Owned(Rc<UserData>),
+    Borrowed(*const c_void),
+}
+
+impl UserKeyData {
+    /// Constructs a wrapper for an owned key, i.e. with an (optional) deletion
+    /// function.
+    pub fn new(key_free: Option<extern "C" fn(*mut c_void)>, key_data: *mut c_void) -> UserKeyData {
+        UserKeyData::Owned(Rc::new(UserData::new(key_free, key_data)))
+    }
+
+    /// Constructs a wrapper for a borrowed key, i.e. immutable and without
+    /// a deletion function.
+    pub fn new_borrowed(key_data: *const c_void) -> UserKeyData {
+        UserKeyData::Borrowed(key_data)
+    }
+
+    /// Returns the contained raw pointer for comparisons and so on.
+    pub fn raw(&self) -> *const c_void {
+        match self {
+            UserKeyData::Owned(data) => data.data,
+            UserKeyData::Borrowed(data) => *data,
+        }
+    }
+}
+
+/// An owned or borrowed user-defined key, including optional deletion (if
+/// owned), equality, and hash callback functions, exposed through PartialEq
+/// and Hash.
+#[derive(Clone, Debug)]
+pub struct UserKey {
+    data: UserKeyData,
+    cmp: Option<extern "C" fn(*const c_void, *const c_void) -> bool>,
+    hash: Option<extern "C" fn(*const c_void) -> u64>,
+}
+
+impl PartialEq for UserKey {
+    fn eq(&self, other: &Self) -> bool {
+        assert_eq!(self.cmp, other.cmp);
+        assert_eq!(self.hash, other.hash);
+        if let Some(cmp) = self.cmp {
+            cmp(self.data.raw(), other.data.raw())
+        } else {
+            self.data.raw() == other.data.raw()
+        }
+    }
+}
+impl Eq for UserKey {}
+
+impl std::hash::Hash for UserKey {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        if let Some(hash) = self.hash {
+            hash(self.data.raw()).hash(state)
+        } else if self.cmp.is_none() {
+            self.data.raw().hash(state)
+        }
+    }
+}
+
+impl UserKey {
+    /// Constructs a new UserKey.
+    pub fn new(
+        data: UserKeyData,
+        cmp: Option<extern "C" fn(*const c_void, *const c_void) -> bool>,
+        hash: Option<extern "C" fn(*const c_void) -> u64>,
+    ) -> UserKey {
+        UserKey { data, cmp, hash }
+    }
+
+    /// Returns the contained raw pointer.
+    pub fn raw(&self) -> *const c_void {
+        self.data.raw()
+    }
+}
+
+/// Wrapping struct for gate maps
+pub struct GateMap {
+    pub map: ConverterMap<'static, UserKey, Gate, (Vec<QubitRef>, ArbData)>,
+    pub key_cmp: Option<extern "C" fn(*const c_void, *const c_void) -> bool>,
+    pub key_hash: Option<extern "C" fn(*const c_void) -> u64>,
+}
+
+impl GateMap {
+    pub fn make_key(&self, key: UserKeyData) -> UserKey {
+        UserKey::new(key, self.key_cmp, self.key_hash)
+    }
+}
+
+impl fmt::Debug for GateMap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "GateMap")
     }
 }

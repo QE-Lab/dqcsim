@@ -442,11 +442,13 @@ const EMPTY_CBOR: &[u8] = &[0xA0];
 
 /// Represents an ArbData structure, consisting of an (unparsed, TODO) JSON
 /// string and a list of binary strings.
-#[derive(Clone, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Hash, PartialEq, Deserialize, Serialize)]
 pub struct ArbData {
     cbor: Vec<u8>,
     args: Vec<Vec<u8>>,
 }
+
+impl Eq for ArbData {}
 
 impl fmt::Debug for ArbData {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
@@ -725,6 +727,22 @@ impl ArbData {
         self.args = args.into();
     }
 
+    /// Resets the CBOR to an empty object.
+    pub fn clear_cbor(&mut self) {
+        self.set_cbor(EMPTY_CBOR).unwrap();
+    }
+
+    /// Clears the binary arguments vector.
+    pub fn clear_args(&mut self) {
+        self.args.clear();
+    }
+
+    /// Clears the CBOR object and binary arguments vector.
+    pub fn clear(&mut self) {
+        self.clear_cbor();
+        self.clear_args();
+    }
+
     /// Copies the data from another ArbData to this one.
     pub fn copy_from(&mut self, src: &ArbData) {
         self.cbor = src.get_cbor().to_vec();
@@ -872,5 +890,16 @@ mod test {
             vec![b"Hello, world!", b"\x01\x23\x45\x67\x89\xAB\xCD\xEF"],
             "{},Hello_, world!,_01_23_45_67_89_AB_CD_EF",
         );
+    }
+
+    #[test]
+    fn eq() {
+        let args: Vec<Vec<u8>> = vec![b"x", b"y", b"z"]
+            .into_iter()
+            .map(|x| x.to_vec())
+            .collect();
+        let data = ArbData::from_json(json!({"test": 42}).to_string(), args).unwrap();
+        assert_eq!(data, data);
+        assert_eq!(ArbData::default(), ArbData::default());
     }
 }

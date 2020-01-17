@@ -238,12 +238,12 @@ void dqcs_swig_callback_cleanup(void *user) {
 }
 %}
 
-%typemap(out) double* dqcs_gate_matrix {
+%typemap(out) double* dqcs_mat_get {
   if ($1 == NULL) {
     Py_INCREF(Py_None);
     $result = Py_None;
   } else {
-    size_t len = dqcs_gate_matrix_len(arg1);
+    size_t len = dqcs_mat_len(arg1);
     $result = PyList_New(len);
     for (size_t i = 0; i < len; i++) {
       PyObject *o = PyComplex_FromDoubles((double) $1[i * 2], (double) $1[i * 2 + 1]);
@@ -253,23 +253,33 @@ void dqcs_swig_callback_cleanup(void *user) {
   }
 }
 
-%typemap(in) (const double *matrix, size_t matrix_len) {
+%typemap(in) (size_t num_qubits, const double *matrix) {
   if (!PySequence_Check($input)) {
     PyErr_SetString(PyExc_ValueError, "Expected a sequence");
     SWIG_fail;
   }
-  $2 = PySequence_Length($input);
-  $1 = calloc($2 * 2, sizeof(double));
-  if ($1 == NULL) {
+  size_t len = PySequence_Length($input);
+  $1 = 0;
+  size_t x = len;
+  while (x > 1) {
+    if (x % 4) {
+      PyErr_SetString(PyExc_ValueError, "Sequence length is invalid");
+      SWIG_fail;
+    }
+    x /= 4;
+    $1++;
+  }
+  $2 = calloc(len * 2, sizeof(double));
+  if ($2 == NULL) {
     PyErr_SetString(PyExc_ValueError, "Failed to allocate memory");
     SWIG_fail;
   }
-  for (size_t i = 0; i < $2; i++) {
+  for (size_t i = 0; i < len; i++) {
     PyObject *o = PySequence_GetItem($input, i);
     if (PyNumber_Check(o)) {
       Py_complex pc = PyComplex_AsCComplex(o);
-      $1[i * 2] = pc.real;
-      $1[i * 2 + 1] = pc.imag;
+      $2[i * 2] = pc.real;
+      $2[i * 2 + 1] = pc.imag;
     } else {
       PyErr_SetString(PyExc_ValueError, "Sequence elements must be numbers");
       SWIG_fail;

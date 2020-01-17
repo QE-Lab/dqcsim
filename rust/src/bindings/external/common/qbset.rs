@@ -52,7 +52,7 @@ pub extern "C" fn dqcs_qbset_pop(qbset: dqcs_handle_t) -> dqcs_qubit_t {
     api_return(0, || {
         resolve!(qbset as &mut QubitReferenceSet);
         if let Some(qubit) = qbset.pop_front() {
-            Ok(qubit.to_foreign())
+            qubit.to_foreign()
         } else {
             inv_arg("the qubit set is already empty")
         }

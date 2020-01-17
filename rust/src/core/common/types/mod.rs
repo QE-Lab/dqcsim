@@ -36,3 +36,7 @@ pub use plugin_type::PluginType;
 // Metadata used to identify plugins.
 mod plugin_metadata;
 pub use plugin_metadata::PluginMetadata;
+
+// Matrix wrapper for gate matrices.
+mod matrix;
+pub use matrix::Matrix;

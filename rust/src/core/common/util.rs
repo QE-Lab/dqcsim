@@ -2,6 +2,63 @@
 
 use crate::common::error::{inv_arg, Result};
 
+/// Returns the number of bits of a type
+const fn num_bits<T>() -> usize {
+    std::mem::size_of::<T>() * 8
+}
+
+/// Returns the log2 for a usize as an Option<usize>.
+pub fn log_2(x: usize) -> Option<usize> {
+    if x == 0 {
+        None
+    } else {
+        let result = num_bits::<usize>() as u32 - x.leading_zeros() - 1;
+        if 2_usize.pow(result) == x {
+            Some(result as usize)
+        } else {
+            None
+        }
+    }
+}
+/// Returns a `Complex64` number.
+///
+/// Shorthand macro which calls the `Complex64` constructor and returns the
+/// `Complex64`.
+///
+/// # Examples
+///
+/// ```rust
+/// use num_complex::Complex64;
+///
+/// assert_eq!(c!(1.), Complex64::new(1., 0.));
+/// assert_eq!(c!(1., 2.), Complex64::new(1., 2.));
+/// assert_eq!(c!(0., 1.), Complex64::new(0., 1.));
+/// ```
+macro_rules! c {
+    (($re:expr, $im:expr)) => {
+        $crate::core::Complex64::new($re, $im);
+    };
+    ($re:expr, $im:expr) => {
+        $crate::core::Complex64::new($re, $im);
+    };
+    ($re:expr) => {
+        $crate::core::Complex64::new($re, 0.)
+    };
+}
+
+/// Returns a `Matrix` with the given elements.
+///
+/// Shorthand for `Matrix::new(vec![...])`. The primary use for this is to
+/// prevent `cargo fmt` from making the matrices unreadable
+macro_rules! matrix {
+    ($($($x:tt),+);+) => {
+        $crate::core::common::types::Matrix::new(vec![$($(c!($x)),+),+])
+    };
+    ($($($x:tt),+);+;) => {
+        $crate::core::common::types::Matrix::new(vec![$($(c!($x)),+),+])
+    };
+}
+
 /// Splits a CamelCase name into space-separated lowercase words.
 ///
 /// Abbreviations remain uppercase, as shown in the examples below.
@@ -211,6 +268,30 @@ mod tests {
         Bar,
         #[strum(to_string = "Baz", serialize = "baz", serialize = "z")]
         Baz,
+    }
+
+    #[test]
+    fn num_bits_check() {
+        assert_eq!(num_bits::<u8>(), 8);
+        assert_eq!(num_bits::<u16>(), 16);
+        assert_eq!(num_bits::<u32>(), 32);
+        assert_eq!(num_bits::<u64>(), 64);
+        assert_eq!(num_bits::<u128>(), 128);
+        assert_eq!(num_bits::<TestEnum>(), 8);
+        assert_eq!(num_bits::<Option<TestEnum>>(), 8);
+        assert_eq!(num_bits::<Option<Option<TestEnum>>>(), 8);
+    }
+
+    #[test]
+    fn log2_check() {
+        assert_eq!(log_2(1), Some(0));
+        assert_eq!(log_2(2), Some(1));
+        assert_eq!(log_2(3), None);
+        assert_eq!(log_2(4), Some(2));
+        assert_eq!(log_2(5), None);
+        assert_eq!(log_2(6), None);
+        assert_eq!(log_2(7), None);
+        assert_eq!(log_2(8), Some(3));
     }
 
     #[test]

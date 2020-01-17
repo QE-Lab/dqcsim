@@ -191,6 +191,12 @@ def entities_to_markdown(entities):
             # wants at least level 2, which we already use in the book source,
             # so we need level 3. We have to fix that here.
             doc = doc.replace('\n#', '\n###')
+
+            # We also need to replace Doxy's \f[ \f] with mdbook's mathjax
+            # equivalent.
+            doc = doc.replace('\\\\', '\\\\\\\\')
+            doc = doc.replace('\n\\f[\n', '\n\\\\[\n')
+            doc = doc.replace('\n\\f]\n', '\n\\\\]\n')
         else:
             doc = None
 
@@ -215,6 +221,9 @@ def entities_to_markdown(entities):
             output.append('')
             output.append('<p>')
             for name, value, doc in args[0]:
+                doc = doc.replace('\\\\', '\\\\\\\\')
+                doc = doc.replace('\\f[', '\\\\[')
+                doc = doc.replace('\\f]', '\\\\]')
                 code = name
                 if value is not None:
                     code += ' = ' + value

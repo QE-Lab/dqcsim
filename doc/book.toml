@@ -7,3 +7,6 @@ title = "DQCsim"
 [build]
 build-dir = "../target/book"
 create-mising = false
+
+[output.html]
+mathjax-support = true

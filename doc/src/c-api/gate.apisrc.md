@@ -11,11 +11,27 @@ DQCsim provides three types of gates:
    and measured in the Z basis.
  - Custom gates: anything else that the downstream plugin supports.
 
-These are constructed using the following functions.
+These are constructed using the following functions. The predefined gates are
+[as described earlier](mat.apigen.md).
 
+@@@c_api_gen ^dqcs_gate_new_predef$@@@
+@@@c_api_gen ^dqcs_gate_new_predef_one$@@@
+@@@c_api_gen ^dqcs_gate_new_predef_two$@@@
+@@@c_api_gen ^dqcs_gate_new_predef_three$@@@
 @@@c_api_gen ^dqcs_gate_new_unitary$@@@
 @@@c_api_gen ^dqcs_gate_new_measurement$@@@
 @@@c_api_gen ^dqcs_gate_new_custom$@@@
+
+## Control qubit representation
+
+A gatestream source is allowed to specify controlled gates either using
+DQCsim's separate list of control qubits (this is the recommended way), by
+using an explicitly controlled gate matrix and using only the target qubit
+list, or a even mix of the two. The following two functions, primarily intended
+for gatestream sinks, can be used to convert between these representations.
+
+@@@c_api_gen ^dqcs_gate_reduce_control@@@
+@@@c_api_gen ^dqcs_gate_expand_control@@@
 
 ## Attached classical data
 

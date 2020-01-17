@@ -462,8 +462,9 @@ class GateStreamSource(Plugin):
         """
         with QubitSet._to_raw(targets) as targets:
             with QubitSet._to_raw(controls) as controls:
-                with Handle(raw.dqcs_gate_new_unitary(targets, controls, matrix)) as gate:
-                    self._pc(raw.dqcs_plugin_gate, gate)
+                with Handle(raw.dqcs_mat_new(matrix)) as mat:
+                    with Handle(raw.dqcs_gate_new_unitary(targets, controls, mat)) as gate:
+                        self._pc(raw.dqcs_plugin_gate, gate)
 
     def i_gate(self, target):
         """Instructs the downstream plugin to execute an I gate.
@@ -737,12 +738,16 @@ class GateStreamSource(Plugin):
         for `ArbData`; the resulting `ArbData` object is passed along with the
         gate for custom data.
         """
-        if matrix is None:
-            matrix = []
+        if matrix is not None:
+            matrix = Handle(raw.dqcs_mat_new(matrix))
         with QubitSet._to_raw(targets) as targets:
             with QubitSet._to_raw(controls) as controls:
                 with QubitSet._to_raw(measures) as measures:
-                    gate = Handle(raw.dqcs_gate_new_custom(name, targets, controls, measures, matrix))
+                    if matrix is not None:
+                        with matrix:
+                            gate = Handle(raw.dqcs_gate_new_custom(name, targets, controls, measures, int(matrix)))
+                    else:
+                        gate = Handle(raw.dqcs_gate_new_custom(name, targets, controls, measures, 0))
                     ArbData(*args, **kwargs)._to_raw(gate)
                     with gate as gate:
                         self._pc(raw.dqcs_plugin_gate, gate)
@@ -1081,6 +1086,7 @@ class Operator(GateStreamSource):
         measures = QubitSet._from_raw(Handle(raw.dqcs_gate_measures(gate_handle)))
         if raw.dqcs_gate_has_matrix(gate_handle):
             matrix = raw.dqcs_gate_matrix(gate_handle)
+            matrix = raw.dqcs_mat_get(matrix)
         else:
             matrix = None
 
@@ -1300,6 +1306,7 @@ class Backend(Plugin):
         measures = QubitSet._from_raw(Handle(raw.dqcs_gate_measures(gate_handle)))
         if raw.dqcs_gate_has_matrix(gate_handle):
             matrix = raw.dqcs_gate_matrix(gate_handle)
+            matrix = raw.dqcs_mat_get(matrix)
         else:
             matrix = None
 

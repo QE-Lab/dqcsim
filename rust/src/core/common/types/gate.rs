@@ -1,53 +1,14 @@
 use crate::common::{
     error::{inv_arg, Result},
-    types::{ArbData, QubitRef},
+    types::{ArbData, Matrix, QubitRef},
 };
 use float_cmp::approx_eq;
 use num_complex::Complex64;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
-#[derive(Serialize, Deserialize)]
-#[serde(remote = "Complex64")]
-struct Complex64Def {
-    re: f64,
-    im: f64,
-}
-
-/// This mod provides ser/de for Vec<Complex64>
-mod complex_serde {
-    use super::{Complex64, Complex64Def};
-    use serde::{
-        ser::SerializeSeq,
-        {Deserialize, Deserializer, Serialize, Serializer},
-    };
-
-    pub fn serialize<S>(value: &[Complex64], serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        #[derive(Serialize)]
-        struct Wrapper<'a>(#[serde(with = "Complex64Def")] &'a Complex64);
-        let mut seq = serializer.serialize_seq(Some(value.len()))?;
-        for c in value.iter().map(Wrapper) {
-            seq.serialize_element(&c)?;
-        }
-        seq.end()
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> std::result::Result<Vec<Complex64>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        struct Wrapper(#[serde(with = "Complex64Def")] Complex64);
-        let v = Vec::deserialize(deserializer)?;
-        Ok(v.into_iter().map(|Wrapper(c)| c).collect())
-    }
-}
-
 /// Represents a quantum gate.
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize, Hash)]
 pub struct Gate {
     /// Optional name for this gate.
     ///
@@ -135,30 +96,13 @@ pub struct Gate {
     /// the size of the matrix is fixed based on the number of target
     /// qubits. If a differently-sized matrix must be communicated, leave
     /// the matrix field unspecified and use the data object instead.
-    #[serde(with = "complex_serde")]
-    matrix: Vec<Complex64>,
+    matrix: Matrix,
 
     /// User-defined classical data to pass along with the gate.
     pub data: ArbData,
 }
 
 impl Gate {
-    /// Internal method to construct a gate.
-    pub(crate) fn unitary(
-        targets: Vec<QubitRef>,
-        controls: Vec<QubitRef>,
-        matrix: Vec<Complex64>,
-    ) -> Gate {
-        Gate {
-            name: None,
-            targets,
-            controls,
-            measures: vec![],
-            matrix,
-            data: ArbData::default(),
-        }
-    }
-
     /// Constructs a new unitary gate.
     pub fn new_unitary(
         targets: impl IntoIterator<Item = QubitRef>,
@@ -227,7 +171,7 @@ impl Gate {
             targets,
             controls,
             measures: vec![],
-            matrix,
+            matrix: matrix.into(),
             data: ArbData::default(),
         })
     }
@@ -252,7 +196,7 @@ impl Gate {
             targets: vec![],
             controls: vec![],
             measures,
-            matrix: vec![],
+            matrix: vec![].into(),
             data: ArbData::default(),
         })
     }
@@ -270,7 +214,7 @@ impl Gate {
         let targets: Vec<QubitRef> = targets.into_iter().collect();
         let controls: Vec<QubitRef> = controls.into_iter().collect();
         let measures: Vec<QubitRef> = measures.into_iter().collect();
-        let matrix: Option<Vec<Complex64>> = matrix.map(|m| m.into_iter().collect());
+        let matrix: Option<Matrix> = matrix.map(|m| m.into_iter().collect());
         let data: ArbData = data.into();
 
         // Enforce uniqueness of the target/control qubits.
@@ -311,7 +255,7 @@ impl Gate {
             targets,
             controls,
             measures,
-            matrix: matrix.unwrap_or_else(|| vec![]),
+            matrix: matrix.unwrap_or_else(|| vec![].into()),
             data,
         })
     }
@@ -340,16 +284,70 @@ impl Gate {
     }
 
     /// Returns the gate matrix.
-    pub fn get_matrix(&self) -> Option<Vec<Complex64>> {
+    pub fn get_matrix(&self) -> Option<Matrix> {
         if self.matrix.is_empty() {
             None
         } else {
-            Some(
-                self.matrix
-                    .iter()
-                    .map(|x| Complex64 { re: x.re, im: x.im })
-                    .collect(),
-            )
+            Some(self.matrix.clone())
+        }
+    }
+
+    /// Returns a new Gate with its controls moved to the matrix.
+    pub fn with_matrix_controls(&self) -> Self {
+        let num_controls = self.controls.len();
+        if num_controls > 0 {
+            let matrix = self.matrix.add_controls(num_controls);
+            let mut targets = self.controls.clone();
+            targets.append(&mut self.targets.clone());
+            Gate {
+                name: self.name.clone(),
+                targets,
+                controls: vec![],
+                measures: self.measures.to_vec(),
+                matrix,
+                data: self.data.clone(),
+            }
+        } else {
+            self.clone()
+        }
+    }
+
+    /// Returns a new Gate with controls encoded in the matrix moved to the
+    /// Gate controls field. Forwards the epsilon and ignore_global_phase args
+    /// to the Matrix::strip_control method.
+    pub fn with_gate_controls(&self, epsilon: f64, ignore_global_phase: bool) -> Self {
+        if let Some(matrix) = self.get_matrix() {
+            let (control_set, matrix) = matrix.strip_control(epsilon, ignore_global_phase);
+            let mut targets = self.get_targets().to_vec();
+            let mut controls = vec![];
+            for c in control_set {
+                controls.push(targets.remove(c));
+            }
+            Gate {
+                name: self.name.clone(),
+                targets,
+                controls,
+                measures: self.measures.to_vec(),
+                matrix,
+                data: self.data.clone(),
+            }
+        } else {
+            self.clone()
+        }
+    }
+
+    /// Replaces all qubit references in the gate with undefined qubits. This
+    /// is used as a gate detector cache preprocessing step when the detector
+    /// functions do not depend on which qubits are bound to the gate, only the
+    /// amount of each kind,
+    pub fn without_qubit_refs(&self) -> Self {
+        Gate {
+            name: self.name.clone(),
+            targets: vec![QubitRef::null(); self.targets.len()],
+            controls: vec![QubitRef::null(); self.controls.len()],
+            measures: vec![QubitRef::null(); self.measures.len()],
+            matrix: self.matrix.clone(),
+            data: self.data.clone(),
         }
     }
 }
@@ -473,12 +471,15 @@ mod tests {
         assert_eq!(g.get_measures(), []);
         assert_eq!(
             g.get_matrix(),
-            Some(vec![
-                Complex64::new(1f64, 0f64),
-                Complex64::new(0f64, 0f64),
-                Complex64::new(0f64, 0f64),
-                Complex64::new(1f64, 0f64),
-            ])
+            Some(
+                vec![
+                    Complex64::new(1f64, 0f64),
+                    Complex64::new(0f64, 0f64),
+                    Complex64::new(0f64, 0f64),
+                    Complex64::new(1f64, 0f64),
+                ]
+                .into()
+            )
         );
     }
 
@@ -622,12 +623,15 @@ mod tests {
         assert_eq!(g.get_measures(), [qref(3)]);
         assert_eq!(
             g.get_matrix(),
-            Some(vec![
-                Complex64::new(1f64, 0f64),
-                Complex64::new(0f64, 0f64),
-                Complex64::new(0f64, 0f64),
-                Complex64::new(1f64, 0f64),
-            ])
+            Some(
+                vec![
+                    Complex64::new(1f64, 0f64),
+                    Complex64::new(0f64, 0f64),
+                    Complex64::new(0f64, 0f64),
+                    Complex64::new(1f64, 0f64),
+                ]
+                .into()
+            )
         );
     }
 
@@ -647,6 +651,68 @@ mod tests {
         let g = Gate::new_custom(name, targets, controls, measures, matrix, data);
         assert!(g.is_ok());
         let g = g.unwrap();
-        assert_eq!(format!("{:?}", g), "Gate { name: Some(\"I\"), targets: [QubitRef(1)], controls: [QubitRef(2)], measures: [QubitRef(3)], matrix: [Complex { re: 1.0, im: 0.0 }, Complex { re: 0.0, im: 0.0 }, Complex { re: 0.0, im: 0.0 }, Complex { re: 1.0, im: 0.0 }], data: ArbData { json: Map({}), args: [] } }");
+        assert_eq!(format!("{:?}", g), "Gate { name: Some(\"I\"), targets: [QubitRef(1)], controls: [QubitRef(2)], measures: [QubitRef(3)], matrix: Matrix { data: [Complex { re: 1.0, im: 0.0 }, Complex { re: 0.0, im: 0.0 }, Complex { re: 0.0, im: 0.0 }, Complex { re: 1.0, im: 0.0 }], dimension: 2 }, data: ArbData { json: Map({}), args: [] } }");
+    }
+
+    #[test]
+    fn serde() {
+        let targets = vec![qref(1)];
+        let controls = vec![qref(2)];
+        let matrix = vec![
+            Complex64::new(1f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(1f64, 0f64),
+        ];
+        let g = Gate::new_unitary(targets, controls, matrix).unwrap();
+        assert_eq!(serde_json::to_string(&g).unwrap(), "{\"name\":null,\"targets\":[1],\"controls\":[2],\"measures\":[],\"matrix\":[{\"re\":1.0,\"im\":0.0},{\"re\":0.0,\"im\":0.0},{\"re\":0.0,\"im\":0.0},{\"re\":1.0,\"im\":0.0}],\"data\":{\"cbor\":[160],\"args\":[]}}");
+    }
+
+    #[test]
+    fn with_gate_controls() {
+        let targets = vec![qref(1), qref(2)];
+        let controls = vec![];
+        let matrix = vec![
+            Complex64::new(1f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            //
+            Complex64::new(0f64, 0f64),
+            Complex64::new(1f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            //
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(1f64, 0f64),
+            //
+            Complex64::new(0f64, 0f64),
+            Complex64::new(0f64, 0f64),
+            Complex64::new(1f64, 0f64),
+            Complex64::new(0f64, 0f64),
+        ];
+        let cnot = Gate::new_unitary(targets, controls, matrix).unwrap();
+        assert_eq!(cnot.get_controls(), &[]);
+        let x = cnot.with_gate_controls(0.001, false);
+        assert_eq!(x.get_controls(), &[qref(1)]);
+    }
+
+    #[test]
+    fn with_matrix_controls() {
+        let targets = vec![qref(1)];
+        let controls = vec![qref(2)];
+        let matrix = vec![
+            Complex64::new(0f64, 0f64),
+            Complex64::new(1f64, 0f64),
+            Complex64::new(1f64, 0f64),
+            Complex64::new(0f64, 0f64),
+        ];
+        let x = Gate::new_unitary(targets, controls, matrix).unwrap();
+        assert_eq!(x.get_controls(), &[qref(2)]);
+        let cnot = x.with_matrix_controls();
+        assert_eq!(cnot.get_controls(), &[]);
+        assert_eq!(cnot.get_targets(), &[qref(2), qref(1)]);
     }
 }

@@ -247,6 +247,16 @@ namespace wrap {
     MeasurementSet = 106,
 
     /**
+     * Indicates that a handle is a `Matrix`.
+     */
+    Matrix = 107,
+
+    /**
+     * Indicates that a handle is a `GateMap`.
+     */
+    GateMap = 108,
+
+    /**
      * Indicates that a handle is a `PluginProcessConfiguration` for a frontend
      * plugin.
      */
@@ -328,6 +338,8 @@ namespace wrap {
       case HandleType::Gate:                  return raw::dqcs_handle_type_t::DQCS_HTYPE_GATE;
       case HandleType::Measurement:           return raw::dqcs_handle_type_t::DQCS_HTYPE_MEAS;
       case HandleType::MeasurementSet:        return raw::dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET;
+      case HandleType::Matrix:                return raw::dqcs_handle_type_t::DQCS_HTYPE_MATRIX;
+      case HandleType::GateMap:               return raw::dqcs_handle_type_t::DQCS_HTYPE_GATE_MAP;
       case HandleType::FrontendProcessConfig: return raw::dqcs_handle_type_t::DQCS_HTYPE_FRONT_PROCESS_CONFIG;
       case HandleType::OperatorProcessConfig: return raw::dqcs_handle_type_t::DQCS_HTYPE_OPER_PROCESS_CONFIG;
       case HandleType::BackendProcessConfig:  return raw::dqcs_handle_type_t::DQCS_HTYPE_BACK_PROCESS_CONFIG;
@@ -363,6 +375,8 @@ namespace wrap {
       case raw::dqcs_handle_type_t::DQCS_HTYPE_GATE:                 return HandleType::Gate;
       case raw::dqcs_handle_type_t::DQCS_HTYPE_MEAS:                 return HandleType::Measurement;
       case raw::dqcs_handle_type_t::DQCS_HTYPE_MEAS_SET:             return HandleType::MeasurementSet;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_MATRIX:               return HandleType::Matrix;
+      case raw::dqcs_handle_type_t::DQCS_HTYPE_GATE_MAP:             return HandleType::GateMap;
       case raw::dqcs_handle_type_t::DQCS_HTYPE_FRONT_PROCESS_CONFIG: return HandleType::FrontendProcessConfig;
       case raw::dqcs_handle_type_t::DQCS_HTYPE_OPER_PROCESS_CONFIG:  return HandleType::OperatorProcessConfig;
       case raw::dqcs_handle_type_t::DQCS_HTYPE_BACK_PROCESS_CONFIG:  return HandleType::BackendProcessConfig;
@@ -691,6 +705,511 @@ namespace wrap {
       case raw::dqcs_plugin_type_t::DQCS_PTYPE_OPER:    return PluginType::Operator;
       case raw::dqcs_plugin_type_t::DQCS_PTYPE_BACK:    return PluginType::Backend;
       case raw::dqcs_plugin_type_t::DQCS_PTYPE_INVALID: throw std::runtime_error(raw::dqcs_error_get());
+    }
+    throw std::invalid_argument("unknown plugin type");
+  }
+
+  /**
+   * Enumeration of gates defined by DQCsim.
+   *
+   * This wraps `raw::dqcs_predefined_gate_t`, not including the `invalid`
+   * option (since we use exceptions to communicate failure).
+   */
+  enum class PredefinedGate {
+
+    /**
+     * The identity gate for a single qubit.
+     *
+     * \f[
+     * I = \sigma_0 = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    I = 100,
+
+    /**
+     * The Pauli X matrix.
+     *
+     * \f[
+     * X = \sigma_1 = \begin{bmatrix}
+     * 0 & 1 \\
+     * 1 & 0
+     * \end{bmatrix}
+     * \f]
+     */
+    X = 101,
+
+    /**
+     * The Pauli Y matrix.
+     *
+     * \f[
+     * Y = \sigma_2 = \begin{bmatrix}
+     * 0 & -i \\
+     * i & 0
+     * \end{bmatrix}
+     * \f]
+     */
+    Y = 102,
+
+    /**
+     * The Pauli Z matrix.
+     *
+     * \f[
+     * Z = \sigma_3 = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & -1
+     * \end{bmatrix}
+     * \f]
+     */
+    Z = 103,
+
+    /**
+     * The hadamard gate matrix. That is, a 180-degree Y rotation, followed by
+     * a 90-degree X rotation.
+     *
+     * \f[
+     * H = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & 1 \\
+     * 1 & -1
+     * \end{bmatrix}
+     * \f]
+     */
+    H = 104,
+
+    /**
+     * The S matrix, also known as a 90 degree Z rotation.
+     *
+     * \f[
+     * S = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & i
+     * \end{bmatrix}
+     * \f]
+     */
+    S = 105,
+
+    /**
+     * The S-dagger matrix, also known as a negative 90 degree Z rotation.
+     *
+     * \f[
+     * S^\dagger = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & -i
+     * \end{bmatrix}
+     * \f]
+     */
+    S_DAG = 106,
+
+    /**
+     * The T matrix, also known as a 45 degree Z rotation.
+     *
+     * \f[
+     * T = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & e^{i\frac{\pi}{4}}
+     * \end{bmatrix}
+     * \f]
+     */
+    T = 107,
+
+    /**
+     * The T-dagger matrix, also known as a negative 45 degree Z rotation.
+     *
+     * \f[
+     * T^\dagger = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & e^{-i\frac{\pi}{4}}
+     * \end{bmatrix}
+     * \f]
+     */
+    T_DAG = 108,
+
+    /**
+     * Rx(90°) gate.
+     *
+     * \f[
+     * R_x\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & -i \\
+     * -i & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    RX_90 = 109,
+
+    /**
+     * Rx(-90°) gate.
+     *
+     * \f[
+     * R_x\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & i \\
+     * i & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    RX_M90 = 110,
+
+    /**
+     * Rx(180°) gate.
+     *
+     * \f[
+     * R_x(\pi) = \begin{bmatrix}
+     * 0 & -i \\
+     * -i & 0
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the Pauli X gate, but differs in global
+     * phase. Note that this difference is significant when it is used as a
+     * submatrix for a controlled gate.
+     */
+    RX_180 = 111,
+
+    /**
+     * Ry(90°) gate.
+     *
+     * \f[
+     * R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & -1 \\
+     * 1 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    RY_90 = 112,
+
+    /**
+     * Ry(-90°) gate.
+     *
+     * \f[
+     * R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & 1 \\
+     * -1 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    RY_M90 = 113,
+
+    /**
+     * Ry(180°) gate.
+     *
+     * \f[
+     * R_y(\pi) = \begin{bmatrix}
+     * 0 & -1 \\
+     * 1 & 0
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the Pauli Y gate, but differs in global
+     * phase. Note that this difference is significant when it is used as a
+     * submatrix for a controlled gate.
+     */
+    RY_180 = 114,
+
+    /**
+     * Rz(90°) gate.
+     *
+     * \f[
+     * R_z\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1-i & 0 \\
+     * 0 & 1+i
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the S gate, but differs in global phase.
+     * Note that this difference is significant when it is used as a submatrix
+     * for a controlled gate.
+     */
+    RZ_90 = 115,
+
+    /**
+     * Rz(-90°) gate.
+     *
+     * \f[
+     * R_z\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1+i & 0 \\
+     * 0 & 1-i
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the S-dagger gate, but differs in global
+     * phase. Note that this difference is significant when it is used as a
+     * submatrix for a controlled gate.
+     */
+    RZ_M90 = 116,
+
+    /**
+     * Rz(180°) gate.
+     *
+     * \f[
+     * R_z(\pi) = \begin{bmatrix}
+     * -i & 0 \\
+     * 0 & i
+     * \end{bmatrix}
+     * \f]
+     *
+     * This matrix is equivalent to the Pauli Z gate, but differs in global
+     * phase. Note that this difference is significant when it is used as a
+     * submatrix for a controlled gate.
+     */
+    RZ_180 = 117,
+
+    /**
+     * The matrix for an arbitrary X rotation.
+     *
+     * \f[
+     * R_x(\theta) = \begin{bmatrix}
+     * \cos{\frac{\theta}{2}} & -i\sin{\frac{\theta}{2}} \\
+     * -i\sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
+     * \end{bmatrix}
+     * \f]
+     *
+     * θ is specified or returned through the first binary string argument
+     * of the parameterization ArbData object. It is represented as a
+     * little-endian double floating point value, specified in radians.
+     */
+    RX = 150,
+
+    /**
+     * The matrix for an arbitrary Y rotation.
+     *
+     * \f[
+     * R_y(\theta) = \begin{bmatrix}
+     * \cos{\frac{\theta}{2}} & -\sin{\frac{\theta}{2}} \\
+     * \sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
+     * \end{bmatrix}
+     * \f]
+     *
+     * θ is specified or returned through the first binary string argument
+     * of the parameterization ArbData object. It is represented as a
+     * little-endian double floating point value, specified in radians.
+     */
+    RY = 151,
+
+    /**
+     * The matrix for an arbitrary Z rotation.
+     *
+     * \f[
+     * R_z(\theta) = \begin{bmatrix}
+     * e^{-i\frac{\theta}{2}} & 0 \\
+     * 0 & e^{i\frac{\theta}{2}}
+     * \end{bmatrix}
+     * \f]
+     *
+     * θ is specified or returned through the first binary string argument
+     * of the parameterization ArbData object. It is represented as a
+     * little-endian double floating point value, specified in radians.
+     */
+    RZ = 152,
+
+    /**
+     * The matrix for a Z rotation with angle π/2^k.
+     *
+     * \f[
+     * \textit{PhaseK}(k) = \textit{Phase}\left(\frac{\pi}{2^k}\right) = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & e^{i\pi / 2^k}
+     * \end{bmatrix}
+     * \f]
+     *
+     * k is specified or returned through the first binary string argument
+     * of the parameterization ArbData object. It is represented as a
+     * little-endian unsigned 64-bit integer.
+     */
+    PhaseK = 153,
+
+    /**
+     * The matrix for an arbitrary Z rotation.
+     *
+     * \f[
+     * \textit{Phase}(\theta) = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & e^{i\theta}
+     * \end{bmatrix}
+     * \f]
+     *
+     * θ is specified or returned through the first binary string argument
+     * of the parameterization ArbData object. It is represented as a
+     * little-endian double floating point value, specified in radians.
+     *
+     * This matrix is equivalent to the Rz gate, but differs in global phase.
+     * Note that this difference is significant when it is used as a submatrix
+     * for a controlled gate. Specifically, controlled phase gates use the
+     * phase as specified by this gate, whereas Rz follows the usual algebraic
+     * notation.
+     */
+    Phase = 154,
+
+    /**
+     * Any single-qubit unitary gate, parameterized as a full unitary matrix.
+     *
+     * The full matrix is specified or returned through the first binary string
+     * argument of the parameterization ArbData object. It is represented as an
+     * array of little-endian double floating point values, structured as
+     * real/imag pairs, with the pairs in row-major order.
+     */
+    U1 = 190,
+
+    /**
+     * Arbitrary rotation matrix.
+     *
+     * \f[
+     * R(\theta, \phi, \lambda) = \begin{bmatrix}
+     * \cos{\frac{\theta}{2}} & -\sin{\frac{\theta}{2}} e^{i\lambda} \\
+     * \sin{\frac{\theta}{2}} e^{i\phi} & \cos{\frac{\theta}{2}} e^{i\phi + i\lambda}
+     * \end{bmatrix}
+     * \f]
+     *
+     * This is equivalent to the following:
+     *
+     * \f[
+     * R(\theta, \phi, \lambda) = \textit{Phase}(\phi) \cdot R_y(\theta) \cdot \textit{Phase}(\lambda)
+     * \f]
+     *
+     * The rotation order and phase is taken from Qiskit's U3 gate. Ignoring
+     * global phase, any unitary single-qubit gate can be represented with this
+     * notation.
+     *
+     * θ, φ, and λ are specified or returned through the first three binary
+     * string arguments of the parameterization ArbData object. They are
+     * represented as little-endian double floating point values, specified in
+     * radians.
+     */
+    R = 191,
+
+    /**
+     * The swap gate matrix.
+     *
+     * \f[
+     * \textit{SWAP} = \begin{bmatrix}
+     * 1 & 0 & 0 & 0 \\
+     * 0 & 0 & 1 & 0 \\
+     * 0 & 1 & 0 & 0 \\
+     * 0 & 0 & 0 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    Swap = 200,
+
+    /**
+     * The square-root of a swap gate matrix.
+     *
+     * \f[
+     * \sqrt{\textit{SWAP}} = \begin{bmatrix}
+     * 1 & 0 & 0 & 0 \\
+     * 0 & \frac{i+1}{2} & \frac{i-1}{2} & 0 \\
+     * 0 & \frac{i-1}{2} & \frac{i+1}{2} & 0 \\
+     * 0 & 0 & 0 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    SqSwap = 201,
+
+    /**
+     * Any two-qubit unitary gate, parameterized as a full unitary matrix.
+     *
+     * The full matrix is specified or returned through the first binary string
+     * argument of the parameterization ArbData object. It is represented as an
+     * array of little-endian double floating point values, structured as
+     * real/imag pairs, with the pairs in row-major order.
+     */
+    U2 = 290,
+
+    /**
+     * Any three-qubit unitary gate, parameterized as a full unitary matrix.
+     *
+     * The full matrix is specified or returned through the first binary string
+     * argument of the parameterization ArbData object. It is represented as an
+     * array of little-endian double floating point values, structured as
+     * real/imag pairs, with the pairs in row-major order.
+     */
+    U3 = 390,
+
+  };
+
+  /**
+   * Converts a `PredefinedGate` to its raw C enum.
+   *
+   * \param type The C++ predefined gate to convert.
+   * \returns The raw predefined gate type.
+   */
+  inline raw::dqcs_predefined_gate_t to_raw(PredefinedGate type) noexcept {
+    switch (type) {
+      case PredefinedGate::I:       return raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_I;
+      case PredefinedGate::X:       return raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_X;
+      case PredefinedGate::Y:       return raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_Y;
+      case PredefinedGate::Z:       return raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_Z;
+      case PredefinedGate::H:       return raw::dqcs_predefined_gate_t::DQCS_GATE_H;
+      case PredefinedGate::S:       return raw::dqcs_predefined_gate_t::DQCS_GATE_S;
+      case PredefinedGate::S_DAG:   return raw::dqcs_predefined_gate_t::DQCS_GATE_S_DAG;
+      case PredefinedGate::T:       return raw::dqcs_predefined_gate_t::DQCS_GATE_T;
+      case PredefinedGate::T_DAG:   return raw::dqcs_predefined_gate_t::DQCS_GATE_T_DAG;
+      case PredefinedGate::RX_90:   return raw::dqcs_predefined_gate_t::DQCS_GATE_RX_90;
+      case PredefinedGate::RX_M90:  return raw::dqcs_predefined_gate_t::DQCS_GATE_RX_M90;
+      case PredefinedGate::RX_180:  return raw::dqcs_predefined_gate_t::DQCS_GATE_RX_180;
+      case PredefinedGate::RY_90:   return raw::dqcs_predefined_gate_t::DQCS_GATE_RY_90;
+      case PredefinedGate::RY_M90:  return raw::dqcs_predefined_gate_t::DQCS_GATE_RY_M90;
+      case PredefinedGate::RY_180:  return raw::dqcs_predefined_gate_t::DQCS_GATE_RY_180;
+      case PredefinedGate::RZ_90:   return raw::dqcs_predefined_gate_t::DQCS_GATE_RZ_90;
+      case PredefinedGate::RZ_M90:  return raw::dqcs_predefined_gate_t::DQCS_GATE_RZ_M90;
+      case PredefinedGate::RZ_180:  return raw::dqcs_predefined_gate_t::DQCS_GATE_RZ_180;
+      case PredefinedGate::RX:      return raw::dqcs_predefined_gate_t::DQCS_GATE_RX;
+      case PredefinedGate::RY:      return raw::dqcs_predefined_gate_t::DQCS_GATE_RY;
+      case PredefinedGate::RZ:      return raw::dqcs_predefined_gate_t::DQCS_GATE_RZ;
+      case PredefinedGate::PhaseK:  return raw::dqcs_predefined_gate_t::DQCS_GATE_PHASE_K;
+      case PredefinedGate::Phase:   return raw::dqcs_predefined_gate_t::DQCS_GATE_PHASE;
+      case PredefinedGate::U1:      return raw::dqcs_predefined_gate_t::DQCS_GATE_U1;
+      case PredefinedGate::R:       return raw::dqcs_predefined_gate_t::DQCS_GATE_R;
+      case PredefinedGate::Swap:    return raw::dqcs_predefined_gate_t::DQCS_GATE_SWAP;
+      case PredefinedGate::SqSwap:  return raw::dqcs_predefined_gate_t::DQCS_GATE_SQRT_SWAP;
+      case PredefinedGate::U2:      return raw::dqcs_predefined_gate_t::DQCS_GATE_U2;
+      case PredefinedGate::U3:      return raw::dqcs_predefined_gate_t::DQCS_GATE_U3;
+    }
+    std::cerr << "unknown plugin type" << std::endl;
+    std::terminate();
+  }
+
+  /**
+   * Checks a `dqcs_predefined_gate_t` return value and converts it to its C++
+   * enum representation; if failure, throws a runtime error with DQCsim's
+   * error message.
+   *
+   * \param type The raw function return code.
+   * \returns The wrapped predefined gate type.
+   * \throws std::runtime_error When the return code indicated failure.
+   */
+  inline PredefinedGate check(raw::dqcs_predefined_gate_t type) {
+    switch (type) {
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_I:    return PredefinedGate::I;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_X:    return PredefinedGate::X;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_Y:    return PredefinedGate::Y;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_PAULI_Z:    return PredefinedGate::Z;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_H:          return PredefinedGate::H;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_S:          return PredefinedGate::S;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_S_DAG:      return PredefinedGate::S_DAG;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_T:          return PredefinedGate::T;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_T_DAG:      return PredefinedGate::T_DAG;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RX_90:      return PredefinedGate::RX_90;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RX_M90:     return PredefinedGate::RX_M90;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RX_180:     return PredefinedGate::RX_180;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RY_90:      return PredefinedGate::RY_90;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RY_M90:     return PredefinedGate::RY_M90;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RY_180:     return PredefinedGate::RY_180;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RZ_90:      return PredefinedGate::RZ_90;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RZ_M90:     return PredefinedGate::RZ_M90;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RZ_180:     return PredefinedGate::RZ_180;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RX:         return PredefinedGate::RX;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RY:         return PredefinedGate::RY;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_RZ:         return PredefinedGate::RZ;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_PHASE_K:    return PredefinedGate::PhaseK;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_PHASE:      return PredefinedGate::Phase;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_U1:         return PredefinedGate::U1;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_R:          return PredefinedGate::R;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_SWAP:       return PredefinedGate::Swap;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_SQRT_SWAP:  return PredefinedGate::SqSwap;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_U2:         return PredefinedGate::U2;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_U3:         return PredefinedGate::U3;
+      case raw::dqcs_predefined_gate_t::DQCS_GATE_INVALID:    throw std::runtime_error(raw::dqcs_error_get());
     }
     throw std::invalid_argument("unknown plugin type");
   }
@@ -2273,131 +2792,136 @@ namespace wrap {
   using complex = std::complex<double>;
 
   /**
-   * Anonymous namespace with some private members.
-   */
-  namespace {
-
-    /**
-     * Integer square root.
-     */
-    template <typename T>
-    T isqrt(T n) {
-      T c = (T)1 << (sizeof(T) * 4 - 1);
-      if (c < 0) {
-        c = (T)1 << (sizeof(T) * 4 - 2);
-      }
-      T g = c;
-      while (true) {
-        if (g*g > n) {
-          g ^= c;
-        }
-        c >>= 1;
-        if (c == 0) {
-          return g;
-        }
-        g |= c;
-      }
-    }
-
-  }
-
-  /**
-   * Convenience class for the square complex matrices used to express the
-   * qubit gates.
+   * Represents a square matrix used for describing N-qubit gates.
    *
    * \note DQCsim is not a math library: this matrix class is solely intended
    * as an interface between DQCsim's internal matrix representation and
    * whatever math library you want to use.
    */
-  class Matrix {
-  private:
-
-    /**
-     * Row-major data storage.
-     */
-    std::vector<complex> d;
-
-    /**
-     * Number of rows == number of columns. So we don't have to compute the
-     * sqrt of the vector size all the time.
-     */
-    const size_t _n;
-
+  class Matrix : public Handle {
   public:
 
     /**
-     * Delete the default constructor, as it's nonsensical with no size
-     * parameter.
-     */
-    Matrix() = delete;
-
-    /**
-     * Constructs a zero matrix of size `n` times `n`.
+     * Wraps the given matrix handle.
      *
-     * \param n The number of rows = the number of columns of the matrix.
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
      */
-    Matrix(size_t n) : d(n * n, complex(0.0, 0.0)), _n(n) {
+    Matrix(HandleIndex handle) noexcept : Handle(handle) {
     }
 
     /**
-     * Constructs an identity matrix of size `n` times `n`.
-     *
-     * \param n The number of rows = the number of columns of the matrix.
-     * \returns A new identity matrix of size `n` times `n`.
-     */
-    static Matrix identity(size_t n) {
-      Matrix result(n);
-      for (size_t i = 0; i < n; i++) {
-        result(i, i) = complex(1.0, 0.0);
-      }
-      return result;
-    }
-
-    /**
-     * Constructs a matrix from a row-major flattened array of `size`
+     * Constructs a matrix from a row-major flattened array of `4**num_qubits`
      * `complex`s.
      *
-     * \param size The number of complex numbers. Must be a square number,
-     * as the matrix must be square.
-     * \param data Pointer to an array of complex numbers representing the
-     * desired matrix in row-major form.
+     * \param num_qubits The number of qubits that the matrix is intended for.
+     * Must be 1 or more.
+     * \param matrix Pointer to an array of complex numbers representing the
+     * desired matrix in row-major form. The matrix has `4**num_qubits` complex
+     * entries.
      * \returns A new matrix containing the desired data.
-     * \throws std::invalid_argument When `size` is not a square number.
+     * \throws std::runtime_error When constructing the matrix failed.
      */
-    Matrix(size_t size, const complex *data) : d(size), _n(isqrt(size)) {
-      if (size != _n * _n) {
-        throw std::invalid_argument("size must be a square number");
-      }
-      std::memcpy(d.data(), data, size * sizeof(complex));
+    Matrix(size_t num_qubits, const complex *matrix)
+      : Handle(check(raw::dqcs_mat_new(num_qubits, (const double *)matrix))) {
     }
 
     /**
-     * Constructs a matrix from a row-major, real-first flattened array of
-     * 2 x `size` `double`s.
+     * Constructs a matrix from a row-major flattened array of
+     * `2 * 4**num_qubits` `complex`s.
      *
-     * \param size The number of complex numbers. Must be a square number,
-     * as the matrix must be square.
-     * \param data Pointer to an array of doubles representing the desired
-     * matrix in row-major form using (real, imag) pairs.
+     * \param num_qubits The number of qubits that the matrix is intended for.
+     * Must be 1 or more.
+     * \param matrix Pointer to an array of complex numbers representing the
+     * desired matrix in row-major form using (real, imag) pairs. The matrix
+     * contains `2*4**num_qubits` doubles.
      * \returns A new matrix containing the desired data.
-     * \throws std::invalid_argument When `size` is not a square number.
+     * \throws std::runtime_error When constructing the matrix failed.
      */
-    Matrix(size_t size, const double *data) : d(size), _n(isqrt(size)) {
-      if (size != _n * _n) {
-        throw std::invalid_argument("size must be a square number");
-      }
-      std::memcpy(d.data(), data, size * sizeof(complex));
+    Matrix(size_t num_qubits, const double *matrix)
+      : Handle(check(raw::dqcs_mat_new(num_qubits, matrix))) {
     }
 
     /**
-     * Default copy constructor.
+     * Constructs a non-parameterized predefined matrix.
+     *
+     * \param gate The gate to construct the matrix for.
+     * \returns A new matrix containing the desired data.
+     * \throws std::runtime_error When the matrix for a parameterized gate type
+     * is requested, or constructing the matrix failed.
      */
-    Matrix(const Matrix&) = default;
+    Matrix(PredefinedGate gate)
+      : Handle(check(raw::dqcs_mat_predef(to_raw(gate), 0))) {
+    }
 
     /**
-     * Default copy assignment.
+     * Constructs a predefined matrix, using `ArbData` to represent the
+     * parameters for parameterized gates.
+     *
+     * The `ArbData` needed for the rotation gates can be trivially constructed
+     * in-line. Here's the relevant code:
+     *
+     * ```cpp
+     * double theta, phi, lambda;
+     * uint64_t k;
+     * Matrix(PredefinedGate::RX, ArbData.with_arg(theta));
+     * Matrix(PredefinedGate::RY, ArbData.with_arg(theta));
+     * Matrix(PredefinedGate::RZ, ArbData.with_arg(theta));
+     * Matrix(PredefinedGate::Phase, ArbData.with_arg(theta));
+     * Matrix(PredefinedGate::PhaseK, ArbData.with_arg(k));
+     * Matrix(PredefinedGate::R, ArbData.with_arg(theta).with_arg(phi).with_arg(lambda));
+     * ```
+     *
+     * \param gate The gate to construct the matrix for.
+     * \param parameters The parameters for the gate; refer to the docs for
+     * `PredefinedGate` for more information.
+     * \returns A new matrix containing the desired data.
+     * \throws std::runtime_error When constructing the matrix failed.
      */
-    Matrix &operator=(const Matrix&) = default;
+    Matrix(PredefinedGate gate, ArbData &&parameters)
+      : Handle(check(raw::dqcs_mat_predef(to_raw(gate), parameters.get_handle()))) {
+    }
+
+    /**
+     * Constructs a predefined matrix, using `ArbData` to represent the
+     * parameters for parameterized gates.
+     *
+     * \param gate The gate to construct the matrix for.
+     * \param parameters The parameters for the gate; refer to the docs for
+     * `PredefinedGate` for more information.
+     * \returns A new matrix containing the desired data.
+     * \throws std::runtime_error When constructing the matrix failed.
+     */
+    Matrix(PredefinedGate gate, const ArbData &parameters)
+      : Handle(check(raw::dqcs_mat_predef(to_raw(gate), ArbData(parameters).get_handle()))) {
+    }
+
+    /**
+     * Copy-constructs a matrix.
+     *
+     * \param src The object to copy from.
+     * \throws std::runtime_error When the source handle is invalid or
+     * construction of the new handle failed for some reason.
+     */
+    Matrix(const Matrix &src)
+      : Handle(check(raw::dqcs_mat_add_controls(src.get_handle(), 0))) {
+    }
+
+    /**
+     * Copy assignment operator for matrices.
+     *
+     * \param src The object to copy from.
+     * \throws std::runtime_error When the source handle is invalid, any
+     * previously wrapped handle in the destination object could not be freed,
+     * or construction of the new handle failed for some reason.
+     */
+    void operator=(const Matrix &src) {
+      Matrix copy(src);
+      free();
+      handle = copy.take_handle();
+    }
 
     /**
      * Default move constructor.
@@ -2410,791 +2934,159 @@ namespace wrap {
     Matrix &operator=(Matrix&&) = default;
 
     /**
-     * Mutable matrix element accessor.
+     * Returns the number of elements in the matrix.
      *
-     * \param row The row index for the element to access.
-     * \param column The column index for the element to access.
-     * \returns A mutable reference to the element.
-     * \throws std::invalid_argument When either index is out of range.
+     * \returns The number of elements in the matrix.
+     * \throws std::runtime_error When the matrix handle is invalid.
      */
-    complex& operator()(size_t row, size_t column) {
-      if (row >= _n || column >= _n) {
-        throw std::invalid_argument("matrix subscript out of bounds");
-      }
-      return d[_n*row + column];
+    size_t size() const {
+        return check(raw::dqcs_mat_len(handle));
     }
 
     /**
-     * Const matrix element accessor.
+     * Returns the number of rows/columns in the matrix.
      *
-     * \param row The row index for the element to access, starting at 0.
-     * \param column The column index for the element to access, starting at 0.
-     * \returns An immutable reference to the element.
-     * \throws std::invalid_argument When either index is out of range.
+     * \returns The number of rows/columns in the matrix.
+     * \throws std::runtime_error When the matrix handle is invalid.
      */
-    const complex& operator()(size_t row, size_t column) const {
-      if (row >= _n || column >= _n) {
-        throw std::invalid_argument("matrix subscript out of bounds");
-      }
-      return d[_n*row + column];
+    size_t dimension() const {
+        return check(raw::dqcs_mat_dimension(handle));
     }
 
     /**
-     * Returns the number of rows = the number of columns in the matrix.
+     * Returns the number of qubits associated with the matrix.
      *
-     * \returns The number of rows = the number of columns in the matrix.
+     * \returns The number of qubits associated with the matrix.
+     * \throws std::runtime_error When the matrix handle is invalid.
      */
-    size_t n() const noexcept {
-      return _n;
+    size_t num_qubits() const {
+        return check(raw::dqcs_mat_num_qubits(handle));
     }
 
     /**
-     * Mutable flattened data accessor.
+     * Returns the data contained by the matrix in row-major form as complex
+     * numbers.
      *
-     * \returns A mutable pointer to the contained data represented as a
-     * row-major array of complex numbers.
+     * \returns The data contained by the matrix.
+     * \throws std::runtime_error When the matrix handle is invalid.
      */
-    complex *data() noexcept {
-      return d.data();
+    std::vector<complex> get() const {
+      size_t s = size();
+      std::vector<complex> vec(s);
+      double *data = check(raw::dqcs_mat_get(handle));
+      std::memcpy(vec.data(), data, s * sizeof(complex));
+      return vec;
     }
 
     /**
-     * Immutable flattened data accessor.
+     * Returns the data contained by the matrix in row-major form as pairs
+     * of real/imag doubles.
      *
-     * \returns An immutable pointer to the contained data represented as a
-     * row-major array of complex numbers.
+     * \returns The data contained by the matrix.
+     * \throws std::runtime_error When the matrix handle is invalid.
      */
-    const complex *data() const noexcept {
-      return d.data();
+    std::vector<double> get_as_doubles() const {
+      size_t s = size();
+      std::vector<double> vec(s * 2);
+      double *data = check(raw::dqcs_mat_get(handle));
+      std::memcpy(vec.data(), data, 2 * s * sizeof(double));
+      return vec;
     }
 
     /**
-     * Mutable flattened data accessor.
-     *
-     * \returns A mutable pointer to the contained data represented as a
-     * row-major array of (real, imag) doubles.
-     */
-    double *data_double() noexcept {
-      return reinterpret_cast<double*>(d.data());
-    }
-
-    /**
-     * Immutable flattened data accessor.
-     *
-     * \returns An immutable pointer to the contained data represented as a
-     * row-major array of (real, imag) doubles.
-     */
-    const double *data_double() const noexcept {
-      return reinterpret_cast<const double*>(d.data());
-    }
-
-    /**
-     * Returns the number of complex elements in the matrix.
-     *
-     * \returns The number of complex elements in the matrix.
-     */
-    size_t size() const noexcept {
-      return _n * _n;
-    }
-
-    /**
-     * Allows matrices to be printed.
-     *
-     * \param out The output stream to write to.
-     * \param matrix The matrix to dump.
-     * \returns The output stream object.
-     */
-    friend std::ostream& operator<<(std::ostream &out, const Matrix &matrix) {
-      out << '{';
-      for (size_t row = 0; row < matrix._n; row++) {
-        if (row) out << ", ";
-        out << '[';
-        for (size_t col = 0; col < matrix._n; col++) {
-          if (col) out << ", ";
-          auto e = matrix(row, col);
-          if (e.real() != 0.0) {
-            out << e.real();
-            if (e.imag() < 0.0) {
-              out << '-' << -e.imag() << 'i';
-            } else if (e.imag() > 0.0) {
-              out << '+' << e.imag() << 'i';
-            }
-          } else if (e.imag()) {
-            out << e.imag() << 'i';
-          } else {
-            out << '0';
-          }
-        }
-        out << ']';
-      }
-      out << '}';
-      return out;
-    }
-
-    /**
-     * Matrix equality operator (exact).
-     *
-     * \param other The matrix to compare to.
-     * \returns Whether the matrices are equal.
-     */
-    bool operator==(const Matrix &other) const noexcept {
-      return d == other.d;
-    }
-
-    /**
-     * Matrix inequality operator (exact).
-     *
-     * \param other The matrix to compare to.
-     * \returns Whether the matrices are different.
-     */
-    bool operator!=(const Matrix &other) const noexcept {
-      return d != other.d;
-    }
-
-    /**
-     * Matrix fuzzy equality operator.
+     * Approximate equality operator for two matrices.
      *
      * \param other The matrix to compare to.
      * \param epsilon The maximum tolerated RMS variation of the elements.
-     * \param ignore_gphase Whether global phase differences should be ignored
-     * in the comparison.
+     * \param ignore_global_phase Whether global phase differences should be
+     * ignored in the comparison.
      * \returns Whether the matrices are approximately equal.
+     * \throws std::runtime_error When either handle is invalid.
      */
-    bool fuzzy_equal(
+    bool approx_eq(
       const Matrix &other,
       double epsilon = 0.000001,
-      bool ignore_gphase = true
+      bool ignore_global_phase = true
     ) const {
-      // TODO connect to API when it becomes available with the `gatemap`
-      // branch/PR
-      (void)other;
-      (void)epsilon;
-      (void)ignore_gphase;
-      throw std::logic_error("not yet implemented");
-    }
-
-  };
-
-  /**
-   * Contains shorthand methods for a variety of commonly used gate matrices.
-   *
-   * \note This is a class an not a namespace because it has global constants,
-   * and this is a header-only library.
-   */
-  class GateMatrix {
-  private:
-
-    /**
-     * Dummy constructor. There is no point in ever constructing this class,
-     * all members are static.
-     */
-    GateMatrix() {};
-
-  public:
-
-    /**
-     * The Pauli I matrix.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * I = \sigma_0 = \begin{bmatrix}
-     * 1 & 0 \\
-     * 0 & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the Pauli I gate.
-     */
-    static const Matrix &I() noexcept {
-      const double values[8] = {
-        1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    1.0,  0.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
+      return check(raw::dqcs_mat_approx_eq(handle, other.get_handle(), epsilon, ignore_global_phase));
     }
 
     /**
-     * The Pauli X matrix.
+     * Detects whether this matrix is approximately equal to (some
+     * parameterization of) the given predefined gate.
      *
-     * The matrix is as follows:
+     * The detected parameters are optionally returned as an `ArbData` if the
+     * matrix matches. If you want to compare to a specific parameterization of
+     * a predefined gate (for instance, an X rotation of 45 degrees), construct
+     * its matrix first, and then compare with `approx_eq()`.
      *
-     * \f[
-     * X = \sigma_1 = \begin{bmatrix}
-     * 0 & 1 \\
-     * 1 & 0
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the Pauli X gate.
+     * \param gate The predefined gate matrix to detect.
+     * \param epsilon The maximum tolerated RMS variation of the elements.
+     * \param ignore_global_phase Whether global phase differences should be
+     * ignored in the comparison.
+     * \param parameters If non-null, the detected parameters (if any) are
+     * written into the referenced `ArbData`. Any previous contents are
+     * discarded.
+     * \returns Whether the matrix matches the given predefined gate type.
+     * \throws std::runtime_error When the current handle is invalid, detection
+     * fails, or `parameters` could not be updated.
      */
-    static const Matrix &X() noexcept {
-      const double values[8] = {
-        0.0,  0.0,    1.0,  0.0,
-        1.0,  0.0,    0.0,  0.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
+    bool is_predefined(
+      PredefinedGate gate,
+      double epsilon = 0.000001,
+      bool ignore_global_phase = true,
+      ArbData *parameters = nullptr
+    ) const {
+      if (parameters) {
+        raw::dqcs_handle_t param_data = 0;
+        bool match = check(raw::dqcs_mat_is_predef(handle, to_raw(gate), &param_data, epsilon, ignore_global_phase));
+        if (!match) return false;
+        *parameters = ArbData(param_data);
+        return true;
+      }
+      return check(raw::dqcs_mat_is_predef(handle, to_raw(gate), nullptr, epsilon, ignore_global_phase));
     }
 
     /**
-     * The Pauli Y matrix.
+     * Constructs a controlled matrix from the given matrix.
      *
-     * The matrix is as follows:
-     *
-     * \f[
-     * Y = \sigma_2 = \begin{bmatrix}
-     * 0 & -i \\
-     * i & 0
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the Pauli Y gate.
+     * \param number_of_controls The number of control qubits to add.
+     * \returns The new matrix.
+     * \throws std::runtime_error When the handle is invalid or construction
+     * of the new matrix failed.
      */
-    static const Matrix &Y() noexcept {
-      const double values[8] = {
-        0.0,  0.0,    0.0,  -1.0,
-        0.0,  1.0,    0.0,  0.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
+    Matrix add_controls(size_t number_of_controls) const {
+      return Matrix(check(raw::dqcs_mat_add_controls(handle, number_of_controls)));
     }
 
     /**
-     * The Pauli Z matrix.
+     * Splits a controlled matrix into its non-controlled submatrix and the
+     * indices of the control qubits.
      *
-     * The matrix is as follows:
-     *
-     * \f[
-     * Z = \sigma_3 = \begin{bmatrix}
-     * 1 & 0 \\
-     * 0 & -1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the Pauli Z gate.
+     * \param epsilon The maximum magitude of the difference between the column
+     * vectors of the input matrix and the identity matrix (after dephasing if
+     * `ignore_phase` is set) for the column vector to be considered to not
+     * affect the respective entry in the quantum state vector. Note that if
+     * this is greater than zero, the resulting gate may not be exactly
+     * equivalent.
+     * \param ignore_global_phase If this is set, any global phase in the
+     * matrix is ignored, but note that if control qubits are stripped the
+     * "global" phase of the resulting submatrix is always significant.
+     * \returns A pair consisting of a sorted vector of the qubit indices that
+     * were removed and the newly constructed submatrix.
+     * \throws std::runtime_error When the handle is invalid or construction
+     * of the new matrix failed.
      */
-    static const Matrix &Z() noexcept {
-      const double values[8] = {
-        1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    -1.0, 0.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * Hadamard gate.
-     *
-     * This represents a 180-degree Y rotation, followed by a 90-degree X
-     * rotation. The matrix is as follows:
-     *
-     * \f[
-     * H = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1 & 1 \\
-     * 1 & -1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the Hadamard gate.
-     */
-    static const Matrix &H() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  0.0,    IR2,  0.0,
-        IR2,  0.0,    -IR2, 0.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * The S matrix.
-     *
-     * This represents a 90 degree Z rotation. The matrix is as follows:
-     *
-     * \f[
-     * S = \begin{bmatrix}
-     * 1 & 0 \\
-     * 0 & i
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the S gate.
-     */
-    static const Matrix &S() noexcept {
-      const double values[8] = {
-        1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    0.0,  1.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * The S-dagger matrix.
-     *
-     * This represents a negative 90 degree Z rotation. The matrix is as
-     * follows:
-     *
-     * \f[
-     * S^\dagger = \begin{bmatrix}
-     * 1 & 0 \\
-     * 0 & -i
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the S-dagger gate.
-     */
-    static const Matrix &SDAG() noexcept {
-      const double values[8] = {
-        1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    0.0,  -1.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * The T matrix.
-     *
-     * This represents a 45 degree Z rotation. The matrix is as follows:
-     *
-     * \f[
-     * T = \begin{bmatrix}
-     * 1 & 0 \\
-     * 0 & e^{i\frac{\pi}{4}}
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the T gate.
-     */
-    static const Matrix &T() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    IR2,  IR2,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * The T-dagger matrix.
-     *
-     * This represents a negative 45 degree Z rotation. The matrix is as follows:
-     *
-     * \f[
-     * T^\dagger = \begin{bmatrix}
-     * 1 & 0 \\
-     * 0 & e^{-i\frac{\pi}{4}}
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for the T-dagger gate.
-     */
-    static const Matrix &TDAG() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    IR2,  -IR2,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * Computes the matrix for an arbitrary X rotation.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_x(\theta) = \begin{bmatrix}
-     * \cos{\frac{\theta}{2}} & -i\sin{\frac{\theta}{2}} \\
-     * -i\sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
-     * \end{bmatrix}
-     * \f]
-     *
-     * \param theta The rotation angle in radians.
-     * \returns The matrix for an X rotation gate with angle theta.
-     */
-    static Matrix RX(double theta) noexcept {
-      double co = std::cos(0.5 * theta);
-      double si = std::sin(0.5 * theta);
-      double values[8] = {
-        co,   0.0,    0.0,  -si,
-        0.0,  -si,    co,   0.0,
-      };
-      return Matrix(4, values);
-    }
-
-    /**
-     * Precomputed 90-degree X rotation gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_x\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1 & -i \\
-     * -i & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for a postive 90-degree X rotation.
-     */
-    static const Matrix &RX90() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  0.0,    0.0,  -IR2,
-        0.0,  -IR2,   IR2,  0.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * Precomputed negative 90-degree X rotation gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_x\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1 & i \\
-     * i & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for a negative 90-degree X rotation.
-     */
-    static const Matrix &RXM90() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  0.0,    0.0,  IR2,
-        0.0,  IR2,    IR2,  0.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * Precomputed 180-degree RX gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_x(\pi) = \begin{bmatrix}
-     * 0 & -i \\
-     * -i & 0
-     * \end{bmatrix}
-     * \f]
-     *
-     * This matrix is equivalent to the Pauli X gate, but differs in global
-     * phase.
-     *
-     * \returns The matrix for a positive 180-degree X rotation.
-     */
-    static const Matrix &RX180() noexcept {
-      const double values[8] = {
-        0.0,  0.0,    0.0,  -1.0,
-        0.0,  -1.0,   0.0,  0.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * Computes the matrix for an arbitrary Y rotation.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_y(\theta) = \begin{bmatrix}
-     * \cos{\frac{\theta}{2}} & -\sin{\frac{\theta}{2}} \\
-     * \sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
-     * \end{bmatrix}
-     * \f]
-     *
-     * \param theta The rotation angle in radians.
-     * \returns The matrix for an Y rotation gate with angle theta.
-     */
-    static Matrix RY(double theta) noexcept {
-      double co = std::cos(0.5 * theta);
-      double si = std::sin(0.5 * theta);
-      double values[8] = {
-        co,   0.0,    -si,  0.0,
-        si,   0.0,    co,   0.0,
-      };
-      return Matrix(4, values);
-    }
-
-    /**
-     * Precomputed 90-degree Y rotation gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1 & -1 \\
-     * 1 & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for a positive 90-degree Y rotation.
-     */
-    static const Matrix &RY90() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  0.0,    -IR2, 0.0,
-        IR2,  0.0,    IR2,  0.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * Precomputed negative 90-degree RY gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1 & 1 \\
-     * -1 & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for a negative 90-degree Y rotation.
-     */
-    static const Matrix &RYM90() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  0.0,    IR2,  0.0,
-        -IR2, 0.0,    IR2,  0.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * Precomputed 180-degree RY gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_y(\pi) = \begin{bmatrix}
-     * 0 & -1 \\
-     * 1 & 0
-     * \end{bmatrix}
-     * \f]
-     *
-     * This matrix is equivalent to the Pauli Y gate, but differs in global
-     * phase.
-     *
-     * \returns The matrix for a positive 180-degree Y rotation.
-     */
-    static const Matrix &RY180() noexcept {
-      const double values[8] = {
-        0.0,  0.0,    -1.0, 0.0,
-        1.0,  0.0,    0.0,  0.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * Computes the matrix for an arbitrary Z rotation.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_z(\theta) = \begin{bmatrix}
-     * e^{-i\frac{\theta}{2}} & 0 \\
-     * 0 & e^{i\frac{\theta}{2}}
-     * \end{bmatrix}
-     * \f]
-     *
-     * \param theta The rotation angle in radians.
-     * \returns The matrix for a Z rotation gate with angle theta.
-     */
-    static Matrix RZ(double theta) noexcept {
-      double co = std::cos(0.5 * theta);
-      double si = std::sin(0.5 * theta);
-      double values[8] = {
-        co,   -si,    0.0,  0.0,
-        0.0,  0.0,    co,   si,
-      };
-      return Matrix(4, values);
-    }
-
-    /**
-     * Precomputed 90-degree RZ gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_z\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1-i & 0 \\
-     * 0 & 1+i
-     * \end{bmatrix}
-     * \f]
-     *
-     * This matrix is equivalent to the S gate, but differs in global phase.
-     *
-     * \returns The matrix for a positive 90-degree Z rotation.
-     */
-    static const Matrix &RZ90() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  -IR2,   0.0,  0.0,
-        0.0,  0.0,    IR2,  IR2,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * Precomputed negative 90-degree RZ gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_z\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
-     * 1+i & 0 \\
-     * 0 & 1-i
-     * \end{bmatrix}
-     * \f]
-     *
-     * This matrix is equivalent to the S-dagger gate, but differs in global
-     * phase.
-     *
-     * \returns The matrix for a negative 90-degree Z rotation.
-     */
-    static const Matrix &RZM90() noexcept {
-      const double IR2 = M_SQRT1_2;
-      const double values[8] = {
-        IR2,  IR2,    0.0,  0.0,
-        0.0,  0.0,    IR2,  -IR2,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * Precomputed 180-degree RZ gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * R_z(\pi) = \begin{bmatrix}
-     * -i & 0 \\
-     * 0 & i
-     * \end{bmatrix}
-     * \f]
-     *
-     * This matrix is equivalent to the Pauli Z gate, but differs in global
-     * phase.
-     *
-     * \returns The matrix for a positive 180-degree Z rotation.
-     */
-    static const Matrix &RZ180() noexcept {
-      const double values[8] = {
-        0.0,  -1.0,   0.0,  0.0,
-        0.0,  0.0,    0.0,  1.0,
-      };
-      static const Matrix matrix(4, values);
-      return matrix;
-    }
-
-    /**
-     * Computes the matrix for an arbitrary rotation.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * U(\theta, \phi, \lambda) = \begin{bmatrix}
-     * e^{i\frac{-\phi - \lambda}{2}} \cos{\frac{\theta}{2}} & e^{i\frac{-\phi + \lambda}{2}} \sin{\frac{\theta}{2}} \\
-     * e^{i\frac{ \phi - \lambda}{2}} \sin{\frac{\theta}{2}} & e^{i\frac{ \phi + \lambda}{2}} \cos{\frac{\theta}{2}}
-     * \end{bmatrix}
-     * \f]
-     *
-     * This is equivalent to the following:
-     *
-     * \f[
-     * U(\theta, \phi, \lambda) = R_z(\phi) \cdot R_y(\theta) \cdot R_z(\lambda)
-     * \f]
-     *
-     * The rotation order is taken from Qiskit's U3 gate, but the global phase
-     * is defined differently.
-     *
-     * The rotation angles are specified in radians.
-     *
-     * \param theta The rotation angle in radians for the Y rotation.
-     * \param phi The rotation angle in radians for the pre-Y Z rotation.
-     * \param lambda The rotation angle in radians for the post-Y Z rotation.
-     * \returns The matrix for a Z rotation gate with angle theta.
-     */
-    static Matrix R(double theta, double phi, double lambda) noexcept {
-      Matrix matrix = RY(theta);
-      matrix(0, 0) *= std::exp(std::complex<double>(0.0, 0.5 * (- lambda - phi)));
-      matrix(0, 1) *= std::exp(std::complex<double>(0.0, 0.5 * (+ lambda - phi)));
-      matrix(1, 0) *= std::exp(std::complex<double>(0.0, 0.5 * (- lambda + phi)));
-      matrix(1, 1) *= std::exp(std::complex<double>(0.0, 0.5 * (+ lambda + phi)));
-      return matrix;
-    }
-
-    /**
-     * The matrix for a swap gate.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * \textit{SWAP} = \begin{bmatrix}
-     * 1 & 0 & 0 & 0 \\
-     * 0 & 0 & 1 & 0 \\
-     * 0 & 1 & 0 & 0 \\
-     * 0 & 0 & 0 & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for a swap gate.
-     */
-    static const Matrix &SWAP() noexcept {
-      const double values[32] = {
-        1.0,  0.0,    0.0,  0.0,    0.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    0.0,  0.0,    1.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    1.0,  0.0,    0.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    0.0,  0.0,    0.0,  0.0,    1.0,  0.0,
-      };
-      static const Matrix matrix(16, values);
-      return matrix;
-    }
-
-    /**
-     * The square-root of a swap gate matrix.
-     *
-     * The matrix is as follows:
-     *
-     * \f[
-     * \sqrt{\textit{SWAP}} = \begin{bmatrix}
-     * 1 & 0 & 0 & 0 \\
-     * 0 & \frac{i+1}{2} & \frac{i-1}{2} & 0 \\
-     * 0 & \frac{i-1}{2} & \frac{i+1}{2} & 0 \\
-     * 0 & 0 & 0 & 1
-     * \end{bmatrix}
-     * \f]
-     *
-     * \returns The matrix for a square-root-of-swap gate.
-     */
-    static const Matrix &SQSWAP() noexcept {
-      const double values[32] = {
-        1.0,  0.0,    0.0,  0.0,    0.0,  0.0,    0.0,  0.0,
-        0.0,  0.0,    0.5,  0.5,    0.5,  -0.5,   0.0,  0.0,
-        0.0,  0.0,    0.5,  -0.5,   0.5,  0.5,    0.0,  0.0,
-        0.0,  0.0,    0.0,  0.0,    0.0,  0.0,    1.0,  0.0,
-      };
-      static const Matrix matrix(16, values);
-      return matrix;
+    std::pair<std::vector<size_t>, Matrix> strip_control(double epsilon, bool ignore_global_phase) const {
+      ssize_t *indices = nullptr;
+      std::pair<std::vector<size_t>, Matrix> result(
+        std::vector<size_t>(),
+        check(raw::dqcs_mat_strip_control(handle, epsilon, ignore_global_phase, &indices))
+      );
+      while (*indices != -1) {
+        result.first.push_back(*indices++);
+      }
+      return result;
     }
 
   };
@@ -3271,7 +3163,91 @@ namespace wrap {
     Gate &operator=(Gate&&) = default;
 
     /**
-     * Constructs a new unitary gate.
+     * Constructs a new predefined gate.
+     *
+     * \param gate The type of gate to construct.
+     * \param qubits The qubits that the gate should operate on. This should be
+     * at least the number of qubits required by the gate type; any additional
+     * qubits added on the left-hand side will serve as control qubits for a
+     * controlled gate using the specified gate matrix as its non-controlled
+     * submatrix.
+     * \param parameters An `ArbData` object containing the parameterization
+     * data for the predefined gate, if it requires parameters. Refer to the
+     * docs for `PredefinedGate` for more info. Any additional data in the
+     * `ArbData` object will be added to the gate's `ArbData` attachment.
+     * \returns The requested unitary gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate predefined(PredefinedGate gate, QubitSet &&qubits, ArbData &&parameters) {
+      return Gate(check(raw::dqcs_gate_new_predef(
+        to_raw(gate),
+        qubits.get_handle(),
+        parameters.get_handle()
+      )));
+    }
+
+    /**
+     * Constructs a new predefined gate.
+     *
+     * \param gate The type of gate to construct.
+     * \param qubits The qubits that the gate should operate on. This should be
+     * at least the number of qubits required by the gate type; any additional
+     * qubits added on the left-hand side will serve as control qubits for a
+     * controlled gate using the specified gate matrix as its non-controlled
+     * submatrix.
+     * \param parameters An `ArbData` object containing the parameterization
+     * data for the predefined gate, if it requires parameters. Refer to the
+     * docs for `PredefinedGate` for more info. Any additional data in the
+     * `ArbData` object will be added to the gate's `ArbData` attachment.
+     * \returns The requested unitary gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate predefined(PredefinedGate gate, const QubitSet &qubits, const ArbData &parameters) {
+      return predefined(gate, QubitSet(qubits), ArbData(parameters));
+    }
+
+    /**
+     * Constructs a new non-parameterized predefined gate.
+     *
+     * \param gate The type of gate to construct.
+     * \param qubits The qubits that the gate should operate on. This should be
+     * at least the number of qubits required by the gate type; any additional
+     * qubits added on the left-hand side will serve as control qubits for a
+     * controlled gate using the specified gate matrix as its non-controlled
+     * submatrix.
+     * \returns The requested unitary gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate predefined(PredefinedGate gate, QubitSet &&qubits) {
+      return Gate(check(raw::dqcs_gate_new_predef(
+        to_raw(gate),
+        qubits.get_handle(),
+        0
+      )));
+    }
+
+    /**
+     * Constructs a new non-parameterized predefined gate.
+     *
+     * \param gate The type of gate to construct.
+     * \param qubits The qubits that the gate should operate on. This should be
+     * at least the number of qubits required by the gate type; any additional
+     * qubits added on the left-hand side will serve as control qubits for a
+     * controlled gate using the specified gate matrix as its non-controlled
+     * submatrix.
+     * \returns The requested unitary gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate predefined(PredefinedGate gate, const QubitSet &qubits) {
+      return predefined(gate, QubitSet(qubits));
+    }
+
+    /**
+     * Constructs a new custom unitary gate.
      *
      * \param targets A qubit reference set with the target qubits.
      * \param matrix The matrix to be applied to the target qubits. It must be
@@ -3284,13 +3260,12 @@ namespace wrap {
       return Gate(check(raw::dqcs_gate_new_unitary(
         targets.get_handle(),
         0,
-        matrix.data_double(),
-        matrix.size()
+        matrix.get_handle()
       )));
     }
 
     /**
-     * Constructs a new unitary gate.
+     * Constructs a new custom unitary gate.
      *
      * \param targets A qubit reference set with the target qubits, passed by
      * copy.
@@ -3305,7 +3280,7 @@ namespace wrap {
     }
 
     /**
-     * Constructs a new unitary gate with control qubits.
+     * Constructs a new custom unitary gate with control qubits.
      *
      * \param targets A qubit reference set with the target qubits.
      * \param controls A qubit reference set with the target qubits. The
@@ -3322,13 +3297,12 @@ namespace wrap {
       return Gate(check(raw::dqcs_gate_new_unitary(
         targets.get_handle(),
         controls.get_handle(),
-        matrix.data_double(),
-        matrix.size()
+        matrix.get_handle()
       )));
     }
 
     /**
-     * Constructs a new unitary gate with control qubits.
+     * Constructs a new custom unitary gate with control qubits.
      *
      * \param targets A qubit reference set with the target qubits, passed by
      * copy.
@@ -3409,8 +3383,7 @@ namespace wrap {
         targets.get_handle(),
         controls.get_handle(),
         measures.get_handle(),
-        matrix.data_double(),
-        matrix.size()
+        matrix.get_handle()
       )));
     }
 
@@ -3480,7 +3453,6 @@ namespace wrap {
         targets.get_handle(),
         controls.get_handle(),
         measures.get_handle(),
-        nullptr,
         0
       )));
     }
@@ -3545,8 +3517,7 @@ namespace wrap {
         targets.get_handle(),
         controls.get_handle(),
         0,
-        matrix.data_double(),
-        matrix.size()
+        matrix.get_handle()
       )));
     }
 
@@ -3604,7 +3575,6 @@ namespace wrap {
         targets.get_handle(),
         controls.get_handle(),
         0,
-        nullptr,
         0
       )));
     }
@@ -3656,8 +3626,7 @@ namespace wrap {
         targets.get_handle(),
         0,
         0,
-        matrix.data_double(),
-        matrix.size()
+        matrix.get_handle()
       )));
     }
 
@@ -3705,7 +3674,6 @@ namespace wrap {
         targets.get_handle(),
         0,
         0,
-        nullptr,
         0
       )));
     }
@@ -3748,7 +3716,6 @@ namespace wrap {
         0,
         0,
         0,
-        nullptr,
         0
       )));
     }
@@ -3822,13 +3789,11 @@ namespace wrap {
      * Returns the matrix that belongs to this gate.
      *
      * \returns The matrix that belongs to this gate.
-     * \throws std::runtime_error When the current handle is invalid.
+     * \throws std::runtime_error When the current handle is invalid or the
+     * gate doesn't have a matrix.
      */
     Matrix get_matrix() const {
-      double *data = check(raw::dqcs_gate_matrix(handle));
-      Matrix matrix(check(raw::dqcs_gate_matrix_len(handle)), data);
-      std::free(data);
-      return matrix;
+      return Matrix(check(raw::dqcs_gate_matrix(handle)));
     }
 
     /**
@@ -3870,6 +3835,863 @@ namespace wrap {
      */
     #define ARB_BUILDER_SUBCLASS Gate
     #include "arb_builder.hpp"
+
+  };
+
+  /**
+   * Class that you can inherit from to make your own custom gate converter for
+   * use within DQCsim.
+   */
+  class CustomGateConverter {
+  private:
+
+    // `GateMap`s are a friend, so they can take pointers to the static
+    // callback entry points.
+    template <class Unbound, class Bound>
+    friend class GateMap;
+
+    /**
+     * C callback entry point for the detector.
+     */
+    static raw::dqcs_bool_return_t raw_detector(
+      const void *user_data,
+      raw::dqcs_handle_t gate,
+      raw::dqcs_handle_t *qubits,
+      raw::dqcs_handle_t *params
+    ) noexcept {
+      try {
+        auto converter = reinterpret_cast<const std::shared_ptr<CustomGateConverter>*>(user_data);
+        Gate gate_wrapper = Gate(gate);
+        QubitSet qubits_wrapper = QubitSet();
+        ArbData params_wrapper = ArbData();
+        params_wrapper.set_arb(gate_wrapper);
+        if (!(*converter)->detect(std::move(gate_wrapper), qubits_wrapper, params_wrapper)) {
+          return raw::dqcs_bool_return_t::DQCS_FALSE;
+        }
+        *qubits = qubits_wrapper.take_handle();
+        *params = params_wrapper.take_handle();
+        return raw::dqcs_bool_return_t::DQCS_TRUE;
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return raw::dqcs_bool_return_t::DQCS_BOOL_FAILURE;
+    }
+
+    /**
+     * C callback entry point for the constructor.
+     */
+    static raw::dqcs_handle_t raw_constructor(
+      const void *user_data,
+      raw::dqcs_handle_t qubits,
+      raw::dqcs_handle_t params
+    ) noexcept {
+      try {
+        auto converter = reinterpret_cast<const std::shared_ptr<CustomGateConverter>*>(user_data);
+        return (*converter)->construct(QubitSet(qubits), ArbData(params)).take_handle();
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return 0;
+    }
+
+    /**
+     * C callback entry point for the deleter.
+     */
+    static void raw_deleter(void *user_data) noexcept {
+      auto converter = reinterpret_cast<const std::shared_ptr<CustomGateConverter>*>(user_data);
+      delete converter;
+    }
+
+  public:
+
+    // We're using inheritance, so ensure that the destructor as virtual.
+    virtual ~CustomGateConverter() = default;
+
+    /**
+     * The to-be-implemented detector function.
+     *
+     * \param gate The gate to match.
+     * \param qubits If the gate matches, its qubit arguments should be pushed
+     * into or assigned to this set. The set is initially empty.
+     * \param params If the gate matches, its parameters should be pushed into
+     * or assigned to this `ArbData`. This data object is initially a copy of
+     * the incoming gate's `ArbData` attachment.
+     * \returns Whether the incoming gate matches.
+     * \throws std::exception When an exception is thrown, its `what()` is
+     * returned to the user immediately. That is, any remaining detectors are
+     * not called.
+     *
+     * The default implementation simply returns `false`, i.e. it never
+     * matches.
+     */
+    virtual bool detect(Gate &&gate, QubitSet &qubits, ArbData &params) const {
+      return false;
+    }
+
+    /**
+     * The to-be-implemented constructor function.
+     *
+     * \param qubits The qubit arguments for the gate.
+     * \param params The parameters for the gate.
+     * \returns The constructed gate.
+     * \throws std::exception When an exception is thrown, its `what()` is
+     * returned to the user.
+     *
+     * The default implementation throws an exception indicating that no
+     * constructor is defined.
+     */
+    virtual Gate construct(QubitSet &&qubits, ArbData &&params) const {
+      throw std::runtime_error("detector function not implemented");
+    }
+
+  };
+
+  /**
+   * Class that you can inherit from to make your own unitary gate converter
+   * for use within DQCsim.
+   */
+  class CustomUnitaryGateConverter {
+  private:
+
+    // `GateMap`s are a friend, so they can take pointers to the static
+    // callback entry points.
+    template <class Unbound, class Bound>
+    friend class GateMap;
+
+    /**
+     * C callback entry point for the detector.
+     */
+    static raw::dqcs_bool_return_t raw_detector(
+      const void *user_data,
+      raw::dqcs_handle_t matrix,
+      size_t num_controls,
+      raw::dqcs_handle_t *params
+    ) noexcept {
+      try {
+        auto converter = reinterpret_cast<const std::shared_ptr<CustomUnitaryGateConverter>*>(user_data);
+        ArbData params_wrapper = ArbData(*params);
+        if (!(*converter)->detect(Matrix(matrix), num_controls, params_wrapper)) {
+          return raw::dqcs_bool_return_t::DQCS_FALSE;
+        }
+        *params = params_wrapper.take_handle();
+        return raw::dqcs_bool_return_t::DQCS_TRUE;
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return raw::dqcs_bool_return_t::DQCS_BOOL_FAILURE;
+    }
+
+    /**
+     * C callback entry point for the constructor.
+     */
+    static raw::dqcs_handle_t raw_constructor(
+      const void *user_data,
+      raw::dqcs_handle_t *params,
+      ssize_t *num_controls
+    ) noexcept {
+      try {
+        auto converter = reinterpret_cast<const std::shared_ptr<CustomUnitaryGateConverter>*>(user_data);
+        ArbData params_wrapper = ArbData(*params);
+        Matrix matrix = (*converter)->construct(params_wrapper, *num_controls);
+        *params = params_wrapper.take_handle();
+        return matrix.take_handle();
+      } catch (const std::exception &e) {
+        raw::dqcs_error_set(e.what());
+      }
+      return 0;
+    }
+
+    /**
+     * C callback entry point for the deleter.
+     */
+    static void raw_deleter(void *user_data) noexcept {
+      auto converter = reinterpret_cast<const std::shared_ptr<CustomUnitaryGateConverter>*>(user_data);
+      delete converter;
+    }
+
+  public:
+
+    // We're using inheritance, so ensure that the destructor as virtual.
+    virtual ~CustomUnitaryGateConverter() = default;
+
+    /**
+     * The to-be-implemented detector function.
+     *
+     * \param matrix The matrix to match.
+     * \param num_controls The number of control qubits associated with the
+     * matrix; these qubits are implicit in the matrix. That is, to get the
+     * full matrix, you need to expand the given matrix with this many qubits.
+     * \param params If the gate matches, its parameters should be pushed into
+     * or assigned to this `ArbData`. This data object is initially a copy of
+     * the incoming gate's `ArbData` attachment.
+     * \returns Whether the incoming gate matches.
+     * \throws std::exception When an exception is thrown, its `what()` is
+     * returned to the user immediately. That is, any remaining detectors are
+     * not called.
+     *
+     * The default implementation simply returns `false`, i.e. it never
+     * matches.
+     */
+    virtual bool detect(Matrix &&matrix, ssize_t num_controls, ArbData &params) const {
+      return false;
+    }
+
+    /**
+     * The to-be-implemented constructor function.
+     *
+     * \param params The parameters for the gate. Anything left in here is
+     * attached to the gate.
+     * \param num_controls If this gate only accepts a specific number of
+     * control qubits during construction, write the expected amount here.
+     * Assigning a negative number or not assigning it means there is no
+     * constraint.
+     * \returns The constructed matrix.
+     * \throws std::exception When an exception is thrown, its `what()` is
+     * returned to the user.
+     *
+     * The default implementation throws an exception indicating that no
+     * constructor is defined.
+     */
+    virtual Matrix construct(ArbData &params, ssize_t &num_controls) const {
+      throw std::runtime_error("detector function not implemented");
+    }
+
+  };
+
+  /**
+   * Gate map wrapper class.
+   *
+   * Gate maps are used to convert between DQCsim's gate representation and
+   * your own, given that your representation consists of the following:
+   *
+   *  - a hashable `Unbound` type representing a kind of gate with some amount
+   *    of quantum and/or classical arguments that have not been bound yet;
+   *  - a number of qubit arguments, representable as a `QubitSet`;
+   *  - a number of classical arguments, representable as an `ArbData`.
+   *
+   * The template expects that the `Unbound` and `Bound` types define the
+   * following methods:
+   *
+   *  - `Unbound` must define a move or copy constructor.
+   *  - `Unbound::operator==` must be implemented properly.
+   *  - `std::hash<Unbound>` must be implemented properly.
+   *  - If `Bound Unbound::bind(QubitSet &&qubits, ArbData &&params) const` is
+   *    implemented, you can use the `Bound convert(Gate &&gate)` method. This
+   *    is just a shorthand for `detect()`, which you can always use.
+   *  - If `Unbound Bound::get_unbound() const`,
+   *    `QubitSet Bound::get_qubits() const`, and
+   *    `ArbData Bound::get_params() const` are implemented, you can use the
+   *    `Gate convert(Bound &&bound)` method. This is just a shorthand for
+   *    `construct()`, which you can always use.
+   *
+   * Note that the `Unbound` and `Bound` types can be one and the same, and by
+   * default are.
+   *
+   * DQCsim provides a number of predefined converters to detect and construct
+   * commonly used gates, but for more complex gates you'll of course have to
+   * define your own conversion functions.
+   *
+   * For more information, refer to the C API documentation.
+   */
+  template <class Unbound, class Bound=Unbound>
+  class GateMap : public Handle {
+  private:
+
+    /**
+     * Static equality function for the Unbound type, to be passed to DQCsim
+     * as callback.
+     */
+    static bool unbound_equality(const void *a, const void *b) {
+      return *(const Unbound*)a == *(const Unbound*)b;
+    }
+
+    /**
+     * Static equality function for the Unbound type, to be passed as callback.
+     */
+    static uint64_t unbound_hash(const void *a) {
+      return (uint64_t)std::hash<Unbound>{}(*(const Unbound*)a);
+    }
+
+    /**
+     * Static deletion function for the Unbound type, to be passed as callback.
+     */
+    static void unbound_delete(void *a) {
+      delete (Unbound*)a;
+    }
+
+  public:
+
+    /**
+     * Wraps the given gate map handle.
+     *
+     * \note This constructor does not verify that the handle is actually
+     * valid.
+     *
+     * \param handle The raw handle to wrap.
+     */
+    GateMap(HandleIndex handle) noexcept : Handle(handle) {
+    }
+
+    /**
+     * Constructs a new gate map.
+     *
+     * Gate maps objects retain a cache to speed up detection of similar DQCsim
+     * gates: if a gate is received for the second time, the cache will hit,
+     * avoiding recomputation of the detector functions. What constitutes
+     * "similar gates" is defined by the two booleans passed to this function.
+     *
+     * \param strip_qubit_refs If set, all qubit references associated with the
+     * gate will be invalidated (i.e., set to 0), such that for instance an X
+     * gate applied to qubit 1 will be considered equal to an X gate applied to
+     * qubit 2.
+     * \param strip_data If set, the `ArbData` associated with the incoming
+     * gate is removed.
+     * \returns The constructed gate map.
+     * \throws std::runtime_error When construction of the gate map fails.
+     * \note If you get template errors, ensure that your `Unbound` type is
+     * hashable with `std::hash` and has a defined equality operator.
+     */
+    GateMap(bool strip_qubit_refs = false, bool strip_data = false)
+      : Handle(check(raw::dqcs_gm_new(strip_qubit_refs, strip_data, unbound_equality, unbound_hash))) {
+    }
+
+    // Delete copy construct/assign.
+    GateMap(const GateMap&) = delete;
+    void operator=(const GateMap&) = delete;
+
+    /**
+     * Default move constructor.
+     */
+    GateMap(GateMap&&) = default;
+
+    /**
+     * Default move assignment.
+     */
+    GateMap &operator=(GateMap&&) = default;
+
+    /**
+     * Adds a unitary gate mapping for the given DQCsim-defined gate.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param gate The predefined DQCsim gate to detect.
+     * \param num_controls The number of control qubits for this type of gate.
+     * If negative, the gate can be controlled with any number of qubits or not
+     * controlled; disambiguation is done based on the number of qubit
+     * arguments. If zero, the gate is always non-controlled. If positive, the
+     * gate always has the specified number of control qubits.
+     * \param epsilon The maximum RMS error used when detecting incoming gate
+     * matrices. Defaults to 1 ppm.
+     * \param ignore_global_phase Whether global phase should be ignored when
+     * detecting incoming gate matrices.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_unitary(
+      Unbound &&key,
+      PredefinedGate gate,
+      int num_controls = -1,
+      double epsilon = 0.000001,
+      bool ignore_global_phase = true
+    ) {
+      check(raw::dqcs_gm_add_predef_unitary(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        to_raw(gate),
+        num_controls,
+        epsilon,
+        ignore_global_phase
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a unitary gate mapping for the given DQCsim-defined gate.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param gate The predefined DQCsim gate to detect.
+     * \param num_controls The number of control qubits for this type of gate.
+     * If negative, the gate can be controlled with any number of qubits or not
+     * controlled; disambiguation is done based on the number of qubit
+     * arguments. If zero, the gate is always non-controlled. If positive, the
+     * gate always has the specified number of control qubits.
+     * \param epsilon The maximum RMS error used when detecting incoming gate
+     * matrices. Defaults to 1 ppm.
+     * \param ignore_global_phase Whether global phase should be ignored when
+     * detecting incoming gate matrices.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * copy constructor.
+     */
+    GateMap &&with_unitary(
+      const Unbound &key,
+      PredefinedGate gate,
+      int num_controls = -1,
+      double epsilon = 0.000001,
+      bool ignore_global_phase = true
+    ) {
+      check(raw::dqcs_gm_add_predef_unitary(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        to_raw(gate),
+        num_controls,
+        epsilon,
+        ignore_global_phase
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a unitary gate mapping for the given unitary matrix.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param matrix The matrix to detect.
+     * \param num_controls The number of control qubits for this type of gate.
+     * If negative, the gate can be controlled with any number of qubits or not
+     * controlled; disambiguation is done based on the number of qubit
+     * arguments. If zero, the gate is always non-controlled. If positive, the
+     * gate always has the specified number of control qubits.
+     * \param epsilon The maximum RMS error used when detecting incoming gate
+     * matrices. Defaults to 1 ppm.
+     * \param ignore_global_phase Whether global phase should be ignored when
+     * detecting incoming gate matrices.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_unitary(
+      Unbound &&key,
+      Matrix &&matrix,
+      int num_controls = -1,
+      double epsilon = 0.000001,
+      bool ignore_global_phase = true
+    ) {
+      check(raw::dqcs_gm_add_fixed_unitary(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        matrix.get_handle(),
+        num_controls,
+        epsilon,
+        ignore_global_phase
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a unitary gate mapping for the given unitary matrix.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param matrix The matrix to detect.
+     * \param num_controls The number of control qubits for this type of gate.
+     * If negative, the gate can be controlled with any number of qubits or not
+     * controlled; disambiguation is done based on the number of qubit
+     * arguments. If zero, the gate is always non-controlled. If positive, the
+     * gate always has the specified number of control qubits.
+     * \param epsilon The maximum RMS error used when detecting incoming gate
+     * matrices. Defaults to 1 ppm.
+     * \param ignore_global_phase Whether global phase should be ignored when
+     * detecting incoming gate matrices.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * copy constructor.
+     */
+    GateMap &&with_unitary(
+      const Unbound &key,
+      const Matrix &matrix,
+      int num_controls = -1,
+      double epsilon = 0.000001,
+      bool ignore_global_phase = true
+    ) {
+      check(raw::dqcs_gm_add_fixed_unitary(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        Matrix(matrix).get_handle(),
+        num_controls,
+        epsilon,
+        ignore_global_phase
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a custom unitary gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param converter An object deriving from `CustomUnitaryGateConverter`,
+     * implemented by you to handle the conversion, wrapped in a
+     * `std::shared_ptr`.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_unitary(
+      Unbound &&key,
+      const std::shared_ptr<CustomUnitaryGateConverter> &converter
+    ) {
+      check(raw::dqcs_gm_add_custom_unitary(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        CustomUnitaryGateConverter::raw_detector,
+        CustomUnitaryGateConverter::raw_deleter,
+        new std::shared_ptr<CustomUnitaryGateConverter>(converter),
+        CustomUnitaryGateConverter::raw_constructor,
+        CustomUnitaryGateConverter::raw_deleter,
+        new std::shared_ptr<CustomUnitaryGateConverter>(converter)
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a custom unitary gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param converter An object deriving from `CustomUnitaryGateConverter`,
+     * implemented by you to handle the conversion.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * copy constructor.
+     */
+    GateMap &&with_unitary(
+      const Unbound &key,
+      const std::shared_ptr<CustomUnitaryGateConverter> &converter
+    ) {
+      check(raw::dqcs_gm_add_custom_unitary(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        CustomUnitaryGateConverter::raw_detector,
+        CustomUnitaryGateConverter::raw_deleter,
+        new std::shared_ptr<CustomUnitaryGateConverter>(converter),
+        CustomUnitaryGateConverter::raw_constructor,
+        CustomUnitaryGateConverter::raw_deleter,
+        new std::shared_ptr<CustomUnitaryGateConverter>(converter)
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a measurement gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param num_measures The number of measurement qubits for this type of
+     * gate. If negative, the gate can measure any number of qubits at a time.
+     * If positive, the gate always has the specified number of measurement
+     * qubits.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_measure(
+      Unbound &&key,
+      int num_measures = -1
+    ) {
+      check(raw::dqcs_gm_add_measure(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        num_measures
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a measurement gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param num_measures The number of measurement qubits for this type of
+     * gate. If negative, the gate can measure any number of qubits at a time.
+     * If positive, the gate always has the specified number of measurement
+     * qubits.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * copy constructor.
+     */
+    GateMap &&with_measure(
+      const Unbound &key,
+      int num_measures = -1
+    ) {
+      check(raw::dqcs_gm_add_measure(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        num_measures
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a custom gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param converter An object deriving from `CustomGateConverter`,
+     * implemented by you to handle the conversion, wrapped in a
+     * `std::shared_ptr`.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_custom(
+      Unbound &&key,
+      const std::shared_ptr<CustomGateConverter> &converter
+    ) {
+      check(raw::dqcs_gm_add_custom(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        CustomGateConverter::raw_detector,
+        CustomGateConverter::raw_deleter,
+        new std::shared_ptr<CustomGateConverter>(converter),
+        CustomGateConverter::raw_constructor,
+        CustomGateConverter::raw_deleter,
+        new std::shared_ptr<CustomGateConverter>(converter)
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a custom gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param converter An object deriving from `CustomGateConverter`,
+     * implemented by you to handle the conversion.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * copy constructor.
+     */
+    GateMap &&with_custom(
+      const Unbound &key,
+      const std::shared_ptr<CustomGateConverter> &converter
+    ) {
+      check(raw::dqcs_gm_add_custom(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        CustomGateConverter::raw_detector,
+        CustomGateConverter::raw_deleter,
+        new std::shared_ptr<CustomGateConverter>(converter),
+        CustomGateConverter::raw_constructor,
+        CustomGateConverter::raw_deleter,
+        new std::shared_ptr<CustomGateConverter>(converter)
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Uses the gate map to convert an incoming DQCsim gate to the plugin's
+     * `Unbound` representation.
+     *
+     * \param gate The gate to detect.
+     * \param unbound If non-null and the incoming gate matches one of the
+     * detectors, this receives a const pointer to the internal `Unbound`
+     * record corresponding with the first detector that matched. If there
+     * is no match, this is left unchanged, allowing a default value to be
+     * supplied.
+     * \param qubits If non-null and the incoming gate matches one of the
+     * detectors, the given `QubitSet` is set to the qubit arguments for the
+     * matched gate.
+     * \param params If non-null and the incoming gate matches one of the
+     * detectors, the given `ArbData` is set to the parameterization data
+     * object returned by the detector function.
+     * \returns Whether a match occurred.
+     * \throws std::runtime_error When one of the handles is invalid or one of
+     * the detector functions returned an error.
+     */
+    bool detect(
+      const Gate &gate,
+      const Unbound **unbound,
+      QubitSet *qubits,
+      ArbData *params
+    ) {
+      raw::dqcs_handle_t qubits_handle = 0;
+      raw::dqcs_handle_t *qubits_handle_ptr = qubits ? &qubits_handle : nullptr;
+      raw::dqcs_handle_t params_handle = 0;
+      raw::dqcs_handle_t *params_handle_ptr = params ? &params_handle : nullptr;
+      bool match = check(raw::dqcs_gm_detect(
+        handle,
+        gate.get_handle(),
+        (const void**)unbound,
+        qubits_handle_ptr,
+        params_handle_ptr
+      ));
+      if (qubits && qubits_handle) *qubits = QubitSet(qubits_handle);
+      if (params && params_handle) *params = ArbData(params_handle);
+      return match;
+    }
+
+    /**
+     * Uses a gate map object to construct a DQCsim gate from the plugin's
+     * representation.
+     *
+     * \param unbound The plugin's representation of the unbound gate.
+     * \param qubits The qubit arguments for the gate.
+     * \param params The parameterization data for the gate.
+     * \returns The constructed DQCsim gate.
+     * \throws std::runtime_error When `unbound` does not map to any converter
+     * function, the converter function returns an error, or one of the
+     * involved handles is invalid.
+     */
+    Gate construct(
+      const Unbound &unbound,
+      QubitSet &&qubits,
+      ArbData &&params
+    ) {
+      return Gate(check(raw::dqcs_gm_construct(
+        handle,
+        &unbound,
+        qubits.get_handle(),
+        params.get_handle()
+      )));
+    }
+
+    /**
+     * Uses a gate map object to construct a DQCsim gate from the plugin's
+     * representation.
+     *
+     * \param unbound The plugin's representation of the unbound gate.
+     * \param qubits The qubit arguments for the gate.
+     * \param params The parameterization data for the gate.
+     * \returns The constructed DQCsim gate.
+     * \throws std::runtime_error When `unbound` does not map to any converter
+     * function, the converter function returns an error, or one of the
+     * involved handles is invalid.
+     */
+    Gate construct(
+      const Unbound &unbound,
+      const QubitSet &qubits,
+      const ArbData &params
+    ) {
+      return construct(unbound, QubitSet(qubits), ArbData(params));
+    }
+
+    /**
+     * Uses a gate map object to construct a DQCsim gate from the plugin's
+     * representation.
+     *
+     * \param unbound The plugin's representation of the unbound gate.
+     * \param qubits The qubit arguments for the gate.
+     * \throws std::runtime_error When `unbound` does not map to any converter
+     * function, the converter function returns an error, or one of the
+     * involved handles is invalid.
+     */
+    Gate construct(
+      const Unbound &unbound,
+      QubitSet &&qubits
+    ) {
+      return Gate(check(raw::dqcs_gm_construct(
+        handle,
+        &unbound,
+        qubits.get_handle(),
+        0
+      )));
+    }
+
+    /**
+     * Uses a gate map object to construct a DQCsim gate from the plugin's
+     * representation.
+     *
+     * \param unbound The plugin's representation of the unbound gate.
+     * \param qubits The qubit arguments for the gate.
+     * \returns The constructed DQCsim gate.
+     * \throws std::runtime_error When `unbound` does not map to any converter
+     * function, the converter function returns an error, or one of the
+     * involved handles is invalid.
+     */
+    Gate construct(
+      const Unbound &unbound,
+      const QubitSet &qubits
+    ) {
+      return construct(unbound, QubitSet(qubits));
+    }
+
+    /**
+     * Wrapper function for `detect()`, converting from DQCsim's gate
+     * representation directly to the plugin's `Bound` gate type.
+     *
+     * \param gate The gate to convert.
+     * \returns The converted gate.
+     * \throws std::runtime_error When the DQCsim gate cannot be represented in
+     * the plugin's representation, one of the handles is invalid, or one of
+     * the detector functions returned an error.
+     * \note If you get template errors, ensure that
+     * `Bound Unbound::bind(QubitSet &&qubits, ArbData &&params) const` exists.
+     * This method is used to convert from the return values of `detect()` to
+     * an instance of `Bound`.
+     */
+    Bound convert(const Gate &gate) {
+      const Unbound *unbound = nullptr;
+      QubitSet qubits(0);
+      ArbData params(0);
+      if (!detect(gate, &unbound, &qubits, &params)) {
+        throw std::runtime_error("unknown gate");
+      }
+      return unbound->bind(std::move(qubits), std::move(params));
+    }
+
+    /**
+     * Wrapper function for `construct()`, converting directly from the
+     * plugin's `Bound` gate type to DQCsim's gate representation.
+     *
+     * \param bound The plugin's gate representation.
+     * \returns DQCsim's gate representation for the above.
+     * \throws std::runtime_error When `bound` does not map to any converter
+     * function, the converter function returns an error, or one of the
+     * involved handles is invalid.
+     * \note If you get template errors, ensure that
+     * `Unbound Bound::get_unbound() const`, `QubitSet Bound::get_qubits() const`,
+     * and `ArbData Bound::get_params() const` are implemented. These methods
+     * are used to convert from the `Bound` gate to the inputs of
+     * `construct()`.
+     */
+    Gate convert(const Bound &bound) {
+      return construct(
+        bound.get_unbound(),
+        bound.get_qubits(),
+        bound.get_params()
+      );
+    }
 
   };
 
@@ -4637,9 +5459,9 @@ namespace wrap {
      * each qubit:
      *
      * ```C++
-     * gate(GateMatrix::H(), q);
+     * gate(Matrix(PredefinedGate::H), q);
      * measure_z(q);
-     * gate(GateMatrix::H(), q);
+     * gate(Matrix(PredefinedGate::H), q);
      * ```
      *
      * \param q The qubit to measure.
@@ -4651,9 +5473,9 @@ namespace wrap {
      * plugin will not be (immediately) visible.
      */
     void measure_x(const QubitRef &q) {
-      gate(GateMatrix::H(), q);
+      gate(Matrix(PredefinedGate::H), q);
       measure_z(q);
-      gate(GateMatrix::H(), q);
+      gate(Matrix(PredefinedGate::H), q);
     }
 
     /**
@@ -4664,9 +5486,9 @@ namespace wrap {
      * each qubit:
      *
      * ```C++
-     * for (q : qs) gate(GateMatrix::H(), q);
+     * for (q : qs) gate(Matrix(PredefinedGate::H), q);
      * measure_z(qs);
-     * for (q : qs) gate(GateMatrix::H(), q);
+     * for (q : qs) gate(Matrix(PredefinedGate::H), q);
      * ```
      *
      * \param qs The qubits to measure.
@@ -4680,9 +5502,9 @@ namespace wrap {
      */
     void measure_x(const QubitSet &qs) {
       auto qs_vec = qs.copy_into_vector();
-      for (auto &q : qs_vec) gate(GateMatrix::H(), q);
+      for (auto &q : qs_vec) gate(Matrix(PredefinedGate::H), q);
       measure_z(qs);
-      for (auto &q : qs_vec) gate(GateMatrix::H(), q);
+      for (auto &q : qs_vec) gate(Matrix(PredefinedGate::H), q);
     }
 
     /**
@@ -4693,10 +5515,10 @@ namespace wrap {
      * each qubit:
      *
      * ```C++
-     * gate(GateMatrix::S(), q);
-     * gate(GateMatrix::Z(), q);
+     * gate(Matrix(PredefinedGate::S), q);
+     * gate(Matrix(PredefinedGate::Z), q);
      * measure_x(q);
-     * gate(GateMatrix::S(), q);
+     * gate(Matrix(PredefinedGate::S), q);
      * ```
      *
      * \param q The qubit to measure.
@@ -4708,10 +5530,10 @@ namespace wrap {
      * plugin will not be (immediately) visible.
      */
     void measure_y(const QubitRef &q) {
-      gate(GateMatrix::S(), q);
-      gate(GateMatrix::Z(), q);
+      gate(Matrix(PredefinedGate::S), q);
+      gate(Matrix(PredefinedGate::Z), q);
       measure_x(q);
-      gate(GateMatrix::S(), q);
+      gate(Matrix(PredefinedGate::S), q);
     }
 
     /**
@@ -4722,10 +5544,10 @@ namespace wrap {
      * each qubit:
      *
      * ```C++
-     * for (q : qs) gate(GateMatrix::S(), q);
-     * for (q : qs) gate(GateMatrix::Z(), q);
+     * for (q : qs) gate(Matrix(PredefinedGate::S), q);
+     * for (q : qs) gate(Matrix(PredefinedGate::Z), q);
      * measure_x(qs);
-     * for (q : qs) gate(GateMatrix::S(), q);
+     * for (q : qs) gate(Matrix(PredefinedGate::S), q);
      * ```
      *
      * \param qs The qubits to measure.
@@ -4739,10 +5561,10 @@ namespace wrap {
      */
     void measure_y(const QubitSet &qs) {
       auto qs_vec = qs.copy_into_vector();
-      for (auto &q : qs_vec) gate(GateMatrix::S(), q);
-      for (auto &q : qs_vec) gate(GateMatrix::Z(), q);
+      for (auto &q : qs_vec) gate(Matrix(PredefinedGate::S), q);
+      for (auto &q : qs_vec) gate(Matrix(PredefinedGate::Z), q);
       measure_x(qs);
-      for (auto &q : qs_vec) gate(GateMatrix::S(), q);
+      for (auto &q : qs_vec) gate(Matrix(PredefinedGate::S), q);
     }
 
     /**

@@ -1,3 +1,4 @@
+use crate::common::error::{inv_arg, Result};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -19,6 +20,16 @@ impl Into<String> for QubitRef {
 }
 
 impl QubitRef {
+    /// Returns a null qubit reference.
+    pub fn null() -> QubitRef {
+        QubitRef(0)
+    }
+
+    /// Returns whether this reference is null.
+    pub fn is_null(self) -> bool {
+        self.0 == 0
+    }
+
     /// Converts the foreign representation of a qubit reference to the
     /// type-safe Rust representation.
     pub fn from_foreign(qubit: u64) -> Option<QubitRef> {
@@ -31,18 +42,21 @@ impl QubitRef {
 
     /// Converts the type-safe Rust representation of a qubit reference to the
     /// foreign representation.
-    pub fn to_foreign(self) -> u64 {
-        assert_ne!(self.0, 0);
-        self.0 as u64
+    pub fn to_foreign(self) -> Result<u64> {
+        if self.is_null() {
+            inv_arg("making use of null qubit reference")
+        } else {
+            Ok(self.0 as u64)
+        }
     }
 
     /// Converts the type-safe Rust representation of a qubit reference to the
     /// foreign representation.
-    pub fn option_to_foreign(qubit: Option<QubitRef>) -> u64 {
+    pub fn option_to_foreign(qubit: Option<QubitRef>) -> Result<u64> {
         if let Some(x) = qubit {
-            x.0 as u64
+            x.to_foreign()
         } else {
-            0
+            Ok(0)
         }
     }
 }
@@ -109,25 +123,30 @@ mod tests {
     fn convert_qrefs() {
         let mut q = QubitRefGenerator::new();
 
+        let qr = QubitRef::null();
+        assert!(qr.to_foreign().is_err());
+        assert!(QubitRef::option_to_foreign(Some(qr)).is_err());
+
+        let qr = QubitRef(0);
+        assert!(qr.to_foreign().is_err());
+        assert!(QubitRef::option_to_foreign(Some(qr)).is_err());
+
         let qr = QubitRef::from_foreign(0);
         assert_eq!(qr, None);
 
         let qr = QubitRef::from_foreign(1).unwrap();
         assert_eq!(qr, (q.allocate(1))[0]);
 
-        assert_eq!(42, QubitRef::from_foreign(42).unwrap().to_foreign());
-
-        assert_eq!(0, QubitRef::option_to_foreign(None));
         assert_eq!(
             42,
-            QubitRef::option_to_foreign(Some(QubitRef::from_foreign(42).unwrap()))
+            QubitRef::from_foreign(42).unwrap().to_foreign().unwrap()
         );
-    }
 
-    #[test]
-    #[should_panic]
-    fn convert_zero() {
-        let _ = QubitRef(0).to_foreign();
+        assert_eq!(0, QubitRef::option_to_foreign(None).unwrap());
+        assert_eq!(
+            42,
+            QubitRef::option_to_foreign(Some(QubitRef::from_foreign(42).unwrap())).unwrap()
+        );
     }
 
     #[test]

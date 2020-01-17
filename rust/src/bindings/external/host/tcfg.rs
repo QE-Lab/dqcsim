@@ -33,7 +33,7 @@ pub extern "C" fn dqcs_tcfg_new_raw(
     user_data: *mut c_void,
 ) -> dqcs_handle_t {
     api_return(0, || {
-        let data = CallbackUserData::new(user_free, user_data);
+        let data = UserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         let callback = Box::new(move |simulator: String| {
             let simulator = CString::new(simulator).unwrap();

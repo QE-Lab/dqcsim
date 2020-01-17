@@ -183,7 +183,7 @@ pub extern "C" fn dqcs_scfg_log_callback(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        let data = CallbackUserData::new(user_free, user_data);
+        let data = UserData::new(user_free, user_data);
         resolve!(scfg as &mut SimulatorConfiguration);
 
         if let Some(callback) = callback {

@@ -26,9 +26,17 @@ pub use cq::*;
 mod qbset;
 pub use qbset::*;
 
+// dqcs_mat_* functions, for operating on gate matrices.
+mod mat;
+pub use mat::*;
+
 // dqcs_gate_* functions, for operating on quantum gate descriptions.
 mod gate;
 pub use gate::*;
+
+// dqcs_gm_* functions, for operating on gate maps.
+mod gm;
+pub use gm::*;
 
 // dqcs_meas_* functions, for operating on qubit measurement objects.
 mod meas;

@@ -1,4 +1,6 @@
 use super::*;
+use crate::core::common::{error::Error, gates::GateType};
+use std::convert::TryFrom;
 
 /// Type for a handle.
 ///
@@ -134,6 +136,16 @@ pub enum dqcs_handle_type_t {
     ///
     /// This means that the handle supports the `handle` and `mset` interfaces.
     DQCS_HTYPE_MEAS_SET = 106,
+
+    /// Indicates that the given handle belongs to a matrix.
+    ///>
+    ///> This means that the handle supports the `handle` and `mat` interfaces.
+    DQCS_HTYPE_MATRIX = 107,
+
+    /// Indicates that the given handle belongs to a gate map.
+    ///>
+    ///> This means that the handle supports the `handle` and `gm` interfaces.
+    DQCS_HTYPE_GATE_MAP = 108,
 
     /// Indicates that the given handle belongs to a frontend plugin process
     /// configuration object.
@@ -508,6 +520,440 @@ impl From<ReproductionPathStyle> for dqcs_path_style_t {
             ReproductionPathStyle::Keep => dqcs_path_style_t::DQCS_PATH_STYLE_KEEP,
             ReproductionPathStyle::Relative => dqcs_path_style_t::DQCS_PATH_STYLE_RELATIVE,
             ReproductionPathStyle::Absolute => dqcs_path_style_t::DQCS_PATH_STYLE_ABSOLUTE,
+        }
+    }
+}
+
+/// Enumeration of gates defined by DQCsim.
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+#[allow(non_camel_case_types)]
+pub enum dqcs_predefined_gate_t {
+    /// Invalid gate. Used as an error return value.
+    DQCS_GATE_INVALID = 0,
+
+    /// The identity gate for a single qubit.
+    ///
+    /// \f[
+    /// I = \sigma_0 = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & 1
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_PAULI_I = 100,
+
+    /// The Pauli X matrix.
+    ///
+    /// \f[
+    /// X = \sigma_1 = \begin{bmatrix}
+    /// 0 & 1 \\
+    /// 1 & 0
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_PAULI_X = 101,
+
+    /// The Pauli Y matrix.
+    ///
+    /// \f[
+    /// Y = \sigma_2 = \begin{bmatrix}
+    /// 0 & -i \\
+    /// i & 0
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_PAULI_Y = 102,
+
+    /// The Pauli Z matrix.
+    ///
+    /// \f[
+    /// Z = \sigma_3 = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & -1
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_PAULI_Z = 103,
+
+    /// The hadamard gate matrix. That is, a 180-degree Y rotation, followed by
+    /// a 90-degree X rotation.
+    ///
+    /// \f[
+    /// H = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1 & 1 \\
+    /// 1 & -1
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_H = 104,
+
+    /// The S matrix, also known as a 90 degree Z rotation.
+    ///
+    /// \f[
+    /// S = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & i
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_S = 105,
+
+    /// The S-dagger matrix, also known as a negative 90 degree Z rotation.
+    ///
+    /// \f[
+    /// S^\dagger = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & -i
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_S_DAG = 106,
+
+    /// The T matrix, also known as a 45 degree Z rotation.
+    ///
+    /// \f[
+    /// T = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & e^{i\frac{\pi}{4}}
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_T = 107,
+
+    /// The T-dagger matrix, also known as a negative 45 degree Z rotation.
+    ///
+    /// \f[
+    /// T^\dagger = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & e^{-i\frac{\pi}{4}}
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_T_DAG = 108,
+
+    /// Rx(90°) gate.
+    ///
+    /// \f[
+    /// R_x\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1 & -i \\
+    /// -i & 1
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_RX_90 = 109,
+
+    /// Rx(-90°) gate.
+    ///
+    /// \f[
+    /// R_x\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1 & i \\
+    /// i & 1
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_RX_M90 = 110,
+
+    /// Rx(180°) gate.
+    ///
+    /// \f[
+    /// R_x(\pi) = \begin{bmatrix}
+    /// 0 & -i \\
+    /// -i & 0
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// This matrix is equivalent to the Pauli X gate, but differs in global
+    /// phase. Note that this difference is significant when it is used as a
+    /// submatrix for a controlled gate.
+    DQCS_GATE_RX_180 = 111,
+
+    /// Ry(90°) gate.
+    ///
+    /// \f[
+    /// R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1 & -1 \\
+    /// 1 & 1
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_RY_90 = 112,
+
+    /// Ry(-90°) gate.
+    ///
+    /// \f[
+    /// R_y\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1 & 1 \\
+    /// -1 & 1
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_RY_M90 = 113,
+
+    /// Ry(180°) gate.
+    ///
+    /// \f[
+    /// R_y(\pi) = \begin{bmatrix}
+    /// 0 & -1 \\
+    /// 1 & 0
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// This matrix is equivalent to the Pauli Y gate, but differs in global
+    /// phase. Note that this difference is significant when it is used as a
+    /// submatrix for a controlled gate.
+    DQCS_GATE_RY_180 = 114,
+
+    /// Rz(90°) gate.
+    ///
+    /// \f[
+    /// R_z\left(\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1-i & 0 \\
+    /// 0 & 1+i
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// This matrix is equivalent to the S gate, but differs in global phase.
+    /// Note that this difference is significant when it is used as a submatrix
+    /// for a controlled gate.
+    DQCS_GATE_RZ_90 = 115,
+
+    /// Rz(-90°) gate.
+    ///
+    /// \f[
+    /// R_z\left(-\frac{\pi}{2}\right) = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1+i & 0 \\
+    /// 0 & 1-i
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// This matrix is equivalent to the S-dagger gate, but differs in global
+    /// phase. Note that this difference is significant when it is used as a
+    /// submatrix for a controlled gate.
+    DQCS_GATE_RZ_M90 = 116,
+
+    /// Rz(180°) gate.
+    ///
+    /// \f[
+    /// R_z(\pi) = \begin{bmatrix}
+    /// -i & 0 \\
+    /// 0 & i
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// This matrix is equivalent to the Pauli Z gate, but differs in global
+    /// phase. Note that this difference is significant when it is used as a
+    /// submatrix for a controlled gate.
+    DQCS_GATE_RZ_180 = 117,
+
+    /// The matrix for an arbitrary X rotation.
+    ///
+    /// \f[
+    /// R_x(\theta) = \begin{bmatrix}
+    /// \cos{\frac{\theta}{2}} & -i\sin{\frac{\theta}{2}} \\
+    /// -i\sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// θ is specified or returned through the first binary string argument
+    /// of the parameterization ArbData object. It is represented as a
+    /// little-endian double floating point value, specified in radians.
+    DQCS_GATE_RX = 150,
+
+    /// The matrix for an arbitrary Y rotation.
+    ///
+    /// \f[
+    /// R_y(\theta) = \begin{bmatrix}
+    /// \cos{\frac{\theta}{2}} & -\sin{\frac{\theta}{2}} \\
+    /// \sin{\frac{\theta}{2}} & \cos{\frac{\theta}{2}}
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// θ is specified or returned through the first binary string argument
+    /// of the parameterization ArbData object. It is represented as a
+    /// little-endian double floating point value, specified in radians.
+    DQCS_GATE_RY = 151,
+
+    /// The matrix for an arbitrary Z rotation.
+    ///
+    /// \f[
+    /// R_z(\theta) = \begin{bmatrix}
+    /// e^{-i\frac{\theta}{2}} & 0 \\
+    /// 0 & e^{i\frac{\theta}{2}}
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// θ is specified or returned through the first binary string argument
+    /// of the parameterization ArbData object. It is represented as a
+    /// little-endian double floating point value, specified in radians.
+    DQCS_GATE_RZ = 152,
+
+    /// The matrix for a Z rotation with angle π/2^k.
+    ///
+    /// \f[
+    /// \textit{PhaseK}(k) = \textit{Phase}\left(\frac{\pi}{2^k}\right) = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & e^{i\pi / 2^k}
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// k is specified or returned through the first binary string argument
+    /// of the parameterization ArbData object. It is represented as a
+    /// little-endian unsigned 64-bit integer.
+    DQCS_GATE_PHASE_K = 153,
+
+    /// The matrix for an arbitrary Z rotation.
+    ///
+    /// \f[
+    /// \textit{Phase}(\theta) = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & e^{i\theta}
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// θ is specified or returned through the first binary string argument
+    /// of the parameterization ArbData object. It is represented as a
+    /// little-endian double floating point value, specified in radians.
+    ///
+    /// This matrix is equivalent to the Rz gate, but differs in global phase.
+    /// Note that this difference is significant when it is used as a submatrix
+    /// for a controlled gate. Specifically, controlled phase gates use the
+    /// phase as specified by this gate, whereas Rz follows the usual algebraic
+    /// notation.
+    DQCS_GATE_PHASE = 154,
+
+    /// Any single-qubit unitary gate, parameterized as a full unitary matrix.
+    ///
+    /// The full matrix is specified or returned through the first binary string
+    /// argument of the parameterization ArbData object. It is represented as an
+    /// array of little-endian double floating point values, structured as
+    /// real/imag pairs, with the pairs in row-major order.
+    DQCS_GATE_U1 = 190,
+
+    /// Arbitrary rotation matrix.
+    ///
+    /// \f[
+    /// R(\theta, \phi, \lambda) = \begin{bmatrix}
+    /// \cos{\frac{\theta}{2}} & -\sin{\frac{\theta}{2}} e^{i\lambda} \\
+    /// \sin{\frac{\theta}{2}} e^{i\phi} & \cos{\frac{\theta}{2}} e^{i\phi + i\lambda}
+    /// \end{bmatrix}
+    /// \f]
+    ///
+    /// This is equivalent to the following:
+    ///
+    /// \f[
+    /// R(\theta, \phi, \lambda) = \textit{Phase}(\phi) \cdot R_y(\theta) \cdot \textit{Phase}(\lambda)
+    /// \f]
+    ///
+    /// The rotation order and phase is taken from Qiskit's U3 gate. Ignoring
+    /// global phase, any unitary single-qubit gate can be represented with this
+    /// notation.
+    ///
+    /// θ, φ, and λ are specified or returned through the first three binary
+    /// string arguments of the parameterization ArbData object. They are
+    /// represented as little-endian double floating point values, specified in
+    /// radians.
+    DQCS_GATE_R = 191,
+
+    /// The swap gate matrix.
+    ///
+    /// \f[
+    /// \textit{SWAP} = \begin{bmatrix}
+    /// 1 & 0 & 0 & 0 \\
+    /// 0 & 0 & 1 & 0 \\
+    /// 0 & 1 & 0 & 0 \\
+    /// 0 & 0 & 0 & 1
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_SWAP = 200,
+
+    /// The square-root of a swap gate matrix.
+    ///
+    /// \f[
+    /// \sqrt{\textit{SWAP}} = \begin{bmatrix}
+    /// 1 & 0 & 0 & 0 \\
+    /// 0 & \frac{i+1}{2} & \frac{i-1}{2} & 0 \\
+    /// 0 & \frac{i-1}{2} & \frac{i+1}{2} & 0 \\
+    /// 0 & 0 & 0 & 1
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_GATE_SQRT_SWAP = 201,
+
+    /// Any two-qubit unitary gate, parameterized as a full unitary matrix.
+    ///
+    /// The full matrix is specified or returned through the first binary string
+    /// argument of the parameterization ArbData object. It is represented as an
+    /// array of little-endian double floating point values, structured as
+    /// real/imag pairs, with the pairs in row-major order.
+    DQCS_GATE_U2 = 290,
+
+    /// Any three-qubit unitary gate, parameterized as a full unitary matrix.
+    ///
+    /// The full matrix is specified or returned through the first binary string
+    /// argument of the parameterization ArbData object. It is represented as an
+    /// array of little-endian double floating point values, structured as
+    /// real/imag pairs, with the pairs in row-major order.
+    DQCS_GATE_U3 = 390,
+}
+
+impl TryFrom<dqcs_predefined_gate_t> for GateType {
+    type Error = Error;
+    fn try_from(gate_type: dqcs_predefined_gate_t) -> Result<Self> {
+        match gate_type {
+            dqcs_predefined_gate_t::DQCS_GATE_PAULI_I => Ok(GateType::I),
+            dqcs_predefined_gate_t::DQCS_GATE_PAULI_X => Ok(GateType::X),
+            dqcs_predefined_gate_t::DQCS_GATE_PAULI_Y => Ok(GateType::Y),
+            dqcs_predefined_gate_t::DQCS_GATE_PAULI_Z => Ok(GateType::Z),
+            dqcs_predefined_gate_t::DQCS_GATE_H => Ok(GateType::H),
+            dqcs_predefined_gate_t::DQCS_GATE_S => Ok(GateType::S),
+            dqcs_predefined_gate_t::DQCS_GATE_S_DAG => Ok(GateType::SDAG),
+            dqcs_predefined_gate_t::DQCS_GATE_T => Ok(GateType::T),
+            dqcs_predefined_gate_t::DQCS_GATE_T_DAG => Ok(GateType::TDAG),
+            dqcs_predefined_gate_t::DQCS_GATE_RX_90 => Ok(GateType::RX90),
+            dqcs_predefined_gate_t::DQCS_GATE_RX_M90 => Ok(GateType::RXM90),
+            dqcs_predefined_gate_t::DQCS_GATE_RX_180 => Ok(GateType::RX180),
+            dqcs_predefined_gate_t::DQCS_GATE_RY_90 => Ok(GateType::RY90),
+            dqcs_predefined_gate_t::DQCS_GATE_RY_M90 => Ok(GateType::RYM90),
+            dqcs_predefined_gate_t::DQCS_GATE_RY_180 => Ok(GateType::RY180),
+            dqcs_predefined_gate_t::DQCS_GATE_RZ_90 => Ok(GateType::RZ90),
+            dqcs_predefined_gate_t::DQCS_GATE_RZ_M90 => Ok(GateType::RZM90),
+            dqcs_predefined_gate_t::DQCS_GATE_RZ_180 => Ok(GateType::RZ180),
+            dqcs_predefined_gate_t::DQCS_GATE_RX => Ok(GateType::RX),
+            dqcs_predefined_gate_t::DQCS_GATE_RY => Ok(GateType::RY),
+            dqcs_predefined_gate_t::DQCS_GATE_PHASE => Ok(GateType::Phase),
+            dqcs_predefined_gate_t::DQCS_GATE_PHASE_K => Ok(GateType::PhaseK),
+            dqcs_predefined_gate_t::DQCS_GATE_RZ => Ok(GateType::RZ),
+            dqcs_predefined_gate_t::DQCS_GATE_U1 => Ok(GateType::U(1)),
+            dqcs_predefined_gate_t::DQCS_GATE_R => Ok(GateType::R),
+            dqcs_predefined_gate_t::DQCS_GATE_SWAP => Ok(GateType::SWAP),
+            dqcs_predefined_gate_t::DQCS_GATE_SQRT_SWAP => Ok(GateType::SQSWAP),
+            dqcs_predefined_gate_t::DQCS_GATE_U2 => Ok(GateType::U(2)),
+            dqcs_predefined_gate_t::DQCS_GATE_U3 => Ok(GateType::U(3)),
+            dqcs_predefined_gate_t::DQCS_GATE_INVALID => inv_arg("invalid gate"),
+        }
+    }
+}
+
+impl From<dqcs_predefined_gate_t> for Option<GateType> {
+    fn from(gate_type: dqcs_predefined_gate_t) -> Self {
+        match gate_type {
+            dqcs_predefined_gate_t::DQCS_GATE_INVALID => None,
+            dqcs_predefined_gate_t::DQCS_GATE_PAULI_I => Some(GateType::I),
+            dqcs_predefined_gate_t::DQCS_GATE_PAULI_X => Some(GateType::X),
+            dqcs_predefined_gate_t::DQCS_GATE_PAULI_Y => Some(GateType::Y),
+            dqcs_predefined_gate_t::DQCS_GATE_PAULI_Z => Some(GateType::Z),
+            dqcs_predefined_gate_t::DQCS_GATE_H => Some(GateType::H),
+            dqcs_predefined_gate_t::DQCS_GATE_S => Some(GateType::S),
+            dqcs_predefined_gate_t::DQCS_GATE_S_DAG => Some(GateType::SDAG),
+            dqcs_predefined_gate_t::DQCS_GATE_T => Some(GateType::T),
+            dqcs_predefined_gate_t::DQCS_GATE_T_DAG => Some(GateType::TDAG),
+            dqcs_predefined_gate_t::DQCS_GATE_RX_90 => Some(GateType::RX90),
+            dqcs_predefined_gate_t::DQCS_GATE_RX_M90 => Some(GateType::RXM90),
+            dqcs_predefined_gate_t::DQCS_GATE_RX_180 => Some(GateType::RX180),
+            dqcs_predefined_gate_t::DQCS_GATE_RY_90 => Some(GateType::RY90),
+            dqcs_predefined_gate_t::DQCS_GATE_RY_M90 => Some(GateType::RYM90),
+            dqcs_predefined_gate_t::DQCS_GATE_RY_180 => Some(GateType::RY180),
+            dqcs_predefined_gate_t::DQCS_GATE_RZ_90 => Some(GateType::RZ90),
+            dqcs_predefined_gate_t::DQCS_GATE_RZ_M90 => Some(GateType::RZM90),
+            dqcs_predefined_gate_t::DQCS_GATE_RZ_180 => Some(GateType::RZ180),
+            dqcs_predefined_gate_t::DQCS_GATE_RX => Some(GateType::RX),
+            dqcs_predefined_gate_t::DQCS_GATE_RY => Some(GateType::RY),
+            dqcs_predefined_gate_t::DQCS_GATE_RZ => Some(GateType::RZ),
+            dqcs_predefined_gate_t::DQCS_GATE_PHASE => Some(GateType::Phase),
+            dqcs_predefined_gate_t::DQCS_GATE_PHASE_K => Some(GateType::PhaseK),
+            dqcs_predefined_gate_t::DQCS_GATE_U1 => Some(GateType::U(1)),
+            dqcs_predefined_gate_t::DQCS_GATE_R => Some(GateType::R),
+            dqcs_predefined_gate_t::DQCS_GATE_SWAP => Some(GateType::SWAP),
+            dqcs_predefined_gate_t::DQCS_GATE_SQRT_SWAP => Some(GateType::SQSWAP),
+            dqcs_predefined_gate_t::DQCS_GATE_U2 => Some(GateType::U(2)),
+            dqcs_predefined_gate_t::DQCS_GATE_U3 => Some(GateType::U(3)),
         }
     }
 }

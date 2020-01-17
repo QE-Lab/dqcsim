@@ -117,7 +117,7 @@ pub extern "C" fn dqcs_pdef_set_initialize_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        let data = CallbackUserData::new(user_free, user_data);
+        let data = UserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
         pdef.initialize = Box::new(
@@ -154,7 +154,7 @@ pub extern "C" fn dqcs_pdef_set_drop_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        let data = CallbackUserData::new(user_free, user_data);
+        let data = UserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
         pdef.drop = Box::new(move |state: &mut PluginState| -> Result<()> {
@@ -199,7 +199,7 @@ pub extern "C" fn dqcs_pdef_set_run_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        let data = CallbackUserData::new(user_free, user_data);
+        let data = UserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
         if pdef.get_type() != PluginType::Frontend {
@@ -251,7 +251,7 @@ pub extern "C" fn dqcs_pdef_set_allocate_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        let data = CallbackUserData::new(user_free, user_data);
+        let data = UserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
         if pdef.get_type() == PluginType::Frontend {
@@ -304,7 +304,7 @@ pub extern "C" fn dqcs_pdef_set_free_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        let data = CallbackUserData::new(user_free, user_data);
+        let data = UserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
         if pdef.get_type() == PluginType::Frontend {
@@ -380,7 +380,7 @@ pub extern "C" fn dqcs_pdef_set_gate_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        let data = CallbackUserData::new(user_free, user_data);
+        let data = UserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
         if pdef.get_type() == PluginType::Frontend {
@@ -460,7 +460,7 @@ pub extern "C" fn dqcs_pdef_set_modify_measurement_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        let data = CallbackUserData::new(user_free, user_data);
+        let data = UserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
         if pdef.get_type() != PluginType::Operator {
@@ -510,7 +510,7 @@ pub extern "C" fn dqcs_pdef_set_advance_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        let data = CallbackUserData::new(user_free, user_data);
+        let data = UserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
         if pdef.get_type() == PluginType::Frontend {
@@ -553,7 +553,7 @@ pub extern "C" fn dqcs_pdef_set_upstream_arb_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        let data = CallbackUserData::new(user_free, user_data);
+        let data = UserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
         if pdef.get_type() == PluginType::Frontend {
@@ -601,7 +601,7 @@ pub extern "C" fn dqcs_pdef_set_host_arb_cb(
     user_data: *mut c_void,
 ) -> dqcs_return_t {
     api_return_none(|| {
-        let data = CallbackUserData::new(user_free, user_data);
+        let data = UserData::new(user_free, user_data);
         let callback = callback.ok_or_else(oe_inv_arg("callback cannot be null"))?;
         resolve!(pdef as &mut PluginDefinition);
         pdef.host_arb = Box::new(
