@@ -12,7 +12,7 @@ on:
     - 'cpp/**'
     - '**/CMakeLists.txt'
     - 'python/**'
-    - '**/setup.py'
+    - 'setup.py'
 
 jobs:
   rust:
