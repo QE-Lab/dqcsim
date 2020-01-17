@@ -55,8 +55,8 @@ DQCsim internally represents gates using the following pieces of data:
    information specifying the behavior of the gate.
 
 It is not currently possible to send all the gates allowed by the above
-representation through the C, C++, or Python APIs. Specifically, only the
-following classes of gates can be constructed:
+representation. Specifically, only the following classes of gates can be
+constructed:
 
  - unitary gates, which consist of one or more target qubits, a unitary matrix,
    and zero or more control qubits;
@@ -68,19 +68,28 @@ following classes of gates can be constructed:
 
 A backend *must* process gates according to the following algorithm.
 
-On the receiving end, the behavior is standardized as follows.
+ - If the gate has a name:
+    - if the name is recognized by the backend, the implementation is as
+      defined by the backend;
+    - if not, return an error.
+ - Otherwise, if there are target qubits and there is a matrix:
+    - if there are explicit control qubits, interpret the matrix as the
+      non-controlled bottom-right submatrix of an appropriately sized
+      controlled matrix;
+    - apply the possibly extended matrix to the concatenation of the control
+      and target qubits;
+ - Otherwise, if there are measurement qubits:
+    - if there is a 2x2 matrix, apply its inverse to every to-be-measured
+      qubit independently;
+    - measure every to-be-measured qubit in the Z basis; and
+    - if there is a 2x2 matrix, apply it to every to-be-measured qubit
+      independently.
+ - If none of the above is true, return an error.
 
- - If the gate does not have a name:
-    - if there is a matrix:
-       - turn the matrix into a controlled matrix with the appropriate number
-         of control qubits (which may be zero), and
-       - apply the matrix to the concatenation of the control and target
-         qubits;
-    - measure every qubit in the `measures` list in the Z basis. Note that this
-      should be supported *in addition* to the application of a unitary gate.
- - Otherwise, if the gate has a name recognized by the backend implementation,
-   the behavior is up to the backend implementation.
- - Otherwise, the backend should return an error.
+Note that the above allows for measurements in any basis through the pre- and
+post-rotation: the basis is Z rotated by the given single-qubit gate. However,
+at the time of writing, the API to construct measurement gates with a given
+basis is still missing.
 
 ## Measurement results
 
