@@ -56,9 +56,13 @@ compile_units()
 #    merges them to a single header to reduce clutter.
 #  - CMake actually honors the difference between lib and lib64 on multilib
 #    operating system, while pip is too stupid to do so.
+#  - CMake only installs the headers and shared object, not the binaries.
 #
 # In general, installing a pip wheel in the same prefix as the CMake install
-# will lead to death and destruction. You have been warned.
+# will lead to death and destruction. Note also that if you use plugins that
+# are linked to other versions of DQCsim, they need to be protocol-compatible;
+# DQCsim will currently not check for this and will probably invoke
+# halt-and-catch-fire if you mix versions. You have been warned!
 
 # Install header files.
 install(
