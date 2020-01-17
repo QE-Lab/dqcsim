@@ -130,6 +130,7 @@ pyerr:
 
         // Release GIL.
         PyGILState_Release(gstate);
+        dqcs_log_trace("Exception thrown by {name} callback: %s", dqcs_error_get());
         return ({cb_ret}){cb_ret_fail};
     }}
 }}
