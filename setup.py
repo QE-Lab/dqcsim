@@ -182,6 +182,9 @@ setup(
         ] + include_files.pop('include', [])),
         ('lib', [
             output_dir + '/libdqcsim.' + ('so' if platform.system() == "Linux" else 'dylib')
+        ]),
+        ('lib64', [
+            output_dir + '/libdqcsim.' + ('so' if platform.system() == "Linux" else 'dylib')
         ])
     ] + list(include_files.items()),
 
