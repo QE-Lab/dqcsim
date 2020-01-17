@@ -43,3 +43,33 @@ include(CompileUnits)
 add_subdirectory(cpp)
 
 compile_units()
+
+# NOTE: CMake-based installations are ONLY intended for testing, for instance
+# when you want to link a C++ plugin to a specific (or modified) version of
+# DQCsim without dealing with Python virtualenvs and the like. In ALL OTHER
+# CASES, use setup.py and pip to handle installation!
+#
+# Some differences between the two:
+#
+#  - the CMake install does not pre-preprocess the C++ headers into a single
+#    file, making the line numbers consistent with the sources. setup.py
+#    merges them to a single header to reduce clutter.
+#  - CMake actually honors the difference between lib and lib64 on multilib
+#    operating system, while pip is too stupid to do so.
+#
+# In general, installing a pip wheel in the same prefix as the CMake install
+# will lead to death and destruction. You have been warned.
+
+# Install header files.
+install(
+    FILES
+        ${CMAKE_SOURCE_DIR}/target/include/cdqcsim
+        ${CMAKE_SOURCE_DIR}/target/include/dqcsim.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+# Install shared object.
+install(
+    FILES ${CMAKE_SOURCE_DIR}/target/${BUILD_DIR}/libdqcsim.so
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
