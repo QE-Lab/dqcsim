@@ -1,3 +1,8 @@
+## [0.0.12] - 2020-01-17
+-  Add Matrix type and add gate map mechanism #390
+-  Modify the gate processing reference algorithm to allow for non-Z measurements in the future #393
+-  Fix Y measurement in Python & C++ API #394
+
 ## [0.0.11] - 2020-01-15
 -  8ac019f Fix python path in manylinux image
 

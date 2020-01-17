@@ -1,6 +1,6 @@
 [package]
 name = "dqcsim"
-version = "0.0.11"
+version = "0.0.12"
 authors = ["Quantum Computer Architectures, Quantum & Computer Engineering, QuTech, Delft University of Technology"]
 edition = '2018'
 build = "tools/build.rs"
