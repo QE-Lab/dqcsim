@@ -486,16 +486,23 @@ impl<'a> PluginState<'a> {
             }
         }
 
+        self.check_completed_up_to()?;
+
+        Ok(())
+    }
+
+    /// Check whether we can/need to send the next CompletedUpTo message.
+    fn check_completed_up_to(&mut self) -> Result<()> {
+        let mut completed_up_to = self.upstream_issued_up_to;
+
         // Update the upstream_postponed mapping to see if we can propagate the
         // acknowledgement upstream.
-        let mut updates = false;
         while !self.upstream_postponed.is_empty() {
             let mut acknowledged = false;
             if let Some((downstream, _, _)) = self.upstream_postponed.front() {
                 acknowledged = self.downstream_sequence_rx.acknowledges(*downstream);
             }
             if acknowledged {
-                updates = true;
                 let (_, _, postponed_measurements) = self.upstream_postponed.pop_front().unwrap();
                 for postponed_measurement in postponed_measurements {
                     self.connection
@@ -507,16 +514,6 @@ impl<'a> PluginState<'a> {
                 break;
             }
         }
-        if updates {
-            self.check_completed_up_to()?;
-        }
-
-        Ok(())
-    }
-
-    /// Check whether we can/need to send the next CompletedUpTo message.
-    fn check_completed_up_to(&mut self) -> Result<()> {
-        let mut completed_up_to = self.upstream_issued_up_to;
 
         // Check the upstream_postponed map to see if any command with an
         // upstream sequence number lower than self.upstream_issued_up_to
