@@ -485,8 +485,8 @@ the target list;</li>
 information specifying the behavior of the gate.</li>
 </ul>
 <p>It is not currently possible to send all the gates allowed by the above
-representation through the C, C++, or Python APIs. Specifically, only the
-following classes of gates can be constructed:</p>
+representation. Specifically, only the following classes of gates can be
+constructed:</p>
 <ul>
 <li>unitary gates, which consist of one or more target qubits, a unitary matrix,
 and zero or more control qubits;</li>
@@ -497,26 +497,38 @@ or more control qubits, zero or more measured qubits, an optional gate
 matrix, and <code>ArbData</code> information.</li>
 </ul>
 <p>A backend <em>must</em> process gates according to the following algorithm.</p>
-<p>On the receiving end, the behavior is standardized as follows.</p>
 <ul>
-<li>If the gate does not have a name:
+<li>If the gate has a name:
 <ul>
-<li>if there is a matrix:
-<ul>
-<li>turn the matrix into a controlled matrix with the appropriate number
-of control qubits (which may be zero), and</li>
-<li>apply the matrix to the concatenation of the control and target
-qubits;</li>
+<li>if the name is recognized by the backend, the implementation is as
+defined by the backend;</li>
+<li>if not, return an error.</li>
 </ul>
 </li>
-<li>measure every qubit in the <code>measures</code> list in the Z basis. Note that this
-should be supported <em>in addition</em> to the application of a unitary gate.</li>
+<li>Otherwise, if there are target qubits and there is a matrix:
+<ul>
+<li>if there are explicit control qubits, interpret the matrix as the
+non-controlled bottom-right submatrix of an appropriately sized
+controlled matrix;</li>
+<li>apply the possibly extended matrix to the concatenation of the control
+and target qubits;</li>
 </ul>
 </li>
-<li>Otherwise, if the gate has a name recognized by the backend implementation,
-the behavior is up to the backend implementation.</li>
-<li>Otherwise, the backend should return an error.</li>
+<li>Otherwise, if there are measurement qubits:
+<ul>
+<li>if there is a 2x2 matrix, apply its inverse to every to-be-measured
+qubit independently;</li>
+<li>measure every to-be-measured qubit in the Z basis; and</li>
+<li>if there is a 2x2 matrix, apply it to every to-be-measured qubit
+independently.</li>
 </ul>
+</li>
+<li>If none of the above is true, return an error.</li>
+</ul>
+<p>Note that the above allows for measurements in any basis through the pre- and
+post-rotation: the basis is Z rotated by the given single-qubit gate. However,
+at the time of writing, the API to construct measurement gates with a given
+basis is still missing.</p>
 <h2><a class="header" href="#measurement-results" id="measurement-results">Measurement results</a></h2>
 <p>Measurement objects in DQCsim consist of the following:</p>
 <ul>
