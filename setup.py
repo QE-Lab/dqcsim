@@ -182,11 +182,14 @@ setup(
         ] + include_files.pop('include', [])),
         ('lib', [
             output_dir + '/libdqcsim.' + ('so' if platform.system() == "Linux" else 'dylib')
-        ]),
-        ('lib64', [
-            output_dir + '/libdqcsim.' + ('so' if platform.system() == "Linux" else 'dylib')
         ])
-    ] + list(include_files.items()),
+    ] + (
+        [
+            ('lib64', [
+                output_dir + '/libdqcsim.so'
+            ])
+        ] if platform.system() == "Linux" else []
+    ) + list(include_files.items()),
 
     packages = find_packages('python'),
     package_dir = {
