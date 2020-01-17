@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['x_907',['X',['../classdqcsim_1_1wrap_1_1_gate_matrix.html#af8b757d97a41142b7ead1a9b3ed19078',1,'dqcsim::wrap::GateMatrix']]]
+  ['yield_998',['yield',['../classdqcsim_1_1wrap_1_1_simulation.html#a660909799585cb0ab6042096e6d8a8c5',1,'dqcsim::wrap::Simulation']]]
 ];

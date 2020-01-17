@@ -134,7 +134,7 @@
     <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">qbset</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">QubitReferenceSet</span>);
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">qubit</span>) <span class="op">=</span> <span class="ident">qbset</span>.<span class="ident">pop_front</span>() {
-            <span class="prelude-val">Ok</span>(<span class="ident">qubit</span>.<span class="ident">to_foreign</span>())
+            <span class="ident">qubit</span>.<span class="ident">to_foreign</span>()
         } <span class="kw">else</span> {
             <span class="ident">inv_arg</span>(<span class="string">&quot;the qubit set is already empty&quot;</span>)
         }

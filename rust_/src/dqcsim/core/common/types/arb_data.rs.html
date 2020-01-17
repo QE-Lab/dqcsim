@@ -874,6 +874,35 @@
 <span id="874">874</span>
 <span id="875">875</span>
 <span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
+<span id="889">889</span>
+<span id="890">890</span>
+<span id="891">891</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">error</span>::{<span class="ident">inv_arg</span>, <span class="ident">Error</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
@@ -1319,11 +1348,13 @@
 
 <span class="doccomment">/// Represents an ArbData structure, consisting of an (unparsed, TODO) JSON</span>
 <span class="doccomment">/// string and a list of binary strings.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Deserialize</span>, <span class="ident">Serialize</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Deserialize</span>, <span class="ident">Serialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ArbData</span> {
     <span class="ident">cbor</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
     <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
+
+<span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">ArbData</span> {}
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">ArbData</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
@@ -1602,6 +1633,22 @@
         <span class="self">self</span>.<span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">into</span>();
     }
 
+    <span class="doccomment">/// Resets the CBOR to an empty object.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear_cbor</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">set_cbor</span>(<span class="ident">EMPTY_CBOR</span>).<span class="ident">unwrap</span>();
+    }
+
+    <span class="doccomment">/// Clears the binary arguments vector.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear_args</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">args</span>.<span class="ident">clear</span>();
+    }
+
+    <span class="doccomment">/// Clears the CBOR object and binary arguments vector.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+        <span class="self">self</span>.<span class="ident">clear_cbor</span>();
+        <span class="self">self</span>.<span class="ident">clear_args</span>();
+    }
+
     <span class="doccomment">/// Copies the data from another ArbData to this one.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">copy_from</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">src</span>: <span class="kw-2">&amp;</span><span class="ident">ArbData</span>) {
         <span class="self">self</span>.<span class="ident">cbor</span> <span class="op">=</span> <span class="ident">src</span>.<span class="ident">get_cbor</span>().<span class="ident">to_vec</span>();
@@ -1749,6 +1796,17 @@
             <span class="macro">vec</span><span class="macro">!</span>[<span class="string">b&quot;Hello, world!&quot;</span>, <span class="string">b&quot;\x01\x23\x45\x67\x89\xAB\xCD\xEF&quot;</span>],
             <span class="string">&quot;{},Hello_, world!,_01_23_45_67_89_AB_CD_EF&quot;</span>,
         );
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">eq</span>() {
+        <span class="kw">let</span> <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="string">b&quot;x&quot;</span>, <span class="string">b&quot;y&quot;</span>, <span class="string">b&quot;z&quot;</span>]
+            .<span class="ident">into_iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">to_vec</span>())
+            .<span class="ident">collect</span>();
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">ArbData</span>::<span class="ident">from_json</span>(<span class="macro">json</span><span class="macro">!</span>({<span class="string">&quot;test&quot;</span>: <span class="number">42</span>}).<span class="ident">to_string</span>(), <span class="ident">args</span>).<span class="ident">unwrap</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">data</span>, <span class="ident">data</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">ArbData</span>::<span class="ident">default</span>(), <span class="ident">ArbData</span>::<span class="ident">default</span>());
     }
 }
 </pre></div>

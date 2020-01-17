@@ -739,7 +739,7 @@
     <span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">CallbackUserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">UserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
         <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">callback</span>.<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;callback cannot be null&quot;</span>))<span class="question-mark">?</span>;
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pdef</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginDefinition</span>);
         <span class="ident">pdef</span>.<span class="ident">initialize</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="ident">new</span>(
@@ -776,7 +776,7 @@
     <span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">CallbackUserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">UserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
         <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">callback</span>.<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;callback cannot be null&quot;</span>))<span class="question-mark">?</span>;
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pdef</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginDefinition</span>);
         <span class="ident">pdef</span>.<span class="ident">drop</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginState</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
@@ -821,7 +821,7 @@
     <span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">CallbackUserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">UserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
         <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">callback</span>.<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;callback cannot be null&quot;</span>))<span class="question-mark">?</span>;
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pdef</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginDefinition</span>);
         <span class="kw">if</span> <span class="ident">pdef</span>.<span class="ident">get_type</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Frontend</span> {
@@ -873,7 +873,7 @@
     <span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">CallbackUserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">UserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
         <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">callback</span>.<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;callback cannot be null&quot;</span>))<span class="question-mark">?</span>;
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pdef</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginDefinition</span>);
         <span class="kw">if</span> <span class="ident">pdef</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Frontend</span> {
@@ -926,7 +926,7 @@
     <span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">CallbackUserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">UserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
         <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">callback</span>.<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;callback cannot be null&quot;</span>))<span class="question-mark">?</span>;
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pdef</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginDefinition</span>);
         <span class="kw">if</span> <span class="ident">pdef</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Frontend</span> {
@@ -1002,7 +1002,7 @@
     <span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">CallbackUserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">UserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
         <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">callback</span>.<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;callback cannot be null&quot;</span>))<span class="question-mark">?</span>;
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pdef</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginDefinition</span>);
         <span class="kw">if</span> <span class="ident">pdef</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Frontend</span> {
@@ -1082,7 +1082,7 @@
     <span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">CallbackUserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">UserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
         <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">callback</span>.<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;callback cannot be null&quot;</span>))<span class="question-mark">?</span>;
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pdef</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginDefinition</span>);
         <span class="kw">if</span> <span class="ident">pdef</span>.<span class="ident">get_type</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Operator</span> {
@@ -1132,7 +1132,7 @@
     <span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">CallbackUserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">UserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
         <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">callback</span>.<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;callback cannot be null&quot;</span>))<span class="question-mark">?</span>;
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pdef</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginDefinition</span>);
         <span class="kw">if</span> <span class="ident">pdef</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Frontend</span> {
@@ -1175,7 +1175,7 @@
     <span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">CallbackUserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">UserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
         <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">callback</span>.<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;callback cannot be null&quot;</span>))<span class="question-mark">?</span>;
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pdef</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginDefinition</span>);
         <span class="kw">if</span> <span class="ident">pdef</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Frontend</span> {
@@ -1223,7 +1223,7 @@
     <span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">CallbackUserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
+        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">UserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
         <span class="kw">let</span> <span class="ident">callback</span> <span class="op">=</span> <span class="ident">callback</span>.<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;callback cannot be null&quot;</span>))<span class="question-mark">?</span>;
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pdef</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginDefinition</span>);
         <span class="ident">pdef</span>.<span class="ident">host_arb</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="ident">new</span>(

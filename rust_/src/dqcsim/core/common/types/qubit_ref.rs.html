@@ -138,7 +138,27 @@
 <span id="138">138</span>
 <span id="139">139</span>
 <span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">error</span>::{<span class="ident">inv_arg</span>, <span class="prelude-ty">Result</span>};
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 
@@ -160,6 +180,16 @@
 }
 
 <span class="kw">impl</span> <span class="ident">QubitRef</span> {
+    <span class="doccomment">/// Returns a null qubit reference.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">null</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">QubitRef</span> {
+        <span class="ident">QubitRef</span>(<span class="number">0</span>)
+    }
+
+    <span class="doccomment">/// Returns whether this reference is null.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_null</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="number">0</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span>
+    }
+
     <span class="doccomment">/// Converts the foreign representation of a qubit reference to the</span>
     <span class="doccomment">/// type-safe Rust representation.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_foreign</span>(<span class="ident">qubit</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span> {
@@ -172,18 +202,21 @@
 
     <span class="doccomment">/// Converts the type-safe Rust representation of a qubit reference to the</span>
     <span class="doccomment">/// foreign representation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_foreign</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
-        <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="number">0</span>);
-        <span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">u64</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_foreign</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_null</span>() {
+            <span class="ident">inv_arg</span>(<span class="string">&quot;making use of null qubit reference&quot;</span>)
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">u64</span>)
+        }
     }
 
     <span class="doccomment">/// Converts the type-safe Rust representation of a qubit reference to the</span>
     <span class="doccomment">/// foreign representation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">option_to_foreign</span>(<span class="ident">qubit</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">option_to_foreign</span>(<span class="ident">qubit</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">qubit</span> {
-            <span class="ident">x</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">u64</span>
+            <span class="ident">x</span>.<span class="ident">to_foreign</span>()
         } <span class="kw">else</span> {
-            <span class="number">0</span>
+            <span class="prelude-val">Ok</span>(<span class="number">0</span>)
         }
     }
 }
@@ -250,25 +283,30 @@
     <span class="kw">fn</span> <span class="ident">convert_qrefs</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">q</span> <span class="op">=</span> <span class="ident">QubitRefGenerator</span>::<span class="ident">new</span>();
 
+        <span class="kw">let</span> <span class="ident">qr</span> <span class="op">=</span> <span class="ident">QubitRef</span>::<span class="ident">null</span>();
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">qr</span>.<span class="ident">to_foreign</span>().<span class="ident">is_err</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">QubitRef</span>::<span class="ident">option_to_foreign</span>(<span class="prelude-val">Some</span>(<span class="ident">qr</span>)).<span class="ident">is_err</span>());
+
+        <span class="kw">let</span> <span class="ident">qr</span> <span class="op">=</span> <span class="ident">QubitRef</span>(<span class="number">0</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">qr</span>.<span class="ident">to_foreign</span>().<span class="ident">is_err</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">QubitRef</span>::<span class="ident">option_to_foreign</span>(<span class="prelude-val">Some</span>(<span class="ident">qr</span>)).<span class="ident">is_err</span>());
+
         <span class="kw">let</span> <span class="ident">qr</span> <span class="op">=</span> <span class="ident">QubitRef</span>::<span class="ident">from_foreign</span>(<span class="number">0</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">qr</span>, <span class="prelude-val">None</span>);
 
         <span class="kw">let</span> <span class="ident">qr</span> <span class="op">=</span> <span class="ident">QubitRef</span>::<span class="ident">from_foreign</span>(<span class="number">1</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">qr</span>, (<span class="ident">q</span>.<span class="ident">allocate</span>(<span class="number">1</span>))[<span class="number">0</span>]);
 
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">42</span>, <span class="ident">QubitRef</span>::<span class="ident">from_foreign</span>(<span class="number">42</span>).<span class="ident">unwrap</span>().<span class="ident">to_foreign</span>());
-
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0</span>, <span class="ident">QubitRef</span>::<span class="ident">option_to_foreign</span>(<span class="prelude-val">None</span>));
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="number">42</span>,
-            <span class="ident">QubitRef</span>::<span class="ident">option_to_foreign</span>(<span class="prelude-val">Some</span>(<span class="ident">QubitRef</span>::<span class="ident">from_foreign</span>(<span class="number">42</span>).<span class="ident">unwrap</span>()))
+            <span class="ident">QubitRef</span>::<span class="ident">from_foreign</span>(<span class="number">42</span>).<span class="ident">unwrap</span>().<span class="ident">to_foreign</span>().<span class="ident">unwrap</span>()
         );
-    }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="kw">fn</span> <span class="ident">convert_zero</span>() {
-        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">QubitRef</span>(<span class="number">0</span>).<span class="ident">to_foreign</span>();
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0</span>, <span class="ident">QubitRef</span>::<span class="ident">option_to_foreign</span>(<span class="prelude-val">None</span>).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="number">42</span>,
+            <span class="ident">QubitRef</span>::<span class="ident">option_to_foreign</span>(<span class="prelude-val">Some</span>(<span class="ident">QubitRef</span>::<span class="ident">from_foreign</span>(<span class="number">42</span>).<span class="ident">unwrap</span>())).<span class="ident">unwrap</span>()
+        );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>

@@ -114,6 +114,8 @@
 <span id="114">114</span>
 <span id="115">115</span>
 <span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
@@ -138,6 +140,8 @@
                 <span class="prelude-val">Some</span>(<span class="ident">APIObject</span>::<span class="ident">QubitMeasurementResultSet</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="prelude-val">Ok</span>(<span class="ident">dqcs_handle_type_t</span>::<span class="ident">DQCS_HTYPE_MEAS_SET</span>)
                 }
+                <span class="prelude-val">Some</span>(<span class="ident">APIObject</span>::<span class="ident">Matrix</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">dqcs_handle_type_t</span>::<span class="ident">DQCS_HTYPE_MATRIX</span>),
+                <span class="prelude-val">Some</span>(<span class="ident">APIObject</span>::<span class="ident">GateMap</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">dqcs_handle_type_t</span>::<span class="ident">DQCS_HTYPE_GATE_MAP</span>),
                 <span class="prelude-val">Some</span>(<span class="ident">APIObject</span>::<span class="ident">PluginProcessConfiguration</span>(<span class="ident">x</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">x</span>.<span class="ident">get_type</span>() {
                     <span class="ident">PluginType</span>::<span class="ident">Frontend</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">dqcs_handle_type_t</span>::<span class="ident">DQCS_HTYPE_FRONT_PROCESS_CONFIG</span>),
                     <span class="ident">PluginType</span>::<span class="ident">Operator</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">dqcs_handle_type_t</span>::<span class="ident">DQCS_HTYPE_OPER_PROCESS_CONFIG</span>),

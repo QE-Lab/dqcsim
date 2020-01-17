@@ -35,31 +35,6 @@
 <span id="35">35</span>
 <span id="36">36</span>
 <span id="37">37</span>
-<span id="38">38</span>
-<span id="39">39</span>
-<span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! This module provides a C interface to the DQCsim simulator.</span>
 <span class="doccomment">//!</span>
@@ -68,7 +43,7 @@
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">common</span>::{<span class="ident">error</span>::<span class="kw-2">*</span>, <span class="ident">log</span>::<span class="kw-2">*</span>, <span class="ident">types</span>::<span class="kw-2">*</span>},
+    <span class="ident">common</span>::{<span class="ident">converter</span>::<span class="kw-2">*</span>, <span class="ident">error</span>::<span class="kw-2">*</span>, <span class="ident">log</span>::<span class="kw-2">*</span>, <span class="ident">types</span>::<span class="kw-2">*</span>},
     <span class="ident">host</span>::{<span class="ident">configuration</span>::<span class="kw-2">*</span>, <span class="ident">simulator</span>::<span class="ident">Simulator</span>},
     <span class="ident">plugin</span>::{<span class="ident">definition</span>::<span class="kw-2">*</span>, <span class="ident">state</span>::<span class="kw-2">*</span>},
 };
@@ -94,31 +69,6 @@
 <span class="comment">// owned by any DQCsim instance.</span>
 <span class="kw">mod</span> <span class="ident">api_state</span>;
 <span class="kw">use</span> <span class="ident">api_state</span>::<span class="kw-2">*</span>;
-
-<span class="comment">// Module containing the thread-local state of whatever DQCsim structure is</span>
-<span class="comment">// being represented by the API user, which may be one of the following or</span>
-<span class="comment">// nothing:</span>
-<span class="comment">//  - an &quot;accelerator&quot; a.k.a. a DQCsim simulation;</span>
-<span class="comment">//  - a frontend plugin;</span>
-<span class="comment">//  - an operator plugin;</span>
-<span class="comment">//  - a backend plugin;</span>
-<span class="comment">// Even when none of those things is active, API functions operating only on</span>
-<span class="comment">// the API_STATE object will still work just fine, and are in fact needed to</span>
-<span class="comment">// initialize the above four things.</span>
-<span class="comment">//</span>
-<span class="comment">// The reason for the separation between the API and DQCsim state has to do</span>
-<span class="comment">// with the fact that objects owned by the DQCsim state are allowed to call</span>
-<span class="comment">// back into the user code, which is in turn allowed to modify the API state.</span>
-<span class="comment">// That is, DQCSIM_STATE owns closures that may take a mutable reference to</span>
-<span class="comment">// API_STATE. Unless we move the closures out of DQCSIM_STATE before calling</span>
-<span class="comment">// them, this necessarily means that API_STATE and DQCSIM_STATE cannot be</span>
-<span class="comment">// contained by the same RefCell. Hence the need for them to be separated.</span>
-<span class="comment">//</span>
-<span class="comment">// Note that the above means that user callback functions are NOT allowed to</span>
-<span class="comment">// call any API function that takes a reference to DQCSIM_STATE. Fortunately,</span>
-<span class="comment">// there is (currently!) no need for them to ever do that.</span>
-<span class="comment">//mod dqcsim_state;</span>
-<span class="comment">//use dqcsim_state::*;</span>
 
 <span class="comment">// Module containing utility functions and auxiliary data structures.</span>
 <span class="kw">mod</span> <span class="ident">util</span>;

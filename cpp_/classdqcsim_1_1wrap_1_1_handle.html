@@ -90,14 +90,16 @@ Inheritance diagram for dqcsim::wrap::Handle:</div>
  <div class="center">
   <img src="classdqcsim_1_1wrap_1_1_handle.png" usemap="#dqcsim::wrap::Handle_map" alt=""/>
   <map id="dqcsim::wrap::Handle_map" name="dqcsim::wrap::Handle_map">
-<area href="classdqcsim_1_1wrap_1_1_arb.html" title="Class wrapper for handles that support the arb interface." alt="dqcsim::wrap::Arb" shape="rect" coords="233,56,456,80"/>
-<area href="classdqcsim_1_1wrap_1_1_measurement_set.html" title="Represents a set of measurements." alt="dqcsim::wrap::MeasurementSet" shape="rect" coords="233,112,456,136"/>
-<area href="classdqcsim_1_1wrap_1_1_plugin.html" title="Plugin definition class." alt="dqcsim::wrap::Plugin" shape="rect" coords="233,168,456,192"/>
-<area href="classdqcsim_1_1wrap_1_1_plugin_configuration.html" title="Generic class for plugin configurations." alt="dqcsim::wrap::PluginConfiguration" shape="rect" coords="233,224,456,248"/>
-<area href="classdqcsim_1_1wrap_1_1_plugin_join_handle.html" title="Class wrapper for plugin join handles." alt="dqcsim::wrap::PluginJoinHandle" shape="rect" coords="233,280,456,304"/>
-<area href="classdqcsim_1_1wrap_1_1_qubit_set.html" title="Represents an ordered set of qubit references." alt="dqcsim::wrap::QubitSet" shape="rect" coords="233,336,456,360"/>
-<area href="classdqcsim_1_1wrap_1_1_simulation.html" title="Wrapper class for a running simulation." alt="dqcsim::wrap::Simulation" shape="rect" coords="233,392,456,416"/>
-<area href="classdqcsim_1_1wrap_1_1_simulation_configuration.html" title="Wrapper class for configuring a simulation." alt="dqcsim::wrap::SimulationConfiguration" shape="rect" coords="233,448,456,472"/>
+<area href="classdqcsim_1_1wrap_1_1_arb.html" title="Class wrapper for handles that support the arb interface." alt="dqcsim::wrap::Arb" shape="rect" coords="270,56,530,80"/>
+<area href="classdqcsim_1_1wrap_1_1_gate_map.html" title="Gate map wrapper class." alt="dqcsim::wrap::GateMap&lt; Unbound, Bound &gt;" shape="rect" coords="270,112,530,136"/>
+<area href="classdqcsim_1_1wrap_1_1_matrix.html" title="Represents a square matrix used for describing N-qubit gates." alt="dqcsim::wrap::Matrix" shape="rect" coords="270,168,530,192"/>
+<area href="classdqcsim_1_1wrap_1_1_measurement_set.html" title="Represents a set of measurements." alt="dqcsim::wrap::MeasurementSet" shape="rect" coords="270,224,530,248"/>
+<area href="classdqcsim_1_1wrap_1_1_plugin.html" title="Plugin definition class." alt="dqcsim::wrap::Plugin" shape="rect" coords="270,280,530,304"/>
+<area href="classdqcsim_1_1wrap_1_1_plugin_configuration.html" title="Generic class for plugin configurations." alt="dqcsim::wrap::PluginConfiguration" shape="rect" coords="270,336,530,360"/>
+<area href="classdqcsim_1_1wrap_1_1_plugin_join_handle.html" title="Class wrapper for plugin join handles." alt="dqcsim::wrap::PluginJoinHandle" shape="rect" coords="270,392,530,416"/>
+<area href="classdqcsim_1_1wrap_1_1_qubit_set.html" title="Represents an ordered set of qubit references." alt="dqcsim::wrap::QubitSet" shape="rect" coords="270,448,530,472"/>
+<area href="classdqcsim_1_1wrap_1_1_simulation.html" title="Wrapper class for a running simulation." alt="dqcsim::wrap::Simulation" shape="rect" coords="270,504,530,528"/>
+<area href="classdqcsim_1_1wrap_1_1_simulation_configuration.html" title="Wrapper class for configuring a simulation." alt="dqcsim::wrap::SimulationConfiguration" shape="rect" coords="270,560,530,584"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -163,7 +165,7 @@ Friends</h2></td></tr>
 <p>Only one <code><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html" title="Base class for wrapping any handle.">Handle</a></code> should wrap a single handle at a time. Since handles cannot typically be cloned, this class is not copy constructible or assignable. If you need it to be, consider wrapping the <code><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html" title="Base class for wrapping any handle.">Handle</a></code> in a <code>std::shared_ptr</code>.</p>
 <dl class="section warning"><dt>Warning</dt><dd><code><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html" title="Base class for wrapping any handle.">Handle</a></code> objects can not and should never be passed between threads. The wrapped C API handles are thread local can cannot be moved between threads, therefore this wrapper can't either. Trying to do so anyway is undefined behavior and will absolutely not work! If you need to move data between threads, copy the data represented by the handle into C++ variables, pass those over, and reconstruct the handle from them in the destination thread. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00902">902</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01421">1421</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a017acb13e17e75bfb6afc1ade1a1dc08"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a017acb13e17e75bfb6afc1ade1a1dc08">&#9670;&nbsp;</a></span>Handle() <span class="overload">[1/3]</span></h2>
@@ -191,7 +193,7 @@ Friends</h2></td></tr>
 <p>Constructs an empty wrapper. </p>
 <dl class="section note"><dt>Note</dt><dd>The only way to use a wrapper constructed this way is to move a handle into it using the move assignment operator. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00918">918</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01437">1437</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -228,7 +230,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00929">929</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01448">1448</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -265,7 +267,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01010">1010</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01529">1529</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -302,7 +304,7 @@ Friends</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00952">952</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01471">1471</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -332,7 +334,7 @@ Friends</h2></td></tr>
 <p>Returns whether this wrapper (still) contains a valid handle. </p>
 <dl class="section return"><dt>Returns</dt><dd>Whether this wrapper (still) contains a valid handle. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00962">962</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01481">1481</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -362,7 +364,7 @@ Friends</h2></td></tr>
 <p>Returns the raw handle without relinquishing ownership. </p>
 <dl class="section return"><dt>Returns</dt><dd>The wrapped raw handle, or 0 if no handle was attached. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00975">975</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01494">1494</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -393,7 +395,7 @@ Friends</h2></td></tr>
 <dl class="section note"><dt>Note</dt><dd>The wrapper no longer owns a handle after this call. That means <code>is_valid</code> will return <code>false</code> and all other methods will likely fail.</dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>The wrapped raw handle, or 0 if no handle was attached. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00987">987</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01506">1506</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -439,7 +441,7 @@ The source wrapper no longer owns a handle after this call. That means that its 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01032">1032</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01551">1551</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -477,7 +479,7 @@ The source wrapper no longer owns a handle after this call. That means that its 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01054">1054</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01573">1573</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -513,7 +515,7 @@ The source wrapper no longer owns a handle after this call. That means that its 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01083">1083</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01602">1602</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -569,7 +571,7 @@ The source wrapper no longer owns a handle after this call. That means that its 
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01072">1072</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01591">1591</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>

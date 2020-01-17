@@ -31,6 +31,9 @@
         
 
         
+        <!-- MathJax -->
+        <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        
     </head>
     <body>
         <!-- Provide site root to javascript -->
@@ -81,7 +84,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div id="sidebar-scrollbox" class="sidebar-scrollbox">
-                <ol class="chapter"><li class="expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Introduction to DQCsim</a></li><li><ol class="section"><li class="expanded "><a href="../intro/components.html"><strong aria-hidden="true">1.1.</strong> The components of a simulation</a></li><li><ol class="section"><li class="expanded "><a href="../intro/frontend.html"><strong aria-hidden="true">1.1.1.</strong> Frontend use cases</a></li><li class="expanded "><a href="../intro/backend.html"><strong aria-hidden="true">1.1.2.</strong> Backend use cases</a></li><li class="expanded "><a href="../intro/operator.html"><strong aria-hidden="true">1.1.3.</strong> Operator use cases</a></li><li class="expanded "><a href="../intro/host.html"><strong aria-hidden="true">1.1.4.</strong> Host use cases</a></li></ol></li><li class="expanded "><a href="../intro/puzzle.html"><strong aria-hidden="true">1.2.</strong> Jigsaw puzzle analogy</a></li><li class="expanded "><a href="../intro/interfaces.html"><strong aria-hidden="true">1.3.</strong> DQCsim's interfaces</a></li><li><ol class="section"><li class="expanded "><a href="../intro/arbs.html"><strong aria-hidden="true">1.3.1.</strong> ArbData and ArbCmds</a></li><li class="expanded "><a href="../intro/gatestream.html"><strong aria-hidden="true">1.3.2.</strong> Gate- and measurement streams</a></li><li class="expanded "><a href="../intro/host-iface.html"><strong aria-hidden="true">1.3.3.</strong> The host interface</a></li><li class="expanded "><a href="../intro/misc-iface.html"><strong aria-hidden="true">1.3.4.</strong> Miscellaneous interfaces</a></li></ol></li><li class="expanded "><a href="../intro/reproducibility.html"><strong aria-hidden="true">1.4.</strong> Reproducibility</a></li></ol></li><li class="expanded "><a href="../install/index.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="expanded "><a href="../install/plugins.html"><strong aria-hidden="true">2.1.</strong> Plugin distribution</a></li></ol></li><li class="expanded "><a href="../cli/index.html"><strong aria-hidden="true">3.</strong> The command-line interface</a></li><li class="expanded "><a href="../python-api/index.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li><ol class="section"><li class="expanded "><a href="../python-api/hello-world.html"><strong aria-hidden="true">4.1.</strong> Hello, world!</a></li><li class="expanded "><a href="../python-api/debugging.html"><strong aria-hidden="true">4.2.</strong> Debugging</a></li><li class="expanded "><a href="../python-api/sending-gates.html"><strong aria-hidden="true">4.3.</strong> Sending some gates</a></li><li class="expanded "><a href="../python-api/simulations.html"><strong aria-hidden="true">4.4.</strong> Controlling simulations</a></li><li class="expanded "><a href="../python-api/operator.html"><strong aria-hidden="true">4.5.</strong> Inserting an operator</a></li><li class="expanded "><a href="../python-api/reference.html"><strong aria-hidden="true">4.6.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../c-api/index.html"><strong aria-hidden="true">5.</strong> C API</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/usage.html"><strong aria-hidden="true">5.1.</strong> Usage</a></li><li class="expanded "><a href="../c-api/concepts.apigen.html"><strong aria-hidden="true">5.2.</strong> Concepts</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/handle.apigen.html"><strong aria-hidden="true">5.2.1.</strong> Handles: dqcs_handle_*</a></li><li class="expanded "><a href="../c-api/memory-management.apigen.html"><strong aria-hidden="true">5.2.2.</strong> Memory management</a></li><li class="expanded "><a href="../c-api/error.apigen.html"><strong aria-hidden="true">5.2.3.</strong> Error handling: dqcs_error_*</a></li><li class="expanded "><a href="../c-api/callbacks.apigen.html"><strong aria-hidden="true">5.2.4.</strong> Callbacks</a></li></ol></li><li class="expanded "><a href="../c-api/type-definitions.apigen.html"><strong aria-hidden="true">5.3.</strong> Type definitions: dqcs_*_t</a></li><li class="expanded "><a href="../c-api/arb-cmd-cq.apigen.html"><strong aria-hidden="true">5.4.</strong> ArbData and ArbCmd objects</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/arb.apigen.html"><strong aria-hidden="true">5.4.1.</strong> ArbData objects: dqcs_arb_*</a></li><li class="expanded "><a href="../c-api/cmd.apigen.html"><strong aria-hidden="true">5.4.2.</strong> ArbCmd objects: dqcs_cmd_*</a></li><li class="expanded "><a href="../c-api/cq.apigen.html"><strong aria-hidden="true">5.4.3.</strong> ArbCmd queues: dqcs_cq_*</a></li></ol></li><li class="expanded "><a href="../c-api/qbset.apigen.html"><strong aria-hidden="true">5.5.</strong> Qubits: dqcs_qbset_*</a></li><li class="expanded "><a href="../c-api/gate.apigen.html" class="active"><strong aria-hidden="true">5.6.</strong> Gates: dqcs_gate_*</a></li><li class="expanded "><a href="../c-api/measurements.apigen.html"><strong aria-hidden="true">5.7.</strong> Measurements</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/meas.apigen.html"><strong aria-hidden="true">5.7.1.</strong> Singular measurements: dqcs_meas_*</a></li><li class="expanded "><a href="../c-api/mset.apigen.html"><strong aria-hidden="true">5.7.2.</strong> Measurement sets: dqcs_mset_*</a></li></ol></li><li class="expanded "><a href="../c-api/plugins.apigen.html"><strong aria-hidden="true">5.8.</strong> Plugins</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pdef.apigen.html"><strong aria-hidden="true">5.8.1.</strong> Defining a plugin: dqcs_pdef_*</a></li><li class="expanded "><a href="../c-api/plugin-run.apigen.html"><strong aria-hidden="true">5.8.2.</strong> Running a plugin: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/plugin-interact.apigen.html"><strong aria-hidden="true">5.8.3.</strong> Interacting with DQCsim: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/log.apigen.html"><strong aria-hidden="true">5.8.4.</strong> Logging: dqcs_log_*</a></li></ol></li><li class="expanded "><a href="../c-api/simulations.apigen.html"><strong aria-hidden="true">5.9.</strong> Simulations</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pcfg.apigen.html"><strong aria-hidden="true">5.9.1.</strong> Configuring plugins: dqcs_pcfg_*</a></li><li class="expanded "><a href="../c-api/tcfg.apigen.html"><strong aria-hidden="true">5.9.2.</strong> Running local plugins: dqcs_tcfg_*</a></li><li class="expanded "><a href="../c-api/scfg.apigen.html"><strong aria-hidden="true">5.9.3.</strong> Configuring a simulation: dqcs_scfg_*</a></li><li class="expanded "><a href="../c-api/sim.apigen.html"><strong aria-hidden="true">5.9.4.</strong> Running a simulation: dqcs_sim_*</a></li></ol></li><li class="expanded "><a href="../c-api/reference.apigen.html"><strong aria-hidden="true">5.10.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../cpp-api/index.html"><strong aria-hidden="true">6.</strong> C++ API</a></li><li><ol class="section"><li class="expanded "><a href="../cpp-api/usage.html"><strong aria-hidden="true">6.1.</strong> Usage</a></li><li class="expanded "><a href="../cpp-api/ccompare.html"><strong aria-hidden="true">6.2.</strong> Comparison to the C API</a></li><li class="expanded "><a href="../cpp-api/plugin.html"><strong aria-hidden="true">6.3.</strong> Plugin anatomy</a></li><li class="expanded "><a href="../cpp-api/sim.html"><strong aria-hidden="true">6.4.</strong> Host/simulation anatomy</a></li><li class="expanded "><a href="../cpp-api/reference.html"><strong aria-hidden="true">6.5.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../rust-api/index.html"><strong aria-hidden="true">7.</strong> Rust API</a></li></ol>
+                <ol class="chapter"><li class="expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Introduction to DQCsim</a></li><li><ol class="section"><li class="expanded "><a href="../intro/components.html"><strong aria-hidden="true">1.1.</strong> The components of a simulation</a></li><li><ol class="section"><li class="expanded "><a href="../intro/frontend.html"><strong aria-hidden="true">1.1.1.</strong> Frontend use cases</a></li><li class="expanded "><a href="../intro/backend.html"><strong aria-hidden="true">1.1.2.</strong> Backend use cases</a></li><li class="expanded "><a href="../intro/operator.html"><strong aria-hidden="true">1.1.3.</strong> Operator use cases</a></li><li class="expanded "><a href="../intro/host.html"><strong aria-hidden="true">1.1.4.</strong> Host use cases</a></li></ol></li><li class="expanded "><a href="../intro/puzzle.html"><strong aria-hidden="true">1.2.</strong> Jigsaw puzzle analogy</a></li><li class="expanded "><a href="../intro/interfaces.html"><strong aria-hidden="true">1.3.</strong> DQCsim's interfaces</a></li><li><ol class="section"><li class="expanded "><a href="../intro/arbs.html"><strong aria-hidden="true">1.3.1.</strong> ArbData and ArbCmds</a></li><li class="expanded "><a href="../intro/gatestream.html"><strong aria-hidden="true">1.3.2.</strong> Gate- and measurement streams</a></li><li class="expanded "><a href="../intro/host-iface.html"><strong aria-hidden="true">1.3.3.</strong> The host interface</a></li><li class="expanded "><a href="../intro/misc-iface.html"><strong aria-hidden="true">1.3.4.</strong> Miscellaneous interfaces</a></li></ol></li><li class="expanded "><a href="../intro/reproducibility.html"><strong aria-hidden="true">1.4.</strong> Reproducibility</a></li></ol></li><li class="expanded "><a href="../install/index.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="expanded "><a href="../install/plugins.html"><strong aria-hidden="true">2.1.</strong> Plugin distribution</a></li></ol></li><li class="expanded "><a href="../cli/index.html"><strong aria-hidden="true">3.</strong> The command-line interface</a></li><li class="expanded "><a href="../python-api/index.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li><ol class="section"><li class="expanded "><a href="../python-api/hello-world.html"><strong aria-hidden="true">4.1.</strong> Hello, world!</a></li><li class="expanded "><a href="../python-api/debugging.html"><strong aria-hidden="true">4.2.</strong> Debugging</a></li><li class="expanded "><a href="../python-api/sending-gates.html"><strong aria-hidden="true">4.3.</strong> Sending some gates</a></li><li class="expanded "><a href="../python-api/simulations.html"><strong aria-hidden="true">4.4.</strong> Controlling simulations</a></li><li class="expanded "><a href="../python-api/operator.html"><strong aria-hidden="true">4.5.</strong> Inserting an operator</a></li><li class="expanded "><a href="../python-api/reference.html"><strong aria-hidden="true">4.6.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../c-api/index.html"><strong aria-hidden="true">5.</strong> C API</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/usage.html"><strong aria-hidden="true">5.1.</strong> Usage</a></li><li class="expanded "><a href="../c-api/concepts.apigen.html"><strong aria-hidden="true">5.2.</strong> Concepts</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/handle.apigen.html"><strong aria-hidden="true">5.2.1.</strong> Handles: dqcs_handle_*</a></li><li class="expanded "><a href="../c-api/memory-management.apigen.html"><strong aria-hidden="true">5.2.2.</strong> Memory management</a></li><li class="expanded "><a href="../c-api/error.apigen.html"><strong aria-hidden="true">5.2.3.</strong> Error handling: dqcs_error_*</a></li><li class="expanded "><a href="../c-api/callbacks.apigen.html"><strong aria-hidden="true">5.2.4.</strong> Callbacks</a></li></ol></li><li class="expanded "><a href="../c-api/type-definitions.apigen.html"><strong aria-hidden="true">5.3.</strong> Type definitions: dqcs_*_t</a></li><li class="expanded "><a href="../c-api/arb-cmd-cq.apigen.html"><strong aria-hidden="true">5.4.</strong> ArbData and ArbCmd objects</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/arb.apigen.html"><strong aria-hidden="true">5.4.1.</strong> ArbData objects: dqcs_arb_*</a></li><li class="expanded "><a href="../c-api/cmd.apigen.html"><strong aria-hidden="true">5.4.2.</strong> ArbCmd objects: dqcs_cmd_*</a></li><li class="expanded "><a href="../c-api/cq.apigen.html"><strong aria-hidden="true">5.4.3.</strong> ArbCmd queues: dqcs_cq_*</a></li></ol></li><li class="expanded "><a href="../c-api/qbset.apigen.html"><strong aria-hidden="true">5.5.</strong> Qubits: dqcs_qbset_*</a></li><li class="expanded "><a href="../c-api/mat.apigen.html"><strong aria-hidden="true">5.6.</strong> Matrices: dqcs_mat_*</a></li><li class="expanded "><a href="../c-api/gate.apigen.html" class="active"><strong aria-hidden="true">5.7.</strong> Gates: dqcs_gate_*</a></li><li class="expanded "><a href="../c-api/gm.apigen.html"><strong aria-hidden="true">5.8.</strong> Gate maps: dqcs_gm_*</a></li><li class="expanded "><a href="../c-api/measurements.apigen.html"><strong aria-hidden="true">5.9.</strong> Measurements</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/meas.apigen.html"><strong aria-hidden="true">5.9.1.</strong> Singular measurements: dqcs_meas_*</a></li><li class="expanded "><a href="../c-api/mset.apigen.html"><strong aria-hidden="true">5.9.2.</strong> Measurement sets: dqcs_mset_*</a></li></ol></li><li class="expanded "><a href="../c-api/plugins.apigen.html"><strong aria-hidden="true">5.10.</strong> Plugins</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pdef.apigen.html"><strong aria-hidden="true">5.10.1.</strong> Defining a plugin: dqcs_pdef_*</a></li><li class="expanded "><a href="../c-api/plugin-run.apigen.html"><strong aria-hidden="true">5.10.2.</strong> Running a plugin: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/plugin-interact.apigen.html"><strong aria-hidden="true">5.10.3.</strong> Interacting with DQCsim: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/log.apigen.html"><strong aria-hidden="true">5.10.4.</strong> Logging: dqcs_log_*</a></li></ol></li><li class="expanded "><a href="../c-api/simulations.apigen.html"><strong aria-hidden="true">5.11.</strong> Simulations</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pcfg.apigen.html"><strong aria-hidden="true">5.11.1.</strong> Configuring plugins: dqcs_pcfg_*</a></li><li class="expanded "><a href="../c-api/tcfg.apigen.html"><strong aria-hidden="true">5.11.2.</strong> Running local plugins: dqcs_tcfg_*</a></li><li class="expanded "><a href="../c-api/scfg.apigen.html"><strong aria-hidden="true">5.11.3.</strong> Configuring a simulation: dqcs_scfg_*</a></li><li class="expanded "><a href="../c-api/sim.apigen.html"><strong aria-hidden="true">5.11.4.</strong> Running a simulation: dqcs_sim_*</a></li></ol></li><li class="expanded "><a href="../c-api/reference.apigen.html"><strong aria-hidden="true">5.12.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../cpp-api/index.html"><strong aria-hidden="true">6.</strong> C++ API</a></li><li><ol class="section"><li class="expanded "><a href="../cpp-api/usage.html"><strong aria-hidden="true">6.1.</strong> Usage</a></li><li class="expanded "><a href="../cpp-api/ccompare.html"><strong aria-hidden="true">6.2.</strong> Comparison to the C API</a></li><li class="expanded "><a href="../cpp-api/plugin.html"><strong aria-hidden="true">6.3.</strong> Plugin anatomy</a></li><li class="expanded "><a href="../cpp-api/sim.html"><strong aria-hidden="true">6.4.</strong> Host/simulation anatomy</a></li><li class="expanded "><a href="../cpp-api/reference.html"><strong aria-hidden="true">6.5.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../rust-api/index.html"><strong aria-hidden="true">7.</strong> Rust API</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -158,28 +161,87 @@
 and measured in the Z basis.</li>
 <li>Custom gates: anything else that the downstream plugin supports.</li>
 </ul>
-<p>These are constructed using the following functions.</p>
+<p>These are constructed using the following functions. The predefined gates are
+<a href="mat.apigen.html">as described earlier</a>.</p>
+<details><summary><font color="green"><tt>dqcs_gate_new_predef()</tt></font><div style="margin-left: 16px">
+<p>Constructs a new predefined unitary gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_new_predef(
+    dqcs_predefined_gate_t gate_type,
+    dqcs_handle_t qubits,
+    dqcs_handle_t param_data
+)
+</code></pre>
+<p><code>gate_type</code> specifies which kind of gate should be constructed.</p>
+<p><code>targets</code> must be a handle to a non-empty qubit set, containing at least
+as many qubits as needed for the specified gate type. If more qubits are
+specified, the rightmost qubits become the targets, and the remaining
+qubits become control qubits to make a controlled gate.</p>
+<p><code>param_data</code> takes an optional <code>ArbData</code> object used to parameterize the
+gate if necessary. If not specified, an empty object is used. Some of the
+gate types are parameterized, and use values from this <code>ArbData</code> as
+defined in the docs for <code>dqcs_predefined_gate_t</code>. Anything remaining in
+the <code>ArbData</code> afterwards is placed in the gate object.</p>
+<p>This function returns the handle to the gate, or 0 to indicate failure.
+The qubit set and parameterization data (if specified) are consumed/deleted
+by this function if and only if it succeeds.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_new_predef_one()</tt></font><div style="margin-left: 16px">
+<p>Constructs a new predefined unitary one-qubit gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_new_predef_one(
+    dqcs_predefined_gate_t gate_type,
+    dqcs_qubit_t qa,
+    dqcs_handle_t param_data
+)
+</code></pre>
+<p>This function is simply a shorthand for <code>dqcs_gate_new_predef()</code> with
+one qubit in the <code>qubits</code> set, to make constructing one-qubit gates more
+ergonomic. Refer to its documentation for more information.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_new_predef_two()</tt></font><div style="margin-left: 16px">
+<p>Constructs a new predefined unitary two-qubit gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_new_predef_two(
+    dqcs_predefined_gate_t gate_type,
+    dqcs_qubit_t qa,
+    dqcs_qubit_t qb,
+    dqcs_handle_t param_data
+)
+</code></pre>
+<p>This function is simply a shorthand for <code>dqcs_gate_new_predef()</code> with
+two qubit in the <code>qubits</code> set, to make constructing two-qubit gates more
+ergonomic. Refer to its documentation for more information.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_new_predef_three()</tt></font><div style="margin-left: 16px">
+<p>Constructs a new predefined unitary three-qubit gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_new_predef_three(
+    dqcs_predefined_gate_t gate_type,
+    dqcs_qubit_t qa,
+    dqcs_qubit_t qb,
+    dqcs_qubit_t qc,
+    dqcs_handle_t param_data
+)
+</code></pre>
+<p>This function is simply a shorthand for <code>dqcs_gate_new_predef()</code> with
+three qubit in the <code>qubits</code> set, to make constructing three-qubit gates
+more ergonomic. Refer to its documentation for more information.</p>
+</div></details>
 <details><summary><font color="green"><tt>dqcs_gate_new_unitary()</tt></font><div style="margin-left: 16px">
 <p>Constructs a new unitary gate.</p>
 </div></summary><div style="margin-left: 16px">
 <pre><code class="language-C">dqcs_handle_t dqcs_gate_new_unitary(
     dqcs_handle_t targets,
     dqcs_handle_t controls,
-    const double *matrix,
-    size_t matrix_len
+    dqcs_handle_t matrix
 )
 </code></pre>
 <p><code>targets</code> must be a handle to a non-empty qubit set. The qubits in this set
 correspond with the supplied unitary matrix.</p>
 <p><code>controls</code> optionally specifies a set of control qubits. You may pass 0 or
 an empty qubit set if you don't need control qubits.</p>
-<p><code>matrix</code> must point to an appropriately sized array of doubles,
-representing the unitary matrix to be applied to the qubits in the
-<code>targets</code> set. The matrix is specified in row-major form, using pairs of
-doubles for the real vs. imaginary component of each entry. The size must
-thus be <code>4**len(targets)</code> complex numbers = <code>2*4**len(targets)</code> doubles =
-<code>16*4**len(targets)</code> bytes. <code>matrix_len</code> must be set to the number of
-complex numbers.</p>
+<p><code>matrix</code> must be a handle to an appropriately sized matrix.</p>
 <p>The supplied matrix is only applied to the target qubits if all the control
 qubits are or will be determined to be set. For instance, to encode a
 CCNOT/Toffoli gate, you can specify one target qubits, two control qubits,
@@ -195,8 +257,8 @@ to.</p>
 <p>If is up to the user to ensure that the specified matrix is unitary. This
 is NOT checked by DQCsim. The simulator backend may or may not check this.</p>
 <p>This function returns the handle to the gate, or 0 to indicate failure.
-The <code>targets</code> qubit set and (if specified) the <code>controls</code> qubit set are
-consumed/deleted by this function if and only if it succeeds.</p>
+The <code>targets</code> qubit set, (if specified) the <code>controls</code> qubit set, and the
+matrix are consumed/deleted by this function if and only if it succeeds.</p>
 </div></details>
 <details><summary><font color="green"><tt>dqcs_gate_new_measurement()</tt></font><div style="margin-left: 16px">
 <p>Constructs a new measurement gate.</p>
@@ -218,8 +280,7 @@ if it succeeds.</p>
     dqcs_handle_t targets,
     dqcs_handle_t controls,
     dqcs_handle_t measures,
-    const double *matrix,
-    size_t matrix_len
+    dqcs_handle_t matrix
 )
 </code></pre>
 <p>The functionality of custom gates is not specified by DQCsim. Instead, this
@@ -236,19 +297,61 @@ or an empty qubit set if no qubits are measured. Note that the upstream
 plugin expects exactly one measurement result for each qubit specified in
 this set; anything else results in a warning and the measurement result
 being set to undefined.</p>
-<p><code>matrix</code> can point to an appropriately sized array of doubles, or be <code>NULL</code>
-if no matrix is required. If a matrix is specified, at least one target
-qubit is required, and the matrix must be appropriately sized for the
-number of target qubits. The matrix is specified in row-major form, using
-pairs of doubles for the real vs. imaginary component of each entry. The
-size must thus be <code>4**len(targets)</code> complex numbers = <code>2*4**len(targets)</code>
-doubles = <code>16*4**len(targets)</code> bytes. <code>matrix_len</code> must be set to the
-number of complex numbers.</p>
+<p><code>matrix</code> optionally specifies a handle to an appropriately sized matrix
+for the <code>targets</code> qubit set.</p>
 <p>In addition to the above data, gate objects implement the <code>arb</code> interface
 to allow user-specified classical information to be attached.</p>
 <p>This function returns the handle to the gate, or 0 to indicate failure.
 The specified qubit sets are consumed/deleted by this function if and only
 if it succeeds.</p>
+</div></details>
+<h2><a class="header" href="#control-qubit-representation" id="control-qubit-representation">Control qubit representation</a></h2>
+<p>A gatestream source is allowed to specify controlled gates either using
+DQCsim's separate list of control qubits (this is the recommended way), by
+using an explicitly controlled gate matrix and using only the target qubit
+list, or a even mix of the two. The following two functions, primarily intended
+for gatestream sinks, can be used to convert between these representations.</p>
+<details><summary><font color="green"><tt>dqcs_gate_reduce_control()</tt></font><div style="margin-left: 16px">
+<p>Utility function that detects control qubits in the <code>targets</code> list of the
+gate by means of the gate matrix, and reduces them into <code>controls</code> qubits.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_reduce_control(
+    dqcs_handle_t gate,
+    double epsilon,
+    bool ignore_gphase
+)
+</code></pre>
+<p>This function borrows a handle to any gate with a matrix, and returns an
+equivalent copy of said gate with any control qubits in the <code>targets</code> set
+moved to the <code>controls</code> set. The associated gate matrix is accordingly
+reduced in size. The control qubits are added at the end of the <code>controls</code>
+set in the same order they appeared in the <code>targets</code> qubit set.</p>
+<p><code>epsilon</code> specifies the maximum element-wise deviation from the identity
+matrix for the relevant array elements for a qubit to be considered a
+control qubit. Note that if this is greater than zero, the resulting gate
+may not be exactly equivalent. If <code>ignore_gphase</code> is set, any global phase
+in the matrix is ignored, but the global phase of the non-control submatrix
+is not changed.</p>
+<p>This function returns a new gate handle with the modified gate, or a copy
+of the input gate if the matrix could not be reduced. If the input gate
+does not have a matrix (measurement gate, or custom gate without matrix) an
+error is returned instead.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_expand_control()</tt></font><div style="margin-left: 16px">
+<p>Utility function that expands a gate matrix to account for all control
+qubits.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_expand_control(dqcs_handle_t gate)
+</code></pre>
+<p>This function borrows a handle to any gate with a matrix, and returns an
+equivalent copy of said gate with any control qubits in the <code>controls</code> set
+moved to the <code>targets</code> set. The associated gate matrix is extended
+accordingly. The control qubits are added at the front of the <code>targets</code>
+set in the same order they appeared in the <code>controls</code> qubit set.</p>
+<p>This function returns a new gate handle with the modified gate, or a copy
+of the input gate if the matrix could not be reduced. If the input gate
+does not have a matrix (measurement gate, or custom gate without matrix) an
+error is returned instead.</p>
 </div></details>
 <h2><a class="header" href="#attached-classical-data" id="attached-classical-data">Attached classical data</a></h2>
 <p>Classical information can be attached to any gate using the <code>ArbData</code>
@@ -347,26 +450,10 @@ target qubits;</li>
 <p>Returns a copy of the unitary matrix associated with this gate, if one
 exists.</p>
 </div></summary><div style="margin-left: 16px">
-<pre><code class="language-C">double *dqcs_gate_matrix(dqcs_handle_t gate)
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_matrix(dqcs_handle_t gate)
 </code></pre>
-<p>If this function succeeds, the matrix is returned in row-major form, using
-pairs of doubles for the real vs. imaginary component of each entry. The
-size will be <code>4**len(targets)</code> complex numbers = <code>2*4**len(targets)</code>
-doubles = <code>16*4**len(targets)</code> bytes.</p>
-<p>On success, this <strong>returns a newly allocated array containing the matrix.
-Free it with <code>free()</code> when you're done with it to avoid memory leaks.</strong> On
-failure, or if no matrix is associated with this gate, this returns <code>NULL</code>.
-Use <code>dqcs_gate_has_matrix()</code> to disambiguate.</p>
-</div></details>
-<details><summary><font color="green"><tt>dqcs_gate_matrix_len()</tt></font><div style="margin-left: 16px">
-<p>Returns the size of the gate matrix associated with this gate.</p>
-</div></summary><div style="margin-left: 16px">
-<pre><code class="language-C">ssize_t dqcs_gate_matrix_len(dqcs_handle_t gate)
-</code></pre>
-<p>The size is returned in the form of the number of complex entries. That is,
-the number of doubles is two times the return value, and the size in bytes
-is 8 times the return value. 0 is returned when there is no matrix. -1 is
-used to report errors.</p>
+<p>If this function succeeds, a new matrix handle is returned. If it fails,
+0 is returned.</p>
 </div></details>
 <details><summary><font color="green"><tt>dqcs_gate_measures()</tt></font><div style="margin-left: 16px">
 <p>Returns a handle to a new qubit reference set containing the qubits
@@ -400,13 +487,13 @@ targetted by this gate.</p>
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="../c-api/qbset.apigen.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../c-api/mat.apigen.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="../c-api/measurements.apigen.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../c-api/gm.apigen.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -418,13 +505,13 @@ targetted by this gate.</p>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a href="../c-api/qbset.apigen.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a href="../c-api/mat.apigen.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a href="../c-api/measurements.apigen.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a href="../c-api/gm.apigen.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 

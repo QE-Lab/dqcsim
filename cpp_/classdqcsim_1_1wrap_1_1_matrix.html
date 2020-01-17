@@ -74,40 +74,50 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
-<a href="#friends">Friends</a> &#124;
 <a href="classdqcsim_1_1wrap_1_1_matrix-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">dqcsim::wrap::Matrix Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>Convenience class for the square complex matrices used to express the qubit gates.  
+<p>Represents a square matrix used for describing N-qubit gates.  
  <a href="classdqcsim_1_1wrap_1_1_matrix.html#details">More...</a></p>
+<div class="dynheader">
+Inheritance diagram for dqcsim::wrap::Matrix:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="classdqcsim_1_1wrap_1_1_matrix.png" usemap="#dqcsim::wrap::Matrix_map" alt=""/>
+  <map id="dqcsim::wrap::Matrix_map" name="dqcsim::wrap::Matrix_map">
+<area href="classdqcsim_1_1wrap_1_1_handle.html" title="Base class for wrapping any handle." alt="dqcsim::wrap::Handle" shape="rect" coords="0,0,130,24"/>
+  </map>
+</div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ad76e28c7f7f9f8f142ce0015137bb100"><td class="memItemLeft" align="right" valign="top"><a id="ad76e28c7f7f9f8f142ce0015137bb100"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#ad76e28c7f7f9f8f142ce0015137bb100">Matrix</a> ()=delete</td></tr>
-<tr class="memdesc:ad76e28c7f7f9f8f142ce0015137bb100"><td class="mdescLeft">&#160;</td><td class="mdescRight">Delete the default constructor, as it's nonsensical with no size parameter. <br /></td></tr>
-<tr class="separator:ad76e28c7f7f9f8f142ce0015137bb100"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a4cc7c07601cbeb4a1392cf6e29503e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a6a4cc7c07601cbeb4a1392cf6e29503e">Matrix</a> (size_t <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#ac11bf69c16879425917c29d78d6ca05b">n</a>)</td></tr>
-<tr class="memdesc:a6a4cc7c07601cbeb4a1392cf6e29503e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a zero matrix of size <code>n</code> times <code>n</code>.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a6a4cc7c07601cbeb4a1392cf6e29503e">More...</a><br /></td></tr>
-<tr class="separator:a6a4cc7c07601cbeb4a1392cf6e29503e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a577610db060bd3a3a79c6e580bdfe4ae"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a577610db060bd3a3a79c6e580bdfe4ae">Matrix</a> (size_t <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a772a6380aab79dde4a48387a210b1703">size</a>, const <a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a> *<a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#ac08126edeb95650c9b85a7ab7413e4d1">data</a>)</td></tr>
-<tr class="memdesc:a577610db060bd3a3a79c6e580bdfe4ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a matrix from a row-major flattened array of <code>size</code> <code>complex</code>s.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a577610db060bd3a3a79c6e580bdfe4ae">More...</a><br /></td></tr>
-<tr class="separator:a577610db060bd3a3a79c6e580bdfe4ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0d806a5950e6b1f88025ee3884880169"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a0d806a5950e6b1f88025ee3884880169">Matrix</a> (size_t <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a772a6380aab79dde4a48387a210b1703">size</a>, const double *<a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#ac08126edeb95650c9b85a7ab7413e4d1">data</a>)</td></tr>
-<tr class="memdesc:a0d806a5950e6b1f88025ee3884880169"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a matrix from a row-major, real-first flattened array of 2 x <code>size</code> <code>double</code>s.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a0d806a5950e6b1f88025ee3884880169">More...</a><br /></td></tr>
-<tr class="separator:a0d806a5950e6b1f88025ee3884880169"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b26030578f6d279e802f306b9a586b7"><td class="memItemLeft" align="right" valign="top"><a id="a4b26030578f6d279e802f306b9a586b7"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a4b26030578f6d279e802f306b9a586b7">Matrix</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;)=default</td></tr>
-<tr class="memdesc:a4b26030578f6d279e802f306b9a586b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default copy constructor. <br /></td></tr>
-<tr class="separator:a4b26030578f6d279e802f306b9a586b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac744c38f6f27b0916b8cddc366e6342a"><td class="memItemLeft" align="right" valign="top"><a id="ac744c38f6f27b0916b8cddc366e6342a"></a>
-<a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#ac744c38f6f27b0916b8cddc366e6342a">operator=</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;)=default</td></tr>
-<tr class="memdesc:ac744c38f6f27b0916b8cddc366e6342a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default copy assignment. <br /></td></tr>
-<tr class="separator:ac744c38f6f27b0916b8cddc366e6342a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2ca13c01a8f750db976830d0fab5bce8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a2ca13c01a8f750db976830d0fab5bce8">Matrix</a> (<a class="el" href="namespacedqcsim_1_1wrap.html#af0961c9cf3940114db65b8d7260021e0">HandleIndex</a> <a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#ac80648089082d159656cafa3610f5442">handle</a>) noexcept</td></tr>
+<tr class="memdesc:a2ca13c01a8f750db976830d0fab5bce8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wraps the given matrix handle.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a2ca13c01a8f750db976830d0fab5bce8">More...</a><br /></td></tr>
+<tr class="separator:a2ca13c01a8f750db976830d0fab5bce8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe46993e8d65f940fab7918c2e9ee279"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#abe46993e8d65f940fab7918c2e9ee279">Matrix</a> (size_t <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#acc57709d48c533fd0946d7cff8516f77">num_qubits</a>, const <a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a> *matrix)</td></tr>
+<tr class="memdesc:abe46993e8d65f940fab7918c2e9ee279"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a matrix from a row-major flattened array of <code>4**num_qubits</code> <code>complex</code>s.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#abe46993e8d65f940fab7918c2e9ee279">More...</a><br /></td></tr>
+<tr class="separator:abe46993e8d65f940fab7918c2e9ee279"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c61de59aea49e4cdc746a7802a05dc0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a9c61de59aea49e4cdc746a7802a05dc0">Matrix</a> (size_t <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#acc57709d48c533fd0946d7cff8516f77">num_qubits</a>, const double *matrix)</td></tr>
+<tr class="memdesc:a9c61de59aea49e4cdc746a7802a05dc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a matrix from a row-major flattened array of <code>2 * 4**num_qubits</code> <code>complex</code>s.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a9c61de59aea49e4cdc746a7802a05dc0">More...</a><br /></td></tr>
+<tr class="separator:a9c61de59aea49e4cdc746a7802a05dc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74f8d148bc1bed256f613919db096622"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a74f8d148bc1bed256f613919db096622">Matrix</a> (<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838">PredefinedGate</a> gate)</td></tr>
+<tr class="memdesc:a74f8d148bc1bed256f613919db096622"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a non-parameterized predefined matrix.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a74f8d148bc1bed256f613919db096622">More...</a><br /></td></tr>
+<tr class="separator:a74f8d148bc1bed256f613919db096622"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3981b47a678f4a3ddfb18657fcd11c5a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a3981b47a678f4a3ddfb18657fcd11c5a">Matrix</a> (<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838">PredefinedGate</a> gate, <a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html">ArbData</a> &amp;&amp;parameters)</td></tr>
+<tr class="memdesc:a3981b47a678f4a3ddfb18657fcd11c5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a predefined matrix, using <code><a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html" title="Class wrapper for ArbData handles.">ArbData</a></code> to represent the parameters for parameterized gates.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a3981b47a678f4a3ddfb18657fcd11c5a">More...</a><br /></td></tr>
+<tr class="separator:a3981b47a678f4a3ddfb18657fcd11c5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88b5925e91a2061f1be1f9c7964e73f0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a88b5925e91a2061f1be1f9c7964e73f0">Matrix</a> (<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838">PredefinedGate</a> gate, const <a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html">ArbData</a> &amp;parameters)</td></tr>
+<tr class="memdesc:a88b5925e91a2061f1be1f9c7964e73f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a predefined matrix, using <code><a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html" title="Class wrapper for ArbData handles.">ArbData</a></code> to represent the parameters for parameterized gates.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a88b5925e91a2061f1be1f9c7964e73f0">More...</a><br /></td></tr>
+<tr class="separator:a88b5925e91a2061f1be1f9c7964e73f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5e5659367b930ac4455d3d29788a1e6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#aa5e5659367b930ac4455d3d29788a1e6">Matrix</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;src)</td></tr>
+<tr class="memdesc:aa5e5659367b930ac4455d3d29788a1e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy-constructs a matrix.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#aa5e5659367b930ac4455d3d29788a1e6">More...</a><br /></td></tr>
+<tr class="separator:aa5e5659367b930ac4455d3d29788a1e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40d47517ec1cbf1eac0eb2f40896ba56"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a40d47517ec1cbf1eac0eb2f40896ba56">operator=</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;src)</td></tr>
+<tr class="memdesc:a40d47517ec1cbf1eac0eb2f40896ba56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy assignment operator for matrices.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a40d47517ec1cbf1eac0eb2f40896ba56">More...</a><br /></td></tr>
+<tr class="separator:a40d47517ec1cbf1eac0eb2f40896ba56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4cd15b17fb07ae58f23c5cfe3f50e9d8"><td class="memItemLeft" align="right" valign="top"><a id="a4cd15b17fb07ae58f23c5cfe3f50e9d8"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a4cd15b17fb07ae58f23c5cfe3f50e9d8">Matrix</a> (<a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&amp;)=default</td></tr>
 <tr class="memdesc:a4cd15b17fb07ae58f23c5cfe3f50e9d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default move constructor. <br /></td></tr>
@@ -116,60 +126,91 @@ Public Member Functions</h2></td></tr>
 <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a4f378e5a05068f3a6d6d0f15df912289">operator=</a> (<a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&amp;)=default</td></tr>
 <tr class="memdesc:a4f378e5a05068f3a6d6d0f15df912289"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default move assignment. <br /></td></tr>
 <tr class="separator:a4f378e5a05068f3a6d6d0f15df912289"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0a2a7dcbd34233eecefc3bbefbceded"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#af0a2a7dcbd34233eecefc3bbefbceded">operator()</a> (size_t row, size_t column)</td></tr>
-<tr class="memdesc:af0a2a7dcbd34233eecefc3bbefbceded"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mutable matrix element accessor.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#af0a2a7dcbd34233eecefc3bbefbceded">More...</a><br /></td></tr>
-<tr class="separator:af0a2a7dcbd34233eecefc3bbefbceded"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a082b385b826501668e81585ab963adf2"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a082b385b826501668e81585ab963adf2">operator()</a> (size_t row, size_t column) const</td></tr>
-<tr class="memdesc:a082b385b826501668e81585ab963adf2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Const matrix element accessor.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a082b385b826501668e81585ab963adf2">More...</a><br /></td></tr>
-<tr class="separator:a082b385b826501668e81585ab963adf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac11bf69c16879425917c29d78d6ca05b"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#ac11bf69c16879425917c29d78d6ca05b">n</a> () const noexcept</td></tr>
-<tr class="memdesc:ac11bf69c16879425917c29d78d6ca05b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of rows = the number of columns in the matrix.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#ac11bf69c16879425917c29d78d6ca05b">More...</a><br /></td></tr>
-<tr class="separator:ac11bf69c16879425917c29d78d6ca05b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac08126edeb95650c9b85a7ab7413e4d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#ac08126edeb95650c9b85a7ab7413e4d1">data</a> () noexcept</td></tr>
-<tr class="memdesc:ac08126edeb95650c9b85a7ab7413e4d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mutable flattened data accessor.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#ac08126edeb95650c9b85a7ab7413e4d1">More...</a><br /></td></tr>
-<tr class="separator:ac08126edeb95650c9b85a7ab7413e4d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8c31eaac0190f845dc6341890df7c242"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a8c31eaac0190f845dc6341890df7c242">data</a> () const noexcept</td></tr>
-<tr class="memdesc:a8c31eaac0190f845dc6341890df7c242"><td class="mdescLeft">&#160;</td><td class="mdescRight">Immutable flattened data accessor.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a8c31eaac0190f845dc6341890df7c242">More...</a><br /></td></tr>
-<tr class="separator:a8c31eaac0190f845dc6341890df7c242"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a28209bea25108cf671c23f320ae6bda3"><td class="memItemLeft" align="right" valign="top">double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a28209bea25108cf671c23f320ae6bda3">data_double</a> () noexcept</td></tr>
-<tr class="memdesc:a28209bea25108cf671c23f320ae6bda3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mutable flattened data accessor.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a28209bea25108cf671c23f320ae6bda3">More...</a><br /></td></tr>
-<tr class="separator:a28209bea25108cf671c23f320ae6bda3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1a72945d6a9802eb56e6891c8c016cf5"><td class="memItemLeft" align="right" valign="top">const double *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a1a72945d6a9802eb56e6891c8c016cf5">data_double</a> () const noexcept</td></tr>
-<tr class="memdesc:a1a72945d6a9802eb56e6891c8c016cf5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Immutable flattened data accessor.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a1a72945d6a9802eb56e6891c8c016cf5">More...</a><br /></td></tr>
-<tr class="separator:a1a72945d6a9802eb56e6891c8c016cf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a772a6380aab79dde4a48387a210b1703"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a772a6380aab79dde4a48387a210b1703">size</a> () const noexcept</td></tr>
-<tr class="memdesc:a772a6380aab79dde4a48387a210b1703"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of complex elements in the matrix.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a772a6380aab79dde4a48387a210b1703">More...</a><br /></td></tr>
-<tr class="separator:a772a6380aab79dde4a48387a210b1703"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a885cd8ed6ded5cdb9682c2f9a8b3cedc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a885cd8ed6ded5cdb9682c2f9a8b3cedc">operator==</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;other) const noexcept</td></tr>
-<tr class="memdesc:a885cd8ed6ded5cdb9682c2f9a8b3cedc"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html" title="Convenience class for the square complex matrices used to express the qubit gates.">Matrix</a> equality operator (exact).  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a885cd8ed6ded5cdb9682c2f9a8b3cedc">More...</a><br /></td></tr>
-<tr class="separator:a885cd8ed6ded5cdb9682c2f9a8b3cedc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a485df47534abcd6bb72e5e88202d3f6b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a485df47534abcd6bb72e5e88202d3f6b">operator!=</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;other) const noexcept</td></tr>
-<tr class="memdesc:a485df47534abcd6bb72e5e88202d3f6b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html" title="Convenience class for the square complex matrices used to express the qubit gates.">Matrix</a> inequality operator (exact).  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a485df47534abcd6bb72e5e88202d3f6b">More...</a><br /></td></tr>
-<tr class="separator:a485df47534abcd6bb72e5e88202d3f6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae21ad93066c2a8933a3268a64825960b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#ae21ad93066c2a8933a3268a64825960b">fuzzy_equal</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;other, double epsilon=0.000001, bool ignore_gphase=true) const</td></tr>
-<tr class="memdesc:ae21ad93066c2a8933a3268a64825960b"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html" title="Convenience class for the square complex matrices used to express the qubit gates.">Matrix</a> fuzzy equality operator.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#ae21ad93066c2a8933a3268a64825960b">More...</a><br /></td></tr>
-<tr class="separator:ae21ad93066c2a8933a3268a64825960b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaee4061868d6ff16e319c6be7f79265f"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#aaee4061868d6ff16e319c6be7f79265f">size</a> () const</td></tr>
+<tr class="memdesc:aaee4061868d6ff16e319c6be7f79265f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of elements in the matrix.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#aaee4061868d6ff16e319c6be7f79265f">More...</a><br /></td></tr>
+<tr class="separator:aaee4061868d6ff16e319c6be7f79265f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6743acc8d6a2f7b7a5541296209727a0"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a6743acc8d6a2f7b7a5541296209727a0">dimension</a> () const</td></tr>
+<tr class="memdesc:a6743acc8d6a2f7b7a5541296209727a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of rows/columns in the matrix.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a6743acc8d6a2f7b7a5541296209727a0">More...</a><br /></td></tr>
+<tr class="separator:a6743acc8d6a2f7b7a5541296209727a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc57709d48c533fd0946d7cff8516f77"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#acc57709d48c533fd0946d7cff8516f77">num_qubits</a> () const</td></tr>
+<tr class="memdesc:acc57709d48c533fd0946d7cff8516f77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of qubits associated with the matrix.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#acc57709d48c533fd0946d7cff8516f77">More...</a><br /></td></tr>
+<tr class="separator:acc57709d48c533fd0946d7cff8516f77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe3351f9265cf8e8d9c78c7a00491750"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#afe3351f9265cf8e8d9c78c7a00491750">get</a> () const</td></tr>
+<tr class="memdesc:afe3351f9265cf8e8d9c78c7a00491750"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the data contained by the matrix in row-major form as complex numbers.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#afe3351f9265cf8e8d9c78c7a00491750">More...</a><br /></td></tr>
+<tr class="separator:afe3351f9265cf8e8d9c78c7a00491750"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac83c3d5eaf536f0b938f027feebda7b1"><td class="memItemLeft" align="right" valign="top">std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#ac83c3d5eaf536f0b938f027feebda7b1">get_as_doubles</a> () const</td></tr>
+<tr class="memdesc:ac83c3d5eaf536f0b938f027feebda7b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the data contained by the matrix in row-major form as pairs of real/imag doubles.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#ac83c3d5eaf536f0b938f027feebda7b1">More...</a><br /></td></tr>
+<tr class="separator:ac83c3d5eaf536f0b938f027feebda7b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8da2ffec275682315c1aea644dba1c3a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a8da2ffec275682315c1aea644dba1c3a">approx_eq</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;other, double epsilon=0.000001, bool ignore_global_phase=true) const</td></tr>
+<tr class="memdesc:a8da2ffec275682315c1aea644dba1c3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Approximate equality operator for two matrices.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a8da2ffec275682315c1aea644dba1c3a">More...</a><br /></td></tr>
+<tr class="separator:a8da2ffec275682315c1aea644dba1c3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d7f0fe58bbcc363fd56f4ce1bebeb9d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a2d7f0fe58bbcc363fd56f4ce1bebeb9d">is_predefined</a> (<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838">PredefinedGate</a> gate, double epsilon=0.000001, bool ignore_global_phase=true, <a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html">ArbData</a> *parameters=nullptr) const</td></tr>
+<tr class="memdesc:a2d7f0fe58bbcc363fd56f4ce1bebeb9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Detects whether this matrix is approximately equal to (some parameterization of) the given predefined gate.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a2d7f0fe58bbcc363fd56f4ce1bebeb9d">More...</a><br /></td></tr>
+<tr class="separator:a2d7f0fe58bbcc363fd56f4ce1bebeb9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a588c29397018f4780dfdc4169ebf5463"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a588c29397018f4780dfdc4169ebf5463">add_controls</a> (size_t number_of_controls) const</td></tr>
+<tr class="memdesc:a588c29397018f4780dfdc4169ebf5463"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a controlled matrix from the given matrix.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a588c29397018f4780dfdc4169ebf5463">More...</a><br /></td></tr>
+<tr class="separator:a588c29397018f4780dfdc4169ebf5463"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5d4c5515ca2e6aada1cc52d7d5ceb8a"><td class="memItemLeft" align="right" valign="top">std::pair&lt; std::vector&lt; size_t &gt;, <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#aa5d4c5515ca2e6aada1cc52d7d5ceb8a">strip_control</a> (double epsilon, bool ignore_global_phase) const</td></tr>
+<tr class="memdesc:aa5d4c5515ca2e6aada1cc52d7d5ceb8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a controlled matrix into its non-controlled submatrix and the indices of the control qubits.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#aa5d4c5515ca2e6aada1cc52d7d5ceb8a">More...</a><br /></td></tr>
+<tr class="separator:aa5d4c5515ca2e6aada1cc52d7d5ceb8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classdqcsim_1_1wrap_1_1_handle"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classdqcsim_1_1wrap_1_1_handle')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classdqcsim_1_1wrap_1_1_handle.html">dqcsim::wrap::Handle</a></td></tr>
+<tr class="memitem:a017acb13e17e75bfb6afc1ade1a1dc08 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#a017acb13e17e75bfb6afc1ade1a1dc08">Handle</a> () noexcept</td></tr>
+<tr class="memdesc:a017acb13e17e75bfb6afc1ade1a1dc08 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs an empty wrapper.  <a href="classdqcsim_1_1wrap_1_1_handle.html#a017acb13e17e75bfb6afc1ade1a1dc08">More...</a><br /></td></tr>
+<tr class="separator:a017acb13e17e75bfb6afc1ade1a1dc08 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a961083860ae70e06a637ed21e97c0ff2 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#a961083860ae70e06a637ed21e97c0ff2">Handle</a> (<a class="el" href="namespacedqcsim_1_1wrap.html#af0961c9cf3940114db65b8d7260021e0">HandleIndex</a> <a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#ac80648089082d159656cafa3610f5442">handle</a>) noexcept</td></tr>
+<tr class="memdesc:a961083860ae70e06a637ed21e97c0ff2 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wraps the given raw handle.  <a href="classdqcsim_1_1wrap_1_1_handle.html#a961083860ae70e06a637ed21e97c0ff2">More...</a><br /></td></tr>
+<tr class="separator:a961083860ae70e06a637ed21e97c0ff2 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac666eb66355e59b7e7f5a8f2513d638f inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top"><a id="ac666eb66355e59b7e7f5a8f2513d638f"></a>
+virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#ac666eb66355e59b7e7f5a8f2513d638f">~Handle</a> () noexcept</td></tr>
+<tr class="memdesc:ac666eb66355e59b7e7f5a8f2513d638f inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="mdescLeft">&#160;</td><td class="mdescRight">Delete the handle and its wrapper. <br /></td></tr>
+<tr class="separator:ac666eb66355e59b7e7f5a8f2513d638f inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c4de6ec2c21a79f09fae646b41438ee inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#a7c4de6ec2c21a79f09fae646b41438ee">free</a> ()</td></tr>
+<tr class="memdesc:a7c4de6ec2c21a79f09fae646b41438ee inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="mdescLeft">&#160;</td><td class="mdescRight">Explicitly delete the handle, allowing errors to be caught.  <a href="classdqcsim_1_1wrap_1_1_handle.html#a7c4de6ec2c21a79f09fae646b41438ee">More...</a><br /></td></tr>
+<tr class="separator:a7c4de6ec2c21a79f09fae646b41438ee inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ca807386b06662933cd3bd988374aeb inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#a7ca807386b06662933cd3bd988374aeb">is_valid</a> () const noexcept</td></tr>
+<tr class="memdesc:a7ca807386b06662933cd3bd988374aeb inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether this wrapper (still) contains a valid handle.  <a href="classdqcsim_1_1wrap_1_1_handle.html#a7ca807386b06662933cd3bd988374aeb">More...</a><br /></td></tr>
+<tr class="separator:a7ca807386b06662933cd3bd988374aeb inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad984600fbf911d62ea875779a2dac309 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacedqcsim_1_1wrap.html#af0961c9cf3940114db65b8d7260021e0">HandleIndex</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#ad984600fbf911d62ea875779a2dac309">get_handle</a> () const noexcept</td></tr>
+<tr class="memdesc:ad984600fbf911d62ea875779a2dac309 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the raw handle without relinquishing ownership.  <a href="classdqcsim_1_1wrap_1_1_handle.html#ad984600fbf911d62ea875779a2dac309">More...</a><br /></td></tr>
+<tr class="separator:ad984600fbf911d62ea875779a2dac309 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb3de91c4d3780d76771c0caf12f23b7 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacedqcsim_1_1wrap.html#af0961c9cf3940114db65b8d7260021e0">HandleIndex</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#afb3de91c4d3780d76771c0caf12f23b7">take_handle</a> () noexcept</td></tr>
+<tr class="memdesc:afb3de91c4d3780d76771c0caf12f23b7 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the raw handle and relinquishes ownership.  <a href="classdqcsim_1_1wrap_1_1_handle.html#afb3de91c4d3780d76771c0caf12f23b7">More...</a><br /></td></tr>
+<tr class="separator:afb3de91c4d3780d76771c0caf12f23b7 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a965e7c831b9d6a8a95ddf097fd37f9f1 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top"><a id="a965e7c831b9d6a8a95ddf097fd37f9f1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Handle</b> (const <a class="el" href="classdqcsim_1_1wrap_1_1_handle.html">Handle</a> &amp;)=delete</td></tr>
+<tr class="separator:a965e7c831b9d6a8a95ddf097fd37f9f1 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a528e8404d885811015be6859e3659ae6 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top"><a id="a528e8404d885811015be6859e3659ae6"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classdqcsim_1_1wrap_1_1_handle.html">Handle</a> &amp;)=delete</td></tr>
+<tr class="separator:a528e8404d885811015be6859e3659ae6 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c19adcbfac59bc6017dfdc5dc72a150 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#a0c19adcbfac59bc6017dfdc5dc72a150">Handle</a> (<a class="el" href="classdqcsim_1_1wrap_1_1_handle.html">Handle</a> &amp;&amp;src)</td></tr>
+<tr class="memdesc:a0c19adcbfac59bc6017dfdc5dc72a150 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move constructor; simply moves ownership of the handle from the source object to the constructed object.  <a href="classdqcsim_1_1wrap_1_1_handle.html#a0c19adcbfac59bc6017dfdc5dc72a150">More...</a><br /></td></tr>
+<tr class="separator:a0c19adcbfac59bc6017dfdc5dc72a150 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67d2a2bd0f058184a9713c3510bc4197 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html">Handle</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#a67d2a2bd0f058184a9713c3510bc4197">operator=</a> (<a class="el" href="classdqcsim_1_1wrap_1_1_handle.html">Handle</a> &amp;&amp;src)</td></tr>
+<tr class="memdesc:a67d2a2bd0f058184a9713c3510bc4197 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move constructor; simply moves ownership of the handle from the source object to the assignment target.  <a href="classdqcsim_1_1wrap_1_1_handle.html#a67d2a2bd0f058184a9713c3510bc4197">More...</a><br /></td></tr>
+<tr class="separator:a67d2a2bd0f058184a9713c3510bc4197 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78024ff86a0215bf8c4aeaebf48efedc inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#a78024ff86a0215bf8c4aeaebf48efedc">dump</a> () const</td></tr>
+<tr class="memdesc:a78024ff86a0215bf8c4aeaebf48efedc inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a string containing a debug dump of the handle.  <a href="classdqcsim_1_1wrap_1_1_handle.html#a78024ff86a0215bf8c4aeaebf48efedc">More...</a><br /></td></tr>
+<tr class="separator:a78024ff86a0215bf8c4aeaebf48efedc inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a154d90a3ed18ecd47d2abbc4eb688226 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76">HandleType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#a154d90a3ed18ecd47d2abbc4eb688226">type</a> () const</td></tr>
+<tr class="memdesc:a154d90a3ed18ecd47d2abbc4eb688226 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the type of this handle.  <a href="classdqcsim_1_1wrap_1_1_handle.html#a154d90a3ed18ecd47d2abbc4eb688226">More...</a><br /></td></tr>
+<tr class="separator:a154d90a3ed18ecd47d2abbc4eb688226 inherit pub_methods_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
-Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a8521e92f6b4618c30d241003c08f1dda"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a8521e92f6b4618c30d241003c08f1dda">identity</a> (size_t <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#ac11bf69c16879425917c29d78d6ca05b">n</a>)</td></tr>
-<tr class="memdesc:a8521e92f6b4618c30d241003c08f1dda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs an identity matrix of size <code>n</code> times <code>n</code>.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a8521e92f6b4618c30d241003c08f1dda">More...</a><br /></td></tr>
-<tr class="separator:a8521e92f6b4618c30d241003c08f1dda"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a5e736a2de52898e1930820f93bfdfba4"><td class="memItemLeft" align="right" valign="top">std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a5e736a2de52898e1930820f93bfdfba4">operator&lt;&lt;</a> (std::ostream &amp;out, const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;matrix)</td></tr>
-<tr class="memdesc:a5e736a2de52898e1930820f93bfdfba4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows matrices to be printed.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a5e736a2de52898e1930820f93bfdfba4">More...</a><br /></td></tr>
-<tr class="separator:a5e736a2de52898e1930820f93bfdfba4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pro_attribs_classdqcsim_1_1wrap_1_1_handle"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_classdqcsim_1_1wrap_1_1_handle')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="classdqcsim_1_1wrap_1_1_handle.html">dqcsim::wrap::Handle</a></td></tr>
+<tr class="memitem:ac80648089082d159656cafa3610f5442 inherit pro_attribs_classdqcsim_1_1wrap_1_1_handle"><td class="memItemLeft" align="right" valign="top"><a id="ac80648089082d159656cafa3610f5442"></a>
+<a class="el" href="namespacedqcsim_1_1wrap.html#af0961c9cf3940114db65b8d7260021e0">HandleIndex</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_handle.html#ac80648089082d159656cafa3610f5442">handle</a></td></tr>
+<tr class="memdesc:ac80648089082d159656cafa3610f5442 inherit pro_attribs_classdqcsim_1_1wrap_1_1_handle"><td class="mdescLeft">&#160;</td><td class="mdescRight">The wrapped handle. <br /></td></tr>
+<tr class="separator:ac80648089082d159656cafa3610f5442 inherit pro_attribs_classdqcsim_1_1wrap_1_1_handle"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Convenience class for the square complex matrices used to express the qubit gates. </p>
+<div class="textblock"><p>Represents a square matrix used for describing N-qubit gates. </p>
 <dl class="section note"><dt>Note</dt><dd>DQCsim is not a math library: this matrix class is solely intended as an interface between DQCsim's internal matrix representation and whatever math library you want to use. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02474">2474</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02963">2963</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a6a4cc7c07601cbeb4a1392cf6e29503e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6a4cc7c07601cbeb4a1392cf6e29503e">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[1/3]</span></h2>
+<a id="a2ca13c01a8f750db976830d0fab5bce8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ca13c01a8f750db976830d0fab5bce8">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[1/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -180,32 +221,33 @@ Friends</h2></td></tr>
         <tr>
           <td class="memname">dqcsim::wrap::Matrix::Matrix </td>
           <td>(</td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>n</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="namespacedqcsim_1_1wrap.html#af0961c9cf3940114db65b8d7260021e0">HandleIndex</a>&#160;</td>
+          <td class="paramname"><em>handle</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Constructs a zero matrix of size <code>n</code> times <code>n</code>. </p>
+<p>Wraps the given matrix handle. </p>
+<dl class="section note"><dt>Note</dt><dd>This constructor does not verify that the handle is actually valid.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">n</td><td>The number of rows = the number of columns of the matrix. </td></tr>
+    <tr><td class="paramname">handle</td><td>The raw handle to wrap. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02501">2501</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02974">2974</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<a id="a577610db060bd3a3a79c6e580bdfe4ae"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a577610db060bd3a3a79c6e580bdfe4ae">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[2/3]</span></h2>
+<a id="abe46993e8d65f940fab7918c2e9ee279"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe46993e8d65f940fab7918c2e9ee279">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[2/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -217,13 +259,13 @@ Friends</h2></td></tr>
           <td class="memname">dqcsim::wrap::Matrix::Matrix </td>
           <td>(</td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>size</em>, </td>
+          <td class="paramname"><em>num_qubits</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a> *&#160;</td>
-          <td class="paramname"><em>data</em>&#160;</td>
+          <td class="paramname"><em>matrix</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -238,28 +280,28 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Constructs a matrix from a row-major flattened array of <code>size</code> <code>complex</code>s. </p>
+<p>Constructs a matrix from a row-major flattened array of <code>4**num_qubits</code> <code>complex</code>s. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">size</td><td>The number of complex numbers. Must be a square number, as the matrix must be square. </td></tr>
-    <tr><td class="paramname">data</td><td>Pointer to an array of complex numbers representing the desired matrix in row-major form. </td></tr>
+    <tr><td class="paramname">num_qubits</td><td>The number of qubits that the matrix is intended for. Must be 1 or more. </td></tr>
+    <tr><td class="paramname">matrix</td><td>Pointer to an array of complex numbers representing the desired matrix in row-major form. The matrix has <code>4**num_qubits</code> complex entries. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A new matrix containing the desired data. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::invalid_argument</td><td>When <code>size</code> is not a square number. </td></tr>
+    <tr><td class="paramname">std::runtime_error</td><td>When constructing the matrix failed. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02529">2529</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02989">2989</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<a id="a0d806a5950e6b1f88025ee3884880169"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0d806a5950e6b1f88025ee3884880169">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[3/3]</span></h2>
+<a id="a9c61de59aea49e4cdc746a7802a05dc0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9c61de59aea49e4cdc746a7802a05dc0">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[3/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -271,13 +313,13 @@ Friends</h2></td></tr>
           <td class="memname">dqcsim::wrap::Matrix::Matrix </td>
           <td>(</td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>size</em>, </td>
+          <td class="paramname"><em>num_qubits</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const double *&#160;</td>
-          <td class="paramname"><em>data</em>&#160;</td>
+          <td class="paramname"><em>matrix</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -292,29 +334,28 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Constructs a matrix from a row-major, real-first flattened array of 2 x <code>size</code> <code>double</code>s. </p>
+<p>Constructs a matrix from a row-major flattened array of <code>2 * 4**num_qubits</code> <code>complex</code>s. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">size</td><td>The number of complex numbers. Must be a square number, as the matrix must be square. </td></tr>
-    <tr><td class="paramname">data</td><td>Pointer to an array of doubles representing the desired matrix in row-major form using (real, imag) pairs. </td></tr>
+    <tr><td class="paramname">num_qubits</td><td>The number of qubits that the matrix is intended for. Must be 1 or more. </td></tr>
+    <tr><td class="paramname">matrix</td><td>Pointer to an array of complex numbers representing the desired matrix in row-major form using (real, imag) pairs. The matrix contains <code>2*4**num_qubits</code> doubles. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A new matrix containing the desired data. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::invalid_argument</td><td>When <code>size</code> is not a square number. </td></tr>
+    <tr><td class="paramname">std::runtime_error</td><td>When constructing the matrix failed. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02547">2547</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03005">3005</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a id="a8521e92f6b4618c30d241003c08f1dda"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8521e92f6b4618c30d241003c08f1dda">&#9670;&nbsp;</a></span>identity()</h2>
+<a id="a74f8d148bc1bed256f613919db096622"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74f8d148bc1bed256f613919db096622">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[4/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -323,35 +364,41 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> dqcsim::wrap::Matrix::identity </td>
+          <td class="memname">dqcsim::wrap::Matrix::Matrix </td>
           <td>(</td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>n</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838">PredefinedGate</a>&#160;</td>
+          <td class="paramname"><em>gate</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Constructs an identity matrix of size <code>n</code> times <code>n</code>. </p>
+<p>Constructs a non-parameterized predefined matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">n</td><td>The number of rows = the number of columns of the matrix. </td></tr>
+    <tr><td class="paramname">gate</td><td>The gate to construct the matrix for. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A new identity matrix of size <code>n</code> times <code>n</code>. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A new matrix containing the desired data. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the matrix for a parameterized gate type is requested, or constructing the matrix failed. </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02510">2510</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03017">3017</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<a id="af0a2a7dcbd34233eecefc3bbefbceded"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af0a2a7dcbd34233eecefc3bbefbceded">&#9670;&nbsp;</a></span>operator()() <span class="overload">[1/2]</span></h2>
+<a id="a3981b47a678f4a3ddfb18657fcd11c5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3981b47a678f4a3ddfb18657fcd11c5a">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[5/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -360,16 +407,16 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a>&amp; dqcsim::wrap::Matrix::operator() </td>
+          <td class="memname">dqcsim::wrap::Matrix::Matrix </td>
           <td>(</td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>row</em>, </td>
+          <td class="paramtype"><a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838">PredefinedGate</a>&#160;</td>
+          <td class="paramname"><em>gate</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>column</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html">ArbData</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>parameters</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -384,28 +431,37 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Mutable matrix element accessor. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Constructs a predefined matrix, using <code><a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html" title="Class wrapper for ArbData handles.">ArbData</a></code> to represent the parameters for parameterized gates. </p>
+<p>The <code><a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html" title="Class wrapper for ArbData handles.">ArbData</a></code> needed for the rotation gates can be trivially constructed in-line. Here's the relevant code:</p>
+<div class="fragment"><div class="line"><span class="keywordtype">double</span> theta, phi, lambda;</div>
+<div class="line">uint64_t k;</div>
+<div class="line"><a class="code" href="classdqcsim_1_1wrap_1_1_matrix.html#a2ca13c01a8f750db976830d0fab5bce8">Matrix</a>(<a class="code" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838af9c24782c24c237d16e79f18e2fa9046">PredefinedGate::RX</a>, <a class="code" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76af1cdab8853303bb92c252edcfddcc968">ArbData</a>.with_arg(theta));</div>
+<div class="line"><a class="code" href="classdqcsim_1_1wrap_1_1_matrix.html#a2ca13c01a8f750db976830d0fab5bce8">Matrix</a>(<a class="code" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838accb21680cb44cbc3715ed8acc0145efe">PredefinedGate::RY</a>, <a class="code" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76af1cdab8853303bb92c252edcfddcc968">ArbData</a>.with_arg(theta));</div>
+<div class="line"><a class="code" href="classdqcsim_1_1wrap_1_1_matrix.html#a2ca13c01a8f750db976830d0fab5bce8">Matrix</a>(<a class="code" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a25e29a048984cda66521f1eab1182666">PredefinedGate::RZ</a>, <a class="code" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76af1cdab8853303bb92c252edcfddcc968">ArbData</a>.with_arg(theta));</div>
+<div class="line"><a class="code" href="classdqcsim_1_1wrap_1_1_matrix.html#a2ca13c01a8f750db976830d0fab5bce8">Matrix</a>(<a class="code" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a5e35d7fff7b903516cba242ff68fc6d3">PredefinedGate::Phase</a>, <a class="code" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76af1cdab8853303bb92c252edcfddcc968">ArbData</a>.with_arg(theta));</div>
+<div class="line"><a class="code" href="classdqcsim_1_1wrap_1_1_matrix.html#a2ca13c01a8f750db976830d0fab5bce8">Matrix</a>(<a class="code" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a439f2f597c807335eec64515af0283ca">PredefinedGate::PhaseK</a>, <a class="code" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76af1cdab8853303bb92c252edcfddcc968">ArbData</a>.with_arg(k));</div>
+<div class="line"><a class="code" href="classdqcsim_1_1wrap_1_1_matrix.html#a2ca13c01a8f750db976830d0fab5bce8">Matrix</a>(<a class="code" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838ae1e1d3d40573127e9ee0480caf1283d6">PredefinedGate::R</a>, <a class="code" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76af1cdab8853303bb92c252edcfddcc968">ArbData</a>.with_arg(theta).with_arg(phi).with_arg(lambda));</div>
+</div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">row</td><td>The row index for the element to access. </td></tr>
-    <tr><td class="paramname">column</td><td>The column index for the element to access. </td></tr>
+    <tr><td class="paramname">gate</td><td>The gate to construct the matrix for. </td></tr>
+    <tr><td class="paramname">parameters</td><td>The parameters for the gate; refer to the docs for <code>PredefinedGate</code> for more information. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A mutable reference to the element. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A new matrix containing the desired data. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::invalid_argument</td><td>When either index is out of range. </td></tr>
+    <tr><td class="paramname">std::runtime_error</td><td>When constructing the matrix failed. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02582">2582</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03045">3045</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<a id="a082b385b826501668e81585ab963adf2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a082b385b826501668e81585ab963adf2">&#9670;&nbsp;</a></span>operator()() <span class="overload">[2/2]</span></h2>
+<a id="a88b5925e91a2061f1be1f9c7964e73f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88b5925e91a2061f1be1f9c7964e73f0">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[6/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -414,21 +470,21 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a>&amp; dqcsim::wrap::Matrix::operator() </td>
+          <td class="memname">dqcsim::wrap::Matrix::Matrix </td>
           <td>(</td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>row</em>, </td>
+          <td class="paramtype"><a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838">PredefinedGate</a>&#160;</td>
+          <td class="paramname"><em>gate</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>column</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html">ArbData</a> &amp;&#160;</td>
+          <td class="paramname"><em>parameters</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> const</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -438,28 +494,28 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Const matrix element accessor. </p>
+<p>Constructs a predefined matrix, using <code><a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html" title="Class wrapper for ArbData handles.">ArbData</a></code> to represent the parameters for parameterized gates. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">row</td><td>The row index for the element to access, starting at 0. </td></tr>
-    <tr><td class="paramname">column</td><td>The column index for the element to access, starting at 0. </td></tr>
+    <tr><td class="paramname">gate</td><td>The gate to construct the matrix for. </td></tr>
+    <tr><td class="paramname">parameters</td><td>The parameters for the gate; refer to the docs for <code>PredefinedGate</code> for more information. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>An immutable reference to the element. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A new matrix containing the desired data. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
-    <tr><td class="paramname">std::invalid_argument</td><td>When either index is out of range. </td></tr>
+    <tr><td class="paramname">std::runtime_error</td><td>When constructing the matrix failed. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02597">2597</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03059">3059</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<a id="ac11bf69c16879425917c29d78d6ca05b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac11bf69c16879425917c29d78d6ca05b">&#9670;&nbsp;</a></span>n()</h2>
+<a id="aa5e5659367b930ac4455d3d29788a1e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa5e5659367b930ac4455d3d29788a1e6">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[7/7]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -468,58 +524,41 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">size_t dqcsim::wrap::Matrix::n </td>
+          <td class="memname">dqcsim::wrap::Matrix::Matrix </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns the number of rows = the number of columns in the matrix. </p>
-<dl class="section return"><dt>Returns</dt><dd>The number of rows = the number of columns in the matrix. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02609">2609</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
-
-</div>
-</div>
-<a id="ac08126edeb95650c9b85a7ab7413e4d1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac08126edeb95650c9b85a7ab7413e4d1">&#9670;&nbsp;</a></span>data() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a>* dqcsim::wrap::Matrix::data </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>src</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Mutable flattened data accessor. </p>
-<dl class="section return"><dt>Returns</dt><dd>A mutable pointer to the contained data represented as a row-major array of complex numbers. </dd></dl>
+<p>Copy-constructs a matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">src</td><td>The object to copy from. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the source handle is invalid or construction of the new handle failed for some reason. </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02619">2619</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03070">3070</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<a id="a8c31eaac0190f845dc6341890df7c242"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8c31eaac0190f845dc6341890df7c242">&#9670;&nbsp;</a></span>data() <span class="overload">[2/2]</span></h2>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a40d47517ec1cbf1eac0eb2f40896ba56"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a40d47517ec1cbf1eac0eb2f40896ba56">&#9670;&nbsp;</a></span>operator=()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -528,88 +567,40 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const <a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a>* dqcsim::wrap::Matrix::data </td>
+          <td class="memname">void dqcsim::wrap::Matrix::operator= </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Immutable flattened data accessor. </p>
-<dl class="section return"><dt>Returns</dt><dd>An immutable pointer to the contained data represented as a row-major array of complex numbers. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02629">2629</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
-
-</div>
-</div>
-<a id="a28209bea25108cf671c23f320ae6bda3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a28209bea25108cf671c23f320ae6bda3">&#9670;&nbsp;</a></span>data_double() <span class="overload">[1/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">double* dqcsim::wrap::Matrix::data_double </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>src</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Mutable flattened data accessor. </p>
-<dl class="section return"><dt>Returns</dt><dd>A mutable pointer to the contained data represented as a row-major array of (real, imag) doubles. </dd></dl>
+<p>Copy assignment operator for matrices. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">src</td><td>The object to copy from. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the source handle is invalid, any previously wrapped handle in the destination object could not be freed, or construction of the new handle failed for some reason. </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02639">2639</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
-
-</div>
-</div>
-<a id="a1a72945d6a9802eb56e6891c8c016cf5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1a72945d6a9802eb56e6891c8c016cf5">&#9670;&nbsp;</a></span>data_double() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const double* dqcsim::wrap::Matrix::data_double </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Immutable flattened data accessor. </p>
-<dl class="section return"><dt>Returns</dt><dd>An immutable pointer to the contained data represented as a row-major array of (real, imag) doubles. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02649">2649</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03082">3082</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<a id="a772a6380aab79dde4a48387a210b1703"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a772a6380aab79dde4a48387a210b1703">&#9670;&nbsp;</a></span>size()</h2>
+<a id="aaee4061868d6ff16e319c6be7f79265f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaee4061868d6ff16e319c6be7f79265f">&#9670;&nbsp;</a></span>size()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -626,20 +617,26 @@ Friends</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns the number of complex elements in the matrix. </p>
-<dl class="section return"><dt>Returns</dt><dd>The number of complex elements in the matrix. </dd></dl>
+<p>Returns the number of elements in the matrix. </p>
+<dl class="section return"><dt>Returns</dt><dd>The number of elements in the matrix. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the matrix handle is invalid. </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02658">2658</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03104">3104</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<a id="a885cd8ed6ded5cdb9682c2f9a8b3cedc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a885cd8ed6ded5cdb9682c2f9a8b3cedc">&#9670;&nbsp;</a></span>operator==()</h2>
+<a id="a6743acc8d6a2f7b7a5541296209727a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6743acc8d6a2f7b7a5541296209727a0">&#9670;&nbsp;</a></span>dimension()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -648,35 +645,34 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool dqcsim::wrap::Matrix::operator== </td>
+          <td class="memname">size_t dqcsim::wrap::Matrix::dimension </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html" title="Convenience class for the square complex matrices used to express the qubit gates.">Matrix</a> equality operator (exact). </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">other</td><td>The matrix to compare to. </td></tr>
+<p>Returns the number of rows/columns in the matrix. </p>
+<dl class="section return"><dt>Returns</dt><dd>The number of rows/columns in the matrix. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the matrix handle is invalid. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Whether the matrices are equal. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02702">2702</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03114">3114</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<a id="a485df47534abcd6bb72e5e88202d3f6b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a485df47534abcd6bb72e5e88202d3f6b">&#9670;&nbsp;</a></span>operator!=()</h2>
+<a id="acc57709d48c533fd0946d7cff8516f77"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc57709d48c533fd0946d7cff8516f77">&#9670;&nbsp;</a></span>num_qubits()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -685,35 +681,34 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool dqcsim::wrap::Matrix::operator!= </td>
+          <td class="memname">size_t dqcsim::wrap::Matrix::num_qubits </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&#160;</td>
-          <td class="paramname"><em>other</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td> const</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html" title="Convenience class for the square complex matrices used to express the qubit gates.">Matrix</a> inequality operator (exact). </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">other</td><td>The matrix to compare to. </td></tr>
+<p>Returns the number of qubits associated with the matrix. </p>
+<dl class="section return"><dt>Returns</dt><dd>The number of qubits associated with the matrix. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the matrix handle is invalid. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Whether the matrices are different. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02712">2712</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03124">3124</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<a id="ae21ad93066c2a8933a3268a64825960b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae21ad93066c2a8933a3268a64825960b">&#9670;&nbsp;</a></span>fuzzy_equal()</h2>
+<a id="afe3351f9265cf8e8d9c78c7a00491750"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe3351f9265cf8e8d9c78c7a00491750">&#9670;&nbsp;</a></span>get()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -722,7 +717,79 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool dqcsim::wrap::Matrix::fuzzy_equal </td>
+          <td class="memname">std::vector&lt;<a class="el" href="namespacedqcsim_1_1wrap.html#a5b28ac69a55b8a03c0584a7451a9703b">complex</a>&gt; dqcsim::wrap::Matrix::get </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the data contained by the matrix in row-major form as complex numbers. </p>
+<dl class="section return"><dt>Returns</dt><dd>The data contained by the matrix. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the matrix handle is invalid. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03135">3135</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="ac83c3d5eaf536f0b938f027feebda7b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac83c3d5eaf536f0b938f027feebda7b1">&#9670;&nbsp;</a></span>get_as_doubles()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;double&gt; dqcsim::wrap::Matrix::get_as_doubles </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the data contained by the matrix in row-major form as pairs of real/imag doubles. </p>
+<dl class="section return"><dt>Returns</dt><dd>The data contained by the matrix. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the matrix handle is invalid. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03150">3150</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="a8da2ffec275682315c1aea644dba1c3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8da2ffec275682315c1aea644dba1c3a">&#9670;&nbsp;</a></span>approx_eq()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool dqcsim::wrap::Matrix::approx_eq </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&#160;</td>
           <td class="paramname"><em>other</em>, </td>
@@ -737,7 +804,7 @@ Friends</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>ignore_gphase</em> = <code>true</code>&#160;</td>
+          <td class="paramname"><em>ignore_global_phase</em> = <code>true</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -752,24 +819,29 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html" title="Convenience class for the square complex matrices used to express the qubit gates.">Matrix</a> fuzzy equality operator. </p>
+<p>Approximate equality operator for two matrices. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">other</td><td>The matrix to compare to. </td></tr>
     <tr><td class="paramname">epsilon</td><td>The maximum tolerated RMS variation of the elements. </td></tr>
-    <tr><td class="paramname">ignore_gphase</td><td>Whether global phase differences should be ignored in the comparison. </td></tr>
+    <tr><td class="paramname">ignore_global_phase</td><td>Whether global phase differences should be ignored in the comparison. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Whether the matrices are approximately equal. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When either handle is invalid. </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02725">2725</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03168">3168</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<h2 class="groupheader">Friends And Related Function Documentation</h2>
-<a id="a5e736a2de52898e1930820f93bfdfba4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5e736a2de52898e1930820f93bfdfba4">&#9670;&nbsp;</a></span>operator&lt;&lt;</h2>
+<a id="a2d7f0fe58bbcc363fd56f4ce1bebeb9d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d7f0fe58bbcc363fd56f4ce1bebeb9d">&#9670;&nbsp;</a></span>is_predefined()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -778,41 +850,159 @@ Friends</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::ostream&amp; operator&lt;&lt; </td>
+          <td class="memname">bool dqcsim::wrap::Matrix::is_predefined </td>
           <td>(</td>
-          <td class="paramtype">std::ostream &amp;&#160;</td>
-          <td class="paramname"><em>out</em>, </td>
+          <td class="paramtype"><a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838">PredefinedGate</a>&#160;</td>
+          <td class="paramname"><em>gate</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&#160;</td>
-          <td class="paramname"><em>matrix</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>epsilon</em> = <code>0.000001</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>ignore_global_phase</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html">ArbData</a> *&#160;</td>
+          <td class="paramname"><em>parameters</em> = <code>nullptr</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td>
+          <td></td><td> const</td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Allows matrices to be printed. </p>
+<p>Detects whether this matrix is approximately equal to (some parameterization of) the given predefined gate. </p>
+<p>The detected parameters are optionally returned as an <code><a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html" title="Class wrapper for ArbData handles.">ArbData</a></code> if the matrix matches. If you want to compare to a specific parameterization of a predefined gate (for instance, an X rotation of 45 degrees), construct its matrix first, and then compare with <code><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a8da2ffec275682315c1aea644dba1c3a" title="Approximate equality operator for two matrices.">approx_eq()</a></code>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">out</td><td>The output stream to write to. </td></tr>
-    <tr><td class="paramname">matrix</td><td>The matrix to dump. </td></tr>
+    <tr><td class="paramname">gate</td><td>The predefined gate matrix to detect. </td></tr>
+    <tr><td class="paramname">epsilon</td><td>The maximum tolerated RMS variation of the elements. </td></tr>
+    <tr><td class="paramname">ignore_global_phase</td><td>Whether global phase differences should be ignored in the comparison. </td></tr>
+    <tr><td class="paramname">parameters</td><td>If non-null, the detected parameters (if any) are written into the referenced <code><a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html" title="Class wrapper for ArbData handles.">ArbData</a></code>. Any previous contents are discarded. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The output stream object. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Whether the matrix matches the given predefined gate type. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the current handle is invalid, detection fails, or <code>parameters</code> could not be updated. </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02669">2669</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03196">3196</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="a588c29397018f4780dfdc4169ebf5463"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a588c29397018f4780dfdc4169ebf5463">&#9670;&nbsp;</a></span>add_controls()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> dqcsim::wrap::Matrix::add_controls </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>number_of_controls</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a controlled matrix from the given matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">number_of_controls</td><td>The number of control qubits to add. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The new matrix. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the handle is invalid or construction of the new matrix failed. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03220">3220</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="aa5d4c5515ca2e6aada1cc52d7d5ceb8a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa5d4c5515ca2e6aada1cc52d7d5ceb8a">&#9670;&nbsp;</a></span>strip_control()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt;std::vector&lt;size_t&gt;, <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a>&gt; dqcsim::wrap::Matrix::strip_control </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>epsilon</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>ignore_global_phase</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Splits a controlled matrix into its non-controlled submatrix and the indices of the control qubits. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">epsilon</td><td>The maximum magitude of the difference between the column vectors of the input matrix and the identity matrix (after dephasing if <code>ignore_phase</code> is set) for the column vector to be considered to not affect the respective entry in the quantum state vector. Note that if this is greater than zero, the resulting gate may not be exactly equivalent. </td></tr>
+    <tr><td class="paramname">ignore_global_phase</td><td>If this is set, any global phase in the matrix is ignored, but note that if control qubits are stripped the "global" phase of the resulting submatrix is always significant. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A pair consisting of a sorted vector of the qubit indices that were removed and the newly constructed submatrix. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the handle is invalid or construction of the new matrix failed. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03242">3242</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -820,6 +1010,14 @@ Friends</h2></td></tr>
 <li><a class="el" href="dqcsim_source.html">dqcsim</a></li>
 </ul>
 </div><!-- contents -->
+<div class="ttc" id="anamespacedqcsim_1_1wrap_html_acf8e6d9f573b415987645369e3160838a439f2f597c807335eec64515af0283ca"><div class="ttname"><a href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a439f2f597c807335eec64515af0283ca">dqcsim::wrap::PredefinedGate::PhaseK</a></div><div class="ttdeci">@ PhaseK</div><div class="ttdoc">The matrix for a Z rotation with angle π/2^k.</div></div>
+<div class="ttc" id="aclassdqcsim_1_1wrap_1_1_matrix_html_a2ca13c01a8f750db976830d0fab5bce8"><div class="ttname"><a href="classdqcsim_1_1wrap_1_1_matrix.html#a2ca13c01a8f750db976830d0fab5bce8">dqcsim::wrap::Matrix::Matrix</a></div><div class="ttdeci">Matrix(HandleIndex handle) noexcept</div><div class="ttdoc">Wraps the given matrix handle.</div><div class="ttdef"><b>Definition:</b> <a href="dqcsim_source.html#l02974">dqcsim:2974</a></div></div>
+<div class="ttc" id="anamespacedqcsim_1_1wrap_html_a306249d3867840f6028c135e7d6e3c76af1cdab8853303bb92c252edcfddcc968"><div class="ttname"><a href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76af1cdab8853303bb92c252edcfddcc968">dqcsim::wrap::HandleType::ArbData</a></div><div class="ttdeci">@ ArbData</div><div class="ttdoc">Indicates that a handle is an ArbData.</div></div>
+<div class="ttc" id="anamespacedqcsim_1_1wrap_html_acf8e6d9f573b415987645369e3160838a5e35d7fff7b903516cba242ff68fc6d3"><div class="ttname"><a href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a5e35d7fff7b903516cba242ff68fc6d3">dqcsim::wrap::PredefinedGate::Phase</a></div><div class="ttdeci">@ Phase</div><div class="ttdoc">The matrix for an arbitrary Z rotation.</div></div>
+<div class="ttc" id="anamespacedqcsim_1_1wrap_html_acf8e6d9f573b415987645369e3160838af9c24782c24c237d16e79f18e2fa9046"><div class="ttname"><a href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838af9c24782c24c237d16e79f18e2fa9046">dqcsim::wrap::PredefinedGate::RX</a></div><div class="ttdeci">@ RX</div><div class="ttdoc">The matrix for an arbitrary X rotation.</div></div>
+<div class="ttc" id="anamespacedqcsim_1_1wrap_html_acf8e6d9f573b415987645369e3160838ae1e1d3d40573127e9ee0480caf1283d6"><div class="ttname"><a href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838ae1e1d3d40573127e9ee0480caf1283d6">dqcsim::wrap::PredefinedGate::R</a></div><div class="ttdeci">@ R</div><div class="ttdoc">Arbitrary rotation matrix.</div></div>
+<div class="ttc" id="anamespacedqcsim_1_1wrap_html_acf8e6d9f573b415987645369e3160838a25e29a048984cda66521f1eab1182666"><div class="ttname"><a href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a25e29a048984cda66521f1eab1182666">dqcsim::wrap::PredefinedGate::RZ</a></div><div class="ttdeci">@ RZ</div><div class="ttdoc">The matrix for an arbitrary Z rotation.</div></div>
+<div class="ttc" id="anamespacedqcsim_1_1wrap_html_acf8e6d9f573b415987645369e3160838accb21680cb44cbc3715ed8acc0145efe"><div class="ttname"><a href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838accb21680cb44cbc3715ed8acc0145efe">dqcsim::wrap::PredefinedGate::RY</a></div><div class="ttdeci">@ RY</div><div class="ttdoc">The matrix for an arbitrary Y rotation.</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

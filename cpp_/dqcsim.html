@@ -124,13 +124,19 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents an ordered set of qubit references.  <a href="classdqcsim_1_1wrap_1_1_qubit_set.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">dqcsim::wrap::Matrix</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convenience class for the square complex matrices used to express the qubit gates.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate_matrix.html">dqcsim::wrap::GateMatrix</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains shorthand methods for a variety of commonly used gate matrices.  <a href="classdqcsim_1_1wrap_1_1_gate_matrix.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a square matrix used for describing N-qubit gates.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">dqcsim::wrap::Gate</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents any kind of gate with qubits bound to it.  <a href="classdqcsim_1_1wrap_1_1_gate.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_custom_gate_converter.html">dqcsim::wrap::CustomGateConverter</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class that you can inherit from to make your own custom gate converter for use within DQCsim.  <a href="classdqcsim_1_1wrap_1_1_custom_gate_converter.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_custom_unitary_gate_converter.html">dqcsim::wrap::CustomUnitaryGateConverter</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class that you can inherit from to make your own unitary gate converter for use within DQCsim.  <a href="classdqcsim_1_1wrap_1_1_custom_unitary_gate_converter.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate_map.html">dqcsim::wrap::GateMap&lt; Unbound, Bound &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html" title="Represents any kind of gate with qubits bound to it.">Gate</a> map wrapper class.  <a href="classdqcsim_1_1wrap_1_1_gate_map.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_measurement.html">dqcsim::wrap::Measurement</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Class representation of the measurement result for a single qubit.  <a href="classdqcsim_1_1wrap_1_1_measurement.html#details">More...</a><br /></td></tr>
@@ -330,21 +336,24 @@ Enumerations</h2></td></tr>
 &#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76ad25b4bd4c72aa2c07ee87adb10b59f16">dqcsim::wrap::HandleType::Gate</a> = 104, 
 <a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a911842b19d8b2f9bbed8cfe909d52975">dqcsim::wrap::HandleType::Measurement</a> = 105, 
 <a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a3b712117da07b9a04775cc9e07ef1fd0">dqcsim::wrap::HandleType::MeasurementSet</a> = 106, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76af53df0293e169f562bc1d9a20e1d2589">dqcsim::wrap::HandleType::Matrix</a> = 107, 
+<br />
+&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a0e1c29fea5874c77a7f4cf507a29936f">dqcsim::wrap::HandleType::GateMap</a> = 108, 
 <a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a43099504499d9d90b3744666848d5813">dqcsim::wrap::HandleType::FrontendProcessConfig</a> = 200, 
-<br />
-&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a9eff149a5d80c480865a34bac827e73b">dqcsim::wrap::HandleType::OperatorProcessConfig</a> = 201, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a9eff149a5d80c480865a34bac827e73b">dqcsim::wrap::HandleType::OperatorProcessConfig</a> = 201, 
 <a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a2f932f8a3ced619495a0c6ec0fde851c">dqcsim::wrap::HandleType::BackendProcessConfig</a> = 203, 
-<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a40309fceb465f394b41c6cae89ac06fb">dqcsim::wrap::HandleType::FrontendThreadConfig</a> = 204, 
+<br />
+&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a40309fceb465f394b41c6cae89ac06fb">dqcsim::wrap::HandleType::FrontendThreadConfig</a> = 204, 
 <a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76aa67d75776efbf684f98fe9f444907c92">dqcsim::wrap::HandleType::OperatorThreadConfig</a> = 205, 
-<br />
-&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76ab739902ab5790d0fee286d81c8740029">dqcsim::wrap::HandleType::BackendThreadConfig</a> = 206, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76ab739902ab5790d0fee286d81c8740029">dqcsim::wrap::HandleType::BackendThreadConfig</a> = 206, 
 <a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a0298583c39fd9515087e590c2bf15797">dqcsim::wrap::HandleType::SimulationConfig</a> = 207, 
-<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a4f502b57d2835715eaa382c7d4c32e94">dqcsim::wrap::HandleType::Simulation</a> = 208, 
-<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76afc1a21efe09755cf2f880797ef3d8b64">dqcsim::wrap::HandleType::FrontendDefinition</a> = 300, 
 <br />
-&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a98e07f31328cb6e23f9850601ef3e5f6">dqcsim::wrap::HandleType::OperatorDefinition</a> = 301, 
+&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a4f502b57d2835715eaa382c7d4c32e94">dqcsim::wrap::HandleType::Simulation</a> = 208, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76afc1a21efe09755cf2f880797ef3d8b64">dqcsim::wrap::HandleType::FrontendDefinition</a> = 300, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a98e07f31328cb6e23f9850601ef3e5f6">dqcsim::wrap::HandleType::OperatorDefinition</a> = 301, 
 <a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76a49f7bc7390791bd0c54f6844b950789c">dqcsim::wrap::HandleType::BackendDefinition</a> = 302, 
-<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76aac51ade2ce87ffc0a876f3933ffbe400">dqcsim::wrap::HandleType::PluginJoinHandle</a> = 303
+<br />
+&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76aac51ade2ce87ffc0a876f3933ffbe400">dqcsim::wrap::HandleType::PluginJoinHandle</a> = 303
 <br />
  }</td></tr>
 <tr class="memdesc:a306249d3867840f6028c135e7d6e3c76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents the type of a raw handle.  <a href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76">More...</a><br /></td></tr>
@@ -383,6 +392,47 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:aecbb81acf6bb4833801c3c8e8872ff3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of the three types of plugins.  <a href="namespacedqcsim_1_1wrap.html#aecbb81acf6bb4833801c3c8e8872ff3b">More...</a><br /></td></tr>
 <tr class="separator:aecbb81acf6bb4833801c3c8e8872ff3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf8e6d9f573b415987645369e3160838"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838">dqcsim::wrap::PredefinedGate</a> { <br />
+&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838add7536794b63bf90eccfd37f9b147d7f">dqcsim::wrap::PredefinedGate::I</a> = 100, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a02129bb861061d1a052c592e2dc6b383">dqcsim::wrap::PredefinedGate::X</a> = 101, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a57cec4137b614c87cb4e24a3d003a3e0">dqcsim::wrap::PredefinedGate::Y</a> = 102, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a21c2e59531c8710156d34a3c30ac81d5">dqcsim::wrap::PredefinedGate::Z</a> = 103, 
+<br />
+&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838ac1d9f50f86825a1a2302ec2449c17196">dqcsim::wrap::PredefinedGate::H</a> = 104, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a5dbc98dcc983a70728bd082d1a47546e">dqcsim::wrap::PredefinedGate::S</a> = 105, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a111df49b9c5637ad3cadc6b2ce40e27e">dqcsim::wrap::PredefinedGate::S_DAG</a> = 106, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838ab9ece18c950afbfa6b0fdbfa4ff731d3">dqcsim::wrap::PredefinedGate::T</a> = 107, 
+<br />
+&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a04698dc3c5f78b914f714e8b1aaf079f">dqcsim::wrap::PredefinedGate::T_DAG</a> = 108, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a8b2ef8644c2e1a5a5b9c05337a364fd5">dqcsim::wrap::PredefinedGate::RX_90</a> = 109, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a9dcdba52899ccc2954db77a0019186ad">dqcsim::wrap::PredefinedGate::RX_M90</a> = 110, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a75a398f9c63bb8eaefc9c2bcf2e7e1d9">dqcsim::wrap::PredefinedGate::RX_180</a> = 111, 
+<br />
+&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838afb8242f4c553c4824f6a90a2b77a9b85">dqcsim::wrap::PredefinedGate::RY_90</a> = 112, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a9f327887743657a3f99ec6ab71fb2faa">dqcsim::wrap::PredefinedGate::RY_M90</a> = 113, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838ad153ef544c0fc3cca710c079e9de3ba5">dqcsim::wrap::PredefinedGate::RY_180</a> = 114, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a2cd9362c8c3b9ce7d977cd1230682aa6">dqcsim::wrap::PredefinedGate::RZ_90</a> = 115, 
+<br />
+&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838afd4151f1400161f041ab03af0e53c530">dqcsim::wrap::PredefinedGate::RZ_M90</a> = 116, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a84118b95d73db336854d4a7b34993f5e">dqcsim::wrap::PredefinedGate::RZ_180</a> = 117, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838af9c24782c24c237d16e79f18e2fa9046">dqcsim::wrap::PredefinedGate::RX</a> = 150, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838accb21680cb44cbc3715ed8acc0145efe">dqcsim::wrap::PredefinedGate::RY</a> = 151, 
+<br />
+&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a25e29a048984cda66521f1eab1182666">dqcsim::wrap::PredefinedGate::RZ</a> = 152, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a439f2f597c807335eec64515af0283ca">dqcsim::wrap::PredefinedGate::PhaseK</a> = 153, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a5e35d7fff7b903516cba242ff68fc6d3">dqcsim::wrap::PredefinedGate::Phase</a> = 154, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838af89412c11bdc0ab44f99f92d5e9a3c5e">dqcsim::wrap::PredefinedGate::U1</a> = 190, 
+<br />
+&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838ae1e1d3d40573127e9ee0480caf1283d6">dqcsim::wrap::PredefinedGate::R</a> = 191, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a8778f5cc5ee1685fb97ad92e33e63225">dqcsim::wrap::PredefinedGate::Swap</a> = 200, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a2665732a9064888c9a1cc79928c4aa1d">dqcsim::wrap::PredefinedGate::SqSwap</a> = 201, 
+<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a4684821448f0ae2437312daece9d1cd9">dqcsim::wrap::PredefinedGate::U2</a> = 290, 
+<br />
+&#160;&#160;<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838ac960375866797bcd97f4f6c22c94b2aa">dqcsim::wrap::PredefinedGate::U3</a> = 390
+<br />
+ }</td></tr>
+<tr class="memdesc:acf8e6d9f573b415987645369e3160838"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of gates defined by DQCsim.  <a href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838">More...</a><br /></td></tr>
+<tr class="separator:acf8e6d9f573b415987645369e3160838"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -434,6 +484,12 @@ Functions</h2></td></tr>
 <tr class="memitem:aa1c8687783aa47d3a1a4865de1c224be"><td class="memItemLeft" align="right" valign="top">PluginType&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedqcsim_1_1wrap.html#aa1c8687783aa47d3a1a4865de1c224be">dqcsim::wrap::check</a> (<a class="el" href="dqcsim_8h.html#aac53f46471e2908a987f31dfa7a0028e">raw::dqcs_plugin_type_t</a> type)</td></tr>
 <tr class="memdesc:aa1c8687783aa47d3a1a4865de1c224be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks a <code>dqcs_plugin_type_t</code> return value and converts it to its C++ enum representation; if failure, throws a runtime error with DQCsim's error message.  <a href="namespacedqcsim_1_1wrap.html#aa1c8687783aa47d3a1a4865de1c224be">More...</a><br /></td></tr>
 <tr class="separator:aa1c8687783aa47d3a1a4865de1c224be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15123c55df72616d382b785ab1577dd7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="dqcsim_8h.html#ae2ada58b389fb1d221190ebb02f8d6bd">raw::dqcs_predefined_gate_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedqcsim_1_1wrap.html#a15123c55df72616d382b785ab1577dd7">dqcsim::wrap::to_raw</a> (PredefinedGate type) noexcept</td></tr>
+<tr class="memdesc:a15123c55df72616d382b785ab1577dd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Converts a <code>PredefinedGate</code> to its raw C enum.  <a href="namespacedqcsim_1_1wrap.html#a15123c55df72616d382b785ab1577dd7">More...</a><br /></td></tr>
+<tr class="separator:a15123c55df72616d382b785ab1577dd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a469b6a33a8e0160400aa64520429b190"><td class="memItemLeft" align="right" valign="top">PredefinedGate&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedqcsim_1_1wrap.html#a469b6a33a8e0160400aa64520429b190">dqcsim::wrap::check</a> (<a class="el" href="dqcsim_8h.html#ae2ada58b389fb1d221190ebb02f8d6bd">raw::dqcs_predefined_gate_t</a> type)</td></tr>
+<tr class="memdesc:a469b6a33a8e0160400aa64520429b190"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks a <code>dqcs_predefined_gate_t</code> return value and converts it to its C++ enum representation; if failure, throws a runtime error with DQCsim's error message.  <a href="namespacedqcsim_1_1wrap.html#a469b6a33a8e0160400aa64520429b190">More...</a><br /></td></tr>
+<tr class="separator:a469b6a33a8e0160400aa64520429b190"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8398a6b5eff4fe103524d5d36b7aaf3b"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a8398a6b5eff4fe103524d5d36b7aaf3b"><td class="memTemplItemLeft" align="right" valign="top">T *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacedqcsim_1_1wrap.html#a8398a6b5eff4fe103524d5d36b7aaf3b">dqcsim::wrap::check</a> (T *pointer)</td></tr>
 <tr class="memdesc:a8398a6b5eff4fe103524d5d36b7aaf3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks a pointer return value; if failure, throws a runtime error with DQCsim's error message.  <a href="namespacedqcsim_1_1wrap.html#a8398a6b5eff4fe103524d5d36b7aaf3b">More...</a><br /></td></tr>
@@ -512,7 +568,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00803">803</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01322">1322</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -551,7 +607,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00815">815</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01334">1334</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -590,7 +646,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00824">824</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01343">1343</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -629,7 +685,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00833">833</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01352">1352</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -668,7 +724,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00842">842</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01361">1361</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -707,7 +763,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00851">851</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01370">1370</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -746,7 +802,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00860">860</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01379">1379</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -785,7 +841,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00869">869</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01388">1388</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -824,7 +880,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l00878">878</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l01397">1397</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -843,7 +899,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Convenience macro for calling <code><a class="el" href="namespacedqcsim_1_1wrap.html#ac2cef265276c4c7b0806533f353c1a04" title="Shim around the dqcs_log_format C API using std::string for the strings.">log()</a></code> with trace loglevel and automatically determined filename and line number. </p>
 <dl class="section note"><dt>Note</dt><dd>Defined only when <code>DQCSIM_SHORT_LOGGING_MACROS</code> is defined before the <code>&lt;dqcsim&gt;</code> header is included. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l08997">8997</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09819">9819</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -862,7 +918,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Convenience macro for calling <code><a class="el" href="namespacedqcsim_1_1wrap.html#ac2cef265276c4c7b0806533f353c1a04" title="Shim around the dqcs_log_format C API using std::string for the strings.">log()</a></code> with debug loglevel and automatically determined filename and line number. </p>
 <dl class="section note"><dt>Note</dt><dd>Defined only when <code>DQCSIM_SHORT_LOGGING_MACROS</code> is defined before the <code>&lt;dqcsim&gt;</code> header is included. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09006">9006</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09828">9828</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -881,7 +937,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Convenience macro for calling <code><a class="el" href="namespacedqcsim_1_1wrap.html#ac2cef265276c4c7b0806533f353c1a04" title="Shim around the dqcs_log_format C API using std::string for the strings.">log()</a></code> with info loglevel and automatically determined filename and line number. </p>
 <dl class="section note"><dt>Note</dt><dd>Defined only when <code>DQCSIM_SHORT_LOGGING_MACROS</code> is defined before the <code>&lt;dqcsim&gt;</code> header is included. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09015">9015</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09837">9837</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -900,7 +956,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Convenience macro for calling <code><a class="el" href="namespacedqcsim_1_1wrap.html#ac2cef265276c4c7b0806533f353c1a04" title="Shim around the dqcs_log_format C API using std::string for the strings.">log()</a></code> with note loglevel and automatically determined filename and line number. </p>
 <dl class="section note"><dt>Note</dt><dd>Defined only when <code>DQCSIM_SHORT_LOGGING_MACROS</code> is defined before the <code>&lt;dqcsim&gt;</code> header is included. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09024">9024</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09846">9846</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -919,7 +975,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Convenience macro for calling <code><a class="el" href="namespacedqcsim_1_1wrap.html#ac2cef265276c4c7b0806533f353c1a04" title="Shim around the dqcs_log_format C API using std::string for the strings.">log()</a></code> with warn loglevel and automatically determined filename and line number. </p>
 <dl class="section note"><dt>Note</dt><dd>Defined only when <code>DQCSIM_SHORT_LOGGING_MACROS</code> is defined before the <code>&lt;dqcsim&gt;</code> header is included. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09033">9033</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09855">9855</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -938,7 +994,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Convenience macro for calling <code><a class="el" href="namespacedqcsim_1_1wrap.html#ac2cef265276c4c7b0806533f353c1a04" title="Shim around the dqcs_log_format C API using std::string for the strings.">log()</a></code> with warn loglevel and automatically determined filename and line number. </p>
 <dl class="section note"><dt>Note</dt><dd>Defined only when <code>DQCSIM_SHORT_LOGGING_MACROS</code> is defined before the <code>&lt;dqcsim&gt;</code> header is included. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09042">9042</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09864">9864</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -957,7 +1013,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Convenience macro for calling <code><a class="el" href="namespacedqcsim_1_1wrap.html#ac2cef265276c4c7b0806533f353c1a04" title="Shim around the dqcs_log_format C API using std::string for the strings.">log()</a></code> with error loglevel and automatically determined filename and line number. </p>
 <dl class="section note"><dt>Note</dt><dd>Defined only when <code>DQCSIM_SHORT_LOGGING_MACROS</code> is defined before the <code>&lt;dqcsim&gt;</code> header is included. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09051">9051</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09873">9873</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -976,7 +1032,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Convenience macro for calling <code><a class="el" href="namespacedqcsim_1_1wrap.html#ac2cef265276c4c7b0806533f353c1a04" title="Shim around the dqcs_log_format C API using std::string for the strings.">log()</a></code> with fatal loglevel and automatically determined filename and line number. </p>
 <dl class="section note"><dt>Note</dt><dd>Defined only when <code>DQCSIM_SHORT_LOGGING_MACROS</code> is defined before the <code>&lt;dqcsim&gt;</code> header is included. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09060">9060</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09882">9882</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -995,7 +1051,7 @@ QubitRef&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <p>Convenience macro for calling <code><a class="el" href="namespacedqcsim_1_1wrap.html#ac2cef265276c4c7b0806533f353c1a04" title="Shim around the dqcs_log_format C API using std::string for the strings.">log()</a></code> with automatically determined filename and line number, but a dynamic loglevel (first argument). </p>
 <dl class="section note"><dt>Note</dt><dd>Defined only when <code>DQCSIM_SHORT_LOGGING_MACROS</code> is defined before the <code>&lt;dqcsim&gt;</code> header is included. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09069">9069</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l09891">9891</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>

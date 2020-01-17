@@ -160,8 +160,80 @@
 <span id="160">160</span>
 <span id="161">161</span>
 <span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">rc</span>::<span class="ident">Rc</span>;
 
 <span class="doccomment">/// Convenience function for converting a C string to a Rust `str`.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">receive_str</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">s</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span> {
@@ -240,35 +312,6 @@
     }
 }
 
-<span class="doccomment">/// Convenience function for converting a C array of doubles representing a</span>
-<span class="doccomment">/// unitary matrix to its Rust representation.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">receive_matrix</span>(
-    <span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_double</span>,
-    <span class="ident">matrix_len</span>: <span class="ident">size_t</span>,
-    <span class="ident">num_qubits</span>: <span class="ident">usize</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Complex64</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">matrix_len</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-        <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">num_qubits</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-        <span class="ident">inv_arg</span>(<span class="string">&quot;cannot read matrix for 0 qubits&quot;</span>)
-    } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="ident">num_entries</span> <span class="op">=</span> <span class="number">2usize</span>.<span class="ident">pow</span>(<span class="number">2</span> <span class="op">*</span> <span class="ident">num_qubits</span> <span class="kw">as</span> <span class="ident">u32</span>);
-        <span class="kw">if</span> <span class="ident">matrix_len</span> <span class="op">!</span><span class="op">=</span> <span class="ident">num_entries</span> {
-            <span class="ident">inv_arg</span>(<span class="string">&quot;matrix has the wrong number of entries&quot;</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">ptr</span>.<span class="ident">is_null</span>() {
-            <span class="ident">inv_arg</span>(<span class="string">&quot;matrix pointer is null&quot;</span>)
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">num_entries</span>);
-            <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">num_entries</span> {
-                <span class="kw">let</span> <span class="ident">re</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="kw-2">*</span><span class="ident">ptr</span>.<span class="ident">add</span>(<span class="ident">i</span> <span class="op">*</span> <span class="number">2</span>) };
-                <span class="kw">let</span> <span class="ident">im</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="kw-2">*</span><span class="ident">ptr</span>.<span class="ident">add</span>(<span class="ident">i</span> <span class="op">*</span> <span class="number">2</span> <span class="op">+</span> <span class="number">1</span>) };
-                <span class="ident">vec</span>.<span class="ident">push</span>(<span class="ident">Complex64</span>::<span class="ident">new</span>(<span class="ident">re</span>, <span class="ident">im</span>));
-            }
-            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">vec</span>))
-        }
-    }
-}
-
 <span class="doccomment">/// User data structure for callbacks.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// All callbacks carry a user-defined `void*` with them, which is passed to</span>
@@ -291,17 +334,18 @@
 <span class="doccomment">/// closure! For example:</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// let data = CallbackUserData::new(user_free, user_data);</span>
+<span class="doccomment">/// let data = UserData::new(user_free, user_data);</span>
 <span class="doccomment">/// let cb = move || callback(data.data());</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CallbackUserData</span> {
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UserData</span> {
     <span class="ident">user_free</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>)<span class="op">&gt;</span>,
     <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">CallbackUserData</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">UserData</span> {}
 
-<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">CallbackUserData</span> {
+<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">UserData</span> {
     <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">user_free</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">user_free</span> {
             <span class="ident">user_free</span>(<span class="self">self</span>.<span class="ident">data</span>);
@@ -309,18 +353,114 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">CallbackUserData</span> {
-    <span class="doccomment">/// Constructs a `CallbackUserData` object.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">user_free</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>)<span class="op">&gt;</span>,
-        <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CallbackUserData</span> {
-        <span class="ident">CallbackUserData</span> { <span class="ident">user_free</span>, <span class="ident">data</span> }
+<span class="kw">impl</span> <span class="ident">UserData</span> {
+    <span class="doccomment">/// Constructs a `UserData` object.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">user_free</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>)<span class="op">&gt;</span>, <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UserData</span> {
+        <span class="ident">UserData</span> { <span class="ident">user_free</span>, <span class="ident">data</span> }
     }
 
     <span class="doccomment">/// Returns the user data pointer.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span> {
         <span class="self">self</span>.<span class="ident">data</span>
+    }
+}
+
+<span class="doccomment">/// Helper device for UserKey struct used within gate maps. Contains an owned</span>
+<span class="doccomment">/// or borrowed void* from the user. If owned, also includes its deletion</span>
+<span class="doccomment">/// callback function pointer.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">UserKeyData</span> {
+    <span class="ident">Owned</span>(<span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">UserData</span><span class="op">&gt;</span>),
+    <span class="ident">Borrowed</span>(<span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span>),
+}
+
+<span class="kw">impl</span> <span class="ident">UserKeyData</span> {
+    <span class="doccomment">/// Constructs a wrapper for an owned key, i.e. with an (optional) deletion</span>
+    <span class="doccomment">/// function.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">key_free</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>)<span class="op">&gt;</span>, <span class="ident">key_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UserKeyData</span> {
+        <span class="ident">UserKeyData</span>::<span class="ident">Owned</span>(<span class="ident">Rc</span>::<span class="ident">new</span>(<span class="ident">UserData</span>::<span class="ident">new</span>(<span class="ident">key_free</span>, <span class="ident">key_data</span>)))
+    }
+
+    <span class="doccomment">/// Constructs a wrapper for a borrowed key, i.e. immutable and without</span>
+    <span class="doccomment">/// a deletion function.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_borrowed</span>(<span class="ident">key_data</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UserKeyData</span> {
+        <span class="ident">UserKeyData</span>::<span class="ident">Borrowed</span>(<span class="ident">key_data</span>)
+    }
+
+    <span class="doccomment">/// Returns the contained raw pointer for comparisons and so on.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">UserKeyData</span>::<span class="ident">Owned</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data</span>.<span class="ident">data</span>,
+            <span class="ident">UserKeyData</span>::<span class="ident">Borrowed</span>(<span class="ident">data</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">data</span>,
+        }
+    }
+}
+
+<span class="doccomment">/// An owned or borrowed user-defined key, including optional deletion (if</span>
+<span class="doccomment">/// owned), equality, and hash callback functions, exposed through PartialEq</span>
+<span class="doccomment">/// and Hash.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UserKey</span> {
+    <span class="ident">data</span>: <span class="ident">UserKeyData</span>,
+    <span class="ident">cmp</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span>, <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span><span class="op">&gt;</span>,
+    <span class="ident">hash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">UserKey</span> {
+    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">cmp</span>, <span class="ident">other</span>.<span class="ident">cmp</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">hash</span>, <span class="ident">other</span>.<span class="ident">hash</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cmp</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">cmp</span> {
+            <span class="ident">cmp</span>(<span class="self">self</span>.<span class="ident">data</span>.<span class="ident">raw</span>(), <span class="ident">other</span>.<span class="ident">data</span>.<span class="ident">raw</span>())
+        } <span class="kw">else</span> {
+            <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">raw</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">other</span>.<span class="ident">data</span>.<span class="ident">raw</span>()
+        }
+    }
+}
+<span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">UserKey</span> {}
+
+<span class="kw">impl</span> <span class="ident">std</span>::<span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">UserKey</span> {
+    <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">std</span>::<span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">hash</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">hash</span> {
+            <span class="ident">hash</span>(<span class="self">self</span>.<span class="ident">data</span>.<span class="ident">raw</span>()).<span class="ident">hash</span>(<span class="ident">state</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cmp</span>.<span class="ident">is_none</span>() {
+            <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">raw</span>().<span class="ident">hash</span>(<span class="ident">state</span>)
+        }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">UserKey</span> {
+    <span class="doccomment">/// Constructs a new UserKey.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
+        <span class="ident">data</span>: <span class="ident">UserKeyData</span>,
+        <span class="ident">cmp</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span>, <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span><span class="op">&gt;</span>,
+        <span class="ident">hash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UserKey</span> {
+        <span class="ident">UserKey</span> { <span class="ident">data</span>, <span class="ident">cmp</span>, <span class="ident">hash</span> }
+    }
+
+    <span class="doccomment">/// Returns the contained raw pointer.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span> {
+        <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">raw</span>()
+    }
+}
+
+<span class="doccomment">/// Wrapping struct for gate maps</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">GateMap</span> {
+    <span class="kw">pub</span> <span class="ident">map</span>: <span class="ident">ConverterMap</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">UserKey</span>, <span class="ident">Gate</span>, (<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span>, <span class="ident">ArbData</span>)<span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">key_cmp</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span>, <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">key_hash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_void</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">GateMap</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">make_key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">UserKeyData</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UserKey</span> {
+        <span class="ident">UserKey</span>::<span class="ident">new</span>(<span class="ident">key</span>, <span class="self">self</span>.<span class="ident">key_cmp</span>, <span class="self">self</span>.<span class="ident">key_hash</span>)
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">GateMap</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+        <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;GateMap&quot;</span>)
     }
 }
 </pre></div>

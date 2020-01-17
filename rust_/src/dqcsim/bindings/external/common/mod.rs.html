@@ -41,6 +41,14 @@
 <span id="41">41</span>
 <span id="42">42</span>
 <span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
@@ -70,9 +78,17 @@
 <span class="kw">mod</span> <span class="ident">qbset</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">qbset</span>::<span class="kw-2">*</span>;
 
+<span class="comment">// dqcs_mat_* functions, for operating on gate matrices.</span>
+<span class="kw">mod</span> <span class="ident">mat</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">mat</span>::<span class="kw-2">*</span>;
+
 <span class="comment">// dqcs_gate_* functions, for operating on quantum gate descriptions.</span>
 <span class="kw">mod</span> <span class="ident">gate</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">gate</span>::<span class="kw-2">*</span>;
+
+<span class="comment">// dqcs_gm_* functions, for operating on gate maps.</span>
+<span class="kw">mod</span> <span class="ident">gm</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">gm</span>::<span class="kw-2">*</span>;
 
 <span class="comment">// dqcs_meas_* functions, for operating on qubit measurement objects.</span>
 <span class="kw">mod</span> <span class="ident">meas</span>;
