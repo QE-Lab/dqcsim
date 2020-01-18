@@ -43,7 +43,7 @@ class NullOperator(Operator):
 
 @plugin("Test operator 1", "Test", "0.1")
 class TestOperator1(NullOperator):
-    def handle_measurement_gate(self, measures):
+    def handle_measurement_gate(self, measures, matrix):
         self.measure([q+1 for q in measures])
 
     def handle_measurement(self, measurement):
@@ -79,8 +79,11 @@ class NullBackend(Backend):
     def handle_unitary_gate(self, targets, matrix):
         pass
 
-    def handle_measurement_gate(self, measures):
+    def handle_measurement_gate(self, measures, matrix):
         return [Measurement(qubit, False) for qubit in measures]
+
+    def handle_prepare_gate(self, targets, matrix):
+        pass
 
     def handle_upstream_a_b(self):
         return ArbData(b'back')

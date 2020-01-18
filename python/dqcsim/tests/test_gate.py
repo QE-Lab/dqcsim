@@ -58,12 +58,20 @@ class TestBackendUnitary(Backend):
             'matrix': pickle.dumps(matrix),
         })
 
-    def handle_measurement_gate(self, measures):
+    def handle_measurement_gate(self, measures, matrix):
         self.call_log.append({
             'cmd': 'measurement',
             'measures': measures,
+            'matrix': pickle.dumps(matrix),
         })
         return [Measurement(qubit, qubit % 2) for qubit in measures]
+
+    def handle_prepare_gate(self, targets, matrix):
+        self.call_log.append({
+            'cmd': 'prepare',
+            'targets': targets,
+            'matrix': pickle.dumps(matrix),
+        })
 
     def handle_a_gate(self, targets, controls, measures, matrix, *args, **kwargs):
         self.call_log.append({
@@ -114,9 +122,9 @@ class Operator1(Operator):
         self.trace('unitary: {} {}', targets, matrix)
         self.unitary([q+1 for q in targets], matrix)
 
-    def handle_measurement_gate(self, measures):
+    def handle_measurement_gate(self, measures, matrix):
         self.trace('measurement: {}', measures)
-        self.measure([q+2 for q in measures])
+        self.measure([q+2 for q in measures], basis=matrix)
 
 @plugin("Test operator 2", "Test", "0.1")
 class Operator2(Operator):
@@ -413,153 +421,71 @@ class Tests(unittest.TestCase):
         })
 
         # measure(1)
-        self.assertEqual(log.pop(0), {
+        x = log.pop(0)
+        self.assertEqualMatrix(x.pop('matrix'), [
+            1.000+0.000j,  0.000+0.000j,
+            0.000+0.000j,  1.000+0.000j,
+        ])
+        self.assertEqual(x, {
             'cmd': 'measurement',
             'measures': [1+m],
         })
 
         # measure_x(1, 2, 3)
-        self.assert_unitary(log.pop(0), [1+u], [
-            0.707+0.000j,  0.707+0.000j,
+        x = log.pop(0)
+        self.assertEqualMatrix(x.pop('matrix'), [
             0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [2+u], [
             0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
         ])
-        self.assert_unitary(log.pop(0), [3+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assertEqual(log.pop(0), {
+        self.assertEqual(x, {
             'cmd': 'measurement',
             'measures': [1+m, 2+m, 3+m],
         })
-        self.assert_unitary(log.pop(0), [1+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [2+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [3+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
 
         # measure_x(1, 2, 3)
-        self.assert_unitary(log.pop(0), [1+u], [
-            0.707+0.000j,  0.707+0.000j,
+        x = log.pop(0)
+        self.assertEqualMatrix(x.pop('matrix'), [
             0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [2+u], [
             0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
         ])
-        self.assert_unitary(log.pop(0), [3+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assertEqual(log.pop(0), {
+        self.assertEqual(x, {
             'cmd': 'measurement',
             'measures': [1+m, 2+m, 3+m],
         })
-        self.assert_unitary(log.pop(0), [1+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [2+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [3+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
 
         # measure_y(1, 2, 3)
-        self.assert_unitary(log.pop(0), [1+u], [
-            1.000+0.000j, 0.000+0.000j,
-            0.000+0.000j, 0.000+1.000j,
+        x = log.pop(0)
+        self.assertEqualMatrix(x.pop('matrix'), [
+            0.707+0.000j,  0.000+0.707j,
+            0.000+0.707j,  0.707+0.000j,
         ])
-        self.assert_unitary(log.pop(0), [2+u], [
-            1.000+0.000j, 0.000+0.000j,
-            0.000+0.000j, 0.000+1.000j,
-        ])
-        self.assert_unitary(log.pop(0), [3+u], [
-            1.000+0.000j, 0.000+0.000j,
-            0.000+0.000j, 0.000+1.000j,
-        ])
-        self.assert_unitary(log.pop(0), [1+u], [
-            1.000+0.000j,  0.000-0.000j,
-            0.000+0.000j, -1.000+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [2+u], [
-            1.000+0.000j,  0.000-0.000j,
-            0.000+0.000j, -1.000+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [3+u], [
-            1.000+0.000j,  0.000-0.000j,
-            0.000+0.000j, -1.000+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [1+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [2+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [3+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assertEqual(log.pop(0), {
+        self.assertEqual(x, {
             'cmd': 'measurement',
             'measures': [1+m, 2+m, 3+m],
         })
-        self.assert_unitary(log.pop(0), [1+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [2+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [3+u], [
-            0.707+0.000j,  0.707+0.000j,
-            0.707+0.000j, -0.707+0.000j,
-        ])
-        self.assert_unitary(log.pop(0), [1+u], [
-            1.000+0.000j, 0.000+0.000j,
-            0.000+0.000j, 0.000+1.000j,
-        ])
-        self.assert_unitary(log.pop(0), [2+u], [
-            1.000+0.000j, 0.000+0.000j,
-            0.000+0.000j, 0.000+1.000j,
-        ])
-        self.assert_unitary(log.pop(0), [3+u], [
-            1.000+0.000j, 0.000+0.000j,
-            0.000+0.000j, 0.000+1.000j,
-        ])
 
         # measure_z(1, 2)
-        self.assertEqual(log.pop(0), {
+        x = log.pop(0)
+        self.assertEqualMatrix(x.pop('matrix'), [
+            1.000+0.000j,  0.000+0.000j,
+            0.000+0.000j,  1.000+0.000j,
+        ])
+        self.assertEqual(x, {
             'cmd': 'measurement',
             'measures': [1+m, 2+m],
         })
 
         # prepare(1, 2)
         if not m:
-            self.assertEqual(log.pop(0), {
-                'cmd': 'measurement',
-                'measures': [1+m, 2+m],
-            })
-            self.assert_unitary(log.pop(0), [1+u], [
-                0.000+0.000j, 1.000+0.000j,
-                1.000+0.000j, 0.000+0.000j,
+            x = log.pop(0)
+            self.assertEqualMatrix(x.pop('matrix'), [
+                1.000+0.000j,  0.000+0.000j,
+                0.000+0.000j,  1.000+0.000j,
             ])
+            self.assertEqual(x, {
+                'cmd': 'prepare',
+                'targets': [1+m, 2+m],
+            })
             self.assertEqual(log, [])
 
     def check_with_operator(self, operator_cls, *args, **kwargs):
