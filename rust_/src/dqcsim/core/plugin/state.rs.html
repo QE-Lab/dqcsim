@@ -1281,9 +1281,6 @@
 <span id="1281">1281</span>
 <span id="1282">1282</span>
 <span id="1283">1283</span>
-<span id="1284">1284</span>
-<span id="1285">1285</span>
-<span id="1286">1286</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Module containing the runtime structures of a plugin.</span>
 
@@ -1773,16 +1770,23 @@
             }
         }
 
+        <span class="self">self</span>.<span class="ident">check_completed_up_to</span>()<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="doccomment">/// Check whether we can/need to send the next CompletedUpTo message.</span>
+    <span class="kw">fn</span> <span class="ident">check_completed_up_to</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">completed_up_to</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">upstream_issued_up_to</span>;
+
         <span class="comment">// Update the upstream_postponed mapping to see if we can propagate the</span>
         <span class="comment">// acknowledgement upstream.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">updates</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="kw">while</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">upstream_postponed</span>.<span class="ident">is_empty</span>() {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">acknowledged</span> <span class="op">=</span> <span class="bool-val">false</span>;
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">downstream</span>, <span class="kw">_</span>, <span class="kw">_</span>)) <span class="op">=</span> <span class="self">self</span>.<span class="ident">upstream_postponed</span>.<span class="ident">front</span>() {
                 <span class="ident">acknowledged</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">downstream_sequence_rx</span>.<span class="ident">acknowledges</span>(<span class="kw-2">*</span><span class="ident">downstream</span>);
             }
             <span class="kw">if</span> <span class="ident">acknowledged</span> {
-                <span class="ident">updates</span> <span class="op">=</span> <span class="bool-val">true</span>;
                 <span class="kw">let</span> (<span class="kw">_</span>, <span class="kw">_</span>, <span class="ident">postponed_measurements</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">upstream_postponed</span>.<span class="ident">pop_front</span>().<span class="ident">unwrap</span>();
                 <span class="kw">for</span> <span class="ident">postponed_measurement</span> <span class="kw">in</span> <span class="ident">postponed_measurements</span> {
                     <span class="self">self</span>.<span class="ident">connection</span>
@@ -1794,16 +1798,6 @@
                 <span class="kw">break</span>;
             }
         }
-        <span class="kw">if</span> <span class="ident">updates</span> {
-            <span class="self">self</span>.<span class="ident">check_completed_up_to</span>()<span class="question-mark">?</span>;
-        }
-
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="doccomment">/// Check whether we can/need to send the next CompletedUpTo message.</span>
-    <span class="kw">fn</span> <span class="ident">check_completed_up_to</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">completed_up_to</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">upstream_issued_up_to</span>;
 
         <span class="comment">// Check the upstream_postponed map to see if any command with an</span>
         <span class="comment">// upstream sequence number lower than self.upstream_issued_up_to</span>
