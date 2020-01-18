@@ -23,7 +23,7 @@ pub use arb_cmd::ArbCmd;
 
 // Generic representation of a quantum or mixed quantum-classical gate.
 mod gate;
-pub use gate::Gate;
+pub use gate::{Gate, GateType};
 
 // Generic representation of a qubit measurement result.
 mod measurement;
@@ -39,4 +39,4 @@ pub use plugin_metadata::PluginMetadata;
 
 // Matrix wrapper for gate matrices.
 mod matrix;
-pub use matrix::Matrix;
+pub use matrix::{Basis, Matrix};

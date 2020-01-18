@@ -1,5 +1,5 @@
 use super::*;
-use crate::common::gates::GateType;
+use crate::common::gates::UnitaryGateType;
 use std::convert::TryFrom;
 
 /// Converts a qubit count match number to an Option for slightly more
@@ -145,7 +145,7 @@ pub extern "C" fn dqcs_gm_add_predef_unitary(
         let key = UserKeyData::new(key_free, key_data);
         resolve!(gm as &mut GateMap);
         let key = gm.make_key(key);
-        let gate = GateType::try_from(gate)?;
+        let gate = UnitaryGateType::try_from(gate)?;
         let num_controls = expected_qubit_count(num_controls);
         gm.map.push(
             key,
@@ -299,7 +299,7 @@ pub extern "C" fn dqcs_gm_add_custom_unitary(
                             Ok(None)
                         } else if let Some(matrix) = gate.get_matrix() {
                             // Unitary gate. Check conditions.
-                            let matrix = insert(matrix);
+                            let matrix = insert(matrix.clone());
                             let num_controls = gate.get_controls().len();
                             let mut param_data = insert(gate.data.clone());
                             let result = cb_return_bool(detector(
@@ -401,6 +401,11 @@ pub extern "C" fn dqcs_gm_add_custom_unitary(
 ///> `num_measures` specifies the number of measured qubits for this gate type.
 ///> If negative, the gate can have any number of measured qubits. If zero or
 ///> positive, the number of measured qubits must be as specified.
+///> `basis` optionally specifies a handle to a 2x2 matrix specifying the
+///> measurement basis to be detected. If not specified, the Z basis is used.
+///> The matrix is deleted by the call iff the function succeeds.
+///> `epsilon` specifies the maximum RMS deviation between the specified basis
+///> (if any) and the incoming basis.
 ///>
 ///> The parameterization `ArbData` object returned by detection and consumed
 ///> by construction is mapped one-to-one to the user data of the gate in the
@@ -411,14 +416,96 @@ pub extern "C" fn dqcs_gm_add_measure(
     key_free: Option<extern "C" fn(user_data: *mut c_void)>,
     key_data: *mut c_void,
     num_measures: isize,
+    basis: dqcs_handle_t,
+    epsilon: f64,
 ) -> dqcs_return_t {
     api_return_none(|| {
         let key = UserKeyData::new(key_free, key_data);
         resolve!(gm as &mut GateMap);
         let key = gm.make_key(key);
         let num_measures = expected_qubit_count(num_measures);
-        gm.map
-            .push(key, Box::new(MeasurementGateConverter::new(num_measures)));
+        resolve!(optional basis as pending Matrix);
+        let defaulted_basis = {
+            if let Some(basis) = basis.as_ref() {
+                let basis: &Matrix = basis.as_ref().unwrap();
+                if basis.dimension() != 2 {
+                    inv_arg("measurement basis matrix must be 2x2")?;
+                }
+                basis.clone()
+            } else {
+                Matrix::new_identity(2)
+            }
+        };
+        gm.map.push(
+            key,
+            Box::new(MeasurementGateConverter::new(
+                num_measures,
+                defaulted_basis,
+                epsilon,
+            )),
+        );
+        if let Some(mut basis) = basis {
+            delete!(resolved basis);
+        }
+        Ok(())
+    })
+}
+
+/// Adds a prep gate mapping to the given gate map.
+///>
+///> `gm` must be a handle to a gate map object (`dqcs_gm_new()`).
+///> `key_free` is an optional callback function used to free `key_data` when
+///> the gate map is destroyed, or when this function fails.
+///> `key_data` is the user-specified value used to identify this mapping.
+///> `num_targets` specifies the number of target qubits for this gate type.
+///> If negative, the gate can have any number of targets. If zero or
+///> positive, the number of target qubits must be as specified.
+///> `basis` optionally specifies a handle to a 2x2 matrix specifying the
+///> prep basis. If not specified, the Z basis is used. The matrix is deleted
+///> by the call iff the function succeeds.
+///> `epsilon` specifies the maximum RMS deviation between the specified basis
+///> (if any) and the incoming basis.
+///>
+///> The parameterization `ArbData` object returned by detection and consumed
+///> by construction is mapped one-to-one to the user data of the gate in the
+///> DQCsim-protocol.
+#[no_mangle]
+pub extern "C" fn dqcs_gm_add_prep(
+    gm: dqcs_handle_t,
+    key_free: Option<extern "C" fn(user_data: *mut c_void)>,
+    key_data: *mut c_void,
+    num_targets: isize,
+    basis: dqcs_handle_t,
+    epsilon: f64,
+) -> dqcs_return_t {
+    api_return_none(|| {
+        let key = UserKeyData::new(key_free, key_data);
+        resolve!(gm as &mut GateMap);
+        let key = gm.make_key(key);
+        let num_targets = expected_qubit_count(num_targets);
+        resolve!(optional basis as pending Matrix);
+        let defaulted_basis = {
+            if let Some(basis) = basis.as_ref() {
+                let basis: &Matrix = basis.as_ref().unwrap();
+                if basis.dimension() != 2 {
+                    inv_arg("prep basis matrix must be 2x2")?;
+                }
+                basis.clone()
+            } else {
+                Matrix::new_identity(2)
+            }
+        };
+        gm.map.push(
+            key,
+            Box::new(PrepGateConverter::new(
+                num_targets,
+                defaulted_basis,
+                epsilon,
+            )),
+        );
+        if let Some(mut basis) = basis {
+            delete!(resolved basis);
+        }
         Ok(())
     })
 }

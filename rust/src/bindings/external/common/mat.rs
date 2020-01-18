@@ -1,5 +1,5 @@
 use super::*;
-use crate::common::gates::GateType;
+use crate::common::gates::UnitaryGateType;
 use std::convert::{TryFrom, TryInto};
 use std::mem::size_of;
 use std::ptr::null_mut;
@@ -33,7 +33,7 @@ pub extern "C" fn dqcs_mat_new(num_qubits: size_t, matrix: *const c_double) -> d
                 let im: f64 = unsafe { *matrix.add(i * 2 + 1) };
                 vec.push(Complex64::new(re, im));
             }
-            Ok(insert(Matrix::new(vec)))
+            Ok(insert(Matrix::new(vec)?))
         }
     })
 }
@@ -57,7 +57,7 @@ pub extern "C" fn dqcs_mat_predef(
 ) -> dqcs_handle_t {
     api_return(0, || {
         // Interpret gate type.
-        let converter: Box<dyn MatrixConverterArb> = GateType::try_from(gate_type)?.into();
+        let converter: Box<dyn MatrixConverterArb> = UnitaryGateType::try_from(gate_type)?.into();
 
         // Interpret data.
         resolve!(optional param_data as pending ArbData);
@@ -79,6 +79,20 @@ pub extern "C" fn dqcs_mat_predef(
         }
 
         Ok(matrix)
+    })
+}
+
+/// Constructs a matrix with the eigenvectors of one of the Pauli matrices
+/// as column vectors.
+///>
+///> This can be used for constructing measurement or prep gates with the
+///> given basis. Returns a new handle to the constructed matrix or returns
+///> 0 if an error occurs.
+#[no_mangle]
+pub extern "C" fn dqcs_mat_basis(basis: dqcs_basis_t) -> dqcs_handle_t {
+    api_return(0, || {
+        let matrix: Matrix = Basis::try_from(basis)?.into();
+        Ok(insert(matrix))
     })
 }
 
@@ -154,6 +168,12 @@ pub extern "C" fn dqcs_mat_get(mat: dqcs_handle_t) -> *mut c_double {
 ///> between the matrices that results in a positive match. `ignore_gphase`
 ///> specifies whether the check should ignore global phase.
 ///>
+///> If ignore_gphase is set, this checks that the following holds for some x:
+///>
+///> \f[
+///> A \cdot e^{ix} \approx B
+///> \f]
+///>
 ///> This function returns `DQCS_TRUE` if the matrices match according to the
 ///> aforementioned criteria, or `DQCS_FALSE` if not. `DQCS_BOOL_ERROR` is used
 ///> when either handle is invalid or not a matrix. If the matrices differ in
@@ -169,6 +189,38 @@ pub extern "C" fn dqcs_mat_approx_eq(
         resolve!(a as &Matrix);
         resolve!(b as &Matrix);
         Ok(a.approx_eq(b, epsilon, ignore_gphase))
+    })
+}
+
+/// Approximately compares two basis matrices.
+///>
+///> `a` and `b` are borrowed matrix handles.
+///> `epsilon` specifies the maximum element-wise root-mean-square error
+///> between the matrices that results in a positive match.
+///>
+///> This checks that the following holds for some x and y:
+///>
+///> \f[
+///> A \cdot \begin{bmatrix}
+///> e^{ix} & 0 \\
+///> 0 & e^{iy}
+///> \end{bmatrix} \approx B
+///> \f]
+///>
+///> This function returns `DQCS_TRUE` if the matrices match according to the
+///> aforementioned criteria, or `DQCS_FALSE` if not. `DQCS_BOOL_ERROR` is used
+///> when either handle is invalid or not a matrix. If either matrix is not
+///> 2x2, `DQCS_FALSE` is used.
+#[no_mangle]
+pub extern "C" fn dqcs_mat_basis_approx_eq(
+    a: dqcs_handle_t,
+    b: dqcs_handle_t,
+    epsilon: c_double,
+) -> dqcs_bool_return_t {
+    api_return_bool(|| {
+        resolve!(a as &Matrix);
+        resolve!(b as &Matrix);
+        Ok(a.basis_approx_eq(b, epsilon))
     })
 }
 
@@ -205,7 +257,7 @@ pub extern "C" fn dqcs_mat_is_predef(
             unsafe { *param_data = 0 };
         }
         resolve!(mat as &Matrix);
-        let converter: Box<dyn MatrixConverterArb> = GateType::try_from(gate_type)?.into();
+        let converter: Box<dyn MatrixConverterArb> = UnitaryGateType::try_from(gate_type)?.into();
         let mut data = ArbData::default();
         let result = converter.detect_matrix_arb(mat, epsilon, ignore_gphase, &mut data)?;
         if !param_data.is_null() {

@@ -3,7 +3,7 @@ use dqcsim::{
         error::err,
         log::{thread::LogThread, LoglevelFilter},
         types::{
-            ArbCmd, ArbData, Gate, PluginMetadata, PluginType, QubitMeasurementResult,
+            ArbCmd, ArbData, Gate, Matrix, PluginMetadata, PluginType, QubitMeasurementResult,
             QubitMeasurementValue, QubitRef,
         },
     },
@@ -704,8 +704,13 @@ fn backend_gate() {
     );
 
     backend.initialize = Box::new(|state, _| {
-        let g =
-            state.gate(Gate::new_measurement(vec![QubitRef::from_foreign(1u64).unwrap()]).unwrap());
+        let g = state.gate(
+            Gate::new_measurement(
+                vec![QubitRef::from_foreign(1u64).unwrap()],
+                Matrix::new_identity(2),
+            )
+            .unwrap(),
+        );
         assert!(g.is_err());
         assert_eq!(
             g.unwrap_err().to_string(),
@@ -1141,10 +1146,13 @@ fn quantum_minimal() {
             "[QubitRef(1), QubitRef(2), QubitRef(3), QubitRef(4)]"
         );
 
-        let bad_measure = Gate::new_measurement(vec![
-            QubitRef::from_foreign(2).unwrap(),
-            QubitRef::from_foreign(2).unwrap(),
-        ]);
+        let bad_measure = Gate::new_measurement(
+            vec![
+                QubitRef::from_foreign(2).unwrap(),
+                QubitRef::from_foreign(2).unwrap(),
+            ],
+            Matrix::new_identity(2),
+        );
         assert!(bad_measure.is_err());
         assert_eq!(
             bad_measure.unwrap_err().to_string(),
@@ -1152,7 +1160,13 @@ fn quantum_minimal() {
         );
 
         state
-            .gate(Gate::new_measurement(vec![QubitRef::from_foreign(3).unwrap()]).unwrap())
+            .gate(
+                Gate::new_measurement(
+                    vec![QubitRef::from_foreign(3).unwrap()],
+                    Matrix::new_identity(2),
+                )
+                .unwrap(),
+            )
             .unwrap();
 
         let result = state
