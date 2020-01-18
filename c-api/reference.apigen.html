@@ -1419,7 +1419,7 @@ automatically determined function name, filename, and line number.</p>
 <details><summary><font color="green"><tt>dqcs_log_format()</tt></font><div style="margin-left: 16px">
 <p>Sends a log message using the current logger using printf-like formatting.</p>
 </div></summary><div style="margin-left: 16px">
-<pre><code class="language-C">void dqcs_log_format(
+<pre><code class="language-C">static void dqcs_log_format(
     dqcs_loglevel_t level,
     const char *module,
     const char *file,
