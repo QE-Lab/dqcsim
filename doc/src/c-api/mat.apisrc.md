@@ -77,3 +77,42 @@ manually as follows.
 
 @@@c_api_gen ^dqcs_mat_add_controls$@@@
 @@@c_api_gen ^dqcs_mat_strip_control$@@@
+
+## Basis matrices
+
+TODO: someone who knows what they're talking about should check/correct this
+section at some point. I'm mostly working off of hunches. - Jeroen
+
+DQCsim uses 2x2 matrices to represent the basis for a measurement or prep gate
+to operate on. The intuitive nature of these matrices is as follows for
+measurements:
+
+ - apply the Hermetian/conjugate transpose/inverse of the basis matrix as a
+   gate to each measured qubit;
+ - do a Z-basis measurement;
+ - apply the basis matrix as a gate to each measured qubit.
+
+Basically, the application of the inverse of the matrix rotates the state of
+the qubits from the desired basis to the Z basis, then a Z measurement is
+applied, then the application of the basis matrix rotates the state back to
+the desired basis.
+
+The semantics for prep gates are basically the same:
+
+ - initialize the state of each qubit to |0>;
+ - apply the basis matrix as a gate to each targeted qubit.
+
+With this definition, the basis matrices can be written as follows.
+
+@@@c_api_gen ^dqcs_basis_t$@@@
+
+... and constructed as follows:
+
+@@@c_api_gen ^dqcs_mat_basis$@@@
+
+Basis matrices can be compared with the following function. This function
+ignores any of the phase differences that don't affect the basis in its
+approximate equality function.
+
+@@@c_api_gen ^dqcs_mat_basis_approx_eq$@@@
+

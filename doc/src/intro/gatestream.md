@@ -41,55 +41,70 @@ index. This means that freed qubit indices are never reused; if a backend wants
 to reuse indices internally, it must maintain its own mapping. Index 0 is
 reserved for marking invalid qubits and the end of a qubit list in the C API.
 
-## Sending gates
+## Sending and receiving gates
 
-DQCsim internally represents gates using the following pieces of data:
+DQCsim supports four kinds of gates:
 
- - an optional name;
- - a list of target qubits;
- - a list of control qubits;
- - a list of measured qubits;
- - an optional unitary matrix, sized appropriately for the number of qubits in
-   the target list;
- - an `ArbData` object that may contain classical arguments and/or additional
-   information specifying the behavior of the gate.
+ - unitary gates, defined by a matrix, one or more target qubits, and zero or
+   more control qubits;
+ - measurement gates, defined by one or more measured qubits and an arbitrary
+   measurement basis;
+ - prep gates, defined by one or more target qubits and an arbitrary basis;
+ - custom gates, defined by a name and any of the above. Downstream plugins
+   should reject named gates that they don't recognize.
 
-It is not currently possible to send all the gates allowed by the above
-representation. Specifically, only the following classes of gates can be
-constructed:
+Note that all but the latter do not have any kind of name attached to them.
+In other words, detecting whether a gate is for instance an X gate is not very
+trivial: it requires matching the matrix with a known X matrix. Floating point
+roundoff errors could cause headaches, and global phase also becomes a thing
+then. After all, the following matrices are equivalent in quantum:
 
- - unitary gates, which consist of one or more target qubits, a unitary matrix,
-   and zero or more control qubits;
- - z-basis measurement gates, which consist of one or more measured qubits and
-   nothing else;
- - custom gates, which have a name (required), zero or more target qubits, zero
-   or more control qubits, zero or more measured qubits, an optional gate
-   matrix, and `ArbData` information.
+\f[
+\begin{bmatrix}
+0 & 1 \\
+1 & 0
+\end{bmatrix} \_\_
+\begin{bmatrix}
+0 & i \\
+i & 0
+\end{bmatrix}
+\f]
 
-A backend *must* process gates according to the following algorithm.
+as they only differ in global phase. This also goes for the measurement and
+prep gates, where the basis is also represented with a matrix such that any
+basis and initial state can be described.
 
- - If the gate has a name:
-    - if the name is recognized by the backend, the implementation is as
-      defined by the backend;
-    - if not, return an error.
- - Otherwise, if there are target qubits and there is a matrix:
-    - if there are explicit control qubits, interpret the matrix as the
-      non-controlled bottom-right submatrix of an appropriately sized
-      controlled matrix;
-    - apply the possibly extended matrix to the concatenation of the control
-      and target qubits;
- - Otherwise, if there are measurement qubits:
-    - if there is a 2x2 matrix, apply its inverse to every to-be-measured
-      qubit independently;
-    - measure every to-be-measured qubit in the Z basis; and
-    - if there is a 2x2 matrix, apply it to every to-be-measured qubit
-      independently.
- - If none of the above is true, return an error.
+The good thing about this representation, however, is that there is no need for
+plugins to agree on some naming scheme for gates. After all, is `Y` the same as
+`y`? What about `Pauli_Y`? Or `Y180`? `cnot` versus `cx`? `ccnot` versus
+`toffoli`? And so on. Not to mention arbitrary rotations. The matrix
+representation of gates is pretty universally agreed upon, global phase aside
+in some cases, so it serves as a sort of universal language. Which is exactly
+what DQCsim is trying to do: provide a universal interface for components of
+quantum simulations to communicate with each other at runtime.
 
-Note that the above allows for measurements in any basis through the pre- and
-post-rotation: the basis is Z rotated by the given single-qubit gate. However,
-at the time of writing, the API to construct measurement gates with a given
-basis is still missing.
+It's also worth noting that simulations don't necessarily have to care about
+the name of a gate; they just have to do the math. That's not always the case
+though. For instance, if an operator wants to count X gates, the X matrix
+equivalence problem has to be solved. For this purpose, DQCsim provides the
+gate map interface.
+
+Gate maps deal with the translation between DQCsim's internal format and any
+enumeration-based format you may come up with as a plugin developer that
+looks like the following:
+
+ - Some enumeration-like type (a name, if you like) determining the type of
+   gate. Think `X`, `CNOT`, `MEASURE_Z`, and so on.
+ - A number of qubit arguments. Which qubit does what is up to you, depending
+   on the gate type.
+ - A number of classical arguments, wrapped in an `ArbData`.
+
+Gate maps are constructed using a detector and constructor function for each
+gate type. You can of course define these yourself, but unless you need some
+exotic parameterized gate or custom gates, you shouldn't have to: DQCsim
+provides predefined converters for a wide number of gate types. So, in
+practice, you usually only have to tell DQCsim what name or enum variant you
+want to use for each gate.
 
 ## Measurement results
 

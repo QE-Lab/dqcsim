@@ -498,7 +498,7 @@ pub extern "C" fn dqcs_gate_has_targets(gate: dqcs_handle_t) -> dqcs_bool_return
 }
 
 /// Returns a handle to a new qubit reference set containing the qubits
-/// targetted by this gate.
+/// targeted by this gate.
 #[no_mangle]
 pub extern "C" fn dqcs_gate_targets(gate: dqcs_handle_t) -> dqcs_handle_t {
     api_return(0, || {
