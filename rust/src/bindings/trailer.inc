@@ -24,7 +24,7 @@ namespace raw {
  * string it takes a printf-like format string and varargs to compose the
  * message.
  */
-inline void dqcs_log_format(
+static void dqcs_log_format(
   dqcs_loglevel_t level,
   const char *module,
   const char *file,
@@ -36,7 +36,7 @@ inline void dqcs_log_format(
 __attribute__((format(printf,5,6)))
 #endif
 ;
-inline void dqcs_log_format(
+static void dqcs_log_format(
   dqcs_loglevel_t level,
   const char *module,
   const char *file,
