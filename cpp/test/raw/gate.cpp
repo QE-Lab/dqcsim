@@ -6,6 +6,11 @@ const double X_MATRIX[] = {
   1.0, 0.0,   0.0, 0.0,
 };
 
+const double I_MATRIX[] = {
+  1.0, 0.0,   0.0, 0.0,
+  0.0, 0.0,   1.0, 0.0,
+};
+
 // Sanity check the gate API.
 TEST(gate, sanity) {
   // Create handle.
@@ -14,7 +19,24 @@ TEST(gate, sanity) {
 
   // Check that the handle is OK.
   EXPECT_EQ(dqcs_handle_type(a), dqcs_handle_type_t::DQCS_HTYPE_GATE);
-  EXPECT_STREQ(dqcs_handle_dump(a), "Gate(\n    Gate {\n        name: Some(\n            \"NOP\",\n        ),\n        targets: [],\n        controls: [],\n        measures: [],\n        matrix: Matrix {\n            data: [],\n            dimension: 0,\n        },\n        data: ArbData {\n            json: Map(\n                {},\n            ),\n            args: [],\n        },\n    },\n)");
+  EXPECT_STREQ(dqcs_handle_dump(a), "\
+Gate(\n\
+    Gate {\n\
+        typ: Custom(\n\
+            \"NOP\",\n\
+        ),\n\
+        targets: [],\n\
+        controls: [],\n\
+        measures: [],\n\
+        matrix: None,\n\
+        data: ArbData {\n\
+            json: Map(\n\
+                {},\n\
+            ),\n\
+            args: [],\n\
+        },\n\
+    },\n\
+)");
 
   // Delete handle.
   EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
@@ -84,7 +106,9 @@ TEST(gate, x) {
   dqcs_handle_t a = dqcs_gate_new_unitary(targets, 0, matrix);
   ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
-  EXPECT_EQ(dqcs_gate_is_custom(a), dqcs_bool_return_t::DQCS_FALSE);
+  EXPECT_EQ(dqcs_gate_type(a), dqcs_gate_type_t::DQCS_GATE_TYPE_UNITARY);
+
+  EXPECT_EQ(dqcs_gate_has_name(a), dqcs_bool_return_t::DQCS_FALSE);
   EXPECT_STREQ(s = dqcs_gate_name(a), NULL);
   if (s) free(s);
 
@@ -126,7 +150,9 @@ TEST(gate, cnot) {
   dqcs_handle_t a = dqcs_gate_new_unitary(targets, controls, matrix);
   ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
-  EXPECT_EQ(dqcs_gate_is_custom(a), dqcs_bool_return_t::DQCS_FALSE);
+  EXPECT_EQ(dqcs_gate_type(a), dqcs_gate_type_t::DQCS_GATE_TYPE_UNITARY);
+
+  EXPECT_EQ(dqcs_gate_has_name(a), dqcs_bool_return_t::DQCS_FALSE);
   EXPECT_STREQ(s = dqcs_gate_name(a), NULL);
   if (s) free(s);
 
@@ -160,10 +186,12 @@ TEST(gate, measure) {
   EXPECT_EQ(dqcs_qbset_push(measures, 1u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_qbset_push(measures, 2u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
-  dqcs_handle_t a = dqcs_gate_new_measurement(measures);
+  dqcs_handle_t a = dqcs_gate_new_measurement(measures, 0);
   ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
-  EXPECT_EQ(dqcs_gate_is_custom(a), dqcs_bool_return_t::DQCS_FALSE);
+  EXPECT_EQ(dqcs_gate_type(a), dqcs_gate_type_t::DQCS_GATE_TYPE_MEASUREMENT);
+
+  EXPECT_EQ(dqcs_gate_has_name(a), dqcs_bool_return_t::DQCS_FALSE);
   EXPECT_STREQ(s = dqcs_gate_name(a), NULL);
   if (s) free(s);
 
@@ -176,7 +204,46 @@ TEST(gate, measure) {
   EXPECT_EQ(dqcs_gate_has_measures(a), dqcs_bool_return_t::DQCS_TRUE);
   EXPECT_QBSET(dqcs_gate_measures(a), 1u, 2u);
 
-  EXPECT_NO_MATRIX(a);
+  EXPECT_MATRIX(a, I_MATRIX);
+
+  EXPECT_STREQ(s = dqcs_arb_json_get(a), "{}");
+  if (s) free(s);
+  EXPECT_EQ(dqcs_arb_len(a), 0);
+
+  EXPECT_EQ(dqcs_handle_delete(a), dqcs_return_t::DQCS_SUCCESS);
+
+  // Leak check.
+  EXPECT_EQ(dqcs_handle_leak_check(), dqcs_return_t::DQCS_SUCCESS) << dqcs_error_get();
+}
+
+// Check prep gate.
+TEST(gate, prep) {
+  char *s;
+
+  dqcs_handle_t targets = dqcs_qbset_new();
+  ASSERT_NE(targets, 0u) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(targets, 1u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+  EXPECT_EQ(dqcs_qbset_push(targets, 2u), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
+
+  dqcs_handle_t a = dqcs_gate_new_prep(targets, 0);
+  ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
+
+  EXPECT_EQ(dqcs_gate_type(a), dqcs_gate_type_t::DQCS_GATE_TYPE_PREP);
+
+  EXPECT_EQ(dqcs_gate_has_name(a), dqcs_bool_return_t::DQCS_FALSE);
+  EXPECT_STREQ(s = dqcs_gate_name(a), NULL);
+  if (s) free(s);
+
+  EXPECT_EQ(dqcs_gate_has_targets(a), dqcs_bool_return_t::DQCS_TRUE);
+  EXPECT_QBSET(dqcs_gate_targets(a), 1u, 2u);
+
+  EXPECT_EQ(dqcs_gate_has_controls(a), dqcs_bool_return_t::DQCS_FALSE);
+  EXPECT_QBSET(dqcs_gate_controls(a), 0u);
+
+  EXPECT_EQ(dqcs_gate_has_measures(a), dqcs_bool_return_t::DQCS_FALSE);
+  EXPECT_QBSET(dqcs_gate_measures(a), 0u);
+
+  EXPECT_MATRIX(a, I_MATRIX);
 
   EXPECT_STREQ(s = dqcs_arb_json_get(a), "{}");
   if (s) free(s);
@@ -195,7 +262,9 @@ TEST(gate, nop) {
   dqcs_handle_t a = dqcs_gate_new_custom("NOP", 0, 0, 0, 0);
   ASSERT_NE(a, 0u) << "Unexpected error: " << dqcs_error_get();
 
-  EXPECT_EQ(dqcs_gate_is_custom(a), dqcs_bool_return_t::DQCS_TRUE);
+  EXPECT_EQ(dqcs_gate_type(a), dqcs_gate_type_t::DQCS_GATE_TYPE_CUSTOM);
+
+  EXPECT_EQ(dqcs_gate_has_name(a), dqcs_bool_return_t::DQCS_TRUE);
   EXPECT_STREQ(s = dqcs_gate_name(a), "NOP");
   if (s) free(s);
 
@@ -244,7 +313,9 @@ TEST(gate, discombobulate) {
   EXPECT_EQ(dqcs_arb_json_set(a, "{\"sequence\": [4, 8, 15, 16, 23, 42]}"), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_arb_push_str(a, "(%@#(*^"), dqcs_return_t::DQCS_SUCCESS) << "Unexpected error: " << dqcs_error_get();
 
-  EXPECT_EQ(dqcs_gate_is_custom(a), dqcs_bool_return_t::DQCS_TRUE);
+  EXPECT_EQ(dqcs_gate_type(a), dqcs_gate_type_t::DQCS_GATE_TYPE_CUSTOM);
+
+  EXPECT_EQ(dqcs_gate_has_name(a), dqcs_bool_return_t::DQCS_TRUE);
   EXPECT_STREQ(s = dqcs_gate_name(a), "DISCOMBOBULATE");
   if (s) free(s);
 
@@ -302,13 +373,13 @@ TEST(gate, erroneous) {
   ASSERT_NE(matrix, 0u) << "Unexpected error: " << dqcs_error_get();
   EXPECT_EQ(dqcs_gate_new_unitary(qbset_b, 0, matrix), 0u);
   dqcs_handle_delete(matrix);
-  EXPECT_STREQ(dqcs_error_get(), "Invalid argument: the matrix is expected to be of size 64 but was 4");
+  EXPECT_STREQ(dqcs_error_get(), "Invalid argument: the matrix is expected to be sized for 3 qubits but has dimension 2");
 
   EXPECT_EQ(dqcs_gate_new_unitary(qbset_a, 0, 0), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: handle 0 is invalid");
 
   // Invalid measures.
-  EXPECT_EQ(dqcs_gate_new_measurement(0), 0u);
+  EXPECT_EQ(dqcs_gate_new_measurement(0, 0), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: handle 0 is invalid");
 
   // Invalid custom gates.
@@ -317,12 +388,6 @@ TEST(gate, erroneous) {
 
   ASSERT_EQ(dqcs_gate_new_custom("FOO", qbset_a, qbset_b, qbset_c, 0), 0u);
   EXPECT_STREQ(dqcs_error_get(), "Invalid argument: qubit 1 is used more than once");
-
-  matrix = dqcs_mat_new(1, X_MATRIX);
-  ASSERT_NE(matrix, 0u) << "Unexpected error: " << dqcs_error_get();
-  EXPECT_EQ(dqcs_gate_new_custom("BAR", qbset_b, qbset_c, qbset_a, matrix), 0u);
-  dqcs_handle_delete(matrix);
-  EXPECT_STREQ(dqcs_error_get(), "Invalid argument: the matrix is expected to be of size 64 but was 4");
 
   EXPECT_EQ(dqcs_handle_delete(qbset_a), dqcs_return_t::DQCS_SUCCESS);
   EXPECT_EQ(dqcs_handle_delete(qbset_b), dqcs_return_t::DQCS_SUCCESS);

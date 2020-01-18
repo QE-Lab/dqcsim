@@ -21,7 +21,7 @@ dqcs_return_t initialize_cb_front(void *user_data, dqcs_plugin_state_t state, dq
 
   dqcs_handle_t qubits = dqcs_plugin_allocate(state, 3, 0);
   if (!qubits) return dqcs_return_t::DQCS_FAILURE;
-  dqcs_handle_t gate = dqcs_gate_new_measurement(qubits);
+  dqcs_handle_t gate = dqcs_gate_new_measurement(qubits, 0);
   if (!gate) return dqcs_return_t::DQCS_FAILURE;
   if (dqcs_plugin_gate(state, gate) != dqcs_return_t::DQCS_SUCCESS) return dqcs_return_t::DQCS_FAILURE;
   if (!dqcs_plugin_get_measurement(state, 1)) return dqcs_return_t::DQCS_FAILURE;
