@@ -221,14 +221,15 @@ impl Matrix {
     /// prep/measurement occurs. Global phase is also don't care as usual. That
     /// means the following must hold for the bases to be equal:
     ///
-    ///           / e^ix   0  \  ~
-    /// basis_a * |           |  =  basis_b
-    ///           \  0   e^iy /
+    /// ```text
+    ///               / e^ix   0  \  ~
+    ///     basis_a * |           |  =  basis_b
+    ///               \  0   e^iy /
     ///
-    ///
-    /// / a_a e^ix   a_b e^iy \  ~  / b_a   b_b \
-    /// |                     |  =  |           |
-    /// \ a_c e^ix   a_d e^iy /     \ b_c   b_d /
+    ///     / a_a e^ix   a_b e^iy \  ~  / b_a   b_b \
+    ///     |                     |  =  |           |
+    ///     \ a_c e^ix   a_d e^iy /     \ b_c   b_d /
+    /// ```
     ///
     /// with x and y being free variables.
     pub fn basis_approx_eq(&self, other: &Matrix, epsilon: f64) -> bool {
