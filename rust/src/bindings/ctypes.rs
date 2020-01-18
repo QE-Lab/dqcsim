@@ -971,3 +971,84 @@ impl TryFrom<dqcs_basis_t> for Basis {
         }
     }
 }
+
+/// Types of DQCsim gates.
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+#[allow(non_camel_case_types)]
+pub enum dqcs_gate_type_t {
+    /// Invalid gate type. Used as an error return value.
+    DQCS_GATE_TYPE_INVALID = 0,
+
+    /// Unitary gates have one or more target qubits, zero or more control
+    /// qubits, and a unitary matrix, sized for the number of target qubits.
+    ///
+    /// The semantics are that the unitary matrix expanded by the number of
+    /// control qubits is applied to the qubits.
+    ///
+    /// The data field may add pragma-like hints to the gate, for instance to
+    /// represent the line number in the source file that generated the gate,
+    /// error modelling information, and so on. This data may be silently
+    /// ignored.
+    DQCS_GATE_TYPE_UNITARY,
+
+    /// Measurement gates have one or more measured qubits and a 2x2 unitary
+    /// matrix representing the basis.
+    ///
+    /// The semantics are:
+    ///
+    ///  - the hermetian of the matrix is applied to each individual qubit;
+    ///  - each individual qubit is measured in the Z basis;
+    ///  - the matrix is applied to each individual qubit;
+    ///  - the results of the measurement are propagated upstream.
+    ///
+    /// This allows any measurement basis to be used.
+    ///
+    /// The data field may add pragma-like hints to the gate, for instance to
+    /// represent the line number in the source file that generated the gate,
+    /// error modelling information, and so on. This data may be silently
+    /// ignored.
+    DQCS_GATE_TYPE_MEASUREMENT,
+
+    /// Prep gates have one or more target qubits and a 2x2 unitary matrix
+    /// representing the basis.
+    ///
+    /// The semantics are:
+    ///
+    ///  - each qubit is initialized to |0>;
+    ///  - the matrix is applied to each individual qubit.
+    ///
+    /// This allows any initial state to be used.
+    ///
+    /// The data field may add pragma-like hints to the gate, for instance to
+    /// represent the line number in the source file that generated the gate,
+    /// error modelling information, and so on. This data may be silently
+    /// ignored.
+    DQCS_GATE_TYPE_PREP,
+
+    /// Custom gates perform a user-defined mixed quantum-classical operation,
+    /// identified by a name. They can have zero or more target, control, and
+    /// measured qubits, of which only the target and control sets must be
+    /// mutually exclusive. They also have an optional matrix of arbitrary
+    /// size.
+    ///
+    /// The semantics are:
+    ///
+    ///  - if the name is not recognized, an error is reported;
+    ///  - a user-defined operation is performed based on the name, qubits,
+    ///    matrix, and data arguments;
+    ///  - exactly one measurement result is reported upstream for exactly the
+    ///    qubits in the measures set.
+    DQCS_GATE_TYPE_CUSTOM,
+}
+
+impl From<&GateType> for dqcs_gate_type_t {
+    fn from(gate_type: &GateType) -> dqcs_gate_type_t {
+        match gate_type {
+            GateType::Unitary => dqcs_gate_type_t::DQCS_GATE_TYPE_UNITARY,
+            GateType::Measurement => dqcs_gate_type_t::DQCS_GATE_TYPE_MEASUREMENT,
+            GateType::Prep => dqcs_gate_type_t::DQCS_GATE_TYPE_PREP,
+            GateType::Custom(_) => dqcs_gate_type_t::DQCS_GATE_TYPE_CUSTOM,
+        }
+    }
+}

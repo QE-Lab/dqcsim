@@ -446,18 +446,20 @@ pub extern "C" fn dqcs_gate_new_custom(
     })
 }
 
-/// Returns whether the specified gate is a custom gate.
+/// Returns the gate type of the given gate.
 ///
-/// If this returns true, the type of gate is to be determined by matching its
-/// name against a set of known gate types. If this returns false, the gate is
-/// expected to be executed as follows, in this order:
-///
-///  - if there are target qubits, extend the supplied unitary matrix to
-///    include the control qubits (if any), then apply it to the control +
-///    target qubits;
-///  - measure each measured qubit (if any) in the Z basis.
+/// Returns DQCS_GATE_TYPE_INVALID if the gate handle is invalid.
 #[no_mangle]
-pub extern "C" fn dqcs_gate_is_custom(gate: dqcs_handle_t) -> dqcs_bool_return_t {
+pub extern "C" fn dqcs_gate_type(gate: dqcs_handle_t) -> dqcs_gate_type_t {
+    api_return(dqcs_gate_type_t::DQCS_GATE_TYPE_INVALID, || {
+        resolve!(gate as &Gate);
+        Ok(gate.get_type().into())
+    })
+}
+
+/// Returns whether the specified gate has a name.
+#[no_mangle]
+pub extern "C" fn dqcs_gate_has_name(gate: dqcs_handle_t) -> dqcs_bool_return_t {
     api_return_bool(|| {
         resolve!(gate as &Gate);
         Ok(gate.get_name().is_some())
@@ -467,7 +469,7 @@ pub extern "C" fn dqcs_gate_is_custom(gate: dqcs_handle_t) -> dqcs_bool_return_t
 /// Returns the name of a custom gate.
 ///
 /// This function fails if the gate is not a custom gate. Query
-/// `dqcs_gate_is_custom()` to disambiguate between a non-custom gate and a
+/// `dqcs_gate_has_name()` to disambiguate between a non-custom gate and a
 /// different error.
 ///
 /// On success, this **returns a newly allocated string containing the gate
