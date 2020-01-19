@@ -19,14 +19,17 @@ use std::{
 
 /// Matrix wrapper for `Gate` matrices.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(transparent)]
 pub struct Matrix {
     /// The elements in the matrix stored as a `Vec<Complex64>`.
     #[serde(with = "complex_serde")]
     data: Vec<Complex64>,
-    /// Cached dimension of inner data.
-    #[serde(skip)]
+    /// Dimension of inner data.
     dimension: usize,
+    // TODO: we can't have serde skip the above field because then it becomes 0
+    // when a matrix is received, making the matrix impl not work. It's kind of
+    // meh though that the serialization format now allows receiving a broken
+    // matrix. OTOH, it could already do that, since for serde there's no square
+    // number check on data.len().
 }
 
 /// This mod provides ser/de for Vec<Complex64>.
