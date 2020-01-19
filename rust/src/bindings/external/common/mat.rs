@@ -224,6 +224,27 @@ pub extern "C" fn dqcs_mat_basis_approx_eq(
     })
 }
 
+/// Returns whether the matrix is approximately unitary.
+///>
+///> `matrix` is a borrowed handle to the matrix to check.
+///> `epsilon` specifies the maximum element-wise root-mean-square error
+///> between the product of the matrix and its hermetian compared to the
+///> identity matrix.
+///>
+///> This function returns `DQCS_TRUE` if the matrix is approximately unitary,
+///> or `DQCS_FALSE` if not. `DQCS_BOOL_ERROR` is used when either handle is
+///> invalid or not a matrix.
+#[no_mangle]
+pub extern "C" fn dqcs_mat_approx_unitary(
+    matrix: dqcs_handle_t,
+    epsilon: c_double,
+) -> dqcs_bool_return_t {
+    api_return_bool(|| {
+        resolve!(matrix as &Matrix);
+        Ok(matrix.approx_unitary(epsilon))
+    })
+}
+
 /// Returns whether this matrix is of the given predefined form and, if it is,
 /// any parameters needed to describe it.
 ///>

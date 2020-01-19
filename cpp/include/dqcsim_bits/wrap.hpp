@@ -3250,6 +3250,21 @@ namespace wrap {
     }
 
     /**
+     * Approximate unitary check.
+     *
+     * This internally computes the product of this matrix and its Hermetian,
+     * and then does an approximate compare against the identity matrix.
+     *
+     * \param epsilon The maximum tolerated RMS variation between the identity
+     * matrix and the computed product.
+     * \returns Whether the matrix is approximately unitary.
+     * \throws std::runtime_error When the handle is invalid.
+     */
+    bool approx_unitary(double epsilon = 0.000001) const {
+      return check(raw::dqcs_mat_approx_unitary(handle, epsilon));
+    }
+
+    /**
      * Detects whether this matrix is approximately equal to (some
      * parameterization of) the given predefined gate.
      *

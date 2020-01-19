@@ -178,8 +178,8 @@ pub extern "C" fn dqcs_gate_new_predef_three(
 /// can optimize its calculations by altering the global phase it is allowed
 /// to.
 ///
-/// If is up to the user to ensure that the specified matrix is unitary. This
-/// is NOT checked by DQCsim. The simulator backend may or may not check this.
+/// DQCsim checks whether the matrix is unitary using the equivalent of
+/// `dqcs_mat_approx_unitary()` with an epsilon value of 1e-6.
 ///
 /// This function returns the handle to the gate, or 0 to indicate failure.
 /// The `targets` qubit set, (if specified) the `controls` qubit set, and the

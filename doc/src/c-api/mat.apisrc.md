@@ -40,6 +40,13 @@ global phase. For this reason, DQCsim provides an equality check function.
 
 @@@c_api_gen ^dqcs_mat_approx_eq$@@@
 
+## Unitary check
+
+DQCsim also exposes a unitary check, which it uses internally here and there
+anyway.
+
+@@@c_api_gen ^dqcs_mat_approx_unitary$@@@
+
 ## Predefined matrices
 
 DQCsim provides a number of predefined gate matrices. These are identified by
