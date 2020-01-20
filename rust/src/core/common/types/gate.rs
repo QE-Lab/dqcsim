@@ -2,101 +2,93 @@ use crate::common::{
     error::{inv_arg, Result},
     types::{ArbData, Matrix, QubitRef},
 };
-use float_cmp::approx_eq;
 use num_complex::Complex64;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::{collections::HashSet, convert::TryInto};
 
-/// Represents a quantum gate.
+/// Represents a type of quantum or mixed quantum-classical gate.
+#[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize, Hash)]
+pub enum GateType {
+    /// Unitary gates have one or more target qubits, zero or more control
+    /// qubits, and a unitary matrix, sized for the number of target qubits.
+    ///
+    /// The semantics are that the unitary matrix expanded by the number of
+    /// control qubits is applied to the qubits.
+    ///
+    /// The data field may add pragma-like hints to the gate, for instance to
+    /// represent the line number in the source file that generated the gate,
+    /// error modelling information, and so on. This data may be silently
+    /// ignored.
+    Unitary,
+
+    /// Measurement gates have one or more measured qubits and a 2x2 unitary
+    /// matrix representing the basis.
+    ///
+    /// The semantics are:
+    ///
+    ///  - the hermetian of the matrix is applied to each individual qubit;
+    ///  - each individual qubit is measured in the Z basis;
+    ///  - the matrix is applied to each individual qubit;
+    ///  - the results of the measurement are propagated upstream.
+    ///
+    /// This allows any measurement basis to be used.
+    ///
+    /// The data field may add pragma-like hints to the gate, for instance to
+    /// represent the line number in the source file that generated the gate,
+    /// error modelling information, and so on. This data may be silently
+    /// ignored.
+    Measurement,
+
+    /// Prep gates have one or more target qubits and a 2x2 unitary matrix
+    /// representing the basis.
+    ///
+    /// The semantics are:
+    ///
+    ///  - each qubit is initialized to |0>;
+    ///  - the matrix is applied to each individual qubit.
+    ///
+    /// This allows any initial state to be used.
+    ///
+    /// The data field may add pragma-like hints to the gate, for instance to
+    /// represent the line number in the source file that generated the gate,
+    /// error modelling information, and so on. This data may be silently
+    /// ignored.
+    Prep,
+
+    /// Custom gates perform a user-defined mixed quantum-classical operation,
+    /// identified by a name. They can have zero or more target, control, and
+    /// measured qubits, of which only the target and control sets must be
+    /// mutually exclusive. They also have an optional matrix of arbitrary
+    /// size.
+    ///
+    /// The semantics are:
+    ///
+    ///  - if the name is not recognized, an error is reported;
+    ///  - a user-defined operation is performed based on the name, qubits,
+    ///    matrix, and data arguments;
+    ///  - exactly one measurement result is reported upstream for exactly the
+    ///    qubits in the measures set.
+    Custom(String),
+}
+
+/// Represents a type of quantum or mixed quantum-classical gate.
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize, Hash)]
 pub struct Gate {
-    /// Optional name for this gate.
-    ///
-    /// If this is specified, the behavior of the gate is dependent on the
-    /// downstream plugin implementation. This is by design - it allows
-    /// users of DQCsim to describe more complex gates than the relatively
-    /// limited set specified by DQCsim itself.
-    ///
-    /// If the name is NOT specified, the gate MUST behave as follows:
-    ///
-    ///  - if a unitary matrix is supplied:
-    ///     - extend the matrix by the amount of control qubits specified;
-    ///     - apply the matrix to the concatenation of the control and
-    ///       target qubit lists;
-    ///  - if target and/or control qubits were specified but no matrix was
-    ///    specified, return an error;
-    ///  - if the measured qubit list is non-empty, measure the specified
-    ///    qubits in the Z basis (i.e., after application of the matrix,
-    ///    if any).
-    name: Option<String>,
+    /// Type of gate. See enum definition. The significance of the targets,
+    /// controls, measures, and matrix fields is documented there.
+    typ: GateType,
 
     /// The list of qubits targetted by this gate.
-    ///
-    /// If a matrix is specified, it must be appropriately sized for the
-    /// number of qubits in this vector.
     targets: Vec<QubitRef>,
 
     /// The set of qubits that control this gate.
-    ///
-    /// If a matrix is specified, its size is NOT affected by the size of
-    /// this set, i.e. the control qubits are implied. For instance, a gate
-    /// with the following parameters:
-    ///
-    ///  - targets: [target qubit]
-    ///  - controls: [control qubit]
-    ///  - matrix: [0, 1; 1, 0]
-    ///
-    /// describes a controlled X (a.k.a. CNOT) gate. Plugins are free to
-    /// define a CNOT without using the controls set as well, i.e.
-    ///
-    ///  - targets: [control qubit, target qubit]
-    ///  - controls: []
-    ///  - matrix: [1, 0, 0, 0; 0, 1, 0, 0; 0, 0, 0, 1; 0, 0, 1, 0]
-    ///
-    /// is normally equivalent. However, the latter takes a bit more
-    /// bandwidth in the communication channel and does not clarify intent
-    /// as well as the former does.
-    ///
-    /// Note that the qubits listed in this set are mutually exclusive with
-    /// the target qubits.
     controls: Vec<QubitRef>,
 
     /// The set of qubits measured by this gate.
-    ///
-    /// There should be exactly one `GatestreamUp::Measured` message sent
-    /// in response for each qubit listed in this set. Failure to do this
-    /// results in a warning message being logged and the measurement value
-    /// being set to undefined. The reason for this requirement, and the
-    /// measured qubits needing to be explicitly specified at all, has to
-    /// do with waiting for the downstream plugins to catch up with the
-    /// pipelined requests when a measurement result is requested upstream.
-    ///
-    /// Note that there are no mutual exclusivity constraints between this
-    /// set and the targets/controls set. If a qubit is both acted upon and
-    /// measured, the measurement is executed after the gate.
-    ///
-    /// The measurement method (basis, parity, etc.) is not explicitly
-    /// specified. It is to be determined based upon the name of the gate
-    /// and/or the data object. If no gate name is specified, the Z basis
-    /// is implied.
     measures: Vec<QubitRef>,
 
-    /// An optional unitary matrix sized appropriately for the qubits in
-    /// `targets`.
-    ///
-    /// If no gate name is specified, this matrix is applied to the target
-    /// qubits (or, if control qubits are specified in addition, the matrix
-    /// is first extended to a controlled gate and applied to both the
-    /// target and control qubits). However, if a gate name is specified,
-    /// it is ultimately up to the downstream plugin how the matrix is
-    /// interpreted. For instance, the matrix may be used to specify only a
-    /// rotation axis, with the actual rotation amount specified by the
-    /// data object. It is up to the user to ensure that the plugins used
-    /// within a simulation agree upon the representation used. However,
-    /// the size of the matrix is fixed based on the number of target
-    /// qubits. If a differently-sized matrix must be communicated, leave
-    /// the matrix field unspecified and use the data object instead.
-    matrix: Matrix,
+    /// An optional matrix.
+    matrix: Option<Matrix>,
 
     /// User-defined classical data to pass along with the gate.
     pub data: ArbData,
@@ -111,7 +103,7 @@ impl Gate {
     ) -> Result<Gate> {
         let targets: Vec<QubitRef> = targets.into_iter().collect();
         let controls: Vec<QubitRef> = controls.into_iter().collect();
-        let matrix: Vec<Complex64> = matrix.into_iter().collect();
+        let matrix = Matrix::new(matrix)?;
 
         // We need at least one target.
         if targets.is_empty() {
@@ -127,60 +119,37 @@ impl Gate {
         }
 
         // Check the size of the matrix.
-        let expected_size = 2usize.pow(2 * targets.len() as u32);
-        if matrix.len() != expected_size {
+        if matrix.num_qubits() != Some(targets.len()) {
             return inv_arg(format!(
-                "the matrix is expected to be of size {} but was {}",
-                expected_size,
-                matrix.len()
+                "the matrix is expected to be sized for {} qubits but has dimension {}",
+                targets.len(),
+                matrix.dimension()
             ));
         }
 
         // Validate matrix is unitary.
-        let dimension = 2usize.pow(targets.len() as u32);
-
-        // Get the complex conjugate transpose.
-        let mut conjugate_transpose = vec![Complex64::new(0., 0.); matrix.len()];
-        for j in 0..dimension {
-            for i in 0..dimension {
-                conjugate_transpose[j + i * dimension] = matrix[i + j * dimension].conj();
-            }
-        }
-
-        // Check if result of matrix multiplication is identity matrix.
-        for i in 0..dimension {
-            for j in 0..dimension {
-                let element = (0..dimension).fold(Complex64::new(0., 0.), |acc, k| {
-                    acc + (matrix[i * dimension + k] * conjugate_transpose[k * dimension + j])
-                });
-                let value = if i == j {
-                    Complex64::new(1., 0.)
-                } else {
-                    Complex64::new(0., 0.)
-                };
-                if !approx_eq!(f64, element.re, value.re) || !approx_eq!(f64, element.im, value.im)
-                {
-                    return inv_arg("provided matrix is non-unitary");
-                }
-            }
+        if !matrix.approx_unitary(1.0e-6) {
+            return inv_arg("provided matrix is not unitary within 1e-6 tolerance");
         }
 
         // Construct the Gate structure.
         Ok(Gate {
-            name: None,
+            typ: GateType::Unitary,
             targets,
             controls,
             measures: vec![],
-            matrix: matrix.into(),
+            matrix: Some(matrix),
             data: ArbData::default(),
         })
     }
 
     /// Constructs a new measurement gate.
-    ///
-    /// The qubits are measured in the Z basis.
-    pub fn new_measurement(qubits: impl IntoIterator<Item = QubitRef>) -> Result<Gate> {
+    pub fn new_measurement(
+        qubits: impl IntoIterator<Item = QubitRef>,
+        basis: impl IntoIterator<Item = Complex64>,
+    ) -> Result<Gate> {
         let measures: Vec<QubitRef> = qubits.into_iter().collect();
+        let matrix = Matrix::new(basis)?;
 
         // Enforce uniqueness of the qubits.
         let mut set = HashSet::new();
@@ -190,13 +159,66 @@ impl Gate {
             }
         }
 
+        // Check the size of the matrix.
+        if matrix.dimension() != 2 {
+            return inv_arg(format!(
+                "the matrix is expected to be 2x2 but has dimension {}",
+                matrix.dimension(),
+            ));
+        }
+
+        // Validate matrix is unitary.
+        if !matrix.approx_unitary(1.0e-6) {
+            return inv_arg("provided matrix is not unitary within 1e-6 tolerance");
+        }
+
         // Construct the Gate structure.
         Ok(Gate {
-            name: None,
+            typ: GateType::Measurement,
             targets: vec![],
             controls: vec![],
             measures,
-            matrix: vec![].into(),
+            matrix: Some(matrix),
+            data: ArbData::default(),
+        })
+    }
+
+    /// Constructs a new prep gate.
+    pub fn new_prep(
+        qubits: impl IntoIterator<Item = QubitRef>,
+        matrix: impl IntoIterator<Item = Complex64>,
+    ) -> Result<Gate> {
+        let targets: Vec<QubitRef> = qubits.into_iter().collect();
+        let matrix = Matrix::new(matrix)?;
+
+        // Enforce uniqueness of the qubits.
+        let mut set = HashSet::new();
+        for qubit in targets.iter() {
+            if !set.insert(qubit) {
+                return inv_arg(format!("qubit {} is measured more than once", qubit));
+            }
+        }
+
+        // Check the size of the matrix.
+        if matrix.dimension() != 2 {
+            return inv_arg(format!(
+                "the matrix is expected to be 2x2 but has dimension {}",
+                matrix.dimension(),
+            ));
+        }
+
+        // Validate matrix is unitary.
+        if !matrix.approx_unitary(1.0e-6) {
+            return inv_arg("provided matrix is not unitary within 1e-6 tolerance");
+        }
+
+        // Construct the Gate structure.
+        Ok(Gate {
+            typ: GateType::Prep,
+            targets,
+            controls: vec![],
+            measures: vec![],
+            matrix: Some(matrix),
             data: ArbData::default(),
         })
     }
@@ -214,7 +236,12 @@ impl Gate {
         let targets: Vec<QubitRef> = targets.into_iter().collect();
         let controls: Vec<QubitRef> = controls.into_iter().collect();
         let measures: Vec<QubitRef> = measures.into_iter().collect();
-        let matrix: Option<Matrix> = matrix.map(|m| m.into_iter().collect());
+        let matrix: Option<Matrix> = if let Some(matrix) = matrix {
+            let matrix: Vec<Complex64> = matrix.into_iter().collect();
+            Some(matrix.try_into()?)
+        } else {
+            None
+        };
         let data: ArbData = data.into();
 
         // Enforce uniqueness of the target/control qubits.
@@ -233,39 +260,29 @@ impl Gate {
             }
         }
 
-        // Check the size of the matrix.
-        if let Some(ref m) = matrix {
-            if targets.is_empty() {
-                return inv_arg("cannot specify a matrix when there are no target qubits");
-            } else {
-                let expected_size = 2usize.pow(2 * targets.len() as u32);
-                if m.len() != expected_size {
-                    return inv_arg(format!(
-                        "the matrix is expected to be of size {} but was {}",
-                        expected_size,
-                        m.len()
-                    ));
-                }
-            }
-        }
-
         // Construct the Gate structure.
         Ok(Gate {
-            name: Some(name),
+            typ: GateType::Custom(name),
             targets,
             controls,
             measures,
-            matrix: matrix.unwrap_or_else(|| vec![].into()),
+            matrix,
             data,
         })
     }
 
+    /// Returns the gate type.
+    pub fn get_type(&self) -> &GateType {
+        &self.typ
+    }
+
     /// Returns the name of the gate, if any.
-    ///
-    /// No name implies DQCsim-defined gate behavior, named gates imply
-    /// plugin-defined behavior.
     pub fn get_name(&self) -> Option<&str> {
-        self.name.as_ref().map(|x| &x[..])
+        if let GateType::Custom(name) = &self.typ {
+            Some(&name[..])
+        } else {
+            None
+        }
     }
 
     /// Returns the list of target qubits.
@@ -284,27 +301,23 @@ impl Gate {
     }
 
     /// Returns the gate matrix.
-    pub fn get_matrix(&self) -> Option<Matrix> {
-        if self.matrix.is_empty() {
-            None
-        } else {
-            Some(self.matrix.clone())
-        }
+    pub fn get_matrix(&self) -> Option<&Matrix> {
+        self.matrix.as_ref()
     }
 
     /// Returns a new Gate with its controls moved to the matrix.
     pub fn with_matrix_controls(&self) -> Self {
         let num_controls = self.controls.len();
-        if num_controls > 0 {
-            let matrix = self.matrix.add_controls(num_controls);
+        if self.typ == GateType::Unitary && num_controls > 0 {
+            let matrix = self.matrix.as_ref().unwrap().add_controls(num_controls);
             let mut targets = self.controls.clone();
             targets.append(&mut self.targets.clone());
             Gate {
-                name: self.name.clone(),
+                typ: self.typ.clone(),
                 targets,
                 controls: vec![],
                 measures: self.measures.to_vec(),
-                matrix,
+                matrix: Some(matrix),
                 data: self.data.clone(),
             }
         } else {
@@ -316,7 +329,8 @@ impl Gate {
     /// Gate controls field. Forwards the epsilon and ignore_global_phase args
     /// to the Matrix::strip_control method.
     pub fn with_gate_controls(&self, epsilon: f64, ignore_global_phase: bool) -> Self {
-        if let Some(matrix) = self.get_matrix() {
+        if self.typ == GateType::Unitary {
+            let matrix = self.matrix.as_ref().unwrap();
             let (control_set, matrix) = matrix.strip_control(epsilon, ignore_global_phase);
             let mut targets = self.get_targets().to_vec();
             let mut controls = vec![];
@@ -324,11 +338,11 @@ impl Gate {
                 controls.push(targets.remove(c));
             }
             Gate {
-                name: self.name.clone(),
+                typ: self.typ.clone(),
                 targets,
                 controls,
                 measures: self.measures.to_vec(),
-                matrix,
+                matrix: Some(matrix),
                 data: self.data.clone(),
             }
         } else {
@@ -342,7 +356,7 @@ impl Gate {
     /// amount of each kind,
     pub fn without_qubit_refs(&self) -> Self {
         Gate {
-            name: self.name.clone(),
+            typ: self.typ.clone(),
             targets: vec![QubitRef::null(); self.targets.len()],
             controls: vec![QubitRef::null(); self.controls.len()],
             measures: vec![QubitRef::null(); self.measures.len()],
@@ -409,7 +423,7 @@ mod tests {
         assert!(g.is_err());
         assert_eq!(
             g.unwrap_err().to_string(),
-            "Invalid argument: the matrix is expected to be of size 4 but was 3"
+            "Invalid argument: matrix is not square"
         );
 
         let targets = vec![qref(2), qref(3)];
@@ -419,7 +433,7 @@ mod tests {
         assert!(g.is_err());
         assert_eq!(
             g.unwrap_err().to_string(),
-            "Invalid argument: the matrix is expected to be of size 16 but was 1"
+            "Invalid argument: the matrix is expected to be sized for 2 qubits but has dimension 1"
         );
 
         let targets = vec![qref(1), qref(2), qref(3)];
@@ -429,7 +443,7 @@ mod tests {
         assert!(g.is_err());
         assert_eq!(
             g.unwrap_err().to_string(),
-            "Invalid argument: the matrix is expected to be of size 64 but was 1"
+            "Invalid argument: the matrix is expected to be sized for 3 qubits but has dimension 1"
         );
 
         let targets = vec![qref(1), qref(2), qref(3), qref(4)];
@@ -439,7 +453,7 @@ mod tests {
         assert!(g.is_err());
         assert_eq!(
             g.unwrap_err().to_string(),
-            "Invalid argument: the matrix is expected to be of size 256 but was 1"
+            "Invalid argument: the matrix is expected to be sized for 4 qubits but has dimension 1"
         );
     }
 
@@ -472,20 +486,21 @@ mod tests {
         assert_eq!(
             g.get_matrix(),
             Some(
-                vec![
+                &vec![
                     Complex64::new(1f64, 0f64),
                     Complex64::new(0f64, 0f64),
                     Complex64::new(0f64, 0f64),
                     Complex64::new(1f64, 0f64),
                 ]
-                .into()
+                .try_into()
+                .unwrap()
             )
         );
     }
 
     #[test]
     fn new_measurement_dup_qubit() {
-        let g = Gate::new_measurement(vec![qref(1), qref(1)]);
+        let g = Gate::new_measurement(vec![qref(1), qref(1)], Matrix::new_identity(2));
         assert!(g.is_err());
         assert_eq!(
             g.unwrap_err().to_string(),
@@ -495,14 +510,26 @@ mod tests {
 
     #[test]
     fn new_measurement() {
-        let g = Gate::new_measurement(vec![qref(1)]);
+        let g = Gate::new_measurement(vec![qref(1)], Matrix::new_identity(2));
         assert!(g.is_ok());
         let g = g.unwrap();
         assert_eq!(g.get_name(), None);
         assert_eq!(g.get_targets(), []);
         assert_eq!(g.get_controls(), []);
         assert_eq!(g.get_measures(), [qref(1)]);
-        assert_eq!(g.get_matrix(), None);
+        assert_eq!(g.get_matrix(), Some(&Matrix::new_identity(2)));
+    }
+
+    #[test]
+    fn new_prep() {
+        let g = Gate::new_prep(vec![qref(1)], Matrix::new_identity(2));
+        assert!(g.is_ok());
+        let g = g.unwrap();
+        assert_eq!(g.get_name(), None);
+        assert_eq!(g.get_targets(), [qref(1)]);
+        assert_eq!(g.get_controls(), []);
+        assert_eq!(g.get_measures(), []);
+        assert_eq!(g.get_matrix(), Some(&Matrix::new_identity(2)));
     }
 
     #[test]
@@ -561,27 +588,6 @@ mod tests {
     }
 
     #[test]
-    fn new_custom_matrix_no_targets() {
-        let name = "";
-        let targets = vec![];
-        let controls = vec![];
-        let measures = vec![];
-        let matrix = Some(vec![
-            Complex64::new(1f64, 1f64),
-            Complex64::new(1f64, 1f64),
-            Complex64::new(1f64, 1f64),
-            Complex64::new(1f64, 1f64),
-        ]);
-        let data = ArbData::default();
-        let g = Gate::new_custom(name, targets, controls, measures, matrix, data);
-        assert!(g.is_err());
-        assert_eq!(
-            g.unwrap_err().to_string(),
-            "Invalid argument: cannot specify a matrix when there are no target qubits"
-        );
-    }
-
-    #[test]
     fn new_custom_bad_size() {
         let name = "";
         let targets = vec![qref(1)];
@@ -597,7 +603,7 @@ mod tests {
         assert!(g.is_err());
         assert_eq!(
             g.unwrap_err().to_string(),
-            "Invalid argument: the matrix is expected to be of size 4 but was 3"
+            "Invalid argument: matrix is not square"
         );
     }
 
@@ -624,13 +630,14 @@ mod tests {
         assert_eq!(
             g.get_matrix(),
             Some(
-                vec![
+                &vec![
                     Complex64::new(1f64, 0f64),
                     Complex64::new(0f64, 0f64),
                     Complex64::new(0f64, 0f64),
                     Complex64::new(1f64, 0f64),
                 ]
-                .into()
+                .try_into()
+                .unwrap()
             )
         );
     }
@@ -651,7 +658,7 @@ mod tests {
         let g = Gate::new_custom(name, targets, controls, measures, matrix, data);
         assert!(g.is_ok());
         let g = g.unwrap();
-        assert_eq!(format!("{:?}", g), "Gate { name: Some(\"I\"), targets: [QubitRef(1)], controls: [QubitRef(2)], measures: [QubitRef(3)], matrix: Matrix { data: [Complex { re: 1.0, im: 0.0 }, Complex { re: 0.0, im: 0.0 }, Complex { re: 0.0, im: 0.0 }, Complex { re: 1.0, im: 0.0 }], dimension: 2 }, data: ArbData { json: Map({}), args: [] } }");
+        assert_eq!(format!("{:?}", g), "Gate { typ: Custom(\"I\"), targets: [QubitRef(1)], controls: [QubitRef(2)], measures: [QubitRef(3)], matrix: Some(Matrix { data: [Complex { re: 1.0, im: 0.0 }, Complex { re: 0.0, im: 0.0 }, Complex { re: 0.0, im: 0.0 }, Complex { re: 1.0, im: 0.0 }], dimension: 2 }), data: ArbData { json: Map({}), args: [] } }");
     }
 
     #[test]
@@ -665,7 +672,7 @@ mod tests {
             Complex64::new(1f64, 0f64),
         ];
         let g = Gate::new_unitary(targets, controls, matrix).unwrap();
-        assert_eq!(serde_json::to_string(&g).unwrap(), "{\"name\":null,\"targets\":[1],\"controls\":[2],\"measures\":[],\"matrix\":[{\"re\":1.0,\"im\":0.0},{\"re\":0.0,\"im\":0.0},{\"re\":0.0,\"im\":0.0},{\"re\":1.0,\"im\":0.0}],\"data\":{\"cbor\":[160],\"args\":[]}}");
+        assert_eq!(serde_json::to_string(&g).unwrap(), "{\"typ\":\"Unitary\",\"targets\":[1],\"controls\":[2],\"measures\":[],\"matrix\":{\"data\":[{\"re\":1.0,\"im\":0.0},{\"re\":0.0,\"im\":0.0},{\"re\":0.0,\"im\":0.0},{\"re\":1.0,\"im\":0.0}],\"dimension\":2},\"data\":{\"cbor\":[160],\"args\":[]}}");
     }
 
     #[test]

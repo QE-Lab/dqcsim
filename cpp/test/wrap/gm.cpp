@@ -7,7 +7,7 @@ using namespace dqcsim::wrap;
 
 class MyCustomGateConverter : public CustomGateConverter {
   bool detect(Gate &&gate, QubitSet &qubits, ArbData &params) const override {
-    if (!gate.is_custom() || gate.get_name() != "custom") return false;
+    if (gate.get_type() != GateType::Custom || gate.get_name() != "custom") return false;
     qubits = gate.get_targets();
     if (qubits.size() != 2) {
       throw std::runtime_error("this awesome custom gate needs two qubits");
@@ -104,6 +104,7 @@ TEST(gatemap, test) {{
     .with_unitary(MyUnboundGate("z"), Matrix(PredefinedGate::Z))
     .with_unitary(MyUnboundGate("h"), std::make_shared<MyCustomUnitaryGateConverter>())
     .with_measure(MyUnboundGate("meas"))
+    .with_prep(MyUnboundGate("prep_x"), PauliBasis::X)
     .with_custom(MyUnboundGate("custom"), std::make_shared<MyCustomGateConverter>());
 
   const MyUnboundGate *key;
@@ -126,7 +127,7 @@ TEST(gatemap, test) {{
   EXPECT_EQ(map.construct(MyUnboundGate("x"), QubitSet().with(3_q), ArbData().with_arg(33)).dump(), "\
 Gate(\n\
     Gate {\n\
-        name: None,\n\
+        typ: Unitary,\n\
         targets: [\n\
             QubitRef(\n\
                 3,\n\
@@ -134,27 +135,29 @@ Gate(\n\
         ],\n\
         controls: [],\n\
         measures: [],\n\
-        matrix: Matrix {\n\
-            data: [\n\
-                Complex {\n\
-                    re: 0.0,\n\
-                    im: 0.0,\n\
-                },\n\
-                Complex {\n\
-                    re: 1.0,\n\
-                    im: 0.0,\n\
-                },\n\
-                Complex {\n\
-                    re: 1.0,\n\
-                    im: 0.0,\n\
-                },\n\
-                Complex {\n\
-                    re: 0.0,\n\
-                    im: 0.0,\n\
-                },\n\
-            ],\n\
-            dimension: 2,\n\
-        },\n\
+        matrix: Some(\n\
+            Matrix {\n\
+                data: [\n\
+                    Complex {\n\
+                        re: 0.0,\n\
+                        im: 0.0,\n\
+                    },\n\
+                    Complex {\n\
+                        re: 1.0,\n\
+                        im: 0.0,\n\
+                    },\n\
+                    Complex {\n\
+                        re: 1.0,\n\
+                        im: 0.0,\n\
+                    },\n\
+                    Complex {\n\
+                        re: 0.0,\n\
+                        im: 0.0,\n\
+                    },\n\
+                ],\n\
+                dimension: 2,\n\
+            },\n\
+        ),\n\
         data: ArbData {\n\
             json: Map(\n\
                 {},\n\
@@ -226,9 +229,28 @@ Gate(\n\
   EXPECT_EQ(qubits.dump(), "QubitReferenceSet(\n    [\n        QubitRef(\n            1,\n        ),\n    ],\n)");
   EXPECT_EQ(params.dump(), "ArbData(\n    ArbData {\n        json: Map(\n            {},\n        ),\n        args: [],\n    },\n)");
 
+  key = &dflt;
+  EXPECT_EQ(map.detect(
+    Gate::prep(QubitSet().with(1_q)),
+    &key, &qubits, &params
+  ), false);
+  EXPECT_EQ(key->name, "unknown");
+  EXPECT_EQ(map.detect(
+    Gate::prep(QubitSet().with(1_q), PauliBasis::X),
+    &key, &qubits, &params
+  ), true);
+  EXPECT_EQ(key->name, "prep_x");
+  EXPECT_EQ(qubits.dump(), "QubitReferenceSet(\n    [\n        QubitRef(\n            1,\n        ),\n    ],\n)");
+  EXPECT_EQ(params.dump(), "ArbData(\n    ArbData {\n        json: Map(\n            {},\n        ),\n        args: [],\n    },\n)");
+
   EXPECT_EQ(
     map.construct(MyUnboundGate("meas"), QubitSet().with(3_q).with(4_q)).dump(),
     Gate::measure(QubitSet().with(3_q).with(4_q)).dump()
+  );
+
+  EXPECT_EQ(
+    map.construct(MyUnboundGate("prep_x"), QubitSet().with(3_q).with(4_q)).dump(),
+    Gate::prep(QubitSet().with(3_q).with(4_q), PauliBasis::X).dump()
   );
 
   EXPECT_EQ(
@@ -269,7 +291,7 @@ ArbData(\n\
   EXPECT_EQ(gate.dump(), "\
 Gate(\n\
     Gate {\n\
-        name: Some(\n\
+        typ: Custom(\n\
             \"custom\",\n\
         ),\n\
         targets: [\n\
@@ -282,10 +304,7 @@ Gate(\n\
         ],\n\
         controls: [],\n\
         measures: [],\n\
-        matrix: Matrix {\n\
-            data: [],\n\
-            dimension: 0,\n\
-        },\n\
+        matrix: None,\n\
         data: ArbData {\n\
             json: Map(\n\
                 {},\n\

@@ -1,4 +1,7 @@
-use crate::common::util::log_2;
+use crate::common::{
+    error::{inv_arg, Error, Result},
+    util::log_2,
+};
 use integer_sqrt::IntegerSquareRoot;
 use num_complex::Complex64;
 use serde::{Deserialize, Serialize};
@@ -6,23 +9,27 @@ use serde::{Deserialize, Serialize};
 use std::os::raw::c_double;
 use std::{
     collections::HashSet,
+    convert::TryFrom,
+    f64::consts::FRAC_1_SQRT_2,
     fmt,
     fmt::{Display, Formatter},
     hash::{Hash, Hasher},
-    iter::FromIterator,
     ops::{Index, IndexMut},
 };
 
 /// Matrix wrapper for `Gate` matrices.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(transparent)]
 pub struct Matrix {
     /// The elements in the matrix stored as a `Vec<Complex64>`.
     #[serde(with = "complex_serde")]
     data: Vec<Complex64>,
-    /// Cached dimension of inner data.
-    #[serde(skip)]
+    /// Dimension of inner data.
     dimension: usize,
+    // TODO: we can't have serde skip the above field because then it becomes 0
+    // when a matrix is received, making the matrix impl not work. It's kind of
+    // meh though that the serialization format now allows receiving a broken
+    // matrix. OTOH, it could already do that, since for serde there's no square
+    // number check on data.len().
 }
 
 /// This mod provides ser/de for Vec<Complex64>.
@@ -116,15 +123,10 @@ impl IndexMut<usize> for Matrix {
     }
 }
 
-impl From<Vec<Complex64>> for Matrix {
-    fn from(elements: Vec<Complex64>) -> Self {
+impl TryFrom<Vec<Complex64>> for Matrix {
+    type Error = Error;
+    fn try_from(elements: Vec<Complex64>) -> Result<Self> {
         Matrix::new(elements)
-    }
-}
-
-impl FromIterator<Complex64> for Matrix {
-    fn from_iter<I: IntoIterator<Item = Complex64>>(iter: I) -> Self {
-        Matrix::new(iter)
     }
 }
 
@@ -152,17 +154,21 @@ impl Display for Matrix {
 
 impl Matrix {
     /// Returns a new Matrix with provided elements.
-    pub fn new(elements: impl IntoIterator<Item = Complex64>) -> Self {
+    pub fn new(elements: impl IntoIterator<Item = Complex64>) -> Result<Self> {
         let elements = elements.into_iter().collect::<Vec<Complex64>>();
-        Matrix {
+        let dimension = elements.len().integer_sqrt();
+        if elements.len() != dimension * dimension {
+            return inv_arg("matrix is not square");
+        }
+        Ok(Matrix {
             dimension: elements.len().integer_sqrt(),
             data: elements,
-        }
+        })
     }
 
     /// Returns a new identity Matrix with given dimension.
     pub fn new_identity(dimension: usize) -> Self {
-        let mut output = Matrix::new(vec![c!(0.); dimension.pow(2)]);
+        let mut output = Matrix::new(vec![c!(0.); dimension.pow(2)]).unwrap();
         for i in 0..dimension {
             output[(i, i)] = c!(1.);
         }
@@ -203,6 +209,79 @@ impl Matrix {
                 }
             })
             .is_some()
+    }
+
+    /// Approximately compares two matrices representing bases with each other.
+    ///
+    /// The basis representation works as follows:
+    ///
+    ///  - (apply hermetian of matrix as gate if measurement)
+    ///  - measure/prep Z
+    ///  - apply matrix as gate
+    ///
+    /// Any rotation around the Z axis is don't care before and after the
+    /// prep/measurement, because that information is thrown away when the
+    /// prep/measurement occurs. Global phase is also don't care as usual. That
+    /// means the following must hold for the bases to be equal:
+    ///
+    /// ```text
+    ///               / e^ix   0  \  ~
+    ///     basis_a * |           |  =  basis_b
+    ///               \  0   e^iy /
+    ///
+    ///     / a_a e^ix   a_b e^iy \  ~  / b_a   b_b \
+    ///     |                     |  =  |           |
+    ///     \ a_c e^ix   a_d e^iy /     \ b_c   b_d /
+    /// ```
+    ///
+    /// with x and y being free variables.
+    pub fn basis_approx_eq(&self, other: &Matrix, epsilon: f64) -> bool {
+        // Sizes must both be 2x2
+        if self.dimension() != 2 || other.dimension() != 2 {
+            return false;
+        }
+        let mut tolerance = epsilon * epsilon;
+        for col in 0..2 {
+            let phase_delta =
+                self[(0, col)] * other[(0, col)].conj() + self[(1, col)] * other[(1, col)].conj();
+            let phase_delta = phase_delta.unscale(phase_delta.norm());
+            for row in 0..2 {
+                tolerance -= (self[(row, col)] - other[(row, col)] * phase_delta).norm_sqr();
+                if tolerance < 0. {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+
+    /// Checks whether this Matrix is approximately unitary by multiplying
+    /// itself with its hermetian, and measuring the RMS difference of the
+    /// result and the identity matrix. If this difference is more than epsilon
+    /// the matrix is not (sufficiently) unitary and this function returns
+    /// false, otherwise it returns true.
+    pub fn approx_unitary(&self, epsilon: f64) -> bool {
+        let mut tolerance = epsilon * epsilon;
+
+        // Check if result of matrix multiplication of self and our hermetian
+        // is identity.
+        for i in 0..self.dimension {
+            for j in 0..self.dimension {
+                let element = (0..self.dimension).fold(Complex64::new(0., 0.), |acc, k| {
+                    acc + (self[i * self.dimension + k] * self[j * self.dimension + k].conj())
+                });
+                let expected = if i == j {
+                    Complex64::new(1., 0.)
+                } else {
+                    Complex64::new(0., 0.)
+                };
+                tolerance -= (expected - element).norm_sqr();
+                if tolerance < 0. {
+                    return false;
+                }
+            }
+        }
+        true
     }
 
     /// Returns new Matrix with `number_of_control` qubits added.
@@ -312,7 +391,7 @@ impl Matrix {
             }
         }
 
-        (controls, Matrix::new(entries))
+        (controls, Matrix::new(entries).unwrap())
     }
 
     /// Returns the number of elements in the Matrix.
@@ -347,11 +426,38 @@ impl Matrix {
     }
 }
 
+/// Predefined measurement/prep bases.
+#[derive(Clone, Copy, Debug)]
+pub enum Basis {
+    X,
+    Y,
+    Z,
+}
+
+impl From<Basis> for Matrix {
+    fn from(basis: Basis) -> Matrix {
+        match basis {
+            Basis::X => matrix!(
+                (FRAC_1_SQRT_2), (-FRAC_1_SQRT_2);
+                (FRAC_1_SQRT_2), (FRAC_1_SQRT_2);
+            ),
+            Basis::Y => matrix!(
+                (FRAC_1_SQRT_2), (0., FRAC_1_SQRT_2);
+                (0., FRAC_1_SQRT_2), (FRAC_1_SQRT_2);
+            ),
+            Basis::Z => matrix!(
+                1., 0.;
+                0., 1.;
+            ),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::gates::UnboundGate;
-    use std::f64::consts::FRAC_1_SQRT_2;
+    use crate::common::gates::UnboundUnitaryGate;
+    use std::iter::FromIterator;
 
     #[test]
     fn matrix() {
@@ -365,6 +471,7 @@ mod tests {
         );
         let c = matrix!(
             1., (-1., -1.);
+            (0., 1.), 0.;
         );
         assert_eq!(a, a);
         assert_eq!(b, b);
@@ -433,8 +540,54 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::cognitive_complexity)]
+    fn basis_approx_eq() {
+        let x: Matrix = Basis::X.into();
+        let y: Matrix = Basis::Y.into();
+        let z: Matrix = Basis::Z.into();
+        let x2: Matrix = matrix!(
+            (FRAC_1_SQRT_2), (FRAC_1_SQRT_2);
+            (FRAC_1_SQRT_2), (-FRAC_1_SQRT_2);
+        );
+        let y2: Matrix = matrix!(
+            (FRAC_1_SQRT_2), (FRAC_1_SQRT_2);
+            (0., FRAC_1_SQRT_2), (0., -FRAC_1_SQRT_2);
+        );
+
+        assert!(x.basis_approx_eq(&x, 0.));
+        assert!(!x.basis_approx_eq(&y, 0.));
+        assert!(!x.basis_approx_eq(&z, 0.));
+        assert!(x.basis_approx_eq(&x2, 0.));
+        assert!(!x.basis_approx_eq(&y2, 0.));
+
+        assert!(!y.basis_approx_eq(&x, 0.));
+        assert!(y.basis_approx_eq(&y, 0.));
+        assert!(!y.basis_approx_eq(&z, 0.));
+        assert!(!y.basis_approx_eq(&x2, 0.));
+        assert!(y.basis_approx_eq(&y2, 0.));
+
+        assert!(!z.basis_approx_eq(&x, 0.));
+        assert!(!z.basis_approx_eq(&y, 0.));
+        assert!(z.basis_approx_eq(&z, 0.));
+        assert!(!z.basis_approx_eq(&x2, 0.));
+        assert!(!z.basis_approx_eq(&y2, 0.));
+
+        assert!(x2.basis_approx_eq(&x, 0.));
+        assert!(!x2.basis_approx_eq(&y, 0.));
+        assert!(!x2.basis_approx_eq(&z, 0.));
+        assert!(x2.basis_approx_eq(&x2, 0.));
+        assert!(!x2.basis_approx_eq(&y2, 0.));
+
+        assert!(!y2.basis_approx_eq(&x, 0.));
+        assert!(y2.basis_approx_eq(&y, 0.));
+        assert!(!y2.basis_approx_eq(&z, 0.));
+        assert!(!y2.basis_approx_eq(&x2, 0.));
+        assert!(y2.basis_approx_eq(&y2, 0.));
+    }
+
+    #[test]
     fn add_controls() {
-        let x: Matrix = UnboundGate::X.into();
+        let x: Matrix = UnboundUnitaryGate::X.into();
         assert!(x.add_controls(1).approx_eq(
             &matrix!(
                 1., 0., 0., 0.;
@@ -497,7 +650,7 @@ mod tests {
 
         let (map_a, matrix_a) = fredkin.strip_control(0.0001, false);
         assert_eq!(map_a, HashSet::from_iter(vec![0]));
-        let x: Matrix = UnboundGate::SWAP.into();
+        let x: Matrix = UnboundUnitaryGate::SWAP.into();
         assert!(matrix_a.approx_eq(&x, 0.0001, false));
 
         let toffoli = matrix!(
@@ -514,7 +667,7 @@ mod tests {
         let (map_a, matrix_a) = toffoli.strip_control(0.0001, false);
         assert_eq!(map_a, HashSet::from_iter(vec![0, 1]));
 
-        let x: Matrix = UnboundGate::X.into();
+        let x: Matrix = UnboundUnitaryGate::X.into();
         assert!(matrix_a.approx_eq(&x, 0.001, false));
     }
 }

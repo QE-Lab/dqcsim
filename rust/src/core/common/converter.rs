@@ -8,8 +8,8 @@
 
 use crate::common::{
     error::{inv_arg, oe_err, oe_inv_arg, Result},
-    gates::UnboundGate,
-    types::{ArbData, Gate, Matrix, QubitRef},
+    gates::UnboundUnitaryGate,
+    types::{ArbData, Gate, GateType, Matrix, QubitRef},
 };
 use integer_sqrt::IntegerSquareRoot;
 use num_complex::Complex64;
@@ -118,7 +118,7 @@ impl FromArb for Matrix {
             entries.push(Complex64::new(re, im));
         }
         args.drain(..1);
-        Ok(entries.into())
+        entries.try_into()
     }
 }
 
@@ -368,7 +368,7 @@ impl MatrixConverter for RxMatrixConverter {
     }
 
     fn construct_matrix(&self, theta: &Self::Parameters) -> Result<Matrix> {
-        Ok(UnboundGate::RX(*theta).into())
+        Ok(UnboundUnitaryGate::RX(*theta).into())
     }
 }
 
@@ -399,7 +399,7 @@ impl MatrixConverter for RyMatrixConverter {
     }
 
     fn construct_matrix(&self, theta: &Self::Parameters) -> Result<Matrix> {
-        Ok(UnboundGate::RY(*theta).into())
+        Ok(UnboundUnitaryGate::RY(*theta).into())
     }
 }
 
@@ -431,7 +431,7 @@ impl MatrixConverter for RzMatrixConverter {
     }
 
     fn construct_matrix(&self, theta: &Self::Parameters) -> Result<Matrix> {
-        Ok(UnboundGate::RZ(*theta).into())
+        Ok(UnboundUnitaryGate::RZ(*theta).into())
     }
 }
 
@@ -463,7 +463,7 @@ impl MatrixConverter for PhaseMatrixConverter {
     }
 
     fn construct_matrix(&self, theta: &Self::Parameters) -> Result<Matrix> {
-        Ok(UnboundGate::Phase(*theta).into())
+        Ok(UnboundUnitaryGate::Phase(*theta).into())
     }
 }
 
@@ -500,7 +500,7 @@ impl MatrixConverter for PhaseKMatrixConverter {
     }
 
     fn construct_matrix(&self, k: &Self::Parameters) -> Result<Matrix> {
-        Ok(UnboundGate::PhaseK(*k).into())
+        Ok(UnboundUnitaryGate::PhaseK(*k).into())
     }
 }
 
@@ -548,7 +548,7 @@ impl MatrixConverter for RMatrixConverter {
     }
 
     fn construct_matrix(&self, params: &Self::Parameters) -> Result<Matrix> {
-        Ok(UnboundGate::R(params.0, params.1, params.2).into())
+        Ok(UnboundUnitaryGate::R(params.0, params.1, params.2).into())
     }
 }
 
@@ -710,15 +710,14 @@ where
     type Output = (Vec<QubitRef>, ArbData);
 
     fn detect(&self, gate: &Gate) -> Result<Option<Self::Output>> {
-        if gate.get_name().is_some() || !gate.get_measures().is_empty() {
-            // Custom gate, measurement gate or unitary + measure compound; not
-            // (just) a unitary so no match.
+        if gate.get_type() != &GateType::Unitary {
+            // Not a unitary so no match.
             Ok(None)
         } else if let Some(matrix) = gate.get_matrix() {
             // Unitary gate. Check conditions.
             if let Some(params) = self
                 .matrix_converter
-                .detect(&(matrix, Some(gate.get_controls().len())))?
+                .detect(&(matrix.clone(), Some(gate.get_controls().len())))?
             {
                 // Matrix match; construct qubit argument vector.
                 let mut qubits = vec![];
@@ -776,13 +775,21 @@ where
 
 /// Converter implementation for measurement gates.
 pub struct MeasurementGateConverter {
-    /// The number of expected measurement qubits, or None of not constrained.
+    /// The number of expected measurement qubits, or None if not constrained.
     num_measures: Option<usize>,
+    /// The measurement basis.
+    basis: Matrix,
+    /// The maximum RMS deviation in the basis when detecting.
+    epsilon: f64,
 }
 
 impl MeasurementGateConverter {
-    pub fn new(num_measures: Option<usize>) -> Self {
-        Self { num_measures }
+    pub fn new(num_measures: Option<usize>, basis: Matrix, epsilon: f64) -> Self {
+        Self {
+            num_measures,
+            basis,
+            epsilon,
+        }
     }
 }
 
@@ -791,12 +798,8 @@ impl Converter for MeasurementGateConverter {
     type Output = (Vec<QubitRef>, ArbData);
 
     fn detect(&self, gate: &Gate) -> Result<Option<Self::Output>> {
-        if gate.get_name().is_some()
-            || !gate.get_targets().is_empty()
-            || !gate.get_controls().is_empty()
-        {
-            // Custom gate, unitary gate or unitary + measure compound; not
-            // (just) a measurement so no match.
+        if gate.get_type() != &GateType::Measurement {
+            // Not a measurement gate.
             Ok(None)
         } else {
             // Measurement gate.
@@ -805,6 +808,13 @@ impl Converter for MeasurementGateConverter {
                     // Measurement qubit count constraint check failed.
                     return Ok(None);
                 }
+            }
+            if !self
+                .basis
+                .basis_approx_eq(gate.get_matrix().unwrap(), self.epsilon)
+            {
+                // Measurement basis does not match.
+                return Ok(None);
             }
             Ok(Some((gate.get_measures().to_vec(), gate.data.clone())))
         }
@@ -821,7 +831,72 @@ impl Converter for MeasurementGateConverter {
         }
 
         // Construct the gate.
-        let mut gate = Gate::new_measurement(qubits.clone())?;
+        let mut gate = Gate::new_measurement(qubits.clone(), self.basis.clone())?;
+        gate.data.copy_from(&data);
+
+        Ok(gate)
+    }
+}
+
+/// Converter implementation for prep gates.
+pub struct PrepGateConverter {
+    /// The number of expected target qubits, or None if not constrained.
+    num_targets: Option<usize>,
+    /// The prep basis.
+    basis: Matrix,
+    /// The maximum RMS deviation in the basis when detecting.
+    epsilon: f64,
+}
+
+impl PrepGateConverter {
+    pub fn new(num_targets: Option<usize>, basis: Matrix, epsilon: f64) -> Self {
+        Self {
+            num_targets,
+            basis,
+            epsilon,
+        }
+    }
+}
+
+impl Converter for PrepGateConverter {
+    type Input = Gate;
+    type Output = (Vec<QubitRef>, ArbData);
+
+    fn detect(&self, gate: &Gate) -> Result<Option<Self::Output>> {
+        if gate.get_type() != &GateType::Prep {
+            // Not a prep gate.
+            Ok(None)
+        } else {
+            // Prep gate.
+            if let Some(expected) = self.num_targets {
+                if gate.get_targets().len() != expected {
+                    // Prep qubit count constraint check failed.
+                    return Ok(None);
+                }
+            }
+            if !self
+                .basis
+                .basis_approx_eq(gate.get_matrix().unwrap(), self.epsilon)
+            {
+                // Prep basis does not match.
+                return Ok(None);
+            }
+            Ok(Some((gate.get_targets().to_vec(), gate.data.clone())))
+        }
+    }
+
+    fn construct(&self, output: &Self::Output) -> Result<Gate> {
+        let (qubits, data) = output;
+
+        // Check the number of target qubits.
+        if let Some(expected) = self.num_targets {
+            if qubits.len() != expected {
+                inv_arg(format!("expected {} target qubits", expected))?;
+            }
+        }
+
+        // Construct the gate.
+        let mut gate = Gate::new_prep(qubits.clone(), self.basis.clone())?;
         gate.data.copy_from(&data);
 
         Ok(gate)
@@ -1049,7 +1124,7 @@ mod tests {
     use super::*;
     use crate::common::{
         error::ErrorKind,
-        gates::{BoundGate, GateType},
+        gates::{BoundUnitaryGate, UnitaryGateType},
     };
     use float_cmp::approx_eq;
 
@@ -1194,7 +1269,11 @@ mod tests {
             .unwrap()
             .is_none());
         assert!(rx
-            .detect_matrix(&Matrix::from(UnboundGate::RY(1.234f64)), 0.001, false)
+            .detect_matrix(
+                &Matrix::from(UnboundUnitaryGate::RY(1.234f64)),
+                0.001,
+                false
+            )
             .unwrap()
             .is_none());
         assert_eq!(
@@ -1203,13 +1282,17 @@ mod tests {
             Some(0.)
         );
         assert_eq!(
-            rx.detect_matrix(&Matrix::from(UnboundGate::RX(1.234f64)), 0.001, false)
-                .unwrap(),
+            rx.detect_matrix(
+                &Matrix::from(UnboundUnitaryGate::RX(1.234f64)),
+                0.001,
+                false
+            )
+            .unwrap(),
             Some(1.234f64)
         );
         assert_eq!(
             rx.construct_matrix(&1.234f64).unwrap(),
-            Matrix::from(UnboundGate::RX(1.234f64))
+            Matrix::from(UnboundUnitaryGate::RX(1.234f64))
         );
     }
 
@@ -1221,7 +1304,11 @@ mod tests {
             .unwrap()
             .is_none());
         assert!(ry
-            .detect_matrix(&Matrix::from(UnboundGate::RX(1.234f64)), 0.001, false)
+            .detect_matrix(
+                &Matrix::from(UnboundUnitaryGate::RX(1.234f64)),
+                0.001,
+                false
+            )
             .unwrap()
             .is_none());
         assert_eq!(
@@ -1230,13 +1317,17 @@ mod tests {
             Some(0.)
         );
         assert_eq!(
-            ry.detect_matrix(&Matrix::from(UnboundGate::RY(1.234f64)), 0.001, false)
-                .unwrap(),
+            ry.detect_matrix(
+                &Matrix::from(UnboundUnitaryGate::RY(1.234f64)),
+                0.001,
+                false
+            )
+            .unwrap(),
             Some(1.234f64)
         );
         assert_eq!(
             ry.construct_matrix(&1.234f64).unwrap(),
-            Matrix::from(UnboundGate::RY(1.234f64))
+            Matrix::from(UnboundUnitaryGate::RY(1.234f64))
         );
     }
 
@@ -1248,7 +1339,11 @@ mod tests {
             .unwrap()
             .is_none());
         assert!(rz
-            .detect_matrix(&Matrix::from(UnboundGate::RX(1.234f64)), 0.001, false)
+            .detect_matrix(
+                &Matrix::from(UnboundUnitaryGate::RX(1.234f64)),
+                0.001,
+                false
+            )
             .unwrap()
             .is_none());
         assert_eq!(
@@ -1257,13 +1352,17 @@ mod tests {
             Some(0.)
         );
         assert_eq!(
-            rz.detect_matrix(&Matrix::from(UnboundGate::RZ(1.234f64)), 0.001, false)
-                .unwrap(),
+            rz.detect_matrix(
+                &Matrix::from(UnboundUnitaryGate::RZ(1.234f64)),
+                0.001,
+                false
+            )
+            .unwrap(),
             Some(1.234f64)
         );
         assert_eq!(
             rz.construct_matrix(&1.234f64).unwrap(),
-            Matrix::from(UnboundGate::RZ(1.234f64))
+            Matrix::from(UnboundUnitaryGate::RZ(1.234f64))
         );
     }
 
@@ -1275,7 +1374,11 @@ mod tests {
             .unwrap()
             .is_none());
         assert!(phase
-            .detect_matrix(&Matrix::from(UnboundGate::RX(1.234f64)), 0.001, false)
+            .detect_matrix(
+                &Matrix::from(UnboundUnitaryGate::RX(1.234f64)),
+                0.001,
+                false
+            )
             .unwrap()
             .is_none());
         assert_eq!(
@@ -1286,13 +1389,17 @@ mod tests {
         );
         assert_eq!(
             phase
-                .detect_matrix(&Matrix::from(UnboundGate::Phase(1.234f64)), 0.001, false)
+                .detect_matrix(
+                    &Matrix::from(UnboundUnitaryGate::Phase(1.234f64)),
+                    0.001,
+                    false
+                )
                 .unwrap(),
             Some(1.234f64)
         );
         assert_eq!(
             phase.construct_matrix(&1.234f64).unwrap(),
-            Matrix::from(UnboundGate::Phase(1.234f64))
+            Matrix::from(UnboundUnitaryGate::Phase(1.234f64))
         );
     }
 
@@ -1304,7 +1411,11 @@ mod tests {
             .unwrap()
             .is_none());
         assert!(phasek
-            .detect_matrix(&Matrix::from(UnboundGate::RX(1.234f64)), 0.001, false)
+            .detect_matrix(
+                &Matrix::from(UnboundUnitaryGate::RX(1.234f64)),
+                0.001,
+                false
+            )
             .unwrap()
             .is_none());
         assert_eq!(
@@ -1315,13 +1426,13 @@ mod tests {
         );
         assert_eq!(
             phasek
-                .detect_matrix(&Matrix::from(UnboundGate::PhaseK(1)), 0.001, false)
+                .detect_matrix(&Matrix::from(UnboundUnitaryGate::PhaseK(1)), 0.001, false)
                 .unwrap(),
             Some(1)
         );
         assert_eq!(
             phasek.construct_matrix(&1).unwrap(),
-            Matrix::from(UnboundGate::PhaseK(1))
+            Matrix::from(UnboundUnitaryGate::PhaseK(1))
         );
     }
 
@@ -1333,8 +1444,12 @@ mod tests {
             .unwrap()
             .is_none());
         assert_eq!(
-            r.detect_matrix(&Matrix::from(UnboundGate::RX(1.234f64)), 0.001, false)
-                .unwrap(),
+            r.detect_matrix(
+                &Matrix::from(UnboundUnitaryGate::RX(1.234f64)),
+                0.001,
+                false
+            )
+            .unwrap(),
             Some((1.234f64, -PI / 2., PI / 2.))
         );
         assert_eq!(
@@ -1343,13 +1458,17 @@ mod tests {
             Some((0., 0., 0.))
         );
         assert_eq!(
-            r.detect_matrix(&Matrix::from(UnboundGate::R(1f64, 2., 3.)), 0.001, false)
-                .unwrap(),
+            r.detect_matrix(
+                &Matrix::from(UnboundUnitaryGate::R(1f64, 2., 3.)),
+                0.001,
+                false
+            )
+            .unwrap(),
             Some((1f64, 2., 3.))
         );
         assert_eq!(
             r.detect_matrix(
-                &Matrix::from(UnboundGate::R(0.4 * PI, 2., 3.)),
+                &Matrix::from(UnboundUnitaryGate::R(0.4 * PI, 2., 3.)),
                 0.001,
                 false
             )
@@ -1358,7 +1477,7 @@ mod tests {
         );
         assert_eq!(
             r.construct_matrix(&(1f64, 3., 2.)).unwrap(),
-            Matrix::from(UnboundGate::R(1f64, 3., 2.))
+            Matrix::from(UnboundUnitaryGate::R(1f64, 3., 2.))
         );
     }
 
@@ -1424,15 +1543,15 @@ mod tests {
 
         assert_eq!(
             rx.construct(&PI).unwrap(),
-            (Matrix::from(UnboundGate::RX(PI)), Some(0))
+            (Matrix::from(UnboundUnitaryGate::RX(PI)), Some(0))
         );
         assert_eq!(
             xrx.construct(&PI).unwrap(),
-            (Matrix::from(UnboundGate::RX(PI)), None)
+            (Matrix::from(UnboundUnitaryGate::RX(PI)), None)
         );
         assert_eq!(
             crx.construct(&PI).unwrap(),
-            (Matrix::from(UnboundGate::RX(PI)), Some(1))
+            (Matrix::from(UnboundUnitaryGate::RX(PI)), Some(1))
         );
     }
 
@@ -1470,7 +1589,11 @@ mod tests {
         assert!(crx.detect(&named_gate).unwrap().is_none());
         assert!(xrx.detect(&named_gate).unwrap().is_none());
 
-        let measure_gate = Gate::new_measurement(vec![QubitRef::from_foreign(1).unwrap()]).unwrap();
+        let measure_gate = Gate::new_measurement(
+            vec![QubitRef::from_foreign(1).unwrap()],
+            Matrix::new_identity(2),
+        )
+        .unwrap();
         assert!(rx.detect(&measure_gate).unwrap().is_none());
         assert!(crx.detect(&measure_gate).unwrap().is_none());
         assert!(xrx.detect(&measure_gate).unwrap().is_none());
@@ -1478,7 +1601,7 @@ mod tests {
         let rx_gate = Gate::new_unitary(
             vec![QubitRef::from_foreign(1).unwrap()],
             vec![],
-            Matrix::from(UnboundGate::RX(1.234f64)),
+            Matrix::from(UnboundUnitaryGate::RX(1.234f64)),
         )
         .unwrap();
         let x = 1.234f64;
@@ -1498,7 +1621,7 @@ mod tests {
         let crx_gate = Gate::new_unitary(
             vec![QubitRef::from_foreign(1).unwrap()],
             vec![QubitRef::from_foreign(2).unwrap()],
-            Matrix::from(UnboundGate::RX(1.234f64)),
+            Matrix::from(UnboundUnitaryGate::RX(1.234f64)),
         )
         .unwrap();
 
@@ -1604,7 +1727,7 @@ mod tests {
                     QubitRef::from_foreign(2).unwrap(),
                     QubitRef::from_foreign(3).unwrap()
                 ],
-                Matrix::from(UnboundGate::RX(1.234f64)),
+                Matrix::from(UnboundUnitaryGate::RX(1.234f64)),
             )
             .unwrap()
         );
@@ -1616,9 +1739,9 @@ mod tests {
 
     #[test]
     fn measurement_gate_converter() {
-        let mn = MeasurementGateConverter::new(None);
-        let m0 = MeasurementGateConverter::new(Some(0));
-        let m1 = MeasurementGateConverter::new(Some(1));
+        let mn = MeasurementGateConverter::new(None, Matrix::new_identity(2), 0.001);
+        let m0 = MeasurementGateConverter::new(Some(0), Matrix::new_identity(2), 0.001);
+        let m1 = MeasurementGateConverter::new(Some(1), Matrix::new_identity(2), 0.001);
 
         let named_gate = Gate::new_custom(
             "name",
@@ -1646,13 +1769,19 @@ mod tests {
         assert!(m1.detect(&named_gate).unwrap().is_none());
         assert!(m1.detect(&named_gate_m).unwrap().is_none());
 
-        let measure_gate_0 = Gate::new_measurement(vec![]).unwrap();
-        let measure_gate_1 =
-            Gate::new_measurement(vec![QubitRef::from_foreign(1).unwrap()]).unwrap();
-        let measure_gate_2 = Gate::new_measurement(vec![
-            QubitRef::from_foreign(1).unwrap(),
-            QubitRef::from_foreign(2).unwrap(),
-        ])
+        let measure_gate_0 = Gate::new_measurement(vec![], Matrix::new_identity(2)).unwrap();
+        let measure_gate_1 = Gate::new_measurement(
+            vec![QubitRef::from_foreign(1).unwrap()],
+            Matrix::new_identity(2),
+        )
+        .unwrap();
+        let measure_gate_2 = Gate::new_measurement(
+            vec![
+                QubitRef::from_foreign(1).unwrap(),
+                QubitRef::from_foreign(2).unwrap(),
+            ],
+            Matrix::new_identity(2),
+        )
         .unwrap();
 
         assert_eq!(
@@ -1709,7 +1838,11 @@ mod tests {
 
     #[test]
     fn custom_gate_converter() {
-        let gate = Gate::new_measurement(vec![QubitRef::from_foreign(42).unwrap()]).unwrap();
+        let gate = Gate::new_measurement(
+            vec![QubitRef::from_foreign(42).unwrap()],
+            Matrix::new_identity(2),
+        )
+        .unwrap();
         let yes = CustomGateConverter::new(
             |_gate: &Gate| {
                 Ok(Some((
@@ -1747,142 +1880,166 @@ mod tests {
 
     #[test]
     fn converter_map() {
-        let mut default_map: ConverterMap<(GateType, usize), Gate, (Vec<QubitRef>, ArbData)> =
-            ConverterMap::default()
-                .with(
-                    (GateType::X, 1),
-                    GateType::X.into_gate_converter(Some(1), 0., false),
-                )
-                .with(
-                    (GateType::X, 0),
-                    GateType::X.into_gate_converter(None, 0., false),
-                )
-                .with(
-                    (GateType::Y, 0),
-                    GateType::Y.into_gate_converter(None, 0., false),
-                )
-                .with(
-                    (GateType::Z, 0),
-                    GateType::Z.into_gate_converter(None, 0., false),
-                )
-                .with(
-                    (GateType::R, 0),
-                    Box::new(UnitaryGateConverter::from(UnitaryConverter::new(
-                        RMatrixConverter::default(),
-                        None,
-                        0.,
-                        false,
-                    ))),
-                );
+        let mut default_map: ConverterMap<
+            (UnitaryGateType, usize),
+            Gate,
+            (Vec<QubitRef>, ArbData),
+        > = ConverterMap::default()
+            .with(
+                (UnitaryGateType::X, 1),
+                UnitaryGateType::X.into_gate_converter(Some(1), 0., false),
+            )
+            .with(
+                (UnitaryGateType::X, 0),
+                UnitaryGateType::X.into_gate_converter(None, 0., false),
+            )
+            .with(
+                (UnitaryGateType::Y, 0),
+                UnitaryGateType::Y.into_gate_converter(None, 0., false),
+            )
+            .with(
+                (UnitaryGateType::Z, 0),
+                UnitaryGateType::Z.into_gate_converter(None, 0., false),
+            )
+            .with(
+                (UnitaryGateType::R, 0),
+                Box::new(UnitaryGateConverter::from(UnitaryConverter::new(
+                    RMatrixConverter::default(),
+                    None,
+                    0.,
+                    false,
+                ))),
+            );
         default_map.insert(
             0,
-            (GateType::I, 0),
-            GateType::I.into_gate_converter(None, 0., false),
+            (UnitaryGateType::I, 0),
+            UnitaryGateType::I.into_gate_converter(None, 0., false),
         );
 
         let target = vec![QubitRef::from_foreign(1).unwrap()];
         let control = vec![QubitRef::from_foreign(2).unwrap()];
 
-        let i_gate = Gate::from(BoundGate::I(target[0]));
-        let x_gate = Gate::from(BoundGate::X(target[0]));
+        let i_gate = Gate::from(BoundUnitaryGate::I(target[0]));
+        let x_gate = Gate::from(BoundUnitaryGate::X(target[0]));
         let cnot_gate = Gate::new_unitary(
             target.clone(),
             control.clone(),
-            Matrix::from(UnboundGate::X),
+            Matrix::from(UnboundUnitaryGate::X),
         )
         .unwrap();
-        let y_gate = Gate::from(BoundGate::Y(target[0]));
-        let z_gate = Gate::from(BoundGate::Z(target[0]));
-        let r_gate = Gate::from(BoundGate::R(1., 2., 3., target[0]));
+        let y_gate = Gate::from(BoundUnitaryGate::Y(target[0]));
+        let z_gate = Gate::from(BoundUnitaryGate::Z(target[0]));
+        let r_gate = Gate::from(BoundUnitaryGate::R(1., 2., 3., target[0]));
 
         assert_eq!(
             default_map.detect(&i_gate).unwrap(),
-            Some(((GateType::I, 0), (target.clone(), ArbData::default())))
+            Some((
+                (UnitaryGateType::I, 0),
+                (target.clone(), ArbData::default())
+            ))
         );
         assert_eq!(
             default_map.detect(&i_gate).unwrap(),
-            Some(((GateType::I, 0), (target.clone(), ArbData::default())))
+            Some((
+                (UnitaryGateType::I, 0),
+                (target.clone(), ArbData::default())
+            ))
         );
         default_map.insert(
             0,
-            (GateType::I, 0),
-            GateType::I.into_gate_converter(None, 0., false),
+            (UnitaryGateType::I, 0),
+            UnitaryGateType::I.into_gate_converter(None, 0., false),
         );
         assert_eq!(
             default_map.detect(&i_gate).unwrap(),
-            Some(((GateType::I, 0), (target.clone(), ArbData::default())))
+            Some((
+                (UnitaryGateType::I, 0),
+                (target.clone(), ArbData::default())
+            ))
         );
         default_map.push(
-            (GateType::I, 0),
-            GateType::I.into_gate_converter(None, 0., false),
+            (UnitaryGateType::I, 0),
+            UnitaryGateType::I.into_gate_converter(None, 0., false),
         );
         let mut arb = ArbData::default();
         (0., 0., 0.).to_arb(&mut arb);
         assert_eq!(
             default_map.detect(&i_gate).unwrap(),
-            Some(((GateType::R, 0), (target.clone(), arb)))
+            Some(((UnitaryGateType::R, 0), (target.clone(), arb)))
         );
         assert_eq!(
             default_map.detect(&x_gate).unwrap(),
-            Some(((GateType::X, 0), (target.clone(), ArbData::default())))
+            Some((
+                (UnitaryGateType::X, 0),
+                (target.clone(), ArbData::default())
+            ))
         );
         assert_eq!(
             default_map.detect(&cnot_gate).unwrap(),
             Some((
-                (GateType::X, 1),
+                (UnitaryGateType::X, 1),
                 (vec![control[0], target[0]], ArbData::default())
             ))
         );
         assert_eq!(
             default_map.detect(&y_gate).unwrap(),
-            Some(((GateType::Y, 0), (target.clone(), ArbData::default())))
+            Some((
+                (UnitaryGateType::Y, 0),
+                (target.clone(), ArbData::default())
+            ))
         );
         assert_eq!(
             default_map.detect(&z_gate).unwrap(),
-            Some(((GateType::Z, 0), (target.clone(), ArbData::default())))
+            Some((
+                (UnitaryGateType::Z, 0),
+                (target.clone(), ArbData::default())
+            ))
         );
         let mut arb = ArbData::default();
         (1., 2., 3.).to_arb(&mut arb);
         assert_eq!(
             default_map.detect(&r_gate).unwrap(),
-            Some(((GateType::R, 0), (target.clone(), arb)))
+            Some(((UnitaryGateType::R, 0), (target.clone(), arb)))
         );
 
         assert_eq!(
             default_map
-                .construct(&((GateType::X, 0), (target.clone(), ArbData::default())))
+                .construct(&(
+                    (UnitaryGateType::X, 0),
+                    (target.clone(), ArbData::default())
+                ))
                 .unwrap(),
             x_gate
         );
         assert_eq!(
             default_map
-                .construct(&((GateType::Z, 1), (target, ArbData::default())))
+                .construct(&((UnitaryGateType::Z, 1), (target, ArbData::default())))
                 .unwrap_err()
                 .to_string(),
             "Invalid argument: key does not map to any converter"
         );
 
-        let advanced_map: ConverterMap<GateType, Gate, (Vec<QubitRef>, ArbData)> =
+        let advanced_map: ConverterMap<UnitaryGateType, Gate, (Vec<QubitRef>, ArbData)> =
             ConverterMap::new(Some(Box::new(|gate: &Gate| -> Gate {
                 gate.without_qubit_refs()
             })))
             .with(
-                GateType::X,
-                GateType::X.into_gate_converter(None, 0., false),
+                UnitaryGateType::X,
+                UnitaryGateType::X.into_gate_converter(None, 0., false),
             );
-        let a = Gate::from(BoundGate::X(QubitRef::from_foreign(3).unwrap()));
-        let b = Gate::from(BoundGate::X(QubitRef::from_foreign(2).unwrap()));
+        let a = Gate::from(BoundUnitaryGate::X(QubitRef::from_foreign(3).unwrap()));
+        let b = Gate::from(BoundUnitaryGate::X(QubitRef::from_foreign(2).unwrap()));
         assert_eq!(
             advanced_map.detect(&a).unwrap(),
             Some((
-                GateType::X,
+                UnitaryGateType::X,
                 (vec![QubitRef::from_foreign(3).unwrap()], ArbData::default())
             ))
         );
         assert_eq!(
             advanced_map.detect(&b).unwrap(),
             Some((
-                GateType::X,
+                UnitaryGateType::X,
                 (vec![QubitRef::from_foreign(2).unwrap()], ArbData::default())
             ))
         );

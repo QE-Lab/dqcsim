@@ -52,10 +52,10 @@ macro_rules! c {
 /// prevent `cargo fmt` from making the matrices unreadable
 macro_rules! matrix {
     ($($($x:tt),+);+) => {
-        $crate::core::common::types::Matrix::new(vec![$($(c!($x)),+),+])
+        $crate::core::common::types::Matrix::new(vec![$($(c!($x)),+),+]).unwrap()
     };
     ($($($x:tt),+);+;) => {
-        $crate::core::common::types::Matrix::new(vec![$($(c!($x)),+),+])
+        $crate::core::common::types::Matrix::new(vec![$($(c!($x)),+),+]).unwrap()
     };
 }
 

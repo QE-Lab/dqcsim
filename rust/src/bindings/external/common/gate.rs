@@ -1,5 +1,5 @@
 use super::*;
-use crate::common::gates::GateType;
+use crate::common::gates::UnitaryGateType;
 use std::convert::TryFrom;
 
 /// Helper function for the `dqcs_gate_new_predef*()` functions.
@@ -9,7 +9,7 @@ fn new_predef_helper(
     param_data: dqcs_handle_t,
 ) -> Result<dqcs_handle_t> {
     // Interpret gate type.
-    let gate_type = GateType::try_from(gate_type)?;
+    let gate_type = UnitaryGateType::try_from(gate_type)?;
 
     // Interpret data.
     resolve!(optional param_data as pending ArbData);
@@ -178,8 +178,8 @@ pub extern "C" fn dqcs_gate_new_predef_three(
 /// can optimize its calculations by altering the global phase it is allowed
 /// to.
 ///
-/// If is up to the user to ensure that the specified matrix is unitary. This
-/// is NOT checked by DQCsim. The simulator backend may or may not check this.
+/// DQCsim checks whether the matrix is unitary using the equivalent of
+/// `dqcs_mat_approx_unitary()` with an epsilon value of 1e-6.
 ///
 /// This function returns the handle to the gate, or 0 to indicate failure.
 /// The `targets` qubit set, (if specified) the `controls` qubit set, and the
@@ -233,15 +233,23 @@ pub extern "C" fn dqcs_gate_new_unitary(
 
 /// Constructs a new measurement gate.
 ///
-/// `measures` must be a handle to a qubit set. The qubits in this set are
-/// measured in the Z-basis. To measure in other bases, first apply the
-/// respective rotation, or use a custom gate.
+/// `measures` must be a handle to a qubit set. `matrix` is an optional matrix
+/// handle signifying the measurement basis. If zero, the Z basis is used.
+/// Otherwise, it must be a handle to a unitary 2x2 matrix, and the semantics
+/// of the measurement are as follows:
+///
+///  - apply the hermetian of the matrix to each qubit
+///  - measure each qubit in the Z basis
+///  - apply the matrix to each qubit
 ///
 /// This function returns the handle to the gate, or 0 to indicate failure.
-/// The `measures` qubit set is consumed/deleted by this function if and only
-/// if it succeeds.
+/// The `measures` qubit set and `matrix` handle are consumed/deleted by this
+/// function if and only if it succeeds.
 #[no_mangle]
-pub extern "C" fn dqcs_gate_new_measurement(measures: dqcs_handle_t) -> dqcs_handle_t {
+pub extern "C" fn dqcs_gate_new_measurement(
+    measures: dqcs_handle_t,
+    matrix: dqcs_handle_t,
+) -> dqcs_handle_t {
     api_return(0, || {
         // Interpret measures set.
         resolve!(measures as pending QubitReferenceSet);
@@ -250,12 +258,76 @@ pub extern "C" fn dqcs_gate_new_measurement(measures: dqcs_handle_t) -> dqcs_han
             x.iter().cloned().collect()
         };
 
+        // Interpret matrix.
+        resolve!(optional matrix as pending Matrix);
+        let defaulted_matrix = {
+            if let Some(matrix) = matrix.as_ref() {
+                let matrix: &Matrix = matrix.as_ref().unwrap();
+                matrix.clone()
+            } else {
+                Matrix::new_identity(2)
+            }
+        };
+
         // Construct the gate.
-        let gate = insert(Gate::new_measurement(measure_vec)?);
+        let gate = insert(Gate::new_measurement(measure_vec, defaulted_matrix)?);
 
         // Everything went OK. Now make sure that the measure set handle is
         // deleted.
         delete!(resolved measures);
+        if let Some(mut matrix) = matrix {
+            delete!(resolved matrix);
+        }
+        Ok(gate)
+    })
+}
+
+/// Constructs a new prep gate.
+///
+/// `targets` must be a handle to a qubit set. `matrix` is an optional matrix
+/// handle signifying the state that the qubits are initialized to. If zero,
+/// the qubits are initialized to |0>. Otherwise, it must be a handle to a
+/// unitary 2x2 matrix, and the semantics are as follows:
+///
+///  - initialize each qubit to |0>
+///  - apply the matrix to each qubit
+///
+/// This function returns the handle to the gate, or 0 to indicate failure.
+/// The `targets` qubit set and `matrix` handle are consumed/deleted by this
+/// function if and only if it succeeds.
+#[no_mangle]
+pub extern "C" fn dqcs_gate_new_prep(
+    targets: dqcs_handle_t,
+    matrix: dqcs_handle_t,
+) -> dqcs_handle_t {
+    api_return(0, || {
+        // Interpret targets set.
+        resolve!(targets as pending QubitReferenceSet);
+        let targets_vec: Vec<QubitRef> = {
+            let x: &QubitReferenceSet = targets.as_ref().unwrap();
+            x.iter().cloned().collect()
+        };
+
+        // Interpret matrix.
+        resolve!(optional matrix as pending Matrix);
+        let defaulted_matrix = {
+            if let Some(matrix) = matrix.as_ref() {
+                let matrix: &Matrix = matrix.as_ref().unwrap();
+                matrix.clone()
+            } else {
+                Matrix::new_identity(2)
+            }
+        };
+
+        // Construct the gate.
+        let gate = insert(Gate::new_prep(targets_vec, defaulted_matrix)?);
+
+        // Everything went OK. Now make sure that the measure set handle is
+        // deleted.
+        delete!(resolved targets);
+        if let Some(mut matrix) = matrix {
+            delete!(resolved matrix);
+        }
         Ok(gate)
     })
 }
@@ -374,18 +446,20 @@ pub extern "C" fn dqcs_gate_new_custom(
     })
 }
 
-/// Returns whether the specified gate is a custom gate.
+/// Returns the gate type of the given gate.
 ///
-/// If this returns true, the type of gate is to be determined by matching its
-/// name against a set of known gate types. If this returns false, the gate is
-/// expected to be executed as follows, in this order:
-///
-///  - if there are target qubits, extend the supplied unitary matrix to
-///    include the control qubits (if any), then apply it to the control +
-///    target qubits;
-///  - measure each measured qubit (if any) in the Z basis.
+/// Returns DQCS_GATE_TYPE_INVALID if the gate handle is invalid.
 #[no_mangle]
-pub extern "C" fn dqcs_gate_is_custom(gate: dqcs_handle_t) -> dqcs_bool_return_t {
+pub extern "C" fn dqcs_gate_type(gate: dqcs_handle_t) -> dqcs_gate_type_t {
+    api_return(dqcs_gate_type_t::DQCS_GATE_TYPE_INVALID, || {
+        resolve!(gate as &Gate);
+        Ok(gate.get_type().into())
+    })
+}
+
+/// Returns whether the specified gate has a name.
+#[no_mangle]
+pub extern "C" fn dqcs_gate_has_name(gate: dqcs_handle_t) -> dqcs_bool_return_t {
     api_return_bool(|| {
         resolve!(gate as &Gate);
         Ok(gate.get_name().is_some())
@@ -395,7 +469,7 @@ pub extern "C" fn dqcs_gate_is_custom(gate: dqcs_handle_t) -> dqcs_bool_return_t
 /// Returns the name of a custom gate.
 ///
 /// This function fails if the gate is not a custom gate. Query
-/// `dqcs_gate_is_custom()` to disambiguate between a non-custom gate and a
+/// `dqcs_gate_has_name()` to disambiguate between a non-custom gate and a
 /// different error.
 ///
 /// On success, this **returns a newly allocated string containing the gate
@@ -424,7 +498,7 @@ pub extern "C" fn dqcs_gate_has_targets(gate: dqcs_handle_t) -> dqcs_bool_return
 }
 
 /// Returns a handle to a new qubit reference set containing the qubits
-/// targetted by this gate.
+/// targeted by this gate.
 #[no_mangle]
 pub extern "C" fn dqcs_gate_targets(gate: dqcs_handle_t) -> dqcs_handle_t {
     api_return(0, || {
@@ -495,9 +569,11 @@ pub extern "C" fn dqcs_gate_has_matrix(gate: dqcs_handle_t) -> dqcs_bool_return_
 pub extern "C" fn dqcs_gate_matrix(gate: dqcs_handle_t) -> dqcs_handle_t {
     api_return(0, || {
         resolve!(gate as &Gate);
-        Ok(insert(gate.get_matrix().ok_or_else(oe_inv_arg(
-            "no matrix associated with gate",
-        ))?))
+        Ok(insert(
+            gate.get_matrix()
+                .ok_or_else(oe_inv_arg("no matrix associated with gate"))?
+                .clone(),
+        ))
     })
 }
 

@@ -1,5 +1,5 @@
 use super::*;
-use crate::core::common::{error::Error, gates::GateType};
+use crate::core::common::{error::Error, gates::UnitaryGateType};
 use std::convert::TryFrom;
 
 /// Type for a handle.
@@ -883,77 +883,172 @@ pub enum dqcs_predefined_gate_t {
     DQCS_GATE_U3 = 390,
 }
 
-impl TryFrom<dqcs_predefined_gate_t> for GateType {
+impl TryFrom<dqcs_predefined_gate_t> for UnitaryGateType {
     type Error = Error;
     fn try_from(gate_type: dqcs_predefined_gate_t) -> Result<Self> {
         match gate_type {
-            dqcs_predefined_gate_t::DQCS_GATE_PAULI_I => Ok(GateType::I),
-            dqcs_predefined_gate_t::DQCS_GATE_PAULI_X => Ok(GateType::X),
-            dqcs_predefined_gate_t::DQCS_GATE_PAULI_Y => Ok(GateType::Y),
-            dqcs_predefined_gate_t::DQCS_GATE_PAULI_Z => Ok(GateType::Z),
-            dqcs_predefined_gate_t::DQCS_GATE_H => Ok(GateType::H),
-            dqcs_predefined_gate_t::DQCS_GATE_S => Ok(GateType::S),
-            dqcs_predefined_gate_t::DQCS_GATE_S_DAG => Ok(GateType::SDAG),
-            dqcs_predefined_gate_t::DQCS_GATE_T => Ok(GateType::T),
-            dqcs_predefined_gate_t::DQCS_GATE_T_DAG => Ok(GateType::TDAG),
-            dqcs_predefined_gate_t::DQCS_GATE_RX_90 => Ok(GateType::RX90),
-            dqcs_predefined_gate_t::DQCS_GATE_RX_M90 => Ok(GateType::RXM90),
-            dqcs_predefined_gate_t::DQCS_GATE_RX_180 => Ok(GateType::RX180),
-            dqcs_predefined_gate_t::DQCS_GATE_RY_90 => Ok(GateType::RY90),
-            dqcs_predefined_gate_t::DQCS_GATE_RY_M90 => Ok(GateType::RYM90),
-            dqcs_predefined_gate_t::DQCS_GATE_RY_180 => Ok(GateType::RY180),
-            dqcs_predefined_gate_t::DQCS_GATE_RZ_90 => Ok(GateType::RZ90),
-            dqcs_predefined_gate_t::DQCS_GATE_RZ_M90 => Ok(GateType::RZM90),
-            dqcs_predefined_gate_t::DQCS_GATE_RZ_180 => Ok(GateType::RZ180),
-            dqcs_predefined_gate_t::DQCS_GATE_RX => Ok(GateType::RX),
-            dqcs_predefined_gate_t::DQCS_GATE_RY => Ok(GateType::RY),
-            dqcs_predefined_gate_t::DQCS_GATE_PHASE => Ok(GateType::Phase),
-            dqcs_predefined_gate_t::DQCS_GATE_PHASE_K => Ok(GateType::PhaseK),
-            dqcs_predefined_gate_t::DQCS_GATE_RZ => Ok(GateType::RZ),
-            dqcs_predefined_gate_t::DQCS_GATE_U1 => Ok(GateType::U(1)),
-            dqcs_predefined_gate_t::DQCS_GATE_R => Ok(GateType::R),
-            dqcs_predefined_gate_t::DQCS_GATE_SWAP => Ok(GateType::SWAP),
-            dqcs_predefined_gate_t::DQCS_GATE_SQRT_SWAP => Ok(GateType::SQSWAP),
-            dqcs_predefined_gate_t::DQCS_GATE_U2 => Ok(GateType::U(2)),
-            dqcs_predefined_gate_t::DQCS_GATE_U3 => Ok(GateType::U(3)),
+            dqcs_predefined_gate_t::DQCS_GATE_PAULI_I => Ok(UnitaryGateType::I),
+            dqcs_predefined_gate_t::DQCS_GATE_PAULI_X => Ok(UnitaryGateType::X),
+            dqcs_predefined_gate_t::DQCS_GATE_PAULI_Y => Ok(UnitaryGateType::Y),
+            dqcs_predefined_gate_t::DQCS_GATE_PAULI_Z => Ok(UnitaryGateType::Z),
+            dqcs_predefined_gate_t::DQCS_GATE_H => Ok(UnitaryGateType::H),
+            dqcs_predefined_gate_t::DQCS_GATE_S => Ok(UnitaryGateType::S),
+            dqcs_predefined_gate_t::DQCS_GATE_S_DAG => Ok(UnitaryGateType::SDAG),
+            dqcs_predefined_gate_t::DQCS_GATE_T => Ok(UnitaryGateType::T),
+            dqcs_predefined_gate_t::DQCS_GATE_T_DAG => Ok(UnitaryGateType::TDAG),
+            dqcs_predefined_gate_t::DQCS_GATE_RX_90 => Ok(UnitaryGateType::RX90),
+            dqcs_predefined_gate_t::DQCS_GATE_RX_M90 => Ok(UnitaryGateType::RXM90),
+            dqcs_predefined_gate_t::DQCS_GATE_RX_180 => Ok(UnitaryGateType::RX180),
+            dqcs_predefined_gate_t::DQCS_GATE_RY_90 => Ok(UnitaryGateType::RY90),
+            dqcs_predefined_gate_t::DQCS_GATE_RY_M90 => Ok(UnitaryGateType::RYM90),
+            dqcs_predefined_gate_t::DQCS_GATE_RY_180 => Ok(UnitaryGateType::RY180),
+            dqcs_predefined_gate_t::DQCS_GATE_RZ_90 => Ok(UnitaryGateType::RZ90),
+            dqcs_predefined_gate_t::DQCS_GATE_RZ_M90 => Ok(UnitaryGateType::RZM90),
+            dqcs_predefined_gate_t::DQCS_GATE_RZ_180 => Ok(UnitaryGateType::RZ180),
+            dqcs_predefined_gate_t::DQCS_GATE_RX => Ok(UnitaryGateType::RX),
+            dqcs_predefined_gate_t::DQCS_GATE_RY => Ok(UnitaryGateType::RY),
+            dqcs_predefined_gate_t::DQCS_GATE_PHASE => Ok(UnitaryGateType::Phase),
+            dqcs_predefined_gate_t::DQCS_GATE_PHASE_K => Ok(UnitaryGateType::PhaseK),
+            dqcs_predefined_gate_t::DQCS_GATE_RZ => Ok(UnitaryGateType::RZ),
+            dqcs_predefined_gate_t::DQCS_GATE_U1 => Ok(UnitaryGateType::U(1)),
+            dqcs_predefined_gate_t::DQCS_GATE_R => Ok(UnitaryGateType::R),
+            dqcs_predefined_gate_t::DQCS_GATE_SWAP => Ok(UnitaryGateType::SWAP),
+            dqcs_predefined_gate_t::DQCS_GATE_SQRT_SWAP => Ok(UnitaryGateType::SQSWAP),
+            dqcs_predefined_gate_t::DQCS_GATE_U2 => Ok(UnitaryGateType::U(2)),
+            dqcs_predefined_gate_t::DQCS_GATE_U3 => Ok(UnitaryGateType::U(3)),
             dqcs_predefined_gate_t::DQCS_GATE_INVALID => inv_arg("invalid gate"),
         }
     }
 }
 
-impl From<dqcs_predefined_gate_t> for Option<GateType> {
-    fn from(gate_type: dqcs_predefined_gate_t) -> Self {
+/// Enumeration of Pauli bases.
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+#[allow(non_camel_case_types)]
+pub enum dqcs_basis_t {
+    /// Invalid basis. Used as an error return value.
+    DQCS_BASIS_INVALID = 0,
+
+    /// The X basis.
+    ///
+    /// \f[
+    /// \psi_X = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1 & -1 \\
+    /// 1 & 1
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_BASIS_X = 1,
+
+    /// The Y basis.
+    ///
+    /// \f[
+    /// \psi_Y = \frac{1}{\sqrt{2}} \begin{bmatrix}
+    /// 1 & i \\
+    /// i & 1
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_BASIS_Y = 2,
+
+    /// The Z basis.
+    ///
+    /// \f[
+    /// \psi_Z = \begin{bmatrix}
+    /// 1 & 0 \\
+    /// 0 & 1
+    /// \end{bmatrix}
+    /// \f]
+    DQCS_BASIS_Z = 3,
+}
+
+impl TryFrom<dqcs_basis_t> for Basis {
+    type Error = Error;
+    fn try_from(basis: dqcs_basis_t) -> Result<Self> {
+        match basis {
+            dqcs_basis_t::DQCS_BASIS_X => Ok(Basis::X),
+            dqcs_basis_t::DQCS_BASIS_Y => Ok(Basis::Y),
+            dqcs_basis_t::DQCS_BASIS_Z => Ok(Basis::Z),
+            dqcs_basis_t::DQCS_BASIS_INVALID => inv_arg("invalid basis"),
+        }
+    }
+}
+
+/// Types of DQCsim gates.
+#[repr(C)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+#[allow(non_camel_case_types)]
+pub enum dqcs_gate_type_t {
+    /// Invalid gate type. Used as an error return value.
+    DQCS_GATE_TYPE_INVALID = 0,
+
+    /// Unitary gates have one or more target qubits, zero or more control
+    /// qubits, and a unitary matrix, sized for the number of target qubits.
+    ///
+    /// The semantics are that the unitary matrix expanded by the number of
+    /// control qubits is applied to the qubits.
+    ///
+    /// The data field may add pragma-like hints to the gate, for instance to
+    /// represent the line number in the source file that generated the gate,
+    /// error modelling information, and so on. This data may be silently
+    /// ignored.
+    DQCS_GATE_TYPE_UNITARY,
+
+    /// Measurement gates have one or more measured qubits and a 2x2 unitary
+    /// matrix representing the basis.
+    ///
+    /// The semantics are:
+    ///
+    ///  - the hermetian of the matrix is applied to each individual qubit;
+    ///  - each individual qubit is measured in the Z basis;
+    ///  - the matrix is applied to each individual qubit;
+    ///  - the results of the measurement are propagated upstream.
+    ///
+    /// This allows any measurement basis to be used.
+    ///
+    /// The data field may add pragma-like hints to the gate, for instance to
+    /// represent the line number in the source file that generated the gate,
+    /// error modelling information, and so on. This data may be silently
+    /// ignored.
+    DQCS_GATE_TYPE_MEASUREMENT,
+
+    /// Prep gates have one or more target qubits and a 2x2 unitary matrix
+    /// representing the basis.
+    ///
+    /// The semantics are:
+    ///
+    ///  - each qubit is initialized to |0>;
+    ///  - the matrix is applied to each individual qubit.
+    ///
+    /// This allows any initial state to be used.
+    ///
+    /// The data field may add pragma-like hints to the gate, for instance to
+    /// represent the line number in the source file that generated the gate,
+    /// error modelling information, and so on. This data may be silently
+    /// ignored.
+    DQCS_GATE_TYPE_PREP,
+
+    /// Custom gates perform a user-defined mixed quantum-classical operation,
+    /// identified by a name. They can have zero or more target, control, and
+    /// measured qubits, of which only the target and control sets must be
+    /// mutually exclusive. They also have an optional matrix of arbitrary
+    /// size.
+    ///
+    /// The semantics are:
+    ///
+    ///  - if the name is not recognized, an error is reported;
+    ///  - a user-defined operation is performed based on the name, qubits,
+    ///    matrix, and data arguments;
+    ///  - exactly one measurement result is reported upstream for exactly the
+    ///    qubits in the measures set.
+    DQCS_GATE_TYPE_CUSTOM,
+}
+
+impl From<&GateType> for dqcs_gate_type_t {
+    fn from(gate_type: &GateType) -> dqcs_gate_type_t {
         match gate_type {
-            dqcs_predefined_gate_t::DQCS_GATE_INVALID => None,
-            dqcs_predefined_gate_t::DQCS_GATE_PAULI_I => Some(GateType::I),
-            dqcs_predefined_gate_t::DQCS_GATE_PAULI_X => Some(GateType::X),
-            dqcs_predefined_gate_t::DQCS_GATE_PAULI_Y => Some(GateType::Y),
-            dqcs_predefined_gate_t::DQCS_GATE_PAULI_Z => Some(GateType::Z),
-            dqcs_predefined_gate_t::DQCS_GATE_H => Some(GateType::H),
-            dqcs_predefined_gate_t::DQCS_GATE_S => Some(GateType::S),
-            dqcs_predefined_gate_t::DQCS_GATE_S_DAG => Some(GateType::SDAG),
-            dqcs_predefined_gate_t::DQCS_GATE_T => Some(GateType::T),
-            dqcs_predefined_gate_t::DQCS_GATE_T_DAG => Some(GateType::TDAG),
-            dqcs_predefined_gate_t::DQCS_GATE_RX_90 => Some(GateType::RX90),
-            dqcs_predefined_gate_t::DQCS_GATE_RX_M90 => Some(GateType::RXM90),
-            dqcs_predefined_gate_t::DQCS_GATE_RX_180 => Some(GateType::RX180),
-            dqcs_predefined_gate_t::DQCS_GATE_RY_90 => Some(GateType::RY90),
-            dqcs_predefined_gate_t::DQCS_GATE_RY_M90 => Some(GateType::RYM90),
-            dqcs_predefined_gate_t::DQCS_GATE_RY_180 => Some(GateType::RY180),
-            dqcs_predefined_gate_t::DQCS_GATE_RZ_90 => Some(GateType::RZ90),
-            dqcs_predefined_gate_t::DQCS_GATE_RZ_M90 => Some(GateType::RZM90),
-            dqcs_predefined_gate_t::DQCS_GATE_RZ_180 => Some(GateType::RZ180),
-            dqcs_predefined_gate_t::DQCS_GATE_RX => Some(GateType::RX),
-            dqcs_predefined_gate_t::DQCS_GATE_RY => Some(GateType::RY),
-            dqcs_predefined_gate_t::DQCS_GATE_RZ => Some(GateType::RZ),
-            dqcs_predefined_gate_t::DQCS_GATE_PHASE => Some(GateType::Phase),
-            dqcs_predefined_gate_t::DQCS_GATE_PHASE_K => Some(GateType::PhaseK),
-            dqcs_predefined_gate_t::DQCS_GATE_U1 => Some(GateType::U(1)),
-            dqcs_predefined_gate_t::DQCS_GATE_R => Some(GateType::R),
-            dqcs_predefined_gate_t::DQCS_GATE_SWAP => Some(GateType::SWAP),
-            dqcs_predefined_gate_t::DQCS_GATE_SQRT_SWAP => Some(GateType::SQSWAP),
-            dqcs_predefined_gate_t::DQCS_GATE_U2 => Some(GateType::U(2)),
-            dqcs_predefined_gate_t::DQCS_GATE_U3 => Some(GateType::U(3)),
+            GateType::Unitary => dqcs_gate_type_t::DQCS_GATE_TYPE_UNITARY,
+            GateType::Measurement => dqcs_gate_type_t::DQCS_GATE_TYPE_MEASUREMENT,
+            GateType::Prep => dqcs_gate_type_t::DQCS_GATE_TYPE_PREP,
+            GateType::Custom(_) => dqcs_gate_type_t::DQCS_GATE_TYPE_CUSTOM,
         }
     }
 }

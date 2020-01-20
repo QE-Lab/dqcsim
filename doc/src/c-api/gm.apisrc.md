@@ -73,10 +73,11 @@ You can also easily detect gates with a special, fixed matrix.
 
 @@@c_api_gen ^dqcs_gm_add_fixed_unitary$@@@
 
-Finally, you can detect Z-axis measurement gates with the following built-in
-detector.
+Finally, you can detect measurement and prep gates with the following built-in
+detectors.
 
 @@@c_api_gen ^dqcs_gm_add_measure$@@@
+@@@c_api_gen ^dqcs_gm_add_prep$@@@
 
 ## Caching
 

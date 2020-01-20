@@ -710,7 +710,204 @@ namespace wrap {
   }
 
   /**
-   * Enumeration of gates defined by DQCsim.
+   * Enumeration of gate types supported by DQCsim.
+   *
+   * This wraps `raw::dqcs_gate_type_t`, not including the `invalid`
+   * option (since we use exceptions to communicate failure).
+   */
+  enum class GateType {
+
+    /**
+     * Unitary gates have one or more target qubits, zero or more control
+     * qubits, and a unitary matrix, sized for the number of target qubits.
+     *
+     * The semantics are that the unitary matrix expanded by the number of
+     * control qubits is applied to the qubits.
+     *
+     * The data field may add pragma-like hints to the gate, for instance to
+     * represent the line number in the source file that generated the gate,
+     * error modelling information, and so on. This data may be silently
+     * ignored.
+     */
+    Unitary = 1,
+
+    /**
+     * Measurement gates have one or more measured qubits and a 2x2 unitary
+     * matrix representing the basis.
+     *
+     * The semantics are:
+     *
+     *  - the hermetian of the matrix is applied to each individual qubit;
+     *  - each individual qubit is measured in the Z basis;
+     *  - the matrix is applied to each individual qubit;
+     *  - the results of the measurement are propagated upstream.
+     *
+     * This allows any measurement basis to be used.
+     *
+     * The data field may add pragma-like hints to the gate, for instance to
+     * represent the line number in the source file that generated the gate,
+     * error modelling information, and so on. This data may be silently
+     * ignored.
+     */
+    Measurement = 2,
+
+    /**
+     * Prep gates have one or more target qubits and a 2x2 unitary matrix
+     * representing the basis.
+     *
+     * The semantics are:
+     *
+     *  - each qubit is initialized to |0>;
+     *  - the matrix is applied to each individual qubit.
+     *
+     * This allows any initial state to be used.
+     *
+     * The data field may add pragma-like hints to the gate, for instance to
+     * represent the line number in the source file that generated the gate,
+     * error modelling information, and so on. This data may be silently
+     * ignored.
+     */
+    Prep = 3,
+
+    /**
+     * Custom gates perform a user-defined mixed quantum-classical operation,
+     * identified by a name. They can have zero or more target, control, and
+     * measured qubits, of which only the target and control sets must be
+     * mutually exclusive. They also have an optional matrix of arbitrary
+     * size.
+     *
+     * The semantics are:
+     *
+     *  - if the name is not recognized, an error is reported;
+     *  - a user-defined operation is performed based on the name, qubits,
+     *    matrix, and data arguments;
+     *  - exactly one measurement result is reported upstream for exactly the
+     *    qubits in the measures set.
+     */
+    Custom = 4
+
+  };
+
+  /**
+   * Converts a `GateType` to its raw C enum.
+   *
+   * \param type The C++ gate type to convert.
+   * \returns The raw gate type.
+   */
+  inline raw::dqcs_gate_type_t to_raw(GateType type) noexcept {
+    switch (type) {
+      case GateType::Unitary:     return raw::dqcs_gate_type_t::DQCS_GATE_TYPE_UNITARY;
+      case GateType::Measurement: return raw::dqcs_gate_type_t::DQCS_GATE_TYPE_MEASUREMENT;
+      case GateType::Prep:        return raw::dqcs_gate_type_t::DQCS_GATE_TYPE_PREP;
+      case GateType::Custom:      return raw::dqcs_gate_type_t::DQCS_GATE_TYPE_CUSTOM;
+    }
+    std::cerr << "unknown gate type" << std::endl;
+    std::terminate();
+  }
+
+  /**
+   * Checks a `dqcs_gate_type_t` return value and converts it to its C++
+   * enum representation; if failure, throws a runtime error with DQCsim's
+   * error message.
+   *
+   * \param type The raw function return code.
+   * \returns The wrapped gate type.
+   * \throws std::runtime_error When the return code indicated failure.
+   */
+  inline GateType check(raw::dqcs_gate_type_t type) {
+    switch (type) {
+      case raw::dqcs_gate_type_t::DQCS_GATE_TYPE_UNITARY:     return GateType::Unitary;
+      case raw::dqcs_gate_type_t::DQCS_GATE_TYPE_MEASUREMENT: return GateType::Measurement;
+      case raw::dqcs_gate_type_t::DQCS_GATE_TYPE_PREP:        return GateType::Prep;
+      case raw::dqcs_gate_type_t::DQCS_GATE_TYPE_CUSTOM:      return GateType::Custom;
+      case raw::dqcs_gate_type_t::DQCS_GATE_TYPE_INVALID:     throw std::runtime_error(raw::dqcs_error_get());
+    }
+    throw std::invalid_argument("unknown gate type");
+  }
+
+  /**
+   * Enumeration of Pauli bases.
+   *
+   * This wraps `raw::dqcs_basis_t`, not including the `invalid`
+   * option (since we use exceptions to communicate failure).
+   */
+  enum class PauliBasis {
+
+    /**
+     * The X basis.
+     *
+     * \f[
+     * \psi_X = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & -1 \\
+     * 1 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    X = 1,
+
+    /**
+     * The Y basis.
+     *
+     * \f[
+     * \psi_Y = \frac{1}{\sqrt{2}} \begin{bmatrix}
+     * 1 & i \\
+     * i & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    Y = 2,
+
+    /**
+     * The Z basis.
+     *
+     * \f[
+     * \psi_Z = \begin{bmatrix}
+     * 1 & 0 \\
+     * 0 & 1
+     * \end{bmatrix}
+     * \f]
+     */
+    Z = 3
+
+  };
+
+  /**
+   * Converts a `PauliBasis` to its raw C enum.
+   *
+   * \param type The C++ basis enum variant to convert.
+   * \returns The raw basis enum variant.
+   */
+  inline raw::dqcs_basis_t to_raw(PauliBasis type) noexcept {
+    switch (type) {
+      case PauliBasis::X: return raw::dqcs_basis_t::DQCS_BASIS_X;
+      case PauliBasis::Y: return raw::dqcs_basis_t::DQCS_BASIS_Y;
+      case PauliBasis::Z: return raw::dqcs_basis_t::DQCS_BASIS_Z;
+    }
+    std::cerr << "unknown basis" << std::endl;
+    std::terminate();
+  }
+
+  /**
+   * Checks a `dqcs_basis_t` return value and converts it to its C++
+   * enum representation; if failure, throws a runtime error with DQCsim's
+   * error message.
+   *
+   * \param type The raw function return code.
+   * \returns The wrapped basis enum variant.
+   * \throws std::runtime_error When the return code indicated failure.
+   */
+  inline PauliBasis check(raw::dqcs_basis_t type) {
+    switch (type) {
+      case raw::dqcs_basis_t::DQCS_BASIS_X: return PauliBasis::X;
+      case raw::dqcs_basis_t::DQCS_BASIS_Y: return PauliBasis::Y;
+      case raw::dqcs_basis_t::DQCS_BASIS_Z: return PauliBasis::Z;
+      case raw::dqcs_basis_t::DQCS_BASIS_INVALID: throw std::runtime_error(raw::dqcs_error_get());
+    }
+    throw std::invalid_argument("unknown basis");
+  }
+
+  /**
+   * Enumeration of unitary gates defined by DQCsim.
    *
    * This wraps `raw::dqcs_predefined_gate_t`, not including the `invalid`
    * option (since we use exceptions to communicate failure).
@@ -2899,6 +3096,17 @@ namespace wrap {
     }
 
     /**
+     * Constructs a Pauli basis matrix.
+     *
+     * \param basis The basis to construct the matrix for.
+     * \returns A new matrix containing the desired data.
+     * \throws std::runtime_error When constructing the matrix failed.
+     */
+    Matrix(PauliBasis basis)
+      : Handle(check(raw::dqcs_mat_basis(to_raw(basis)))) {
+    }
+
+    /**
      * Copy-constructs a matrix.
      *
      * \param src The object to copy from.
@@ -2996,6 +3204,12 @@ namespace wrap {
     /**
      * Approximate equality operator for two matrices.
      *
+     * If ignore_gphase is set, this checks that the following holds for some x:
+     *
+     * \f[
+     * This \cdot e^{ix} \approx Other
+     * \f]
+     *
      * \param other The matrix to compare to.
      * \param epsilon The maximum tolerated RMS variation of the elements.
      * \param ignore_global_phase Whether global phase differences should be
@@ -3009,6 +3223,45 @@ namespace wrap {
       bool ignore_global_phase = true
     ) const {
       return check(raw::dqcs_mat_approx_eq(handle, other.get_handle(), epsilon, ignore_global_phase));
+    }
+
+    /**
+     * Approximate equality operator for two basis matrices.
+     *
+     * This checks that the following holds for some x and y:
+     *
+     * \f[
+     * This \cdot \begin{bmatrix}
+     * e^{ix} & 0 \\
+     * 0 & e^{iy}
+     * \end{bmatrix} \approx Other
+     * \f]
+     *
+     * \param other The matrix to compare to.
+     * \param epsilon The maximum tolerated RMS variation of the elements.
+     * \returns Whether the bases are approximately equal.
+     * \throws std::runtime_error When either handle is invalid.
+     */
+    bool basis_approx_eq(
+      const Matrix &other,
+      double epsilon = 0.000001
+    ) const {
+      return check(raw::dqcs_mat_basis_approx_eq(handle, other.get_handle(), epsilon));
+    }
+
+    /**
+     * Approximate unitary check.
+     *
+     * This internally computes the product of this matrix and its Hermetian,
+     * and then does an approximate compare against the identity matrix.
+     *
+     * \param epsilon The maximum tolerated RMS variation between the identity
+     * matrix and the computed product.
+     * \returns Whether the matrix is approximately unitary.
+     * \throws std::runtime_error When the handle is invalid.
+     */
+    bool approx_unitary(double epsilon = 0.000001) const {
+      return check(raw::dqcs_mat_approx_unitary(handle, epsilon));
     }
 
     /**
@@ -3332,7 +3585,7 @@ namespace wrap {
      * for some reason.
      */
     static Gate measure(QubitSet &&measures) {
-      return Gate(check(raw::dqcs_gate_new_measurement(measures.get_handle())));
+      return Gate(check(raw::dqcs_gate_new_measurement(measures.get_handle(), 0)));
     }
 
     /**
@@ -3349,6 +3602,154 @@ namespace wrap {
     static Gate measure(const QubitSet &measures) {
       return measure(QubitSet(measures));
     }
+
+    /**
+     * Constructs a new measurement gate, measuring in the given Pauli basis.
+     *
+     * \param measures A qubit reference set with the to-be-measured qubits.
+     * The measurement results can be queried from `PluginState` after the gate
+     * is executed. Any previous measurement results for those qubits will be
+     * overridden.
+     * \param basis The measurement basis.
+     * \returns The requested measurement gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate measure(QubitSet &&measures, PauliBasis basis) {
+      return Gate(check(raw::dqcs_gate_new_measurement(measures.get_handle(), Matrix(basis).get_handle())));
+    }
+
+    /**
+     * Constructs a new measurement gate, measuring in the given Pauli basis.
+     *
+     * \param measures A qubit reference set with the to-be-measured qubits,
+     * passed by copy. The measurement results can be queried from
+     * `PluginState` after the gate is executed. Any previous measurement
+     * results for those qubits will be overridden.
+     * \param basis The measurement basis.
+     * \returns The requested measurement gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate measure(const QubitSet &measures, PauliBasis basis) {
+      return measure(QubitSet(measures), basis);
+    }
+
+    /**
+     * Constructs a new measurement gate, measuring in the given custom basis.
+     *
+     * \param measures A qubit reference set with the to-be-measured qubits.
+     * The measurement results can be queried from `PluginState` after the gate
+     * is executed. Any previous measurement results for those qubits will be
+     * overridden.
+     * \param basis The measurement basis, represented as a 2x2 matrix defining
+     * the rotation from the Z basis to the desired basis.
+     * \returns The requested measurement gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate measure(QubitSet &&measures, Matrix &&basis) {
+      return Gate(check(raw::dqcs_gate_new_measurement(measures.get_handle(), basis.get_handle())));
+    }
+
+    /**
+     * Constructs a new measurement gate, measuring in the given custom basis.
+     *
+     * \param measures A qubit reference set with the to-be-measured qubits,
+     * passed by copy. The measurement results can be queried from
+     * `PluginState` after the gate is executed. Any previous measurement
+     * results for those qubits will be overridden.
+     * \param basis The measurement basis, represented as a 2x2 matrix defining
+     * the rotation from the Z basis to the desired basis.
+     * \returns The requested measurement gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate measure(const QubitSet &measures, const Matrix &basis) {
+      return measure(QubitSet(measures), Matrix(basis));
+    }
+
+    /**
+     * Constructs a new Z-axis prep gate, putting the qubits in the |0> state.
+     *
+     * \param targets A qubit reference set with the to-be-prepared qubits.
+     * \returns The requested prep gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate prep(QubitSet &&targets) {
+      return Gate(check(raw::dqcs_gate_new_prep(targets.get_handle(), 0)));
+    }
+
+    /**
+     * Constructs a new Z-axis prep gate, putting the qubits in the |0> state.
+     *
+     * \param targets A qubit reference set with the to-be-prepared qubits.
+     * \returns The requested prep gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate prep(const QubitSet &targets) {
+      return prep(QubitSet(targets));
+    }
+
+    /**
+     * Constructs a new prep gate, putting the qubits in the base state for the
+     * given Pauli basis.
+     *
+     * \param targets A qubit reference set with the to-be-prepared qubits.
+     * \param basis The basis.
+     * \returns The requested prep gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate prep(QubitSet &&targets, PauliBasis basis) {
+      return Gate(check(raw::dqcs_gate_new_prep(targets.get_handle(), Matrix(basis).get_handle())));
+    }
+
+    /**
+     * Constructs a new prep gate, putting the qubits in the base state for the
+     * given Pauli basis.
+     *
+     * \param targets A qubit reference set with the to-be-prepared qubits.
+     * \param basis The basis.
+     * \returns The requested prep gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate prep(const QubitSet &targets, PauliBasis basis) {
+      return prep(QubitSet(targets), basis);
+    }
+
+    /**
+     * Constructs a new prep gate for a custom initial state.
+     *
+     * \param targets A qubit reference set with the to-be-prepared qubits.
+     * \param basis The basis, represented as a 2x2 matrix defining the
+     * rotation to be applied after initializing the qubits to |0>.
+     * \returns The requested prep gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate prep(QubitSet &&targets, Matrix &&basis) {
+      return Gate(check(raw::dqcs_gate_new_prep(targets.get_handle(), basis.get_handle())));
+    }
+
+    /**
+     * Constructs a new prep gate for a custom initial state.
+     *
+     * \param targets A qubit reference set with the to-be-prepared qubits.
+     * \param basis The basis, represented as a 2x2 matrix defining the
+     * rotation to be applied after initializing the qubits to |0>.
+     * \returns The requested prep gate.
+     * \throws std::runtime_error When construction of the new handle failed
+     * for some reason.
+     */
+    static Gate prep(const QubitSet &targets, const Matrix &basis) {
+      return prep(QubitSet(targets), Matrix(basis));
+    }
+
+    // also TODO: gatemap prep and measure
 
     /**
      * Constructs a new custom gate with target qubits, control qubits,
@@ -3721,6 +4122,16 @@ namespace wrap {
     }
 
     /**
+     * Returns the type of this gate.
+     *
+     * \returns The gate type.
+     * \throws std::runtime_error When the current handle is invalid.
+     */
+    GateType get_type() const {
+      return check(raw::dqcs_gate_type(handle));
+    }
+
+    /**
      * Returns a new qubit reference set with the target qubits for this gate.
      *
      * \returns A new qubit reference set with the target qubits for this gate.
@@ -3820,13 +4231,13 @@ namespace wrap {
     }
 
     /**
-     * Returns whether this gate is a custom gate.
+     * Returns whether this gate has a name.
      *
-     * \returns Whether this gate is a custom gate.
+     * \returns Whether this gate has a name.
      * \throws std::runtime_error When the current handle is invalid.
      */
-    bool is_custom() const {
-      return check(raw::dqcs_gate_is_custom(handle));
+    bool has_name() const {
+      return check(raw::dqcs_gate_has_name(handle));
     }
 
     // Include `ArbData` builder pattern functions.
@@ -4402,6 +4813,8 @@ namespace wrap {
      *
      * \param key The `Unbound` object that refers to this type of gate in your
      * representation.
+     * \param basis The measurement basis.
+     * \param epsilon Maximum RMS deviation when detecting the above basis.
      * \param num_measures The number of measurement qubits for this type of
      * gate. If negative, the gate can measure any number of qubits at a time.
      * If positive, the gate always has the specified number of measurement
@@ -4415,13 +4828,17 @@ namespace wrap {
      */
     GateMap &&with_measure(
       Unbound &&key,
+      PauliBasis basis = PauliBasis::Z,
+      double epsilon = 0.000001,
       int num_measures = -1
     ) {
       check(raw::dqcs_gm_add_measure(
         handle,
         unbound_delete,
         new Unbound(std::move(key)),
-        num_measures
+        num_measures,
+        Matrix(basis).get_handle(),
+        epsilon
       ));
       return std::move(*this);
     }
@@ -4431,6 +4848,8 @@ namespace wrap {
      *
      * \param key The `Unbound` object that refers to this type of gate in your
      * representation.
+     * \param basis The measurement basis.
+     * \param epsilon Maximum RMS deviation when detecting the above basis.
      * \param num_measures The number of measurement qubits for this type of
      * gate. If negative, the gate can measure any number of qubits at a time.
      * If positive, the gate always has the specified number of measurement
@@ -4444,13 +4863,227 @@ namespace wrap {
      */
     GateMap &&with_measure(
       const Unbound &key,
+      PauliBasis basis = PauliBasis::Z,
+      double epsilon = 0.000001,
       int num_measures = -1
     ) {
       check(raw::dqcs_gm_add_measure(
         handle,
         unbound_delete,
         new Unbound(key),
-        num_measures
+        num_measures,
+        Matrix(basis).get_handle(),
+        epsilon
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a measurement gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param basis The measurement basis.
+     * \param epsilon Maximum RMS deviation when detecting the above basis.
+     * \param num_measures The number of measurement qubits for this type of
+     * gate. If negative, the gate can measure any number of qubits at a time.
+     * If positive, the gate always has the specified number of measurement
+     * qubits.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_measure(
+      Unbound &&key,
+      Matrix &&basis,
+      double epsilon = 0.000001,
+      int num_measures = -1
+    ) {
+      check(raw::dqcs_gm_add_measure(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        num_measures,
+        basis.get_handle(),
+        epsilon
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a measurement gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param basis The measurement basis.
+     * \param epsilon Maximum RMS deviation when detecting the above basis.
+     * \param num_measures The number of measurement qubits for this type of
+     * gate. If negative, the gate can measure any number of qubits at a time.
+     * If positive, the gate always has the specified number of measurement
+     * qubits.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * copy constructor.
+     */
+    GateMap &&with_measure(
+      const Unbound &key,
+      const Matrix &basis,
+      double epsilon = 0.000001,
+      int num_measures = -1
+    ) {
+      check(raw::dqcs_gm_add_measure(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        num_measures,
+        Matrix(basis).get_handle(),
+        epsilon
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a prep gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param basis The basis.
+     * \param epsilon Maximum RMS deviation when detecting the above basis.
+     * \param num_targets The number of target qubits for this type of
+     * gate. If negative, the gate can prepare any number of qubits at a time.
+     * If positive, the gate always has the specified number of target
+     * qubits.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_prep(
+      Unbound &&key,
+      PauliBasis basis = PauliBasis::Z,
+      double epsilon = 0.000001,
+      int num_targets = -1
+    ) {
+      check(raw::dqcs_gm_add_prep(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        num_targets,
+        Matrix(basis).get_handle(),
+        epsilon
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a prep gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param basis The basis.
+     * \param epsilon Maximum RMS deviation when detecting the above basis.
+     * \param num_targets The number of target qubits for this type of
+     * gate. If negative, the gate can prepare any number of qubits at a time.
+     * If positive, the gate always has the specified number of target
+     * qubits.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_prep(
+      const Unbound &key,
+      PauliBasis basis = PauliBasis::Z,
+      double epsilon = 0.000001,
+      int num_targets = -1
+    ) {
+      check(raw::dqcs_gm_add_prep(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        num_targets,
+        Matrix(basis).get_handle(),
+        epsilon
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a prep gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param basis The basis.
+     * \param epsilon Maximum RMS deviation when detecting the above basis.
+     * \param num_targets The number of target qubits for this type of
+     * gate. If negative, the gate can prepare any number of qubits at a time.
+     * If positive, the gate always has the specified number of target
+     * qubits.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_prep(
+      Unbound &&key,
+      Matrix &&basis,
+      double epsilon = 0.000001,
+      int num_targets = -1
+    ) {
+      check(raw::dqcs_gm_add_prep(
+        handle,
+        unbound_delete,
+        new Unbound(std::move(key)),
+        num_targets,
+        basis.get_handle(),
+        epsilon
+      ));
+      return std::move(*this);
+    }
+
+    /**
+     * Adds a prep gate mapping.
+     *
+     * \param key The `Unbound` object that refers to this type of gate in your
+     * representation.
+     * \param basis The basis.
+     * \param epsilon Maximum RMS deviation when detecting the above basis.
+     * \param num_targets The number of target qubits for this type of
+     * gate. If negative, the gate can prepare any number of qubits at a time.
+     * If positive, the gate always has the specified number of target
+     * qubits.
+     * \returns `&self`, to continue building.
+     * \throws std::runtime_error When the gate map handle is invalid.
+     * \warning If the key is equal to a the key for a previously added
+     * converter, the previous converter is silently overwritten.
+     * \note If you get template errors, ensure that your `Unbound` type has a
+     * move constructor.
+     */
+    GateMap &&with_prep(
+      const Unbound &key,
+      const Matrix &basis,
+      double epsilon = 0.000001,
+      int num_targets = -1
+    ) {
+      check(raw::dqcs_gm_add_prep(
+        handle,
+        unbound_delete,
+        new Unbound(key),
+        num_targets,
+        Matrix(basis).get_handle(),
+        epsilon
       ));
       return std::move(*this);
     }

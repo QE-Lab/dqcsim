@@ -10,8 +10,11 @@ class NullBackend(Backend):
     def handle_unitary_gate(self, targets, matrix):
         pass
 
-    def handle_measurement_gate(self, qubits):
+    def handle_measurement_gate(self, qubits, matrix):
         return [Measurement(qubit, 0) for qubit in qubits]
+
+    def handle_prepare_gate(self, targets, matrix):
+        pass
 
     def handle_host_work_env(self):
         return ArbData(work=os.getcwd(), env=dict(os.environ))

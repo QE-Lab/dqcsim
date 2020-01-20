@@ -201,6 +201,7 @@ error_return_value_map = {
     'dqcs_measurement_t': '== DQCS_MEAS_INVALID',
     'dqcs_path_style_t': '== DQCS_PATH_STYLE_INVALID',
     'dqcs_plugin_type_t': '== DQCS_PTYPE_INVALID',
+    'dqcs_gate_type_t': '== DQCS_GATE_TYPE_INVALID',
 }
 
 error_fmt = '''\
