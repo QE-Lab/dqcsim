@@ -1,3 +1,31 @@
+## [0.0.13] - 2020-01-20
+- Merge remote-tracking branch origin/master into meas-basis-and-prep
+- Bump proc-macro-error from 0.4.4 to 0.4.5
+- Merge branch master of github.com:mbrobbel/dqcsim
+- Add file with some useful command-line one-liners
+- Fix matrices losing dimensionality in transit
+- Expose matrix unitary check and fix docs
+- Bump structopt from 0.3.7 to 0.3.8
+- Bump humantime from 1.3.0 to 2.0.0
+- Update C++ API for gate type changes
+- Update python API, sort of
+- Update C/book documentation for gate type changes
+- Fix Rust docstring
+- Add dqcs_gate_type API, rename dqcs_gate_is_custom
+- BREAKING CHANGE: meas bases and prep gate in rust
+- Update cmake in examples workflow
+- Fix deadlock for no-op operator callbacks
+- Log python errors in callbacks
+- Fix missing dqcs_log_format symbol
+- Make fetchcontent work, and improve examples
+- Minor changes to CMake example
+- Add CMake example
+- Add install target stuff in cmake
+- Condition lib64/libdqcsim.so on Linux OS
+- Add python 3.8 to classifiers in setup.py
+- Fix setup.py workflow trigger
+- Package libdqcsim.so in lib64 as well
+
 ## [0.0.12] - 2020-01-17
 -  Add Matrix type and add gate map mechanism #390
 -  Modify the gate processing reference algorithm to allow for non-Z measurements in the future #393
