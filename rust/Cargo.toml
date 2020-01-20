@@ -13,6 +13,7 @@ keywords = ["quantum", "simulation", "framework"]
 categories = ["simulation", "science"]
 license = "Apache-2.0"
 default-run = "dqcsim"
+include = ["**/*.rs"]
 
 [badges]
 codecov = { repository = "mbrobbel/dqcsim" }
@@ -27,21 +28,24 @@ required-features = ["cli"]
 
 [[bin]]
 name = "dqcsbenull"
+path = "src/bin/null/backend.rs"
 doc = false
 required-features = ["null-plugins"]
 
 [[bin]]
 name = "dqcsopnull"
+path = "src/bin/null/operator.rs"
 doc = false
 required-features = ["null-plugins"]
 
 [[bin]]
 name = "dqcsfenull"
+path = "src/bin/null/frontend.rs"
 doc = false
 required-features = ["null-plugins"]
 
 [features]
-default = ["cli", "null-plugins"]
+default = []
 cli = ["structopt", "ansi_term", "clap", "git-testament"]
 null-plugins = []
 bindings = ["cbindgen", "libc", "regex", "lazy_static"]
