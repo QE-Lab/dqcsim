@@ -924,20 +924,20 @@ class MyPlugin(Frontend):
 
         # Prepare the input qubit.
         self.prepare(qi)
-        self.x_gate(qi)
         self.h_gate(qi)
 
         # Prepare the output qubit.
         self.prepare(qo)
+        self.x_gate(qo)
         self.h_gate(qo)
 
         # Run the oracle function.
         oracle(qi, qo)
 
-        # Measure the output.
-        self.h_gate(qo)
-        self.measure(qo)
-        if self.get_measurement(qo).value:
+        # Measure the input.
+        self.h_gate(qi)
+        self.measure(qi)
+        if self.get_measurement(qi).value:
             self.info('Oracle was balanced!')
         else:
             self.info('Oracle was constant!')
@@ -1027,20 +1027,20 @@ class MyPlugin(Frontend):
 
         # Prepare the input qubit.
         self.prepare(qi)
-        self.x_gate(qi)
         self.h_gate(qi)
 
         # Prepare the output qubit.
         self.prepare(qo)
+        self.x_gate(qo)
         self.h_gate(qo)
 
         # Run the oracle function.
         oracle(qi, qo)
 
-        # Measure the output.
-        self.h_gate(qo)
-        self.measure(qo)
-        if self.get_measurement(qo).value:
+        # Measure the input.
+        self.h_gate(qi)
+        self.measure(qi)
+        if self.get_measurement(qi).value:
             self.send(result='balanced')
         else:
             self.send(result='constant')
