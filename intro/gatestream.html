@@ -185,63 +185,64 @@ allocated qubit receives index 1. Subsequent allocations receive the next
 index. This means that freed qubit indices are never reused; if a backend wants
 to reuse indices internally, it must maintain its own mapping. Index 0 is
 reserved for marking invalid qubits and the end of a qubit list in the C API.</p>
-<h2><a class="header" href="#sending-gates" id="sending-gates">Sending gates</a></h2>
-<p>DQCsim internally represents gates using the following pieces of data:</p>
+<h2><a class="header" href="#sending-and-receiving-gates" id="sending-and-receiving-gates">Sending and receiving gates</a></h2>
+<p>DQCsim supports four kinds of gates:</p>
 <ul>
-<li>an optional name;</li>
-<li>a list of target qubits;</li>
-<li>a list of control qubits;</li>
-<li>a list of measured qubits;</li>
-<li>an optional unitary matrix, sized appropriately for the number of qubits in
-the target list;</li>
-<li>an <code>ArbData</code> object that may contain classical arguments and/or additional
-information specifying the behavior of the gate.</li>
+<li>unitary gates, defined by a matrix, one or more target qubits, and zero or
+more control qubits;</li>
+<li>measurement gates, defined by one or more measured qubits and an arbitrary
+measurement basis;</li>
+<li>prep gates, defined by one or more target qubits and an arbitrary basis;</li>
+<li>custom gates, defined by a name and any of the above. Downstream plugins
+should reject named gates that they don't recognize.</li>
 </ul>
-<p>It is not currently possible to send all the gates allowed by the above
-representation. Specifically, only the following classes of gates can be
-constructed:</p>
+<p>Note that all but the latter do not have any kind of name attached to them.
+In other words, detecting whether a gate is for instance an X gate is not very
+trivial: it requires matching the matrix with a known X matrix. Floating point
+roundoff errors could cause headaches, and global phase also becomes a thing
+then. After all, the following matrices are equivalent in quantum:</p>
+<p>\f[
+\begin{bmatrix}
+0 &amp; 1 \
+1 &amp; 0
+\end{bmatrix} __
+\begin{bmatrix}
+0 &amp; i \
+i &amp; 0
+\end{bmatrix}
+\f]</p>
+<p>as they only differ in global phase. This also goes for the measurement and
+prep gates, where the basis is also represented with a matrix such that any
+basis and initial state can be described.</p>
+<p>The good thing about this representation, however, is that there is no need for
+plugins to agree on some naming scheme for gates. After all, is <code>Y</code> the same as
+<code>y</code>? What about <code>Pauli_Y</code>? Or <code>Y180</code>? <code>cnot</code> versus <code>cx</code>? <code>ccnot</code> versus
+<code>toffoli</code>? And so on. Not to mention arbitrary rotations. The matrix
+representation of gates is pretty universally agreed upon, global phase aside
+in some cases, so it serves as a sort of universal language. Which is exactly
+what DQCsim is trying to do: provide a universal interface for components of
+quantum simulations to communicate with each other at runtime.</p>
+<p>It's also worth noting that simulations don't necessarily have to care about
+the name of a gate; they just have to do the math. That's not always the case
+though. For instance, if an operator wants to count X gates, the X matrix
+equivalence problem has to be solved. For this purpose, DQCsim provides the
+gate map interface.</p>
+<p>Gate maps deal with the translation between DQCsim's internal format and any
+enumeration-based format you may come up with as a plugin developer that
+looks like the following:</p>
 <ul>
-<li>unitary gates, which consist of one or more target qubits, a unitary matrix,
-and zero or more control qubits;</li>
-<li>z-basis measurement gates, which consist of one or more measured qubits and
-nothing else;</li>
-<li>custom gates, which have a name (required), zero or more target qubits, zero
-or more control qubits, zero or more measured qubits, an optional gate
-matrix, and <code>ArbData</code> information.</li>
+<li>Some enumeration-like type (a name, if you like) determining the type of
+gate. Think <code>X</code>, <code>CNOT</code>, <code>MEASURE_Z</code>, and so on.</li>
+<li>A number of qubit arguments. Which qubit does what is up to you, depending
+on the gate type.</li>
+<li>A number of classical arguments, wrapped in an <code>ArbData</code>.</li>
 </ul>
-<p>A backend <em>must</em> process gates according to the following algorithm.</p>
-<ul>
-<li>If the gate has a name:
-<ul>
-<li>if the name is recognized by the backend, the implementation is as
-defined by the backend;</li>
-<li>if not, return an error.</li>
-</ul>
-</li>
-<li>Otherwise, if there are target qubits and there is a matrix:
-<ul>
-<li>if there are explicit control qubits, interpret the matrix as the
-non-controlled bottom-right submatrix of an appropriately sized
-controlled matrix;</li>
-<li>apply the possibly extended matrix to the concatenation of the control
-and target qubits;</li>
-</ul>
-</li>
-<li>Otherwise, if there are measurement qubits:
-<ul>
-<li>if there is a 2x2 matrix, apply its inverse to every to-be-measured
-qubit independently;</li>
-<li>measure every to-be-measured qubit in the Z basis; and</li>
-<li>if there is a 2x2 matrix, apply it to every to-be-measured qubit
-independently.</li>
-</ul>
-</li>
-<li>If none of the above is true, return an error.</li>
-</ul>
-<p>Note that the above allows for measurements in any basis through the pre- and
-post-rotation: the basis is Z rotated by the given single-qubit gate. However,
-at the time of writing, the API to construct measurement gates with a given
-basis is still missing.</p>
+<p>Gate maps are constructed using a detector and constructor function for each
+gate type. You can of course define these yourself, but unless you need some
+exotic parameterized gate or custom gates, you shouldn't have to: DQCsim
+provides predefined converters for a wide number of gate types. So, in
+practice, you usually only have to tell DQCsim what name or enum variant you
+want to use for each gate.</p>
 <h2><a class="header" href="#measurement-results" id="measurement-results">Measurement results</a></h2>
 <p>Measurement objects in DQCsim consist of the following:</p>
 <ul>

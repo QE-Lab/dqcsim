@@ -4,7 +4,9 @@ for more information.</p>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table><tr class='module-item'><td><a class="struct" href="struct.dqcs_plugin_state_t.html" title='dqcsim::bindings::dqcs_plugin_state_t struct'>dqcs_plugin_state_t</a></td><td class='docblock-short'><p>Type for a plugin state.</p>
 </td></tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
-<table><tr class='module-item'><td><a class="enum" href="enum.dqcs_bool_return_t.html" title='dqcsim::bindings::dqcs_bool_return_t enum'>dqcs_bool_return_t</a></td><td class='docblock-short'><p>Return type for functions that normally return a boolean but can also fail.</p>
+<table><tr class='module-item'><td><a class="enum" href="enum.dqcs_basis_t.html" title='dqcsim::bindings::dqcs_basis_t enum'>dqcs_basis_t</a></td><td class='docblock-short'><p>Enumeration of Pauli bases.</p>
+</td></tr><tr class='module-item'><td><a class="enum" href="enum.dqcs_bool_return_t.html" title='dqcsim::bindings::dqcs_bool_return_t enum'>dqcs_bool_return_t</a></td><td class='docblock-short'><p>Return type for functions that normally return a boolean but can also fail.</p>
+</td></tr><tr class='module-item'><td><a class="enum" href="enum.dqcs_gate_type_t.html" title='dqcsim::bindings::dqcs_gate_type_t enum'>dqcs_gate_type_t</a></td><td class='docblock-short'><p>Types of DQCsim gates.</p>
 </td></tr><tr class='module-item'><td><a class="enum" href="enum.dqcs_handle_type_t.html" title='dqcsim::bindings::dqcs_handle_type_t enum'>dqcs_handle_type_t</a></td><td class='docblock-short'><p>Enumeration of types that can be associated with a handle.</p>
 </td></tr><tr class='module-item'><td><a class="enum" href="enum.dqcs_loglevel_t.html" title='dqcsim::bindings::dqcs_loglevel_t enum'>dqcs_loglevel_t</a></td><td class='docblock-short'><p>Enumeration of loglevels and logging modes.</p>
 </td></tr><tr class='module-item'><td><a class="enum" href="enum.dqcs_measurement_t.html" title='dqcsim::bindings::dqcs_measurement_t enum'>dqcs_measurement_t</a></td><td class='docblock-short'><p>Qubit measurement value.</p>
@@ -61,8 +63,8 @@ qubits.
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_has_controls.html" title='dqcsim::bindings::dqcs_gate_has_controls fn'>dqcs_gate_has_controls</a></td><td class='docblock-short'><p>Returns whether the specified gate has control qubits.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_has_matrix.html" title='dqcsim::bindings::dqcs_gate_has_matrix fn'>dqcs_gate_has_matrix</a></td><td class='docblock-short'><p>Returns whether a unitary matrix is associated with this gate.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_has_measures.html" title='dqcsim::bindings::dqcs_gate_has_measures fn'>dqcs_gate_has_measures</a></td><td class='docblock-short'><p>Returns whether the specified gate measures any qubits.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_has_name.html" title='dqcsim::bindings::dqcs_gate_has_name fn'>dqcs_gate_has_name</a></td><td class='docblock-short'><p>Returns whether the specified gate has a name.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_has_targets.html" title='dqcsim::bindings::dqcs_gate_has_targets fn'>dqcs_gate_has_targets</a></td><td class='docblock-short'><p>Returns whether the specified gate has target qubits.</p>
-</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_is_custom.html" title='dqcsim::bindings::dqcs_gate_is_custom fn'>dqcs_gate_is_custom</a></td><td class='docblock-short'><p>Returns whether the specified gate is a custom gate.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_matrix.html" title='dqcsim::bindings::dqcs_gate_matrix fn'>dqcs_gate_matrix</a></td><td class='docblock-short'><p>Returns a copy of the unitary matrix associated with this gate, if one
 exists.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_measures.html" title='dqcsim::bindings::dqcs_gate_measures fn'>dqcs_gate_measures</a></td><td class='docblock-short'><p>Returns a handle to a new qubit reference set containing the qubits
@@ -74,12 +76,14 @@ measured by this gate.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_new_predef_one.html" title='dqcsim::bindings::dqcs_gate_new_predef_one fn'>dqcs_gate_new_predef_one</a></td><td class='docblock-short'><p>Constructs a new predefined unitary one-qubit gate.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_new_predef_three.html" title='dqcsim::bindings::dqcs_gate_new_predef_three fn'>dqcs_gate_new_predef_three</a></td><td class='docblock-short'><p>Constructs a new predefined unitary three-qubit gate.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_new_predef_two.html" title='dqcsim::bindings::dqcs_gate_new_predef_two fn'>dqcs_gate_new_predef_two</a></td><td class='docblock-short'><p>Constructs a new predefined unitary two-qubit gate.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_new_prep.html" title='dqcsim::bindings::dqcs_gate_new_prep fn'>dqcs_gate_new_prep</a></td><td class='docblock-short'><p>Constructs a new prep gate.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_new_unitary.html" title='dqcsim::bindings::dqcs_gate_new_unitary fn'>dqcs_gate_new_unitary</a></td><td class='docblock-short'><p>Constructs a new unitary gate.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_reduce_control.html" title='dqcsim::bindings::dqcs_gate_reduce_control fn'>dqcs_gate_reduce_control</a></td><td class='docblock-short'><p>Utility function that detects control qubits in the <code>targets</code> list of the
 gate by means of the gate matrix, and reduces them into <code>controls</code> qubits.
 &gt;</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_targets.html" title='dqcsim::bindings::dqcs_gate_targets fn'>dqcs_gate_targets</a></td><td class='docblock-short'><p>Returns a handle to a new qubit reference set containing the qubits
-targetted by this gate.</p>
+targeted by this gate.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gate_type.html" title='dqcsim::bindings::dqcs_gate_type fn'>dqcs_gate_type</a></td><td class='docblock-short'><p>Returns the gate type of the given gate.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gm_add_custom.html" title='dqcsim::bindings::dqcs_gm_add_custom fn'>dqcs_gm_add_custom</a></td><td class='docblock-short'><p>Adds a fully customizable gate mapping to the given gate map.
 &gt;</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gm_add_custom_unitary.html" title='dqcsim::bindings::dqcs_gm_add_custom_unitary fn'>dqcs_gm_add_custom_unitary</a></td><td class='docblock-short'><p>Adds a custom unitary gate mapping to the given gate map.
@@ -91,6 +95,8 @@ map.
 &gt;</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gm_add_predef_unitary.html" title='dqcsim::bindings::dqcs_gm_add_predef_unitary fn'>dqcs_gm_add_predef_unitary</a></td><td class='docblock-short'><p>Adds a unitary gate mapping for the given DQCsim-defined gate to the
 given gate map.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gm_add_prep.html" title='dqcsim::bindings::dqcs_gm_add_prep fn'>dqcs_gm_add_prep</a></td><td class='docblock-short'><p>Adds a prep gate mapping to the given gate map.
 &gt;</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_gm_construct.html" title='dqcsim::bindings::dqcs_gm_construct fn'>dqcs_gm_construct</a></td><td class='docblock-short'><p>Uses a gate map object to construct a multi-qubit DQCsim gate from the
 plugin's representation.
@@ -118,6 +124,13 @@ representation.
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mat_add_controls.html" title='dqcsim::bindings::dqcs_mat_add_controls fn'>dqcs_mat_add_controls</a></td><td class='docblock-short'><p>Constructs a controlled matrix from the given matrix.
 &gt;</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mat_approx_eq.html" title='dqcsim::bindings::dqcs_mat_approx_eq fn'>dqcs_mat_approx_eq</a></td><td class='docblock-short'><p>Approximately compares two matrices.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mat_approx_unitary.html" title='dqcsim::bindings::dqcs_mat_approx_unitary fn'>dqcs_mat_approx_unitary</a></td><td class='docblock-short'><p>Returns whether the matrix is approximately unitary.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mat_basis.html" title='dqcsim::bindings::dqcs_mat_basis fn'>dqcs_mat_basis</a></td><td class='docblock-short'><p>Constructs a matrix with the eigenvectors of one of the Pauli matrices
+as column vectors.
+&gt;</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mat_basis_approx_eq.html" title='dqcsim::bindings::dqcs_mat_basis_approx_eq fn'>dqcs_mat_basis_approx_eq</a></td><td class='docblock-short'><p>Approximately compares two basis matrices.
 &gt;</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.dqcs_mat_dimension.html" title='dqcsim::bindings::dqcs_mat_dimension fn'>dqcs_mat_dimension</a></td><td class='docblock-short'><p>Returns the dimension (number of rows == number of columns) of the given
 matrix.

@@ -244,10 +244,33 @@ global phase. For this reason, DQCsim provides an equality check function.</p>
 <code>epsilon</code> specifies the maximum element-wise root-mean-square error
 between the matrices that results in a positive match. <code>ignore_gphase</code>
 specifies whether the check should ignore global phase.</p>
+<p>If ignore_gphase is set, this checks that the following holds for some x:</p>
+<p>\[
+A \cdot e^{ix} \approx B
+\]</p>
 <p>This function returns <code>DQCS_TRUE</code> if the matrices match according to the
 aforementioned criteria, or <code>DQCS_FALSE</code> if not. <code>DQCS_BOOL_ERROR</code> is used
 when either handle is invalid or not a matrix. If the matrices differ in
 dimensionality, <code>DQCS_FALSE</code> is used.</p>
+</div></details>
+<h2><a class="header" href="#unitary-check" id="unitary-check">Unitary check</a></h2>
+<p>DQCsim also exposes a unitary check, which it uses internally here and there
+anyway.</p>
+<details><summary><font color="green"><tt>dqcs_mat_approx_unitary()</tt></font><div style="margin-left: 16px">
+<p>Returns whether the matrix is approximately unitary.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_bool_return_t dqcs_mat_approx_unitary(
+    dqcs_handle_t matrix,
+    double epsilon
+)
+</code></pre>
+<p><code>matrix</code> is a borrowed handle to the matrix to check.
+<code>epsilon</code> specifies the maximum element-wise root-mean-square error
+between the product of the matrix and its hermetian compared to the
+identity matrix.</p>
+<p>This function returns <code>DQCS_TRUE</code> if the matrix is approximately unitary,
+or <code>DQCS_FALSE</code> if not. <code>DQCS_BOOL_ERROR</code> is used when either handle is
+invalid or not a matrix.</p>
 </div></details>
 <h2><a class="header" href="#predefined-matrices" id="predefined-matrices">Predefined matrices</a></h2>
 <p>DQCsim provides a number of predefined gate matrices. These are identified by
@@ -678,6 +701,105 @@ matrix handle with the submatrix, or 0 if it fails. In this case,
 <p>This function assumes that the incoming matrix is unitary (within
 <code>epsilon</code>) without verifying that this is the case. The results may
 thus be invalid if it was not.</p>
+</div></details>
+<h2><a class="header" href="#basis-matrices" id="basis-matrices">Basis matrices</a></h2>
+<p>TODO: someone who knows what they're talking about should check/correct this
+section at some point. I'm mostly working off of hunches. - Jeroen</p>
+<p>DQCsim uses 2x2 matrices to represent the basis for a measurement or prep gate
+to operate on. The intuitive nature of these matrices is as follows for
+measurements:</p>
+<ul>
+<li>apply the Hermetian/conjugate transpose/inverse of the basis matrix as a
+gate to each measured qubit;</li>
+<li>do a Z-basis measurement;</li>
+<li>apply the basis matrix as a gate to each measured qubit.</li>
+</ul>
+<p>Basically, the application of the inverse of the matrix rotates the state of
+the qubits from the desired basis to the Z basis, then a Z measurement is
+applied, then the application of the basis matrix rotates the state back to
+the desired basis.</p>
+<p>The semantics for prep gates are basically the same:</p>
+<ul>
+<li>initialize the state of each qubit to |0&gt;;</li>
+<li>apply the basis matrix as a gate to each targeted qubit.</li>
+</ul>
+<p>With this definition, the basis matrices can be written as follows.</p>
+<details><summary><font color="purple"><tt>dqcs_basis_t</tt></font><div style="margin-left: 16px">
+<p>Enumeration of Pauli bases.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">typedef enum { ... } dqcs_basis_t;
+</code></pre>
+<p>Variants:</p>
+<p>
+<details><summary><font color="blue"><tt>DQCS_BASIS_INVALID = 0</tt></font></summary><div style="margin-left: 16px">
+Invalid basis. Used as an error return value.
+</div></details>
+<details><summary><font color="blue"><tt>DQCS_BASIS_X = 1</tt></font></summary><div style="margin-left: 16px">
+The X basis.
+<p>\[
+\psi_X = \frac{1}{\sqrt{2}} \begin{bmatrix}
+1 &amp; -1 \\
+1 &amp; 1
+\end{bmatrix}
+\]</p>
+</div></details>
+<details><summary><font color="blue"><tt>DQCS_BASIS_Y = 2</tt></font></summary><div style="margin-left: 16px">
+The Y basis.
+<p>\[
+\psi_Y = \frac{1}{\sqrt{2}} \begin{bmatrix}
+1 &amp; i \\
+i &amp; 1
+\end{bmatrix}
+\]</p>
+</div></details>
+<details><summary><font color="blue"><tt>DQCS_BASIS_Z = 3</tt></font></summary><div style="margin-left: 16px">
+The Z basis.
+<p>\[
+\psi_Z = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix}
+\]</p>
+</div></details>
+</p>
+</div></details>
+<p>... and constructed as follows:</p>
+<details><summary><font color="green"><tt>dqcs_mat_basis()</tt></font><div style="margin-left: 16px">
+<p>Constructs a matrix with the eigenvectors of one of the Pauli matrices
+as column vectors.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_mat_basis(dqcs_basis_t basis)
+</code></pre>
+<p>This can be used for constructing measurement or prep gates with the
+given basis. Returns a new handle to the constructed matrix or returns
+0 if an error occurs.</p>
+</div></details>
+<p>Basis matrices can be compared with the following function. This function
+ignores any of the phase differences that don't affect the basis in its
+approximate equality function.</p>
+<details><summary><font color="green"><tt>dqcs_mat_basis_approx_eq()</tt></font><div style="margin-left: 16px">
+<p>Approximately compares two basis matrices.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_bool_return_t dqcs_mat_basis_approx_eq(
+    dqcs_handle_t a,
+    dqcs_handle_t b,
+    double epsilon
+)
+</code></pre>
+<p><code>a</code> and <code>b</code> are borrowed matrix handles.
+<code>epsilon</code> specifies the maximum element-wise root-mean-square error
+between the matrices that results in a positive match.</p>
+<p>This checks that the following holds for some x and y:</p>
+<p>\[
+A \cdot \begin{bmatrix}
+e^{ix} &amp; 0 \\
+0 &amp; e^{iy}
+\end{bmatrix} \approx B
+\]</p>
+<p>This function returns <code>DQCS_TRUE</code> if the matrices match according to the
+aforementioned criteria, or <code>DQCS_FALSE</code> if not. <code>DQCS_BOOL_ERROR</code> is used
+when either handle is invalid or not a matrix. If either matrix is not
+2x2, <code>DQCS_FALSE</code> is used.</p>
 </div></details>
 
                     </main>

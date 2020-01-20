@@ -511,8 +511,8 @@ global phase or not when there are no explicit control qubits.</p>
 by construction is mapped one-to-one to the user data of the gate in the
 DQCsim-protocol.</p>
 </div></details>
-<p>Finally, you can detect Z-axis measurement gates with the following built-in
-detector.</p>
+<p>Finally, you can detect measurement and prep gates with the following built-in
+detectors.</p>
 <details><summary><font color="green"><tt>dqcs_gm_add_measure()</tt></font><div style="margin-left: 16px">
 <p>Adds a measurement gate mapping to the given gate map.</p>
 </div></summary><div style="margin-left: 16px">
@@ -520,7 +520,9 @@ detector.</p>
     dqcs_handle_t gm,
     void (*key_free)(void *user_data),
     void *key_data,
-    intptr_t num_measures
+    intptr_t num_measures,
+    dqcs_handle_t basis,
+    double epsilon
 )
 </code></pre>
 <p><code>gm</code> must be a handle to a gate map object (<code>dqcs_gm_new()</code>).
@@ -529,7 +531,40 @@ the gate map is destroyed, or when this function fails.
 <code>key_data</code> is the user-specified value used to identify this mapping.
 <code>num_measures</code> specifies the number of measured qubits for this gate type.
 If negative, the gate can have any number of measured qubits. If zero or
-positive, the number of measured qubits must be as specified.</p>
+positive, the number of measured qubits must be as specified.
+<code>basis</code> optionally specifies a handle to a 2x2 matrix specifying the
+measurement basis to be detected. If not specified, the Z basis is used.
+The matrix is deleted by the call iff the function succeeds.
+<code>epsilon</code> specifies the maximum RMS deviation between the specified basis
+(if any) and the incoming basis.</p>
+<p>The parameterization <code>ArbData</code> object returned by detection and consumed
+by construction is mapped one-to-one to the user data of the gate in the
+DQCsim-protocol.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gm_add_prep()</tt></font><div style="margin-left: 16px">
+<p>Adds a prep gate mapping to the given gate map.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_return_t dqcs_gm_add_prep(
+    dqcs_handle_t gm,
+    void (*key_free)(void *user_data),
+    void *key_data,
+    intptr_t num_targets,
+    dqcs_handle_t basis,
+    double epsilon
+)
+</code></pre>
+<p><code>gm</code> must be a handle to a gate map object (<code>dqcs_gm_new()</code>).
+<code>key_free</code> is an optional callback function used to free <code>key_data</code> when
+the gate map is destroyed, or when this function fails.
+<code>key_data</code> is the user-specified value used to identify this mapping.
+<code>num_targets</code> specifies the number of target qubits for this gate type.
+If negative, the gate can have any number of targets. If zero or
+positive, the number of target qubits must be as specified.
+<code>basis</code> optionally specifies a handle to a 2x2 matrix specifying the
+prep basis. If not specified, the Z basis is used. The matrix is deleted
+by the call iff the function succeeds.
+<code>epsilon</code> specifies the maximum RMS deviation between the specified basis
+(if any) and the incoming basis.</p>
 <p>The parameterization <code>ArbData</code> object returned by detection and consumed
 by construction is mapped one-to-one to the user data of the gate in the
 DQCsim-protocol.</p>

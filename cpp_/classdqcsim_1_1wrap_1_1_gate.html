@@ -113,6 +113,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const 
 <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#acfeb767f4f4cc8c77d8b0ab863ab1c82">operator=</a> (<a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> &amp;&amp;)=default</td></tr>
 <tr class="memdesc:acfeb767f4f4cc8c77d8b0ab863ab1c82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default move assignment. <br /></td></tr>
 <tr class="separator:acfeb767f4f4cc8c77d8b0ab863ab1c82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed7cd63f16c580d12bae8f4fc7bb47b4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacedqcsim_1_1wrap.html#ac5323027da5dda2d275e64353c8f1b45">GateType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#aed7cd63f16c580d12bae8f4fc7bb47b4">get_type</a> () const</td></tr>
+<tr class="memdesc:aed7cd63f16c580d12bae8f4fc7bb47b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the type of this gate.  <a href="classdqcsim_1_1wrap_1_1_gate.html#aed7cd63f16c580d12bae8f4fc7bb47b4">More...</a><br /></td></tr>
+<tr class="separator:aed7cd63f16c580d12bae8f4fc7bb47b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab3348f612c970ef609a24d667a0646fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#ab3348f612c970ef609a24d667a0646fe">get_targets</a> () const</td></tr>
 <tr class="memdesc:ab3348f612c970ef609a24d667a0646fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a new qubit reference set with the target qubits for this gate.  <a href="classdqcsim_1_1wrap_1_1_gate.html#ab3348f612c970ef609a24d667a0646fe">More...</a><br /></td></tr>
 <tr class="separator:ab3348f612c970ef609a24d667a0646fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -140,9 +143,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const 
 <tr class="memitem:abd6c770f5e96dcab264b025910252468"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#abd6c770f5e96dcab264b025910252468">get_name</a> () const</td></tr>
 <tr class="memdesc:abd6c770f5e96dcab264b025910252468"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the name of a custom gate.  <a href="classdqcsim_1_1wrap_1_1_gate.html#abd6c770f5e96dcab264b025910252468">More...</a><br /></td></tr>
 <tr class="separator:abd6c770f5e96dcab264b025910252468"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a551b2b73f9c7c84f7395110949a4ba89"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#a551b2b73f9c7c84f7395110949a4ba89">is_custom</a> () const</td></tr>
-<tr class="memdesc:a551b2b73f9c7c84f7395110949a4ba89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether this gate is a custom gate.  <a href="classdqcsim_1_1wrap_1_1_gate.html#a551b2b73f9c7c84f7395110949a4ba89">More...</a><br /></td></tr>
-<tr class="separator:a551b2b73f9c7c84f7395110949a4ba89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a8fb09b26a2616c2e7dd8073304e452"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#a4a8fb09b26a2616c2e7dd8073304e452">has_name</a> () const</td></tr>
+<tr class="memdesc:a4a8fb09b26a2616c2e7dd8073304e452"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns whether this gate has a name.  <a href="classdqcsim_1_1wrap_1_1_gate.html#a4a8fb09b26a2616c2e7dd8073304e452">More...</a><br /></td></tr>
+<tr class="separator:a4a8fb09b26a2616c2e7dd8073304e452"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a854bb0363654cab1677e6afff075c127"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#a854bb0363654cab1677e6afff075c127">with_json_string</a> (const std::string &amp;json)</td></tr>
 <tr class="memdesc:a854bb0363654cab1677e6afff075c127"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the arbitrary JSON data to the given serialized JSON string (builder pattern).  <a href="classdqcsim_1_1wrap_1_1_gate.html#a854bb0363654cab1677e6afff075c127">More...</a><br /></td></tr>
 <tr class="separator:a854bb0363654cab1677e6afff075c127"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -309,6 +312,36 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a49932a30c8f9f95f8a798b99a65827ea"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#a49932a30c8f9f95f8a798b99a65827ea">measure</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;measures)</td></tr>
 <tr class="memdesc:a49932a30c8f9f95f8a798b99a65827ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a new Z-axis measurement gate.  <a href="classdqcsim_1_1wrap_1_1_gate.html#a49932a30c8f9f95f8a798b99a65827ea">More...</a><br /></td></tr>
 <tr class="separator:a49932a30c8f9f95f8a798b99a65827ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bb35eccfca949027f6fc167341a0396"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#a9bb35eccfca949027f6fc167341a0396">measure</a> (<a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;measures, <a class="el" href="namespacedqcsim_1_1wrap.html#aa3eed997b0e55a7760985ba1592fd262">PauliBasis</a> basis)</td></tr>
+<tr class="memdesc:a9bb35eccfca949027f6fc167341a0396"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a new measurement gate, measuring in the given Pauli basis.  <a href="classdqcsim_1_1wrap_1_1_gate.html#a9bb35eccfca949027f6fc167341a0396">More...</a><br /></td></tr>
+<tr class="separator:a9bb35eccfca949027f6fc167341a0396"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa08646ee058b294e1ba6e5f031d1f303"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#aa08646ee058b294e1ba6e5f031d1f303">measure</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;measures, <a class="el" href="namespacedqcsim_1_1wrap.html#aa3eed997b0e55a7760985ba1592fd262">PauliBasis</a> basis)</td></tr>
+<tr class="memdesc:aa08646ee058b294e1ba6e5f031d1f303"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a new measurement gate, measuring in the given Pauli basis.  <a href="classdqcsim_1_1wrap_1_1_gate.html#aa08646ee058b294e1ba6e5f031d1f303">More...</a><br /></td></tr>
+<tr class="separator:aa08646ee058b294e1ba6e5f031d1f303"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac690d20791a02f56416af4bed231e442"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#ac690d20791a02f56416af4bed231e442">measure</a> (<a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;measures, <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&amp;basis)</td></tr>
+<tr class="memdesc:ac690d20791a02f56416af4bed231e442"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a new measurement gate, measuring in the given custom basis.  <a href="classdqcsim_1_1wrap_1_1_gate.html#ac690d20791a02f56416af4bed231e442">More...</a><br /></td></tr>
+<tr class="separator:ac690d20791a02f56416af4bed231e442"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7461e1e6d90c552fc387f108d9db2c1d"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#a7461e1e6d90c552fc387f108d9db2c1d">measure</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;measures, const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;basis)</td></tr>
+<tr class="memdesc:a7461e1e6d90c552fc387f108d9db2c1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a new measurement gate, measuring in the given custom basis.  <a href="classdqcsim_1_1wrap_1_1_gate.html#a7461e1e6d90c552fc387f108d9db2c1d">More...</a><br /></td></tr>
+<tr class="separator:a7461e1e6d90c552fc387f108d9db2c1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20c59769e77284805eaa5ce7c741a21e"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#a20c59769e77284805eaa5ce7c741a21e">prep</a> (<a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;targets)</td></tr>
+<tr class="memdesc:a20c59769e77284805eaa5ce7c741a21e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a new Z-axis prep gate, putting the qubits in the |0&gt; state.  <a href="classdqcsim_1_1wrap_1_1_gate.html#a20c59769e77284805eaa5ce7c741a21e">More...</a><br /></td></tr>
+<tr class="separator:a20c59769e77284805eaa5ce7c741a21e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72c454ad62ae6e4026dcb3cc19efdfbe"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#a72c454ad62ae6e4026dcb3cc19efdfbe">prep</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;targets)</td></tr>
+<tr class="memdesc:a72c454ad62ae6e4026dcb3cc19efdfbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a new Z-axis prep gate, putting the qubits in the |0&gt; state.  <a href="classdqcsim_1_1wrap_1_1_gate.html#a72c454ad62ae6e4026dcb3cc19efdfbe">More...</a><br /></td></tr>
+<tr class="separator:a72c454ad62ae6e4026dcb3cc19efdfbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a594072a343a7da61008d34632cba083f"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#a594072a343a7da61008d34632cba083f">prep</a> (<a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;targets, <a class="el" href="namespacedqcsim_1_1wrap.html#aa3eed997b0e55a7760985ba1592fd262">PauliBasis</a> basis)</td></tr>
+<tr class="memdesc:a594072a343a7da61008d34632cba083f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a new prep gate, putting the qubits in the base state for the given Pauli basis.  <a href="classdqcsim_1_1wrap_1_1_gate.html#a594072a343a7da61008d34632cba083f">More...</a><br /></td></tr>
+<tr class="separator:a594072a343a7da61008d34632cba083f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd0cd8cc7245404d45fcce4432e204bb"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#acd0cd8cc7245404d45fcce4432e204bb">prep</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;targets, <a class="el" href="namespacedqcsim_1_1wrap.html#aa3eed997b0e55a7760985ba1592fd262">PauliBasis</a> basis)</td></tr>
+<tr class="memdesc:acd0cd8cc7245404d45fcce4432e204bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a new prep gate, putting the qubits in the base state for the given Pauli basis.  <a href="classdqcsim_1_1wrap_1_1_gate.html#acd0cd8cc7245404d45fcce4432e204bb">More...</a><br /></td></tr>
+<tr class="separator:acd0cd8cc7245404d45fcce4432e204bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7318c9bb15c37e25b30163451e673ac6"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#a7318c9bb15c37e25b30163451e673ac6">prep</a> (<a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;targets, <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&amp;basis)</td></tr>
+<tr class="memdesc:a7318c9bb15c37e25b30163451e673ac6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a new prep gate for a custom initial state.  <a href="classdqcsim_1_1wrap_1_1_gate.html#a7318c9bb15c37e25b30163451e673ac6">More...</a><br /></td></tr>
+<tr class="separator:a7318c9bb15c37e25b30163451e673ac6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2dd1c32fc18b4de6ab05d995f9e96c28"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#a2dd1c32fc18b4de6ab05d995f9e96c28">prep</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;targets, const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;basis)</td></tr>
+<tr class="memdesc:a2dd1c32fc18b4de6ab05d995f9e96c28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a new prep gate for a custom initial state.  <a href="classdqcsim_1_1wrap_1_1_gate.html#a2dd1c32fc18b4de6ab05d995f9e96c28">More...</a><br /></td></tr>
+<tr class="separator:a2dd1c32fc18b4de6ab05d995f9e96c28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add525c30c9ee28aa4c238b1916ac3a95"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_gate.html#add525c30c9ee28aa4c238b1916ac3a95">custom</a> (const std::string &amp;name, <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;targets, <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;controls, <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;measures, const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;matrix)</td></tr>
 <tr class="memdesc:add525c30c9ee28aa4c238b1916ac3a95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a new custom gate with target qubits, control qubits, measured qubits, and a matrix.  <a href="classdqcsim_1_1wrap_1_1_gate.html#add525c30c9ee28aa4c238b1916ac3a95">More...</a><br /></td></tr>
 <tr class="separator:add525c30c9ee28aa4c238b1916ac3a95"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -374,7 +407,7 @@ Additional Inherited Members</h2></td></tr>
 <div class="line"> .with_arg&lt;int&gt;(33)</div>
 <div class="line"> .with_arg_string(&quot;I&#39;m a string!&quot;);</div>
 </div><!-- fragment --> 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03299">3299</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03552">3552</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a347bd4a96a1096bfb1a987723dc05702"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a347bd4a96a1096bfb1a987723dc05702">&#9670;&nbsp;</a></span>Gate()</h2>
@@ -409,7 +442,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03310">3310</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03563">3563</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -471,7 +504,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03344">3344</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03597">3597</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -532,7 +565,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03369">3369</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03622">3622</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -586,7 +619,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03386">3386</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03639">3639</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -640,7 +673,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03407">3407</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03660">3660</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -694,7 +727,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03421">3421</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03674">3674</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -748,7 +781,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03440">3440</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03693">3693</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -809,7 +842,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03458">3458</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03711">3711</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -870,12 +903,12 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03481">3481</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03734">3734</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
 <a id="a0af652f258fbd70012b7189ccb10424e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0af652f258fbd70012b7189ccb10424e">&#9670;&nbsp;</a></span>measure() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a0af652f258fbd70012b7189ccb10424e">&#9670;&nbsp;</a></span>measure() <span class="overload">[1/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -913,12 +946,12 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03496">3496</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03749">3749</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
 <a id="a49932a30c8f9f95f8a798b99a65827ea"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a49932a30c8f9f95f8a798b99a65827ea">&#9670;&nbsp;</a></span>measure() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a49932a30c8f9f95f8a798b99a65827ea">&#9670;&nbsp;</a></span>measure() <span class="overload">[2/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -956,7 +989,525 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03511">3511</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03764">3764</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="a9bb35eccfca949027f6fc167341a0396"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9bb35eccfca949027f6fc167341a0396">&#9670;&nbsp;</a></span>measure() <span class="overload">[3/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> dqcsim::wrap::Gate::measure </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>measures</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacedqcsim_1_1wrap.html#aa3eed997b0e55a7760985ba1592fd262">PauliBasis</a>&#160;</td>
+          <td class="paramname"><em>basis</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a new measurement gate, measuring in the given Pauli basis. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">measures</td><td>A qubit reference set with the to-be-measured qubits. The measurement results can be queried from <code><a class="el" href="classdqcsim_1_1wrap_1_1_plugin_state.html" title="Wrapper for DQCsim&#39;s internal plugin state within the context of downstream-synchronous plugin callba...">PluginState</a></code> after the gate is executed. Any previous measurement results for those qubits will be overridden. </td></tr>
+    <tr><td class="paramname">basis</td><td>The measurement basis. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The requested measurement gate. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When construction of the new handle failed for some reason. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03780">3780</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="aa08646ee058b294e1ba6e5f031d1f303"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa08646ee058b294e1ba6e5f031d1f303">&#9670;&nbsp;</a></span>measure() <span class="overload">[4/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> dqcsim::wrap::Gate::measure </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&#160;</td>
+          <td class="paramname"><em>measures</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacedqcsim_1_1wrap.html#aa3eed997b0e55a7760985ba1592fd262">PauliBasis</a>&#160;</td>
+          <td class="paramname"><em>basis</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a new measurement gate, measuring in the given Pauli basis. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">measures</td><td>A qubit reference set with the to-be-measured qubits, passed by copy. The measurement results can be queried from <code><a class="el" href="classdqcsim_1_1wrap_1_1_plugin_state.html" title="Wrapper for DQCsim&#39;s internal plugin state within the context of downstream-synchronous plugin callba...">PluginState</a></code> after the gate is executed. Any previous measurement results for those qubits will be overridden. </td></tr>
+    <tr><td class="paramname">basis</td><td>The measurement basis. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The requested measurement gate. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When construction of the new handle failed for some reason. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03796">3796</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="ac690d20791a02f56416af4bed231e442"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac690d20791a02f56416af4bed231e442">&#9670;&nbsp;</a></span>measure() <span class="overload">[5/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> dqcsim::wrap::Gate::measure </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>measures</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>basis</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a new measurement gate, measuring in the given custom basis. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">measures</td><td>A qubit reference set with the to-be-measured qubits. The measurement results can be queried from <code><a class="el" href="classdqcsim_1_1wrap_1_1_plugin_state.html" title="Wrapper for DQCsim&#39;s internal plugin state within the context of downstream-synchronous plugin callba...">PluginState</a></code> after the gate is executed. Any previous measurement results for those qubits will be overridden. </td></tr>
+    <tr><td class="paramname">basis</td><td>The measurement basis, represented as a 2x2 matrix defining the rotation from the Z basis to the desired basis. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The requested measurement gate. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When construction of the new handle failed for some reason. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03813">3813</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="a7461e1e6d90c552fc387f108d9db2c1d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7461e1e6d90c552fc387f108d9db2c1d">&#9670;&nbsp;</a></span>measure() <span class="overload">[6/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> dqcsim::wrap::Gate::measure </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&#160;</td>
+          <td class="paramname"><em>measures</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>basis</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a new measurement gate, measuring in the given custom basis. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">measures</td><td>A qubit reference set with the to-be-measured qubits, passed by copy. The measurement results can be queried from <code><a class="el" href="classdqcsim_1_1wrap_1_1_plugin_state.html" title="Wrapper for DQCsim&#39;s internal plugin state within the context of downstream-synchronous plugin callba...">PluginState</a></code> after the gate is executed. Any previous measurement results for those qubits will be overridden. </td></tr>
+    <tr><td class="paramname">basis</td><td>The measurement basis, represented as a 2x2 matrix defining the rotation from the Z basis to the desired basis. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The requested measurement gate. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When construction of the new handle failed for some reason. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03830">3830</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="a20c59769e77284805eaa5ce7c741a21e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20c59769e77284805eaa5ce7c741a21e">&#9670;&nbsp;</a></span>prep() <span class="overload">[1/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> dqcsim::wrap::Gate::prep </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>targets</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a new Z-axis prep gate, putting the qubits in the |0&gt; state. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">targets</td><td>A qubit reference set with the to-be-prepared qubits. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The requested prep gate. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When construction of the new handle failed for some reason. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03842">3842</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="a72c454ad62ae6e4026dcb3cc19efdfbe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a72c454ad62ae6e4026dcb3cc19efdfbe">&#9670;&nbsp;</a></span>prep() <span class="overload">[2/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> dqcsim::wrap::Gate::prep </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&#160;</td>
+          <td class="paramname"><em>targets</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a new Z-axis prep gate, putting the qubits in the |0&gt; state. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">targets</td><td>A qubit reference set with the to-be-prepared qubits. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The requested prep gate. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When construction of the new handle failed for some reason. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03854">3854</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="a594072a343a7da61008d34632cba083f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a594072a343a7da61008d34632cba083f">&#9670;&nbsp;</a></span>prep() <span class="overload">[3/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> dqcsim::wrap::Gate::prep </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>targets</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacedqcsim_1_1wrap.html#aa3eed997b0e55a7760985ba1592fd262">PauliBasis</a>&#160;</td>
+          <td class="paramname"><em>basis</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a new prep gate, putting the qubits in the base state for the given Pauli basis. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">targets</td><td>A qubit reference set with the to-be-prepared qubits. </td></tr>
+    <tr><td class="paramname">basis</td><td>The basis. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The requested prep gate. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When construction of the new handle failed for some reason. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03868">3868</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="acd0cd8cc7245404d45fcce4432e204bb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd0cd8cc7245404d45fcce4432e204bb">&#9670;&nbsp;</a></span>prep() <span class="overload">[4/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> dqcsim::wrap::Gate::prep </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&#160;</td>
+          <td class="paramname"><em>targets</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespacedqcsim_1_1wrap.html#aa3eed997b0e55a7760985ba1592fd262">PauliBasis</a>&#160;</td>
+          <td class="paramname"><em>basis</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a new prep gate, putting the qubits in the base state for the given Pauli basis. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">targets</td><td>A qubit reference set with the to-be-prepared qubits. </td></tr>
+    <tr><td class="paramname">basis</td><td>The basis. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The requested prep gate. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When construction of the new handle failed for some reason. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03882">3882</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="a7318c9bb15c37e25b30163451e673ac6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7318c9bb15c37e25b30163451e673ac6">&#9670;&nbsp;</a></span>prep() <span class="overload">[5/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> dqcsim::wrap::Gate::prep </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>targets</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>basis</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a new prep gate for a custom initial state. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">targets</td><td>A qubit reference set with the to-be-prepared qubits. </td></tr>
+    <tr><td class="paramname">basis</td><td>The basis, represented as a 2x2 matrix defining the rotation to be applied after initializing the qubits to |0&gt;. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The requested prep gate. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When construction of the new handle failed for some reason. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03896">3896</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="a2dd1c32fc18b4de6ab05d995f9e96c28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2dd1c32fc18b4de6ab05d995f9e96c28">&#9670;&nbsp;</a></span>prep() <span class="overload">[6/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static <a class="el" href="classdqcsim_1_1wrap_1_1_gate.html">Gate</a> dqcsim::wrap::Gate::prep </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_qubit_set.html">QubitSet</a> &amp;&#160;</td>
+          <td class="paramname"><em>targets</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>basis</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a new prep gate for a custom initial state. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">targets</td><td>A qubit reference set with the to-be-prepared qubits. </td></tr>
+    <tr><td class="paramname">basis</td><td>The basis, represented as a 2x2 matrix defining the rotation to be applied after initializing the qubits to |0&gt;. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The requested prep gate. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When construction of the new handle failed for some reason. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03910">3910</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1031,7 +1582,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03536">3536</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03937">3937</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1106,7 +1657,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03574">3574</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03975">3975</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1174,7 +1725,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03607">3607</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04008">4008</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1242,7 +1793,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03640">3640</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04041">4041</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1310,7 +1861,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03671">3671</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04072">4072</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1378,7 +1929,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03704">3704</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04105">4105</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1439,7 +1990,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03730">3730</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04131">4131</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1500,7 +2051,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03757">3757</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04158">4158</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1561,7 +2112,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03781">3781</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04182">4182</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1622,7 +2173,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03808">3808</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04209">4209</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1676,7 +2227,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03830">3830</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04231">4231</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1730,7 +2281,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03854">3854</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04255">4255</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1773,7 +2324,43 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03873">3873</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04274">4274</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="aed7cd63f16c580d12bae8f4fc7bb47b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed7cd63f16c580d12bae8f4fc7bb47b4">&#9670;&nbsp;</a></span>get_type()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacedqcsim_1_1wrap.html#ac5323027da5dda2d275e64353c8f1b45">GateType</a> dqcsim::wrap::Gate::get_type </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the type of this gate. </p>
+<dl class="section return"><dt>Returns</dt><dd>The gate type. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the current handle is invalid. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04292">4292</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1809,7 +2396,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03892">3892</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04303">4303</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1845,7 +2432,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03902">3902</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04313">4313</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1881,7 +2468,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03913">3913</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04324">4324</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1917,7 +2504,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03923">3923</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04334">4334</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1953,7 +2540,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03936">3936</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04347">4347</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1989,7 +2576,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03946">3946</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04357">4357</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -2025,7 +2612,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03957">3957</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04368">4368</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -2061,7 +2648,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03967">3967</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04378">4378</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -2097,12 +2684,12 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03977">3977</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04388">4388</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
-<a id="a551b2b73f9c7c84f7395110949a4ba89"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a551b2b73f9c7c84f7395110949a4ba89">&#9670;&nbsp;</a></span>is_custom()</h2>
+<a id="a4a8fb09b26a2616c2e7dd8073304e452"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a8fb09b26a2616c2e7dd8073304e452">&#9670;&nbsp;</a></span>has_name()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2111,7 +2698,7 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool dqcsim::wrap::Gate::is_custom </td>
+          <td class="memname">bool dqcsim::wrap::Gate::has_name </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -2124,8 +2711,8 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Returns whether this gate is a custom gate. </p>
-<dl class="section return"><dt>Returns</dt><dd>Whether this gate is a custom gate. </dd></dl>
+<p>Returns whether this gate has a name. </p>
+<dl class="section return"><dt>Returns</dt><dd>Whether this gate has a name. </dd></dl>
 <dl class="exception"><dt>Exceptions</dt><dd>
   <table class="exception">
     <tr><td class="paramname">std::runtime_error</td><td>When the current handle is invalid. </td></tr>
@@ -2133,7 +2720,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03990">3990</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04401">4401</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -2176,7 +2763,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04009">4009</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04420">4420</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -2219,7 +2806,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04023">4023</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04434">4434</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -2265,7 +2852,7 @@ template&lt;class JSON &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04040">4040</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04451">4451</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -2308,7 +2895,7 @@ template&lt;class JSON &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04054">4054</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04465">4465</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -2354,7 +2941,7 @@ template&lt;typename T &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04074">4074</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l04485">4485</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>

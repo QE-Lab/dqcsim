@@ -785,9 +785,96 @@
 <span id="785">785</span>
 <span id="786">786</span>
 <span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">gates</span>::<span class="ident">GateType</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">gates</span>::<span class="ident">UnitaryGateType</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
 
 <span class="doccomment">/// Converts a qubit count match number to an Option for slightly more</span>
@@ -933,7 +1020,7 @@
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">UserKeyData</span>::<span class="ident">new</span>(<span class="ident">key_free</span>, <span class="ident">key_data</span>);
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">gm</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">GateMap</span>);
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">gm</span>.<span class="ident">make_key</span>(<span class="ident">key</span>);
-        <span class="kw">let</span> <span class="ident">gate</span> <span class="op">=</span> <span class="ident">GateType</span>::<span class="ident">try_from</span>(<span class="ident">gate</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">gate</span> <span class="op">=</span> <span class="ident">UnitaryGateType</span>::<span class="ident">try_from</span>(<span class="ident">gate</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">num_controls</span> <span class="op">=</span> <span class="ident">expected_qubit_count</span>(<span class="ident">num_controls</span>);
         <span class="ident">gm</span>.<span class="ident">map</span>.<span class="ident">push</span>(
             <span class="ident">key</span>,
@@ -1087,7 +1174,7 @@
                             <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
                         } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">matrix</span>) <span class="op">=</span> <span class="ident">gate</span>.<span class="ident">get_matrix</span>() {
                             <span class="comment">// Unitary gate. Check conditions.</span>
-                            <span class="kw">let</span> <span class="ident">matrix</span> <span class="op">=</span> <span class="ident">insert</span>(<span class="ident">matrix</span>);
+                            <span class="kw">let</span> <span class="ident">matrix</span> <span class="op">=</span> <span class="ident">insert</span>(<span class="ident">matrix</span>.<span class="ident">clone</span>());
                             <span class="kw">let</span> <span class="ident">num_controls</span> <span class="op">=</span> <span class="ident">gate</span>.<span class="ident">get_controls</span>().<span class="ident">len</span>();
                             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">param_data</span> <span class="op">=</span> <span class="ident">insert</span>(<span class="ident">gate</span>.<span class="ident">data</span>.<span class="ident">clone</span>());
                             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">cb_return_bool</span>(<span class="ident">detector</span>(
@@ -1189,6 +1276,11 @@
 <span class="doccomment">///&gt; `num_measures` specifies the number of measured qubits for this gate type.</span>
 <span class="doccomment">///&gt; If negative, the gate can have any number of measured qubits. If zero or</span>
 <span class="doccomment">///&gt; positive, the number of measured qubits must be as specified.</span>
+<span class="doccomment">///&gt; `basis` optionally specifies a handle to a 2x2 matrix specifying the</span>
+<span class="doccomment">///&gt; measurement basis to be detected. If not specified, the Z basis is used.</span>
+<span class="doccomment">///&gt; The matrix is deleted by the call iff the function succeeds.</span>
+<span class="doccomment">///&gt; `epsilon` specifies the maximum RMS deviation between the specified basis</span>
+<span class="doccomment">///&gt; (if any) and the incoming basis.</span>
 <span class="doccomment">///&gt;</span>
 <span class="doccomment">///&gt; The parameterization `ArbData` object returned by detection and consumed</span>
 <span class="doccomment">///&gt; by construction is mapped one-to-one to the user data of the gate in the</span>
@@ -1199,14 +1291,96 @@
     <span class="ident">key_free</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>)<span class="op">&gt;</span>,
     <span class="ident">key_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
     <span class="ident">num_measures</span>: <span class="ident">isize</span>,
+    <span class="ident">basis</span>: <span class="ident">dqcs_handle_t</span>,
+    <span class="ident">epsilon</span>: <span class="ident">f64</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">UserKeyData</span>::<span class="ident">new</span>(<span class="ident">key_free</span>, <span class="ident">key_data</span>);
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">gm</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">GateMap</span>);
         <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">gm</span>.<span class="ident">make_key</span>(<span class="ident">key</span>);
         <span class="kw">let</span> <span class="ident">num_measures</span> <span class="op">=</span> <span class="ident">expected_qubit_count</span>(<span class="ident">num_measures</span>);
-        <span class="ident">gm</span>.<span class="ident">map</span>
-            .<span class="ident">push</span>(<span class="ident">key</span>, <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">MeasurementGateConverter</span>::<span class="ident">new</span>(<span class="ident">num_measures</span>)));
+        <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">optional</span> <span class="ident">basis</span> <span class="kw">as</span> <span class="ident">pending</span> <span class="ident">Matrix</span>);
+        <span class="kw">let</span> <span class="ident">defaulted_basis</span> <span class="op">=</span> {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">basis</span>) <span class="op">=</span> <span class="ident">basis</span>.<span class="ident">as_ref</span>() {
+                <span class="kw">let</span> <span class="ident">basis</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span> <span class="op">=</span> <span class="ident">basis</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>();
+                <span class="kw">if</span> <span class="ident">basis</span>.<span class="ident">dimension</span>() <span class="op">!</span><span class="op">=</span> <span class="number">2</span> {
+                    <span class="ident">inv_arg</span>(<span class="string">&quot;measurement basis matrix must be 2x2&quot;</span>)<span class="question-mark">?</span>;
+                }
+                <span class="ident">basis</span>.<span class="ident">clone</span>()
+            } <span class="kw">else</span> {
+                <span class="ident">Matrix</span>::<span class="ident">new_identity</span>(<span class="number">2</span>)
+            }
+        };
+        <span class="ident">gm</span>.<span class="ident">map</span>.<span class="ident">push</span>(
+            <span class="ident">key</span>,
+            <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">MeasurementGateConverter</span>::<span class="ident">new</span>(
+                <span class="ident">num_measures</span>,
+                <span class="ident">defaulted_basis</span>,
+                <span class="ident">epsilon</span>,
+            )),
+        );
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">basis</span>) <span class="op">=</span> <span class="ident">basis</span> {
+            <span class="macro">delete</span><span class="macro">!</span>(<span class="ident">resolved</span> <span class="ident">basis</span>);
+        }
+        <span class="prelude-val">Ok</span>(())
+    })
+}
+
+<span class="doccomment">/// Adds a prep gate mapping to the given gate map.</span>
+<span class="doccomment">///&gt;</span>
+<span class="doccomment">///&gt; `gm` must be a handle to a gate map object (`dqcs_gm_new()`).</span>
+<span class="doccomment">///&gt; `key_free` is an optional callback function used to free `key_data` when</span>
+<span class="doccomment">///&gt; the gate map is destroyed, or when this function fails.</span>
+<span class="doccomment">///&gt; `key_data` is the user-specified value used to identify this mapping.</span>
+<span class="doccomment">///&gt; `num_targets` specifies the number of target qubits for this gate type.</span>
+<span class="doccomment">///&gt; If negative, the gate can have any number of targets. If zero or</span>
+<span class="doccomment">///&gt; positive, the number of target qubits must be as specified.</span>
+<span class="doccomment">///&gt; `basis` optionally specifies a handle to a 2x2 matrix specifying the</span>
+<span class="doccomment">///&gt; prep basis. If not specified, the Z basis is used. The matrix is deleted</span>
+<span class="doccomment">///&gt; by the call iff the function succeeds.</span>
+<span class="doccomment">///&gt; `epsilon` specifies the maximum RMS deviation between the specified basis</span>
+<span class="doccomment">///&gt; (if any) and the incoming basis.</span>
+<span class="doccomment">///&gt;</span>
+<span class="doccomment">///&gt; The parameterization `ArbData` object returned by detection and consumed</span>
+<span class="doccomment">///&gt; by construction is mapped one-to-one to the user data of the gate in the</span>
+<span class="doccomment">///&gt; DQCsim-protocol.</span>
+<span class="attribute">#[<span class="ident">no_mangle</span>]</span>
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_gm_add_prep</span>(
+    <span class="ident">gm</span>: <span class="ident">dqcs_handle_t</span>,
+    <span class="ident">key_free</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>)<span class="op">&gt;</span>,
+    <span class="ident">key_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
+    <span class="ident">num_targets</span>: <span class="ident">isize</span>,
+    <span class="ident">basis</span>: <span class="ident">dqcs_handle_t</span>,
+    <span class="ident">epsilon</span>: <span class="ident">f64</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">UserKeyData</span>::<span class="ident">new</span>(<span class="ident">key_free</span>, <span class="ident">key_data</span>);
+        <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">gm</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">GateMap</span>);
+        <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">gm</span>.<span class="ident">make_key</span>(<span class="ident">key</span>);
+        <span class="kw">let</span> <span class="ident">num_targets</span> <span class="op">=</span> <span class="ident">expected_qubit_count</span>(<span class="ident">num_targets</span>);
+        <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">optional</span> <span class="ident">basis</span> <span class="kw">as</span> <span class="ident">pending</span> <span class="ident">Matrix</span>);
+        <span class="kw">let</span> <span class="ident">defaulted_basis</span> <span class="op">=</span> {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">basis</span>) <span class="op">=</span> <span class="ident">basis</span>.<span class="ident">as_ref</span>() {
+                <span class="kw">let</span> <span class="ident">basis</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span> <span class="op">=</span> <span class="ident">basis</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>();
+                <span class="kw">if</span> <span class="ident">basis</span>.<span class="ident">dimension</span>() <span class="op">!</span><span class="op">=</span> <span class="number">2</span> {
+                    <span class="ident">inv_arg</span>(<span class="string">&quot;prep basis matrix must be 2x2&quot;</span>)<span class="question-mark">?</span>;
+                }
+                <span class="ident">basis</span>.<span class="ident">clone</span>()
+            } <span class="kw">else</span> {
+                <span class="ident">Matrix</span>::<span class="ident">new_identity</span>(<span class="number">2</span>)
+            }
+        };
+        <span class="ident">gm</span>.<span class="ident">map</span>.<span class="ident">push</span>(
+            <span class="ident">key</span>,
+            <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">PrepGateConverter</span>::<span class="ident">new</span>(
+                <span class="ident">num_targets</span>,
+                <span class="ident">defaulted_basis</span>,
+                <span class="ident">epsilon</span>,
+            )),
+        );
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">basis</span>) <span class="op">=</span> <span class="ident">basis</span> {
+            <span class="macro">delete</span><span class="macro">!</span>(<span class="ident">resolved</span> <span class="ident">basis</span>);
+        }
         <span class="prelude-val">Ok</span>(())
     })
 }

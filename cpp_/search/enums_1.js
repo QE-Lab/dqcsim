@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['handletype_1027',['HandleType',['../namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76',1,'dqcsim::wrap']]]
+  ['gatetype_1062',['GateType',['../namespacedqcsim_1_1wrap.html#ac5323027da5dda2d275e64353c8f1b45',1,'dqcsim::wrap']]]
 ];

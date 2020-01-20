@@ -154,11 +154,12 @@
                         <h1><a class="header" href="#gates" id="gates">Gates</a></h1>
 <p>The state of a quantum system is modified by means of quantum gates.</p>
 <h2><a class="header" href="#constructing-gates" id="constructing-gates">Constructing gates</a></h2>
-<p>DQCsim provides three types of gates:</p>
+<p>DQCsim provides four types of gates.</p>
 <ul>
 <li>Unitary gates: these apply a gate matrix on one or more qubits.</li>
 <li>Measurement gates: these cause the state of a qubit to be collapsed along
-and measured in the Z basis.</li>
+and measured in some basis.</li>
+<li>Prep gates: these set the state of a qubit to some value.</li>
 <li>Custom gates: anything else that the downstream plugin supports.</li>
 </ul>
 <p>These are constructed using the following functions. The predefined gates are
@@ -254,8 +255,8 @@ optimize its calculations for controlled gates.</p>
 the gate matrix in the same way it is specified; that is, if the simulator
 can optimize its calculations by altering the global phase it is allowed
 to.</p>
-<p>If is up to the user to ensure that the specified matrix is unitary. This
-is NOT checked by DQCsim. The simulator backend may or may not check this.</p>
+<p>DQCsim checks whether the matrix is unitary using the equivalent of
+<code>dqcs_mat_approx_unitary()</code> with an epsilon value of 1e-6.</p>
 <p>This function returns the handle to the gate, or 0 to indicate failure.
 The <code>targets</code> qubit set, (if specified) the <code>controls</code> qubit set, and the
 matrix are consumed/deleted by this function if and only if it succeeds.</p>
@@ -263,14 +264,43 @@ matrix are consumed/deleted by this function if and only if it succeeds.</p>
 <details><summary><font color="green"><tt>dqcs_gate_new_measurement()</tt></font><div style="margin-left: 16px">
 <p>Constructs a new measurement gate.</p>
 </div></summary><div style="margin-left: 16px">
-<pre><code class="language-C">dqcs_handle_t dqcs_gate_new_measurement(dqcs_handle_t measures)
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_new_measurement(
+    dqcs_handle_t measures,
+    dqcs_handle_t matrix
+)
 </code></pre>
-<p><code>measures</code> must be a handle to a qubit set. The qubits in this set are
-measured in the Z-basis. To measure in other bases, first apply the
-respective rotation, or use a custom gate.</p>
+<p><code>measures</code> must be a handle to a qubit set. <code>matrix</code> is an optional matrix
+handle signifying the measurement basis. If zero, the Z basis is used.
+Otherwise, it must be a handle to a unitary 2x2 matrix, and the semantics
+of the measurement are as follows:</p>
+<ul>
+<li>apply the hermetian of the matrix to each qubit</li>
+<li>measure each qubit in the Z basis</li>
+<li>apply the matrix to each qubit</li>
+</ul>
 <p>This function returns the handle to the gate, or 0 to indicate failure.
-The <code>measures</code> qubit set is consumed/deleted by this function if and only
-if it succeeds.</p>
+The <code>measures</code> qubit set and <code>matrix</code> handle are consumed/deleted by this
+function if and only if it succeeds.</p>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_new_prep()</tt></font><div style="margin-left: 16px">
+<p>Constructs a new prep gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_new_prep(
+    dqcs_handle_t targets,
+    dqcs_handle_t matrix
+)
+</code></pre>
+<p><code>targets</code> must be a handle to a qubit set. <code>matrix</code> is an optional matrix
+handle signifying the state that the qubits are initialized to. If zero,
+the qubits are initialized to |0&gt;. Otherwise, it must be a handle to a
+unitary 2x2 matrix, and the semantics are as follows:</p>
+<ul>
+<li>initialize each qubit to |0&gt;</li>
+<li>apply the matrix to each qubit</li>
+</ul>
+<p>This function returns the handle to the gate, or 0 to indicate failure.
+The <code>targets</code> qubit set and <code>matrix</code> handle are consumed/deleted by this
+function if and only if it succeeds.</p>
 </div></details>
 <details><summary><font color="green"><tt>dqcs_gate_new_custom()</tt></font><div style="margin-left: 16px">
 <p>Constructs a new custom gate.</p>
@@ -358,53 +388,99 @@ error is returned instead.</p>
 protocol: gate handles support all the <code>dqcs_arb_*()</code> API calls. This is
 primarily intended for custom gates.</p>
 <h2><a class="header" href="#interpreting-gates" id="interpreting-gates">Interpreting gates</a></h2>
-<p>Backend and operator plugins have to process incoming gates using the following
-algorithm to be compliant with DQCsim's interface.</p>
-<ul>
-<li>
-<p>If the gate has a name (equivalent to it being a custom gate), defer to the
-custom gate logic identified by this name. Name matching should be
-case-sensitive. If an unsupported/unknown gate is requested, an error must
-be generated. The custom gate logic may make use of the <code>ArbData</code> attached
-to the gate object.</p>
-</li>
-<li>
-<p>If the gate doesn't have a name and doesn't have any <code>ArbData</code> attached:</p>
-<ul>
-<li>
-<p>If the gate has target qubits, no control qubits, and a gate matrix,
-apply the gate matrix to the target qubits.</p>
-</li>
-<li>
-<p>If the gate has target qubits, control qubits, and a gate matrix,
-convert the gate matrix into a controlled gate with the appropriate
-number of control qubits, and then apply it to the concatenation of the
-control and target qubit sets.</p>
-</li>
-<li>
-<p>If the gate has measurement qubits, collapse the state of these qubits in
-the Z basis and return the measurements. The random number generator
-provided by DQCsim (or another PRNG seeded by DQCsim's RNG) should be
-used to collapse the state.</p>
-</li>
-</ul>
-</li>
-<li>
-<p>If the gate has no name but does have <code>ArbData</code>, the gate <em>may</em> be
-interpreted in a customized way. For instance, this data can be used to
-apply random errors to the gate. However, it is recommended to not change
-the functionality too much; that's what custom gates are for.</p>
-</li>
-</ul>
-<p>Note that the above implies that a gate can consist of both a unitary gate and
-one or more measurements, to be applied in that order. It is currently however
-impossible to construct such a gate using the C API.</p>
-<p>The following functions can be used to read the data associated with a gate.</p>
-<details><summary><font color="green"><tt>dqcs_gate_controls()</tt></font><div style="margin-left: 16px">
-<p>Returns a handle to a new qubit reference set containing the qubits
-that control this gate.</p>
+<p>DQCsim provides two ways for interpreting incoming gates: manually querying the
+parameters and gate maps. The latter is quite advanced and deserves its own
+section (the next one), but let's deal with the manual method first.</p>
+<p>The first step for any incoming gate is to query its type.</p>
+<details><summary><font color="green"><tt>dqcs_gate_type()</tt></font><div style="margin-left: 16px">
+<p>Returns the gate type of the given gate.</p>
 </div></summary><div style="margin-left: 16px">
-<pre><code class="language-C">dqcs_handle_t dqcs_gate_controls(dqcs_handle_t gate)
+<pre><code class="language-C">dqcs_gate_type_t dqcs_gate_type(dqcs_handle_t gate)
+</code></pre>
+<p>Returns DQCS_GATE_TYPE_INVALID if the gate handle is invalid.</p>
+</div></details>
+<p>This results in the following enumeration. The exact semantics of each type of
+gate is listed in the documentation of each enum variant.</p>
+<details><summary><font color="purple"><tt>dqcs_gate_type_t</tt></font><div style="margin-left: 16px">
+<p>Types of DQCsim gates.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">typedef enum { ... } dqcs_gate_type_t;
+</code></pre>
+<p>Variants:</p>
+<p>
+<details><summary><font color="blue"><tt>DQCS_GATE_TYPE_INVALID = 0</tt></font></summary><div style="margin-left: 16px">
+Invalid gate type. Used as an error return value.
+</div></details>
+<details><summary><font color="blue"><tt>DQCS_GATE_TYPE_UNITARY</tt></font></summary><div style="margin-left: 16px">
+Unitary gates have one or more target qubits, zero or more control
+qubits, and a unitary matrix, sized for the number of target qubits.
+<p>The semantics are that the unitary matrix expanded by the number of
+control qubits is applied to the qubits.</p>
+<p>The data field may add pragma-like hints to the gate, for instance to
+represent the line number in the source file that generated the gate,
+error modelling information, and so on. This data may be silently
+ignored.</p>
+</div></details>
+<details><summary><font color="blue"><tt>DQCS_GATE_TYPE_MEASUREMENT</tt></font></summary><div style="margin-left: 16px">
+Measurement gates have one or more measured qubits and a 2x2 unitary
+matrix representing the basis.
+<p>The semantics are:</p>
+<ul>
+<li>the hermetian of the matrix is applied to each individual qubit;</li>
+<li>each individual qubit is measured in the Z basis;</li>
+<li>the matrix is applied to each individual qubit;</li>
+<li>the results of the measurement are propagated upstream.</li>
+</ul>
+<p>This allows any measurement basis to be used.</p>
+<p>The data field may add pragma-like hints to the gate, for instance to
+represent the line number in the source file that generated the gate,
+error modelling information, and so on. This data may be silently
+ignored.</p>
+</div></details>
+<details><summary><font color="blue"><tt>DQCS_GATE_TYPE_PREP</tt></font></summary><div style="margin-left: 16px">
+Prep gates have one or more target qubits and a 2x2 unitary matrix
+representing the basis.
+<p>The semantics are:</p>
+<ul>
+<li>each qubit is initialized to |0&gt;;</li>
+<li>the matrix is applied to each individual qubit.</li>
+</ul>
+<p>This allows any initial state to be used.</p>
+<p>The data field may add pragma-like hints to the gate, for instance to
+represent the line number in the source file that generated the gate,
+error modelling information, and so on. This data may be silently
+ignored.</p>
+</div></details>
+<details><summary><font color="blue"><tt>DQCS_GATE_TYPE_CUSTOM</tt></font></summary><div style="margin-left: 16px">
+Custom gates perform a user-defined mixed quantum-classical operation,
+identified by a name. They can have zero or more target, control, and
+measured qubits, of which only the target and control sets must be
+mutually exclusive. They also have an optional matrix of arbitrary
+size.
+<p>The semantics are:</p>
+<ul>
+<li>if the name is not recognized, an error is reported;</li>
+<li>a user-defined operation is performed based on the name, qubits,
+matrix, and data arguments;</li>
+<li>exactly one measurement result is reported upstream for exactly the
+qubits in the measures set.</li>
+</ul>
+</div></details>
+</p>
+</div></details>
+<p>The following functions can be used to read the remaining parameters associated
+with a gate.</p>
+<details><summary><font color="green"><tt>dqcs_gate_has_targets()</tt></font><div style="margin-left: 16px">
+<p>Returns whether the specified gate has target qubits.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_bool_return_t dqcs_gate_has_targets(dqcs_handle_t gate)
+</code></pre>
+</div></details>
+<details><summary><font color="green"><tt>dqcs_gate_targets()</tt></font><div style="margin-left: 16px">
+<p>Returns a handle to a new qubit reference set containing the qubits
+targeted by this gate.</p>
+</div></summary><div style="margin-left: 16px">
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_targets(dqcs_handle_t gate)
 </code></pre>
 </div></details>
 <details><summary><font color="green"><tt>dqcs_gate_has_controls()</tt></font><div style="margin-left: 16px">
@@ -413,10 +489,11 @@ that control this gate.</p>
 <pre><code class="language-C">dqcs_bool_return_t dqcs_gate_has_controls(dqcs_handle_t gate)
 </code></pre>
 </div></details>
-<details><summary><font color="green"><tt>dqcs_gate_has_matrix()</tt></font><div style="margin-left: 16px">
-<p>Returns whether a unitary matrix is associated with this gate.</p>
+<details><summary><font color="green"><tt>dqcs_gate_controls()</tt></font><div style="margin-left: 16px">
+<p>Returns a handle to a new qubit reference set containing the qubits
+that control this gate.</p>
 </div></summary><div style="margin-left: 16px">
-<pre><code class="language-C">dqcs_bool_return_t dqcs_gate_has_matrix(dqcs_handle_t gate)
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_controls(dqcs_handle_t gate)
 </code></pre>
 </div></details>
 <details><summary><font color="green"><tt>dqcs_gate_has_measures()</tt></font><div style="margin-left: 16px">
@@ -425,26 +502,18 @@ that control this gate.</p>
 <pre><code class="language-C">dqcs_bool_return_t dqcs_gate_has_measures(dqcs_handle_t gate)
 </code></pre>
 </div></details>
-<details><summary><font color="green"><tt>dqcs_gate_has_targets()</tt></font><div style="margin-left: 16px">
-<p>Returns whether the specified gate has target qubits.</p>
+<details><summary><font color="green"><tt>dqcs_gate_measures()</tt></font><div style="margin-left: 16px">
+<p>Returns a handle to a new qubit reference set containing the qubits
+measured by this gate.</p>
 </div></summary><div style="margin-left: 16px">
-<pre><code class="language-C">dqcs_bool_return_t dqcs_gate_has_targets(dqcs_handle_t gate)
+<pre><code class="language-C">dqcs_handle_t dqcs_gate_measures(dqcs_handle_t gate)
 </code></pre>
 </div></details>
-<details><summary><font color="green"><tt>dqcs_gate_is_custom()</tt></font><div style="margin-left: 16px">
-<p>Returns whether the specified gate is a custom gate.</p>
+<details><summary><font color="green"><tt>dqcs_gate_has_matrix()</tt></font><div style="margin-left: 16px">
+<p>Returns whether a unitary matrix is associated with this gate.</p>
 </div></summary><div style="margin-left: 16px">
-<pre><code class="language-C">dqcs_bool_return_t dqcs_gate_is_custom(dqcs_handle_t gate)
+<pre><code class="language-C">dqcs_bool_return_t dqcs_gate_has_matrix(dqcs_handle_t gate)
 </code></pre>
-<p>If this returns true, the type of gate is to be determined by matching its
-name against a set of known gate types. If this returns false, the gate is
-expected to be executed as follows, in this order:</p>
-<ul>
-<li>if there are target qubits, extend the supplied unitary matrix to
-include the control qubits (if any), then apply it to the control +
-target qubits;</li>
-<li>measure each measured qubit (if any) in the Z basis.</li>
-</ul>
 </div></details>
 <details><summary><font color="green"><tt>dqcs_gate_matrix()</tt></font><div style="margin-left: 16px">
 <p>Returns a copy of the unitary matrix associated with this gate, if one
@@ -455,11 +524,10 @@ exists.</p>
 <p>If this function succeeds, a new matrix handle is returned. If it fails,
 0 is returned.</p>
 </div></details>
-<details><summary><font color="green"><tt>dqcs_gate_measures()</tt></font><div style="margin-left: 16px">
-<p>Returns a handle to a new qubit reference set containing the qubits
-measured by this gate.</p>
+<details><summary><font color="green"><tt>dqcs_gate_has_name()</tt></font><div style="margin-left: 16px">
+<p>Returns whether the specified gate has a name.</p>
 </div></summary><div style="margin-left: 16px">
-<pre><code class="language-C">dqcs_handle_t dqcs_gate_measures(dqcs_handle_t gate)
+<pre><code class="language-C">dqcs_bool_return_t dqcs_gate_has_name(dqcs_handle_t gate)
 </code></pre>
 </div></details>
 <details><summary><font color="green"><tt>dqcs_gate_name()</tt></font><div style="margin-left: 16px">
@@ -468,18 +536,11 @@ measured by this gate.</p>
 <pre><code class="language-C">char *dqcs_gate_name(dqcs_handle_t gate)
 </code></pre>
 <p>This function fails if the gate is not a custom gate. Query
-<code>dqcs_gate_is_custom()</code> to disambiguate between a non-custom gate and a
+<code>dqcs_gate_has_name()</code> to disambiguate between a non-custom gate and a
 different error.</p>
 <p>On success, this <strong>returns a newly allocated string containing the gate
 name. Free it with <code>free()</code> when you're done with it to avoid memory
 leaks.</strong> On failure, this returns <code>NULL</code>.</p>
-</div></details>
-<details><summary><font color="green"><tt>dqcs_gate_targets()</tt></font><div style="margin-left: 16px">
-<p>Returns a handle to a new qubit reference set containing the qubits
-targetted by this gate.</p>
-</div></summary><div style="margin-left: 16px">
-<pre><code class="language-C">dqcs_handle_t dqcs_gate_targets(dqcs_handle_t gate)
-</code></pre>
 </div></details>
 
                     </main>

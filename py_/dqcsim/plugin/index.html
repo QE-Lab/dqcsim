@@ -697,90 +697,118 @@ class GateStreamSource(Plugin):
             0.0, 0.0, 0.0, 1.0,
         ], controls=[control]) #@
 
-    def measure(self, *qubits):
+    def measure(self, *qubits, basis=&#39;Z&#39;):
+        &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
+        given basis.
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only positional
+        argument. The basis is always a keyword argument.
+
+        The basis can be `&#39;X&#39;`, `&#39;Y&#39;`, `&#39;Z&#39;`, or a 4-entry list of complex
+        numbers representing a 2x2 matrix with the following semantics:
+
+         - the qubits are rotated by the inverse of the matrix
+         - a Z-axis measurement is performed on each qubit
+         - the qubits are rotated by the matrix
+        &#34;&#34;&#34;
+        if isinstance(basis, str):
+            basis = Handle(raw.dqcs_mat_basis({
+                &#39;X&#39;: raw.DQCS_BASIS_X,
+                &#39;Y&#39;: raw.DQCS_BASIS_Y,
+                &#39;Z&#39;: raw.DQCS_BASIS_Z,
+            }[basis]))
+        else:
+            basis = Handle(raw.dqcs_mat_new(basis))
+        if len(qubits) == 1 and not isinstance(qubits[0], int):
+            qubits = list(qubits[0])
+        with QubitSet._to_raw(qubits) as qubits:
+            with basis as mat:
+                with Handle(raw.dqcs_gate_new_measurement(qubits, mat)) as gate:
+                    self._pc(raw.dqcs_plugin_gate, gate)
+
+    def measure_x(self, *qubits):
+        &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
+        X basis.
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only argument.
+        &#34;&#34;&#34;
+        self.measure(*qubits, basis=&#39;X&#39;)
+
+    def measure_y(self, *qubits):
+        &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
+        Y basis.
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only argument.
+        &#34;&#34;&#34;
+        self.measure(*qubits, basis=&#39;Y&#39;)
+
+    def measure_z(self, *qubits):
         &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
         Z basis.
 
         This function takes either one or more qubits as its positional
         arguments, or an iterable of qubits as its first and only argument.
         &#34;&#34;&#34;
+        self.measure(*qubits, basis=&#39;Z&#39;)
+
+    def prepare(self, *qubits, basis=&#39;Z&#39;):
+        &#34;&#34;&#34;Instructs the downstream plugin to force the given qubits into the
+        base state for the given basis.
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only positional
+        argument. The basis is always a keyword argument.
+
+        The basis can be `&#39;X&#39;`, `&#39;Y&#39;`, `&#39;Z&#39;`, or a 4-entry list of complex
+        numbers representing a 2x2 matrix with the following semantics:
+
+         - the qubits are initialized to |0&gt;
+         - the qubits are rotated by the matrix
+        &#34;&#34;&#34;
+        if isinstance(basis, str):
+            basis = Handle(raw.dqcs_mat_basis({
+                &#39;X&#39;: raw.DQCS_BASIS_X,
+                &#39;Y&#39;: raw.DQCS_BASIS_Y,
+                &#39;Z&#39;: raw.DQCS_BASIS_Z,
+            }[basis]))
+        else:
+            basis = Handle(raw.dqcs_mat_new(basis))
         if len(qubits) == 1 and not isinstance(qubits[0], int):
             qubits = list(qubits[0])
         with QubitSet._to_raw(qubits) as qubits:
-            with Handle(raw.dqcs_gate_new_measurement(qubits)) as gate:
-                self._pc(raw.dqcs_plugin_gate, gate)
+            with basis as mat:
+                with Handle(raw.dqcs_gate_new_prep(qubits, mat)) as gate:
+                    self._pc(raw.dqcs_plugin_gate, gate)
 
-    def measure_x(self, *qubits):
-        &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
-        X basis.
-
-        This actually sends the following gates to the downstream plugin for
-        each qubit:
-
-            h_gate(qubit)
-            measure(qubit)
-            h_gate(qubit)
-
-        This function takes either one or more qubits as its positional
-        arguments, or an iterable of qubits as its first and only argument.
-        &#34;&#34;&#34;
-        if len(qubits) == 1 and not isinstance(qubits[0], int):
-            qubits = list(qubits[0])
-        for qubit in qubits:
-            self.h_gate(qubit)
-        self.measure(qubits)
-        for qubit in qubits:
-            self.h_gate(qubit)
-
-    def measure_y(self, *qubits):
-        &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
-        Y basis.
-
-        This actually sends the following gates to the downstream plugin for
-        each qubit:
-
-            s_gate(qubit)
-            z_gate(qubit)
-            h_gate(qubit)
-            measure(qubit)
-            h_gate(qubit)
-            s_gate(qubit)
-
-        This function takes either one or more qubits as its positional
-        arguments, or an iterable of qubits as its first and only argument.
-        &#34;&#34;&#34;
-        if len(qubits) == 1 and not isinstance(qubits[0], int):
-            qubits = list(qubits[0])
-        for qubit in qubits:
-            self.s_gate(qubit)
-        for qubit in qubits:
-            self.z_gate(qubit)
-        self.measure_x(qubits)
-        for qubit in qubits:
-            self.s_gate(qubit)
-
-    measure_z = measure
-
-    def prepare(self, *qubits):
+    def prepare_x(self, *qubits):
         &#34;&#34;&#34;Instructs the downstream plugin to force the given qubits into the
-        |0&gt; state.
-
-        This actually sends the following gates to the downstream plugin for
-        each qubit:
-
-            measure(qubit)
-            if get_measurement(qubit).value:
-                x_gate(qubit)
+        base state for the X basis.
 
         This function takes either one or more qubits as its positional
         arguments, or an iterable of qubits as its first and only argument.
         &#34;&#34;&#34;
-        if len(qubits) == 1 and not isinstance(qubits[0], int):
-            qubits = list(qubits[0])
-        self.measure(qubits)
-        for qubit in qubits:
-            if self.get_measurement(qubit).value:
-                self.x_gate(qubit)
+        self.prepare(*qubits, basis=&#39;X&#39;)
+
+    def prepare_y(self, *qubits):
+        &#34;&#34;&#34;Instructs the downstream plugin to force the given qubits into the
+        base state for the Y basis.
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only argument.
+        &#34;&#34;&#34;
+        self.prepare(*qubits, basis=&#39;Y&#39;)
+
+    def prepare_z(self, *qubits):
+        &#34;&#34;&#34;Instructs the downstream plugin to force the given qubits into the
+        base state for the Z basis, being |0&gt;.
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only argument.
+        &#34;&#34;&#34;
+        self.prepare(*qubits, basis=&#39;Z&#39;)
 
     def custom_gate(self, name, targets=[], controls=[], measures=[], matrix=None, *args, **kwargs):
         &#34;&#34;&#34;Instructs the downstream plugin to execute a custom gate.
@@ -1021,12 +1049,18 @@ class Operator(GateStreamSource):
         If this handler is not defined, the gate is forwarded downstream
         automatically.
 
-     - `handle_measurement_gate(meas: [Qubit]) -&gt; [Measurement]`
+     - `handle_measurement_gate(meas: [Qubit], basis: [complex]) -&gt; [Measurement]`
 
-        Called when the upstream plugin wants to execute a basic Z-basis
-        measurement on the given set of qubits. The gate is normally forwarded
-        downstream using `measure()`. If this handler is not defined, this is
-        done automatically.
+        Called when the upstream plugin wants to execute a basic measurement on
+        the given set of qubits. The gate is normally forwarded downstream using
+        `measure()`. If this handler is not defined, this is done automatically.
+
+        The basis is a 2x2 matrix. The semantics are as follows:
+
+         - rotate each qubit by the inverse/hermitian/conjugate transpose of the
+           given matrix
+         - do a Z measurement for each qubit
+         - rotate each qubit by the given matrix
 
         The result of this handler must be that measurements for exactly those
         qubits specified in `meas` are forwarded upstream after all downstream
@@ -1039,6 +1073,17 @@ class Operator(GateStreamSource):
         results directly in the same way backends must do it (or to do a
         combination of the two). The latter might negatively impact simulation
         speed, though.
+
+     - `handle_prepare_gate(target: [Qubit], basis: [complex])`
+
+        Called when the upstream plugin wants to reset the state for the given
+        qubits. The gate is normally forwarded downstream using `prepare()`. If
+        this handler is not defined, this is done automatically.
+
+        The basis is a 2x2 matrix. The semantics are as follows:
+
+         - initialize each qubit to |0&gt;
+         - rotate each qubit by the given matrix
 
      -  `handle_&lt;name&gt;_gate(
             targets: [Qubit],
@@ -1111,30 +1156,34 @@ class Operator(GateStreamSource):
     def _forward_unitary_gate(self, targets, controls, matrix):
         self.unitary(targets, matrix, controls)
 
-    def _forward_measurement_gate(self, qubits):
-        self.measure(qubits)
+    def _forward_measurement_gate(self, qubits, basis):
+        self.measure(qubits, basis=basis)
+
+    def _forward_prepare_gate(self, qubits, basis):
+        self.prepare(qubits, basis=basis)
 
     def _route_gate(self, state_handle, gate_handle):
         &#34;&#34;&#34;Routes the gate callback to user code.&#34;&#34;&#34;
 
+        typ = raw.dqcs_gate_type(gate_handle)
         name = None
-        if raw.dqcs_gate_is_custom(gate_handle):
+        if raw.dqcs_gate_has_name(gate_handle):
             name = raw.dqcs_gate_name(gate_handle)
 
         # Forward gate types that don&#39;t have handlers as soon as possible.
         fast_forward = False
-        if name is None:
+        if typ == raw.DQCS_GATE_TYPE_UNITARY:
             if raw.dqcs_gate_has_controls(gate_handle):
                 fast_forward = not hasattr(self, &#39;handle_controlled_gate&#39;)
-            elif raw.dqcs_gate_has_targets(gate_handle):
+            else:
                 fast_forward = ( #@
                     not hasattr(self, &#39;handle_unitary_gate&#39;)
                     and not hasattr(self, &#39;handle_controlled_gate&#39;))
-            else:
-                fast_forward = True
-            if raw.dqcs_gate_has_measures(gate_handle):
-                fast_forward = fast_forward and not hasattr(self, &#39;handle_measurement_gate&#39;)
-        else:
+        elif typ == raw.DQCS_GATE_TYPE_MEASUREMENT:
+            fast_forward = fast_forward and not hasattr(self, &#39;handle_measurement_gate&#39;)
+        elif typ == raw.DQCS_GATE_TYPE_PREP:
+            fast_forward = fast_forward and not hasattr(self, &#39;handle_prepare_gate&#39;)
+        elif typ == raw.DQCS_GATE_TYPE_CUSTOM:
             fast_forward = not hasattr(self, &#39;handle_{}_gate&#39;.format(name))
         if fast_forward:
             raw.dqcs_plugin_gate(state_handle, gate_handle)
@@ -1153,21 +1202,25 @@ class Operator(GateStreamSource):
         # Route to the user&#39;s callback functions or execute the default
         # actions.
         measurements = []
-        if name is None:
-            if targets and matrix:
-                try:
-                    if not controls and hasattr(self, &#39;handle_unitary_gate&#39;):
-                        self._cb(state_handle, &#39;handle_unitary_gate&#39;, targets, matrix)
-                    else:
-                        self._cb(state_handle, &#39;handle_controlled_gate&#39;, targets, controls, matrix)
-                except NotImplementedError:
-                    self._cb(state_handle, &#39;_forward_unitary_gate&#39;, targets, controls, matrix)
-            if measures:
-                try:
-                    measurements = self._cb(state_handle, &#39;handle_measurement_gate&#39;, measures)
-                except NotImplementedError:
-                    self._cb(state_handle, &#39;_forward_measurement_gate&#39;, measures)
-        else:
+        if typ == raw.DQCS_GATE_TYPE_UNITARY:
+            try:
+                if not controls and hasattr(self, &#39;handle_unitary_gate&#39;):
+                    self._cb(state_handle, &#39;handle_unitary_gate&#39;, targets, matrix)
+                else:
+                    self._cb(state_handle, &#39;handle_controlled_gate&#39;, targets, controls, matrix)
+            except NotImplementedError:
+                self._cb(state_handle, &#39;_forward_unitary_gate&#39;, targets, controls, matrix)
+        elif typ == raw.DQCS_GATE_TYPE_MEASUREMENT:
+            try:
+                measurements = self._cb(state_handle, &#39;handle_measurement_gate&#39;, measures, matrix)
+            except NotImplementedError:
+                self._cb(state_handle, &#39;_forward_measurement_gate&#39;, measures, matrix)
+        elif typ == raw.DQCS_GATE_TYPE_PREP:
+            try:
+                self._cb(state_handle, &#39;handle_prepare_gate&#39;, targets, matrix)
+            except NotImplementedError:
+                self._cb(state_handle, &#39;_forward_prepare_gate&#39;, targets, matrix)
+        elif typ == raw.DQCS_GATE_TYPE_CUSTOM:
             data = ArbData._from_raw(Handle(gate_handle))
             # Note that `handle_&lt;name&gt;_gate` must exist at this point,
             # otherwise it would have been forwarded earlier.
@@ -1175,6 +1228,8 @@ class Operator(GateStreamSource):
             assert(hasattr(self, cb_name))
             measurements = self._cb(state_handle,
                 cb_name, targets, controls, measures, matrix, *data._args, **data._json)
+        else:
+            raise NotImplementedError(&#34;unknown gate type&#34;)
 
         if measurements is None:
             measurements = []
@@ -1259,11 +1314,24 @@ class Backend(Plugin):
 
      - `handle_measurement_gate(qubits: [Qubit]) -&gt; [Measurement]`
 
-        Called when a measurement must be performed. The measurement basis is
-        fixed to the Z-axis; custom gates should be used when different
-        measurement bases are required. The returned list must contain
-        measurement data for exactly those qubits specified by the qubits
-        parameter.
+        Called when a measurement must be performed. The returned list must
+        contain measurement data for exactly those qubits specified by the
+        qubits parameter.
+
+        The basis is a 2x2 matrix. The semantics are as follows:
+
+         - rotate each qubit by the inverse/hermitian/conjugate transpose of the
+           given matrix
+         - do a Z measurement for each qubit
+         - rotate each qubit by the given matrix
+
+     - `handle_prepare_gate(target: [Qubit], basis: [complex])`
+
+        Called when the upstream plugin wants to reset the state for the given
+        qubits. The basis is a 2x2 matrix. The semantics are as follows:
+
+         - initialize each qubit to |0&gt;
+         - rotate each qubit by the given matrix
 
     The following functions MAY be implemented by the user:
 
@@ -1358,8 +1426,9 @@ class Backend(Plugin):
 
     def _route_gate(self, state_handle, gate_handle):
         &#34;&#34;&#34;Routes the gate callback to user code.&#34;&#34;&#34;
+        typ = raw.dqcs_gate_type(gate_handle)
         name = None
-        if raw.dqcs_gate_is_custom(gate_handle):
+        if raw.dqcs_gate_has_name(gate_handle):
             name = raw.dqcs_gate_name(gate_handle)
         targets = QubitSet._from_raw(Handle(raw.dqcs_gate_targets(gate_handle)))
         controls = QubitSet._from_raw(Handle(raw.dqcs_gate_controls(gate_handle)))
@@ -1371,43 +1440,44 @@ class Backend(Plugin):
             matrix = None
 
         measurements = []
-        if name is None:
-            if targets and matrix:
-                if controls:
-                    try:
-                        self._cb(state_handle, &#39;handle_controlled_gate&#39;, targets, controls, matrix)
-                        return MeasurementSet._to_raw([]).take()
-                    except NotImplementedError:
-                        pass
+        if typ == raw.DQCS_GATE_TYPE_UNITARY:
+            if controls:
+                try:
+                    self._cb(state_handle, &#39;handle_controlled_gate&#39;, targets, controls, matrix)
+                    return MeasurementSet._to_raw([]).take()
+                except NotImplementedError:
+                    pass
 
-                    # Convert the gate matrix to a controlled gate matrix.
-                    cur_nq = len(targets)
-                    cur_size = 2**cur_nq
-                    assert(len(matrix) == cur_size * cur_size)
-                    ext_nq = len(controls) + len(targets)
-                    ext_size = 2**ext_nq
-                    offset = ext_size - cur_size
+                # Convert the gate matrix to a controlled gate matrix.
+                cur_nq = len(targets)
+                cur_size = 2**cur_nq
+                assert(len(matrix) == cur_size * cur_size)
+                ext_nq = len(controls) + len(targets)
+                ext_size = 2**ext_nq
+                offset = ext_size - cur_size
 
-                    # Make zero matrix of the right size.
-                    ext_matrix = [0.0+0.0j] * (ext_size * ext_size)
+                # Make zero matrix of the right size.
+                ext_matrix = [0.0+0.0j] * (ext_size * ext_size)
 
-                    # Override the lower-right block of the upscaled matrix
-                    # with the original matrix.
-                    for i in range(cur_size):
-                        ext_matrix[(offset + i)*ext_size + offset : (offset + i)*ext_size + ext_size] = matrix[i*cur_size : i*cur_size + cur_size]
+                # Override the lower-right block of the upscaled matrix
+                # with the original matrix.
+                for i in range(cur_size):
+                    ext_matrix[(offset + i)*ext_size + offset : (offset + i)*ext_size + ext_size] = matrix[i*cur_size : i*cur_size + cur_size]
 
-                    # Turn the top-left block into an identity matrix.
-                    for i in range(offset):
-                        ext_matrix[i*ext_size + i] = 1.0+0.0j
+                # Turn the top-left block into an identity matrix.
+                for i in range(offset):
+                    ext_matrix[i*ext_size + i] = 1.0+0.0j
 
-                    # Replace the matrix and update the targets.
-                    matrix = ext_matrix
-                    targets = controls + targets
+                # Replace the matrix and update the targets.
+                matrix = ext_matrix
+                targets = controls + targets
 
-                self._cb(state_handle, &#39;handle_unitary_gate&#39;, targets, matrix)
-            if measures:
-                measurements = self._cb(state_handle, &#39;handle_measurement_gate&#39;, measures)
-        else:
+            self._cb(state_handle, &#39;handle_unitary_gate&#39;, targets, matrix)
+        elif typ == raw.DQCS_GATE_TYPE_MEASUREMENT:
+            measurements = self._cb(state_handle, &#39;handle_measurement_gate&#39;, measures, matrix)
+        elif typ == raw.DQCS_GATE_TYPE_PREP:
+            self._cb(state_handle, &#39;handle_prepare_gate&#39;, targets, matrix)
+        elif typ == raw.DQCS_GATE_TYPE_CUSTOM:
             data = ArbData._from_raw(Handle(gate_handle))
             try:
                 measurements = self._cb(state_handle,
@@ -1415,6 +1485,9 @@ class Backend(Plugin):
                     targets, controls, measures, matrix, *data._args, **data._json)
             except NotImplementedError:
                 raise NotImplementedError(&#34;{} gate is not implemented by this plugin&#34;.format(name))
+        else:
+            raise NotImplementedError(&#34;unknown gate type&#34;)
+
 
         if measurements is None:
             measurements = []
@@ -1481,11 +1554,25 @@ unitary matrix to the given list of qubits.</p>
 </li>
 <li>
 <p><code>handle_measurement_gate(qubits: [Qubit]) -&gt; [Measurement]</code></p>
-<p>Called when a measurement must be performed. The measurement basis is
-fixed to the Z-axis; custom gates should be used when different
-measurement bases are required. The returned list must contain
-measurement data for exactly those qubits specified by the qubits
-parameter.</p>
+<p>Called when a measurement must be performed. The returned list must
+contain measurement data for exactly those qubits specified by the
+qubits parameter.</p>
+<p>The basis is a 2x2 matrix. The semantics are as follows:</p>
+<ul>
+<li>rotate each qubit by the inverse/hermitian/conjugate transpose of the
+given matrix</li>
+<li>do a Z measurement for each qubit</li>
+<li>rotate each qubit by the given matrix</li>
+</ul>
+</li>
+<li>
+<p><code>handle_prepare_gate(target: [Qubit], basis: [complex])</code></p>
+<p>Called when the upstream plugin wants to reset the state for the given
+qubits. The basis is a 2x2 matrix. The semantics are as follows:</p>
+<ul>
+<li>initialize each qubit to |0&gt;</li>
+<li>rotate each qubit by the given matrix</li>
+</ul>
 </li>
 </ul>
 <p>The following functions MAY be implemented by the user:</p>
@@ -1601,11 +1688,24 @@ IDs.</p></section>
 
      - `handle_measurement_gate(qubits: [Qubit]) -&gt; [Measurement]`
 
-        Called when a measurement must be performed. The measurement basis is
-        fixed to the Z-axis; custom gates should be used when different
-        measurement bases are required. The returned list must contain
-        measurement data for exactly those qubits specified by the qubits
-        parameter.
+        Called when a measurement must be performed. The returned list must
+        contain measurement data for exactly those qubits specified by the
+        qubits parameter.
+
+        The basis is a 2x2 matrix. The semantics are as follows:
+
+         - rotate each qubit by the inverse/hermitian/conjugate transpose of the
+           given matrix
+         - do a Z measurement for each qubit
+         - rotate each qubit by the given matrix
+
+     - `handle_prepare_gate(target: [Qubit], basis: [complex])`
+
+        Called when the upstream plugin wants to reset the state for the given
+        qubits. The basis is a 2x2 matrix. The semantics are as follows:
+
+         - initialize each qubit to |0&gt;
+         - rotate each qubit by the given matrix
 
     The following functions MAY be implemented by the user:
 
@@ -1700,8 +1800,9 @@ IDs.</p></section>
 
     def _route_gate(self, state_handle, gate_handle):
         &#34;&#34;&#34;Routes the gate callback to user code.&#34;&#34;&#34;
+        typ = raw.dqcs_gate_type(gate_handle)
         name = None
-        if raw.dqcs_gate_is_custom(gate_handle):
+        if raw.dqcs_gate_has_name(gate_handle):
             name = raw.dqcs_gate_name(gate_handle)
         targets = QubitSet._from_raw(Handle(raw.dqcs_gate_targets(gate_handle)))
         controls = QubitSet._from_raw(Handle(raw.dqcs_gate_controls(gate_handle)))
@@ -1713,43 +1814,44 @@ IDs.</p></section>
             matrix = None
 
         measurements = []
-        if name is None:
-            if targets and matrix:
-                if controls:
-                    try:
-                        self._cb(state_handle, &#39;handle_controlled_gate&#39;, targets, controls, matrix)
-                        return MeasurementSet._to_raw([]).take()
-                    except NotImplementedError:
-                        pass
+        if typ == raw.DQCS_GATE_TYPE_UNITARY:
+            if controls:
+                try:
+                    self._cb(state_handle, &#39;handle_controlled_gate&#39;, targets, controls, matrix)
+                    return MeasurementSet._to_raw([]).take()
+                except NotImplementedError:
+                    pass
 
-                    # Convert the gate matrix to a controlled gate matrix.
-                    cur_nq = len(targets)
-                    cur_size = 2**cur_nq
-                    assert(len(matrix) == cur_size * cur_size)
-                    ext_nq = len(controls) + len(targets)
-                    ext_size = 2**ext_nq
-                    offset = ext_size - cur_size
+                # Convert the gate matrix to a controlled gate matrix.
+                cur_nq = len(targets)
+                cur_size = 2**cur_nq
+                assert(len(matrix) == cur_size * cur_size)
+                ext_nq = len(controls) + len(targets)
+                ext_size = 2**ext_nq
+                offset = ext_size - cur_size
 
-                    # Make zero matrix of the right size.
-                    ext_matrix = [0.0+0.0j] * (ext_size * ext_size)
+                # Make zero matrix of the right size.
+                ext_matrix = [0.0+0.0j] * (ext_size * ext_size)
 
-                    # Override the lower-right block of the upscaled matrix
-                    # with the original matrix.
-                    for i in range(cur_size):
-                        ext_matrix[(offset + i)*ext_size + offset : (offset + i)*ext_size + ext_size] = matrix[i*cur_size : i*cur_size + cur_size]
+                # Override the lower-right block of the upscaled matrix
+                # with the original matrix.
+                for i in range(cur_size):
+                    ext_matrix[(offset + i)*ext_size + offset : (offset + i)*ext_size + ext_size] = matrix[i*cur_size : i*cur_size + cur_size]
 
-                    # Turn the top-left block into an identity matrix.
-                    for i in range(offset):
-                        ext_matrix[i*ext_size + i] = 1.0+0.0j
+                # Turn the top-left block into an identity matrix.
+                for i in range(offset):
+                    ext_matrix[i*ext_size + i] = 1.0+0.0j
 
-                    # Replace the matrix and update the targets.
-                    matrix = ext_matrix
-                    targets = controls + targets
+                # Replace the matrix and update the targets.
+                matrix = ext_matrix
+                targets = controls + targets
 
-                self._cb(state_handle, &#39;handle_unitary_gate&#39;, targets, matrix)
-            if measures:
-                measurements = self._cb(state_handle, &#39;handle_measurement_gate&#39;, measures)
-        else:
+            self._cb(state_handle, &#39;handle_unitary_gate&#39;, targets, matrix)
+        elif typ == raw.DQCS_GATE_TYPE_MEASUREMENT:
+            measurements = self._cb(state_handle, &#39;handle_measurement_gate&#39;, measures, matrix)
+        elif typ == raw.DQCS_GATE_TYPE_PREP:
+            self._cb(state_handle, &#39;handle_prepare_gate&#39;, targets, matrix)
+        elif typ == raw.DQCS_GATE_TYPE_CUSTOM:
             data = ArbData._from_raw(Handle(gate_handle))
             try:
                 measurements = self._cb(state_handle,
@@ -1757,6 +1859,9 @@ IDs.</p></section>
                     targets, controls, measures, matrix, *data._args, **data._json)
             except NotImplementedError:
                 raise NotImplementedError(&#34;{} gate is not implemented by this plugin&#34;.format(name))
+        else:
+            raise NotImplementedError(&#34;unknown gate type&#34;)
+
 
         if measurements is None:
             measurements = []
@@ -2083,6 +2188,9 @@ an <code>ArbData</code> object.</p></section>
 <li><code><a title="dqcsim.plugin.GateStreamSource.mz90_gate" href="#dqcsim.plugin.GateStreamSource.mz90_gate">mz90_gate</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.note" href="#dqcsim.plugin.Plugin.note">note</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.prepare" href="#dqcsim.plugin.GateStreamSource.prepare">prepare</a></code></li>
+<li><code><a title="dqcsim.plugin.GateStreamSource.prepare_x" href="#dqcsim.plugin.GateStreamSource.prepare_x">prepare_x</a></code></li>
+<li><code><a title="dqcsim.plugin.GateStreamSource.prepare_y" href="#dqcsim.plugin.GateStreamSource.prepare_y">prepare_y</a></code></li>
+<li><code><a title="dqcsim.plugin.GateStreamSource.prepare_z" href="#dqcsim.plugin.GateStreamSource.prepare_z">prepare_z</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.r_gate" href="#dqcsim.plugin.GateStreamSource.r_gate">r_gate</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.random_float" href="#dqcsim.plugin.Plugin.random_float">random_float</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.random_long" href="#dqcsim.plugin.Plugin.random_long">random_long</a></code></li>
@@ -2356,90 +2464,118 @@ IDs.</p></section>
             0.0, 0.0, 0.0, 1.0,
         ], controls=[control]) #@
 
-    def measure(self, *qubits):
+    def measure(self, *qubits, basis=&#39;Z&#39;):
+        &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
+        given basis.
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only positional
+        argument. The basis is always a keyword argument.
+
+        The basis can be `&#39;X&#39;`, `&#39;Y&#39;`, `&#39;Z&#39;`, or a 4-entry list of complex
+        numbers representing a 2x2 matrix with the following semantics:
+
+         - the qubits are rotated by the inverse of the matrix
+         - a Z-axis measurement is performed on each qubit
+         - the qubits are rotated by the matrix
+        &#34;&#34;&#34;
+        if isinstance(basis, str):
+            basis = Handle(raw.dqcs_mat_basis({
+                &#39;X&#39;: raw.DQCS_BASIS_X,
+                &#39;Y&#39;: raw.DQCS_BASIS_Y,
+                &#39;Z&#39;: raw.DQCS_BASIS_Z,
+            }[basis]))
+        else:
+            basis = Handle(raw.dqcs_mat_new(basis))
+        if len(qubits) == 1 and not isinstance(qubits[0], int):
+            qubits = list(qubits[0])
+        with QubitSet._to_raw(qubits) as qubits:
+            with basis as mat:
+                with Handle(raw.dqcs_gate_new_measurement(qubits, mat)) as gate:
+                    self._pc(raw.dqcs_plugin_gate, gate)
+
+    def measure_x(self, *qubits):
+        &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
+        X basis.
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only argument.
+        &#34;&#34;&#34;
+        self.measure(*qubits, basis=&#39;X&#39;)
+
+    def measure_y(self, *qubits):
+        &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
+        Y basis.
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only argument.
+        &#34;&#34;&#34;
+        self.measure(*qubits, basis=&#39;Y&#39;)
+
+    def measure_z(self, *qubits):
         &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
         Z basis.
 
         This function takes either one or more qubits as its positional
         arguments, or an iterable of qubits as its first and only argument.
         &#34;&#34;&#34;
+        self.measure(*qubits, basis=&#39;Z&#39;)
+
+    def prepare(self, *qubits, basis=&#39;Z&#39;):
+        &#34;&#34;&#34;Instructs the downstream plugin to force the given qubits into the
+        base state for the given basis.
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only positional
+        argument. The basis is always a keyword argument.
+
+        The basis can be `&#39;X&#39;`, `&#39;Y&#39;`, `&#39;Z&#39;`, or a 4-entry list of complex
+        numbers representing a 2x2 matrix with the following semantics:
+
+         - the qubits are initialized to |0&gt;
+         - the qubits are rotated by the matrix
+        &#34;&#34;&#34;
+        if isinstance(basis, str):
+            basis = Handle(raw.dqcs_mat_basis({
+                &#39;X&#39;: raw.DQCS_BASIS_X,
+                &#39;Y&#39;: raw.DQCS_BASIS_Y,
+                &#39;Z&#39;: raw.DQCS_BASIS_Z,
+            }[basis]))
+        else:
+            basis = Handle(raw.dqcs_mat_new(basis))
         if len(qubits) == 1 and not isinstance(qubits[0], int):
             qubits = list(qubits[0])
         with QubitSet._to_raw(qubits) as qubits:
-            with Handle(raw.dqcs_gate_new_measurement(qubits)) as gate:
-                self._pc(raw.dqcs_plugin_gate, gate)
+            with basis as mat:
+                with Handle(raw.dqcs_gate_new_prep(qubits, mat)) as gate:
+                    self._pc(raw.dqcs_plugin_gate, gate)
 
-    def measure_x(self, *qubits):
-        &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
-        X basis.
-
-        This actually sends the following gates to the downstream plugin for
-        each qubit:
-
-            h_gate(qubit)
-            measure(qubit)
-            h_gate(qubit)
-
-        This function takes either one or more qubits as its positional
-        arguments, or an iterable of qubits as its first and only argument.
-        &#34;&#34;&#34;
-        if len(qubits) == 1 and not isinstance(qubits[0], int):
-            qubits = list(qubits[0])
-        for qubit in qubits:
-            self.h_gate(qubit)
-        self.measure(qubits)
-        for qubit in qubits:
-            self.h_gate(qubit)
-
-    def measure_y(self, *qubits):
-        &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
-        Y basis.
-
-        This actually sends the following gates to the downstream plugin for
-        each qubit:
-
-            s_gate(qubit)
-            z_gate(qubit)
-            h_gate(qubit)
-            measure(qubit)
-            h_gate(qubit)
-            s_gate(qubit)
-
-        This function takes either one or more qubits as its positional
-        arguments, or an iterable of qubits as its first and only argument.
-        &#34;&#34;&#34;
-        if len(qubits) == 1 and not isinstance(qubits[0], int):
-            qubits = list(qubits[0])
-        for qubit in qubits:
-            self.s_gate(qubit)
-        for qubit in qubits:
-            self.z_gate(qubit)
-        self.measure_x(qubits)
-        for qubit in qubits:
-            self.s_gate(qubit)
-
-    measure_z = measure
-
-    def prepare(self, *qubits):
+    def prepare_x(self, *qubits):
         &#34;&#34;&#34;Instructs the downstream plugin to force the given qubits into the
-        |0&gt; state.
-
-        This actually sends the following gates to the downstream plugin for
-        each qubit:
-
-            measure(qubit)
-            if get_measurement(qubit).value:
-                x_gate(qubit)
+        base state for the X basis.
 
         This function takes either one or more qubits as its positional
         arguments, or an iterable of qubits as its first and only argument.
         &#34;&#34;&#34;
-        if len(qubits) == 1 and not isinstance(qubits[0], int):
-            qubits = list(qubits[0])
-        self.measure(qubits)
-        for qubit in qubits:
-            if self.get_measurement(qubit).value:
-                self.x_gate(qubit)
+        self.prepare(*qubits, basis=&#39;X&#39;)
+
+    def prepare_y(self, *qubits):
+        &#34;&#34;&#34;Instructs the downstream plugin to force the given qubits into the
+        base state for the Y basis.
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only argument.
+        &#34;&#34;&#34;
+        self.prepare(*qubits, basis=&#39;Y&#39;)
+
+    def prepare_z(self, *qubits):
+        &#34;&#34;&#34;Instructs the downstream plugin to force the given qubits into the
+        base state for the Z basis, being |0&gt;.
+
+        This function takes either one or more qubits as its positional
+        arguments, or an iterable of qubits as its first and only argument.
+        &#34;&#34;&#34;
+        self.prepare(*qubits, basis=&#39;Z&#39;)
 
     def custom_gate(self, name, targets=[], controls=[], measures=[], matrix=None, *args, **kwargs):
         &#34;&#34;&#34;Instructs the downstream plugin to execute a custom gate.
@@ -2802,29 +2938,54 @@ for the given downstream qubit.</p></section>
 </details>
 </dd>
 <dt id="dqcsim.plugin.GateStreamSource.measure"><code class="name flex">
-<span>def <span class="ident">measure</span></span>(<span>self, *qubits)</span>
+<span>def <span class="ident">measure</span></span>(<span>self, *qubits, basis='Z')</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Instructs the downstream plugin to measure the given qubits in the
-Z basis.</p>
+given basis.</p>
 <p>This function takes either one or more qubits as its positional
-arguments, or an iterable of qubits as its first and only argument.</p></section>
+arguments, or an iterable of qubits as its first and only positional
+argument. The basis is always a keyword argument.</p>
+<p>The basis can be <code>'X'</code>, <code>'Y'</code>, <code>'Z'</code>, or a 4-entry list of complex
+numbers representing a 2x2 matrix with the following semantics:</p>
+<ul>
+<li>the qubits are rotated by the inverse of the matrix</li>
+<li>a Z-axis measurement is performed on each qubit</li>
+<li>the qubits are rotated by the matrix</li>
+</ul></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def measure(self, *qubits):
+<pre><code class="python">def measure(self, *qubits, basis=&#39;Z&#39;):
     &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
-    Z basis.
+    given basis.
 
     This function takes either one or more qubits as its positional
-    arguments, or an iterable of qubits as its first and only argument.
+    arguments, or an iterable of qubits as its first and only positional
+    argument. The basis is always a keyword argument.
+
+    The basis can be `&#39;X&#39;`, `&#39;Y&#39;`, `&#39;Z&#39;`, or a 4-entry list of complex
+    numbers representing a 2x2 matrix with the following semantics:
+
+     - the qubits are rotated by the inverse of the matrix
+     - a Z-axis measurement is performed on each qubit
+     - the qubits are rotated by the matrix
     &#34;&#34;&#34;
+    if isinstance(basis, str):
+        basis = Handle(raw.dqcs_mat_basis({
+            &#39;X&#39;: raw.DQCS_BASIS_X,
+            &#39;Y&#39;: raw.DQCS_BASIS_Y,
+            &#39;Z&#39;: raw.DQCS_BASIS_Z,
+        }[basis]))
+    else:
+        basis = Handle(raw.dqcs_mat_new(basis))
     if len(qubits) == 1 and not isinstance(qubits[0], int):
         qubits = list(qubits[0])
     with QubitSet._to_raw(qubits) as qubits:
-        with Handle(raw.dqcs_gate_new_measurement(qubits)) as gate:
-            self._pc(raw.dqcs_plugin_gate, gate)</code></pre>
+        with basis as mat:
+            with Handle(raw.dqcs_gate_new_measurement(qubits, mat)) as gate:
+                self._pc(raw.dqcs_plugin_gate, gate)</code></pre>
 </details>
 </dd>
 <dt id="dqcsim.plugin.GateStreamSource.measure_x"><code class="name flex">
@@ -2833,12 +2994,6 @@ arguments, or an iterable of qubits as its first and only argument.</p></section
 <dd>
 <section class="desc"><p>Instructs the downstream plugin to measure the given qubits in the
 X basis.</p>
-<p>This actually sends the following gates to the downstream plugin for
-each qubit:</p>
-<pre><code>h_gate(qubit)
-measure(qubit)
-h_gate(qubit)
-</code></pre>
 <p>This function takes either one or more qubits as its positional
 arguments, or an iterable of qubits as its first and only argument.</p></section>
 <details class="source">
@@ -2849,23 +3004,10 @@ arguments, or an iterable of qubits as its first and only argument.</p></section
     &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
     X basis.
 
-    This actually sends the following gates to the downstream plugin for
-    each qubit:
-
-        h_gate(qubit)
-        measure(qubit)
-        h_gate(qubit)
-
     This function takes either one or more qubits as its positional
     arguments, or an iterable of qubits as its first and only argument.
     &#34;&#34;&#34;
-    if len(qubits) == 1 and not isinstance(qubits[0], int):
-        qubits = list(qubits[0])
-    for qubit in qubits:
-        self.h_gate(qubit)
-    self.measure(qubits)
-    for qubit in qubits:
-        self.h_gate(qubit)</code></pre>
+    self.measure(*qubits, basis=&#39;X&#39;)</code></pre>
 </details>
 </dd>
 <dt id="dqcsim.plugin.GateStreamSource.measure_y"><code class="name flex">
@@ -2874,15 +3016,6 @@ arguments, or an iterable of qubits as its first and only argument.</p></section
 <dd>
 <section class="desc"><p>Instructs the downstream plugin to measure the given qubits in the
 Y basis.</p>
-<p>This actually sends the following gates to the downstream plugin for
-each qubit:</p>
-<pre><code>s_gate(qubit)
-z_gate(qubit)
-h_gate(qubit)
-measure(qubit)
-h_gate(qubit)
-s_gate(qubit)
-</code></pre>
 <p>This function takes either one or more qubits as its positional
 arguments, or an iterable of qubits as its first and only argument.</p></section>
 <details class="source">
@@ -2893,28 +3026,10 @@ arguments, or an iterable of qubits as its first and only argument.</p></section
     &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
     Y basis.
 
-    This actually sends the following gates to the downstream plugin for
-    each qubit:
-
-        s_gate(qubit)
-        z_gate(qubit)
-        h_gate(qubit)
-        measure(qubit)
-        h_gate(qubit)
-        s_gate(qubit)
-
     This function takes either one or more qubits as its positional
     arguments, or an iterable of qubits as its first and only argument.
     &#34;&#34;&#34;
-    if len(qubits) == 1 and not isinstance(qubits[0], int):
-        qubits = list(qubits[0])
-    for qubit in qubits:
-        self.s_gate(qubit)
-    for qubit in qubits:
-        self.z_gate(qubit)
-    self.measure_x(qubits)
-    for qubit in qubits:
-        self.s_gate(qubit)</code></pre>
+    self.measure(*qubits, basis=&#39;Y&#39;)</code></pre>
 </details>
 </dd>
 <dt id="dqcsim.plugin.GateStreamSource.measure_z"><code class="name flex">
@@ -2929,18 +3044,14 @@ arguments, or an iterable of qubits as its first and only argument.</p></section
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def measure(self, *qubits):
+<pre><code class="python">def measure_z(self, *qubits):
     &#34;&#34;&#34;Instructs the downstream plugin to measure the given qubits in the
     Z basis.
 
     This function takes either one or more qubits as its positional
     arguments, or an iterable of qubits as its first and only argument.
     &#34;&#34;&#34;
-    if len(qubits) == 1 and not isinstance(qubits[0], int):
-        qubits = list(qubits[0])
-    with QubitSet._to_raw(qubits) as qubits:
-        with Handle(raw.dqcs_gate_new_measurement(qubits)) as gate:
-            self._pc(raw.dqcs_plugin_gate, gate)</code></pre>
+    self.measure(*qubits, basis=&#39;Z&#39;)</code></pre>
 </details>
 </dd>
 <dt id="dqcsim.plugin.GateStreamSource.mx90_gate"><code class="name flex">
@@ -3001,43 +3112,118 @@ gate, also known as an S-dagger gate.</p>
 </details>
 </dd>
 <dt id="dqcsim.plugin.GateStreamSource.prepare"><code class="name flex">
-<span>def <span class="ident">prepare</span></span>(<span>self, *qubits)</span>
+<span>def <span class="ident">prepare</span></span>(<span>self, *qubits, basis='Z')</span>
 </code></dt>
 <dd>
 <section class="desc"><p>Instructs the downstream plugin to force the given qubits into the
-|0&gt; state.</p>
-<p>This actually sends the following gates to the downstream plugin for
-each qubit:</p>
-<pre><code>measure(qubit)
-if get_measurement(qubit).value:
-    x_gate(qubit)
-</code></pre>
+base state for the given basis.</p>
+<p>This function takes either one or more qubits as its positional
+arguments, or an iterable of qubits as its first and only positional
+argument. The basis is always a keyword argument.</p>
+<p>The basis can be <code>'X'</code>, <code>'Y'</code>, <code>'Z'</code>, or a 4-entry list of complex
+numbers representing a 2x2 matrix with the following semantics:</p>
+<ul>
+<li>the qubits are initialized to |0&gt;</li>
+<li>the qubits are rotated by the matrix</li>
+</ul></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def prepare(self, *qubits, basis=&#39;Z&#39;):
+    &#34;&#34;&#34;Instructs the downstream plugin to force the given qubits into the
+    base state for the given basis.
+
+    This function takes either one or more qubits as its positional
+    arguments, or an iterable of qubits as its first and only positional
+    argument. The basis is always a keyword argument.
+
+    The basis can be `&#39;X&#39;`, `&#39;Y&#39;`, `&#39;Z&#39;`, or a 4-entry list of complex
+    numbers representing a 2x2 matrix with the following semantics:
+
+     - the qubits are initialized to |0&gt;
+     - the qubits are rotated by the matrix
+    &#34;&#34;&#34;
+    if isinstance(basis, str):
+        basis = Handle(raw.dqcs_mat_basis({
+            &#39;X&#39;: raw.DQCS_BASIS_X,
+            &#39;Y&#39;: raw.DQCS_BASIS_Y,
+            &#39;Z&#39;: raw.DQCS_BASIS_Z,
+        }[basis]))
+    else:
+        basis = Handle(raw.dqcs_mat_new(basis))
+    if len(qubits) == 1 and not isinstance(qubits[0], int):
+        qubits = list(qubits[0])
+    with QubitSet._to_raw(qubits) as qubits:
+        with basis as mat:
+            with Handle(raw.dqcs_gate_new_prep(qubits, mat)) as gate:
+                self._pc(raw.dqcs_plugin_gate, gate)</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.plugin.GateStreamSource.prepare_x"><code class="name flex">
+<span>def <span class="ident">prepare_x</span></span>(<span>self, *qubits)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Instructs the downstream plugin to force the given qubits into the
+base state for the X basis.</p>
 <p>This function takes either one or more qubits as its positional
 arguments, or an iterable of qubits as its first and only argument.</p></section>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def prepare(self, *qubits):
+<pre><code class="python">def prepare_x(self, *qubits):
     &#34;&#34;&#34;Instructs the downstream plugin to force the given qubits into the
-    |0&gt; state.
-
-    This actually sends the following gates to the downstream plugin for
-    each qubit:
-
-        measure(qubit)
-        if get_measurement(qubit).value:
-            x_gate(qubit)
+    base state for the X basis.
 
     This function takes either one or more qubits as its positional
     arguments, or an iterable of qubits as its first and only argument.
     &#34;&#34;&#34;
-    if len(qubits) == 1 and not isinstance(qubits[0], int):
-        qubits = list(qubits[0])
-    self.measure(qubits)
-    for qubit in qubits:
-        if self.get_measurement(qubit).value:
-            self.x_gate(qubit)</code></pre>
+    self.prepare(*qubits, basis=&#39;X&#39;)</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.plugin.GateStreamSource.prepare_y"><code class="name flex">
+<span>def <span class="ident">prepare_y</span></span>(<span>self, *qubits)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Instructs the downstream plugin to force the given qubits into the
+base state for the Y basis.</p>
+<p>This function takes either one or more qubits as its positional
+arguments, or an iterable of qubits as its first and only argument.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def prepare_y(self, *qubits):
+    &#34;&#34;&#34;Instructs the downstream plugin to force the given qubits into the
+    base state for the Y basis.
+
+    This function takes either one or more qubits as its positional
+    arguments, or an iterable of qubits as its first and only argument.
+    &#34;&#34;&#34;
+    self.prepare(*qubits, basis=&#39;Y&#39;)</code></pre>
+</details>
+</dd>
+<dt id="dqcsim.plugin.GateStreamSource.prepare_z"><code class="name flex">
+<span>def <span class="ident">prepare_z</span></span>(<span>self, *qubits)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Instructs the downstream plugin to force the given qubits into the
+base state for the Z basis, being |0&gt;.</p>
+<p>This function takes either one or more qubits as its positional
+arguments, or an iterable of qubits as its first and only argument.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def prepare_z(self, *qubits):
+    &#34;&#34;&#34;Instructs the downstream plugin to force the given qubits into the
+    base state for the Z basis, being |0&gt;.
+
+    This function takes either one or more qubits as its positional
+    arguments, or an iterable of qubits as its first and only argument.
+    &#34;&#34;&#34;
+    self.prepare(*qubits, basis=&#39;Z&#39;)</code></pre>
 </details>
 </dd>
 <dt id="dqcsim.plugin.GateStreamSource.r_gate"><code class="name flex">
@@ -3546,11 +3732,17 @@ If this handler is not defined, the gate is forwarded downstream
 automatically.</p>
 </li>
 <li>
-<p><code>handle_measurement_gate(meas: [Qubit]) -&gt; [Measurement]</code></p>
-<p>Called when the upstream plugin wants to execute a basic Z-basis
-measurement on the given set of qubits. The gate is normally forwarded
-downstream using <code>measure()</code>. If this handler is not defined, this is
-done automatically.</p>
+<p><code>handle_measurement_gate(meas: [Qubit], basis: [complex]) -&gt; [Measurement]</code></p>
+<p>Called when the upstream plugin wants to execute a basic measurement on
+the given set of qubits. The gate is normally forwarded downstream using
+<code>measure()</code>. If this handler is not defined, this is done automatically.</p>
+<p>The basis is a 2x2 matrix. The semantics are as follows:</p>
+<ul>
+<li>rotate each qubit by the inverse/hermitian/conjugate transpose of the
+given matrix</li>
+<li>do a Z measurement for each qubit</li>
+<li>rotate each qubit by the given matrix</li>
+</ul>
 <p>The result of this handler must be that measurements for exactly those
 qubits specified in <code>meas</code> are forwarded upstream after all downstream
 gates issued by it finish executing. Usually this happens naturally by
@@ -3562,6 +3754,17 @@ upstream. The recommended way to do this is by defining
 results directly in the same way backends must do it (or to do a
 combination of the two). The latter might negatively impact simulation
 speed, though.</p>
+</li>
+<li>
+<p><code>handle_prepare_gate(target: [Qubit], basis: [complex])</code></p>
+<p>Called when the upstream plugin wants to reset the state for the given
+qubits. The gate is normally forwarded downstream using <code>prepare()</code>. If
+this handler is not defined, this is done automatically.</p>
+<p>The basis is a 2x2 matrix. The semantics are as follows:</p>
+<ul>
+<li>initialize each qubit to |0&gt;</li>
+<li>rotate each qubit by the given matrix</li>
+</ul>
 </li>
 <li>
 <p><code>handle_&lt;name&gt;_gate(
@@ -3705,12 +3908,18 @@ IDs.</p></section>
         If this handler is not defined, the gate is forwarded downstream
         automatically.
 
-     - `handle_measurement_gate(meas: [Qubit]) -&gt; [Measurement]`
+     - `handle_measurement_gate(meas: [Qubit], basis: [complex]) -&gt; [Measurement]`
 
-        Called when the upstream plugin wants to execute a basic Z-basis
-        measurement on the given set of qubits. The gate is normally forwarded
-        downstream using `measure()`. If this handler is not defined, this is
-        done automatically.
+        Called when the upstream plugin wants to execute a basic measurement on
+        the given set of qubits. The gate is normally forwarded downstream using
+        `measure()`. If this handler is not defined, this is done automatically.
+
+        The basis is a 2x2 matrix. The semantics are as follows:
+
+         - rotate each qubit by the inverse/hermitian/conjugate transpose of the
+           given matrix
+         - do a Z measurement for each qubit
+         - rotate each qubit by the given matrix
 
         The result of this handler must be that measurements for exactly those
         qubits specified in `meas` are forwarded upstream after all downstream
@@ -3723,6 +3932,17 @@ IDs.</p></section>
         results directly in the same way backends must do it (or to do a
         combination of the two). The latter might negatively impact simulation
         speed, though.
+
+     - `handle_prepare_gate(target: [Qubit], basis: [complex])`
+
+        Called when the upstream plugin wants to reset the state for the given
+        qubits. The gate is normally forwarded downstream using `prepare()`. If
+        this handler is not defined, this is done automatically.
+
+        The basis is a 2x2 matrix. The semantics are as follows:
+
+         - initialize each qubit to |0&gt;
+         - rotate each qubit by the given matrix
 
      -  `handle_&lt;name&gt;_gate(
             targets: [Qubit],
@@ -3795,30 +4015,34 @@ IDs.</p></section>
     def _forward_unitary_gate(self, targets, controls, matrix):
         self.unitary(targets, matrix, controls)
 
-    def _forward_measurement_gate(self, qubits):
-        self.measure(qubits)
+    def _forward_measurement_gate(self, qubits, basis):
+        self.measure(qubits, basis=basis)
+
+    def _forward_prepare_gate(self, qubits, basis):
+        self.prepare(qubits, basis=basis)
 
     def _route_gate(self, state_handle, gate_handle):
         &#34;&#34;&#34;Routes the gate callback to user code.&#34;&#34;&#34;
 
+        typ = raw.dqcs_gate_type(gate_handle)
         name = None
-        if raw.dqcs_gate_is_custom(gate_handle):
+        if raw.dqcs_gate_has_name(gate_handle):
             name = raw.dqcs_gate_name(gate_handle)
 
         # Forward gate types that don&#39;t have handlers as soon as possible.
         fast_forward = False
-        if name is None:
+        if typ == raw.DQCS_GATE_TYPE_UNITARY:
             if raw.dqcs_gate_has_controls(gate_handle):
                 fast_forward = not hasattr(self, &#39;handle_controlled_gate&#39;)
-            elif raw.dqcs_gate_has_targets(gate_handle):
+            else:
                 fast_forward = ( #@
                     not hasattr(self, &#39;handle_unitary_gate&#39;)
                     and not hasattr(self, &#39;handle_controlled_gate&#39;))
-            else:
-                fast_forward = True
-            if raw.dqcs_gate_has_measures(gate_handle):
-                fast_forward = fast_forward and not hasattr(self, &#39;handle_measurement_gate&#39;)
-        else:
+        elif typ == raw.DQCS_GATE_TYPE_MEASUREMENT:
+            fast_forward = fast_forward and not hasattr(self, &#39;handle_measurement_gate&#39;)
+        elif typ == raw.DQCS_GATE_TYPE_PREP:
+            fast_forward = fast_forward and not hasattr(self, &#39;handle_prepare_gate&#39;)
+        elif typ == raw.DQCS_GATE_TYPE_CUSTOM:
             fast_forward = not hasattr(self, &#39;handle_{}_gate&#39;.format(name))
         if fast_forward:
             raw.dqcs_plugin_gate(state_handle, gate_handle)
@@ -3837,21 +4061,25 @@ IDs.</p></section>
         # Route to the user&#39;s callback functions or execute the default
         # actions.
         measurements = []
-        if name is None:
-            if targets and matrix:
-                try:
-                    if not controls and hasattr(self, &#39;handle_unitary_gate&#39;):
-                        self._cb(state_handle, &#39;handle_unitary_gate&#39;, targets, matrix)
-                    else:
-                        self._cb(state_handle, &#39;handle_controlled_gate&#39;, targets, controls, matrix)
-                except NotImplementedError:
-                    self._cb(state_handle, &#39;_forward_unitary_gate&#39;, targets, controls, matrix)
-            if measures:
-                try:
-                    measurements = self._cb(state_handle, &#39;handle_measurement_gate&#39;, measures)
-                except NotImplementedError:
-                    self._cb(state_handle, &#39;_forward_measurement_gate&#39;, measures)
-        else:
+        if typ == raw.DQCS_GATE_TYPE_UNITARY:
+            try:
+                if not controls and hasattr(self, &#39;handle_unitary_gate&#39;):
+                    self._cb(state_handle, &#39;handle_unitary_gate&#39;, targets, matrix)
+                else:
+                    self._cb(state_handle, &#39;handle_controlled_gate&#39;, targets, controls, matrix)
+            except NotImplementedError:
+                self._cb(state_handle, &#39;_forward_unitary_gate&#39;, targets, controls, matrix)
+        elif typ == raw.DQCS_GATE_TYPE_MEASUREMENT:
+            try:
+                measurements = self._cb(state_handle, &#39;handle_measurement_gate&#39;, measures, matrix)
+            except NotImplementedError:
+                self._cb(state_handle, &#39;_forward_measurement_gate&#39;, measures, matrix)
+        elif typ == raw.DQCS_GATE_TYPE_PREP:
+            try:
+                self._cb(state_handle, &#39;handle_prepare_gate&#39;, targets, matrix)
+            except NotImplementedError:
+                self._cb(state_handle, &#39;_forward_prepare_gate&#39;, targets, matrix)
+        elif typ == raw.DQCS_GATE_TYPE_CUSTOM:
             data = ArbData._from_raw(Handle(gate_handle))
             # Note that `handle_&lt;name&gt;_gate` must exist at this point,
             # otherwise it would have been forwarded earlier.
@@ -3859,6 +4087,8 @@ IDs.</p></section>
             assert(hasattr(self, cb_name))
             measurements = self._cb(state_handle,
                 cb_name, targets, controls, measures, matrix, *data._args, **data._json)
+        else:
+            raise NotImplementedError(&#34;unknown gate type&#34;)
 
         if measurements is None:
             measurements = []
@@ -3966,6 +4196,9 @@ IDs.</p></section>
 <li><code><a title="dqcsim.plugin.GateStreamSource.mz90_gate" href="#dqcsim.plugin.GateStreamSource.mz90_gate">mz90_gate</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.note" href="#dqcsim.plugin.Plugin.note">note</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.prepare" href="#dqcsim.plugin.GateStreamSource.prepare">prepare</a></code></li>
+<li><code><a title="dqcsim.plugin.GateStreamSource.prepare_x" href="#dqcsim.plugin.GateStreamSource.prepare_x">prepare_x</a></code></li>
+<li><code><a title="dqcsim.plugin.GateStreamSource.prepare_y" href="#dqcsim.plugin.GateStreamSource.prepare_y">prepare_y</a></code></li>
+<li><code><a title="dqcsim.plugin.GateStreamSource.prepare_z" href="#dqcsim.plugin.GateStreamSource.prepare_z">prepare_z</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.r_gate" href="#dqcsim.plugin.GateStreamSource.r_gate">r_gate</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.random_float" href="#dqcsim.plugin.Plugin.random_float">random_float</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.random_long" href="#dqcsim.plugin.Plugin.random_long">random_long</a></code></li>
@@ -4695,6 +4928,9 @@ boilerplate code away.</p></section>
 <li><code><a title="dqcsim.plugin.GateStreamSource.my90_gate" href="#dqcsim.plugin.GateStreamSource.my90_gate">my90_gate</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.mz90_gate" href="#dqcsim.plugin.GateStreamSource.mz90_gate">mz90_gate</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.prepare" href="#dqcsim.plugin.GateStreamSource.prepare">prepare</a></code></li>
+<li><code><a title="dqcsim.plugin.GateStreamSource.prepare_x" href="#dqcsim.plugin.GateStreamSource.prepare_x">prepare_x</a></code></li>
+<li><code><a title="dqcsim.plugin.GateStreamSource.prepare_y" href="#dqcsim.plugin.GateStreamSource.prepare_y">prepare_y</a></code></li>
+<li><code><a title="dqcsim.plugin.GateStreamSource.prepare_z" href="#dqcsim.plugin.GateStreamSource.prepare_z">prepare_z</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.r_gate" href="#dqcsim.plugin.GateStreamSource.r_gate">r_gate</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.rx_gate" href="#dqcsim.plugin.GateStreamSource.rx_gate">rx_gate</a></code></li>
 <li><code><a title="dqcsim.plugin.GateStreamSource.ry_gate" href="#dqcsim.plugin.GateStreamSource.ry_gate">ry_gate</a></code></li>

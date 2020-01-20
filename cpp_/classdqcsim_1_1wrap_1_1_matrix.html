@@ -112,6 +112,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a88b5925e91a2061f1be1f9c7964e73f0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a88b5925e91a2061f1be1f9c7964e73f0">Matrix</a> (<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838">PredefinedGate</a> gate, const <a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html">ArbData</a> &amp;parameters)</td></tr>
 <tr class="memdesc:a88b5925e91a2061f1be1f9c7964e73f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a predefined matrix, using <code><a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html" title="Class wrapper for ArbData handles.">ArbData</a></code> to represent the parameters for parameterized gates.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a88b5925e91a2061f1be1f9c7964e73f0">More...</a><br /></td></tr>
 <tr class="separator:a88b5925e91a2061f1be1f9c7964e73f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a333de59650a08923624a77bbba43d375"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a333de59650a08923624a77bbba43d375">Matrix</a> (<a class="el" href="namespacedqcsim_1_1wrap.html#aa3eed997b0e55a7760985ba1592fd262">PauliBasis</a> basis)</td></tr>
+<tr class="memdesc:a333de59650a08923624a77bbba43d375"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a Pauli basis matrix.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a333de59650a08923624a77bbba43d375">More...</a><br /></td></tr>
+<tr class="separator:a333de59650a08923624a77bbba43d375"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5e5659367b930ac4455d3d29788a1e6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#aa5e5659367b930ac4455d3d29788a1e6">Matrix</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;src)</td></tr>
 <tr class="memdesc:aa5e5659367b930ac4455d3d29788a1e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy-constructs a matrix.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#aa5e5659367b930ac4455d3d29788a1e6">More...</a><br /></td></tr>
 <tr class="separator:aa5e5659367b930ac4455d3d29788a1e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -144,6 +147,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8da2ffec275682315c1aea644dba1c3a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a8da2ffec275682315c1aea644dba1c3a">approx_eq</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;other, double epsilon=0.000001, bool ignore_global_phase=true) const</td></tr>
 <tr class="memdesc:a8da2ffec275682315c1aea644dba1c3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Approximate equality operator for two matrices.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a8da2ffec275682315c1aea644dba1c3a">More...</a><br /></td></tr>
 <tr class="separator:a8da2ffec275682315c1aea644dba1c3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafd17a2a8b2e23b59081e5a8b7bb86a5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#aafd17a2a8b2e23b59081e5a8b7bb86a5">basis_approx_eq</a> (const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;other, double epsilon=0.000001) const</td></tr>
+<tr class="memdesc:aafd17a2a8b2e23b59081e5a8b7bb86a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Approximate equality operator for two basis matrices.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#aafd17a2a8b2e23b59081e5a8b7bb86a5">More...</a><br /></td></tr>
+<tr class="separator:aafd17a2a8b2e23b59081e5a8b7bb86a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27a84c4cf17f32fcc66e7f6639941811"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a27a84c4cf17f32fcc66e7f6639941811">approx_unitary</a> (double epsilon=0.000001) const</td></tr>
+<tr class="memdesc:a27a84c4cf17f32fcc66e7f6639941811"><td class="mdescLeft">&#160;</td><td class="mdescRight">Approximate unitary check.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a27a84c4cf17f32fcc66e7f6639941811">More...</a><br /></td></tr>
+<tr class="separator:a27a84c4cf17f32fcc66e7f6639941811"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d7f0fe58bbcc363fd56f4ce1bebeb9d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html#a2d7f0fe58bbcc363fd56f4ce1bebeb9d">is_predefined</a> (<a class="el" href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838">PredefinedGate</a> gate, double epsilon=0.000001, bool ignore_global_phase=true, <a class="el" href="classdqcsim_1_1wrap_1_1_arb_data.html">ArbData</a> *parameters=nullptr) const</td></tr>
 <tr class="memdesc:a2d7f0fe58bbcc363fd56f4ce1bebeb9d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Detects whether this matrix is approximately equal to (some parameterization of) the given predefined gate.  <a href="classdqcsim_1_1wrap_1_1_matrix.html#a2d7f0fe58bbcc363fd56f4ce1bebeb9d">More...</a><br /></td></tr>
 <tr class="separator:a2d7f0fe58bbcc363fd56f4ce1bebeb9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -207,10 +216,10 @@ Additional Inherited Members</h2></td></tr>
 <div class="textblock"><p>Represents a square matrix used for describing N-qubit gates. </p>
 <dl class="section note"><dt>Note</dt><dd>DQCsim is not a math library: this matrix class is solely intended as an interface between DQCsim's internal matrix representation and whatever math library you want to use. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02963">2963</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03160">3160</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a2ca13c01a8f750db976830d0fab5bce8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2ca13c01a8f750db976830d0fab5bce8">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[1/7]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2ca13c01a8f750db976830d0fab5bce8">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[1/8]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -242,12 +251,12 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02974">2974</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03171">3171</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
 <a id="abe46993e8d65f940fab7918c2e9ee279"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abe46993e8d65f940fab7918c2e9ee279">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[2/7]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#abe46993e8d65f940fab7918c2e9ee279">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[2/8]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -296,12 +305,12 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l02989">2989</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03186">3186</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
 <a id="a9c61de59aea49e4cdc746a7802a05dc0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9c61de59aea49e4cdc746a7802a05dc0">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[3/7]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a9c61de59aea49e4cdc746a7802a05dc0">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[3/8]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -350,12 +359,12 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03005">3005</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03202">3202</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
 <a id="a74f8d148bc1bed256f613919db096622"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a74f8d148bc1bed256f613919db096622">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[4/7]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a74f8d148bc1bed256f613919db096622">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[4/8]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -393,12 +402,12 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03017">3017</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03214">3214</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
 <a id="a3981b47a678f4a3ddfb18657fcd11c5a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3981b47a678f4a3ddfb18657fcd11c5a">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[5/7]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3981b47a678f4a3ddfb18657fcd11c5a">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[5/8]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -456,12 +465,12 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03045">3045</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03242">3242</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
 <a id="a88b5925e91a2061f1be1f9c7964e73f0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a88b5925e91a2061f1be1f9c7964e73f0">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[6/7]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a88b5925e91a2061f1be1f9c7964e73f0">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[6/8]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -510,12 +519,55 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03059">3059</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03256">3256</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="a333de59650a08923624a77bbba43d375"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a333de59650a08923624a77bbba43d375">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[7/8]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">dqcsim::wrap::Matrix::Matrix </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespacedqcsim_1_1wrap.html#aa3eed997b0e55a7760985ba1592fd262">PauliBasis</a>&#160;</td>
+          <td class="paramname"><em>basis</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Constructs a Pauli basis matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">basis</td><td>The basis to construct the matrix for. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A new matrix containing the desired data. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When constructing the matrix failed. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03267">3267</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
 <a id="aa5e5659367b930ac4455d3d29788a1e6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa5e5659367b930ac4455d3d29788a1e6">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[7/7]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa5e5659367b930ac4455d3d29788a1e6">&#9670;&nbsp;</a></span>Matrix() <span class="overload">[8/8]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -552,7 +604,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03070">3070</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03278">3278</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -595,7 +647,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03082">3082</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03290">3290</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -631,7 +683,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03104">3104</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03312">3312</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -667,7 +719,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03114">3114</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03322">3322</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -703,7 +755,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03124">3124</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03332">3332</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -739,7 +791,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03135">3135</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03343">3343</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -775,7 +827,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03150">3150</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03358">3358</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -820,6 +872,10 @@ Additional Inherited Members</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Approximate equality operator for two matrices. </p>
+<p>If ignore_gphase is set, this checks that the following holds for some x:</p>
+<p class="formulaDsp">
+\[ This \cdot e^{ix} \approx Other \]
+</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">other</td><td>The matrix to compare to. </td></tr>
@@ -836,7 +892,109 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03168">3168</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03382">3382</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="aafd17a2a8b2e23b59081e5a8b7bb86a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aafd17a2a8b2e23b59081e5a8b7bb86a5">&#9670;&nbsp;</a></span>basis_approx_eq()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool dqcsim::wrap::Matrix::basis_approx_eq </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classdqcsim_1_1wrap_1_1_matrix.html">Matrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>other</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>epsilon</em> = <code>0.000001</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Approximate equality operator for two basis matrices. </p>
+<p>This checks that the following holds for some x and y:</p>
+<p class="formulaDsp">
+\[ This \cdot \begin{bmatrix} e^{ix} &amp; 0 \\ 0 &amp; e^{iy} \end{bmatrix} \approx Other \]
+</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">other</td><td>The matrix to compare to. </td></tr>
+    <tr><td class="paramname">epsilon</td><td>The maximum tolerated RMS variation of the elements. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Whether the bases are approximately equal. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When either handle is invalid. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03407">3407</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+
+</div>
+</div>
+<a id="a27a84c4cf17f32fcc66e7f6639941811"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27a84c4cf17f32fcc66e7f6639941811">&#9670;&nbsp;</a></span>approx_unitary()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool dqcsim::wrap::Matrix::approx_unitary </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>epsilon</em> = <code>0.000001</code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Approximate unitary check. </p>
+<p>This internally computes the product of this matrix and its Hermetian, and then does an approximate compare against the identity matrix.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">epsilon</td><td>The maximum tolerated RMS variation between the identity matrix and the computed product. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Whether the matrix is approximately unitary. </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>When the handle is invalid. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03425">3425</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -905,7 +1063,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03196">3196</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03449">3449</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -948,7 +1106,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03220">3220</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03473">3473</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1002,7 +1160,7 @@ Additional Inherited Members</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03242">3242</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
+<p class="definition">Definition at line <a class="el" href="dqcsim_source.html#l03495">3495</a> of file <a class="el" href="dqcsim_source.html">dqcsim</a>.</p>
 
 </div>
 </div>
@@ -1011,7 +1169,7 @@ Additional Inherited Members</h2></td></tr>
 </ul>
 </div><!-- contents -->
 <div class="ttc" id="anamespacedqcsim_1_1wrap_html_acf8e6d9f573b415987645369e3160838a439f2f597c807335eec64515af0283ca"><div class="ttname"><a href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a439f2f597c807335eec64515af0283ca">dqcsim::wrap::PredefinedGate::PhaseK</a></div><div class="ttdeci">@ PhaseK</div><div class="ttdoc">The matrix for a Z rotation with angle π/2^k.</div></div>
-<div class="ttc" id="aclassdqcsim_1_1wrap_1_1_matrix_html_a2ca13c01a8f750db976830d0fab5bce8"><div class="ttname"><a href="classdqcsim_1_1wrap_1_1_matrix.html#a2ca13c01a8f750db976830d0fab5bce8">dqcsim::wrap::Matrix::Matrix</a></div><div class="ttdeci">Matrix(HandleIndex handle) noexcept</div><div class="ttdoc">Wraps the given matrix handle.</div><div class="ttdef"><b>Definition:</b> <a href="dqcsim_source.html#l02974">dqcsim:2974</a></div></div>
+<div class="ttc" id="aclassdqcsim_1_1wrap_1_1_matrix_html_a2ca13c01a8f750db976830d0fab5bce8"><div class="ttname"><a href="classdqcsim_1_1wrap_1_1_matrix.html#a2ca13c01a8f750db976830d0fab5bce8">dqcsim::wrap::Matrix::Matrix</a></div><div class="ttdeci">Matrix(HandleIndex handle) noexcept</div><div class="ttdoc">Wraps the given matrix handle.</div><div class="ttdef"><b>Definition:</b> <a href="dqcsim_source.html#l03171">dqcsim:3171</a></div></div>
 <div class="ttc" id="anamespacedqcsim_1_1wrap_html_a306249d3867840f6028c135e7d6e3c76af1cdab8853303bb92c252edcfddcc968"><div class="ttname"><a href="namespacedqcsim_1_1wrap.html#a306249d3867840f6028c135e7d6e3c76af1cdab8853303bb92c252edcfddcc968">dqcsim::wrap::HandleType::ArbData</a></div><div class="ttdeci">@ ArbData</div><div class="ttdoc">Indicates that a handle is an ArbData.</div></div>
 <div class="ttc" id="anamespacedqcsim_1_1wrap_html_acf8e6d9f573b415987645369e3160838a5e35d7fff7b903516cba242ff68fc6d3"><div class="ttname"><a href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838a5e35d7fff7b903516cba242ff68fc6d3">dqcsim::wrap::PredefinedGate::Phase</a></div><div class="ttdeci">@ Phase</div><div class="ttdoc">The matrix for an arbitrary Z rotation.</div></div>
 <div class="ttc" id="anamespacedqcsim_1_1wrap_html_acf8e6d9f573b415987645369e3160838af9c24782c24c237d16e79f18e2fa9046"><div class="ttname"><a href="namespacedqcsim_1_1wrap.html#acf8e6d9f573b415987645369e3160838af9c24782c24c237d16e79f18e2fa9046">dqcsim::wrap::PredefinedGate::RX</a></div><div class="ttdeci">@ RX</div><div class="ttdoc">The matrix for an arbitrary X rotation.</div></div>

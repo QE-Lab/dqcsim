@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["BoundGate","A bound gate type."],["GateType","An abstract gate type."],["UnboundGate","An unbound gate type."]]});
+initSidebarItems({"enum":[["BoundUnitaryGate","A bound gate type."],["UnboundUnitaryGate","An unbound gate type."],["UnitaryGateType","An abstract gate type."]]});

@@ -17,8 +17,8 @@ optimize its calculations for controlled gates.</p>
 the gate matrix in the same way it is specified; that is, if the simulator
 can optimize its calculations by altering the global phase it is allowed
 to.</p>
-<p>If is up to the user to ensure that the specified matrix is unitary. This
-is NOT checked by DQCsim. The simulator backend may or may not check this.</p>
+<p>DQCsim checks whether the matrix is unitary using the equivalent of
+<code>dqcs_mat_approx_unitary()</code> with an epsilon value of 1e-6.</p>
 <p>This function returns the handle to the gate, or 0 to indicate failure.
 The <code>targets</code> qubit set, (if specified) the <code>controls</code> qubit set, and the
 matrix are consumed/deleted by this function if and only if it succeeds.</p>
