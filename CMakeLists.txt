@@ -7,8 +7,6 @@ if (PROJECT_NAME)
     # over the place and then fail.
     cmake_minimum_required(VERSION 3.11.0 FATAL_ERROR)
 
-    add_library(dqcsim SHARED IMPORTED GLOBAL)
-
     include(ExternalProject)
     if (DQCSIM_FROM_SOURCE)
         if (${DQCSIM_FROM_SOURCE} STREQUAL "yes")
@@ -43,6 +41,12 @@ if (PROJECT_NAME)
             set(DQCSIM_LIB "${DQCSIM_INSTALL_PREFIX}/lib/libdqcsim${CMAKE_SHARED_LIBRARY_SUFFIX}")
         endif()
         set(DQCSIM_INC "${DQCSIM_INSTALL_PREFIX}/include")
+        file(MAKE_DIRECTORY ${DQCSIM_INC})
+        add_library(dqcsim SHARED IMPORTED GLOBAL)
+        set_target_properties(dqcsim PROPERTIES
+            IMPORTED_LOCATION ${DQCSIM_LIB}
+            INTERFACE_INCLUDE_DIRECTORIES ${DQCSIM_INC}
+            INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${DQCSIM_INC})
     else()
         find_library(DQCSIM_LIB dqcsim)
         find_path(DQCSIM_INC dqcsim.h)
@@ -55,12 +59,12 @@ if (PROJECT_NAME)
                 from source using -DDQCSIM_FROM_SOURCE=<src-dir>."
             )
         endif()
+        add_library(dqcsim INTERFACE IMPORTED GLOBAL)
+        set_target_properties(dqcsim PROPERTIES
+            INTERFACE_LINK_OPTIONS -ldqcsim
+            INTERFACE_INCLUDE_DIRECTORIES ${DQCSIM_INC}
+            INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${DQCSIM_INC})
     endif()
-    file(MAKE_DIRECTORY ${DQCSIM_INC})
-    set_target_properties(dqcsim PROPERTIES
-        IMPORTED_LOCATION ${DQCSIM_LIB}
-        INTERFACE_INCLUDE_DIRECTORIES ${DQCSIM_INC}
-        INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${DQCSIM_INC})
 
 else()
 

@@ -28,9 +28,12 @@ if(NOT DQCSIM_LIB OR NOT DQCSIM_INC)
     message(FATAL_ERROR "DQCsim could not be found!)")
 endif()
 
-# Now we just need to tell CMake to use the library and headers it found when
-# compiling your program. You do this as follows.
-target_link_libraries(main ${DQCSIM_LIB})
+# Now we just need to tell CMake to use the library and headers when compiling
+# your program. You do this as follows. This relies on your compiler being able
+# to find the library as well; there's no good way around this unfortunately.
+# You could also link against ${DQCSIM_LIB} directly, but then the path will be
+# hardcoded, so the binary might not work on other systems.
+target_link_options(main PUBLIC -ldqcsim)
 target_include_directories(main PRIVATE ${DQCSIM_INC})
 
 # While the above works and is relatively easy to understand, you may want to
