@@ -154,11 +154,51 @@
                         <h1><a class="header" href="#plugin-distribution" id="plugin-distribution">Plugin distribution</a></h1>
 <p>Since DQCsim is only a framework, installing <em>just</em> DQCsim doesn't let you do
 much besides development. To get started with it quickly, you'll also need to
-install some plugins.</p>
-<p>This is currently TODO, because there are no supported plugins yet. However,
-the current idea is that these will also be distributed through pip, with a
-dependency on <code>dqcsim</code>. For instance, you should be able to install <code>dqcsim-qx</code>
-through pip to get the QX simulator with appropriate DQCsim bindings.</p>
+install some plugins. At the time of writing, the following plugins are
+available or planned.</p>
+<h2><a class="header" href="#quantumsim-backend" id="quantumsim-backend">QuantumSim backend</a></h2>
+<ul>
+<li>Install: <code>sudo pip3 install dqcsim-quantumsim</code></li>
+<li>Source/docs: <a href="https://github.com/QE-Lab/dqcsim-quantumsim">GitHub</a></li>
+</ul>
+<p>A very lightweight connection to the
+<a href="https://gitlab.com/quantumsim/quantumsim">QuantumSim</a> simulator. Very suitable
+as a more in-depth example for Python plugin development, as it's Python-only.</p>
+<h2><a class="header" href="#openql-mapper-operator" id="openql-mapper-operator">OpenQL mapper operator</a></h2>
+<ul>
+<li>Install: <code>sudo pip3 install dqcsim-openql-mapper</code></li>
+<li>Source/docs: <a href="https://github.com/QE-Lab/dqcsim-openql-mapper">GitHub</a></li>
+</ul>
+<p>This plugin converts an incoming gatestream using virtual qubits to physical
+qubits in the outgoing gatestream, inserting swaps and moves along the way to
+satisfy configurable connectivity constraints, using the
+<a href="https://github.com/QE-Lab/OpenQL">OpenQL</a> mapper.</p>
+<h2><a class="header" href="#qx-backend-work-in-progress" id="qx-backend-work-in-progress">QX backend (work in progress)</a></h2>
+<ul>
+<li>Source/docs: <a href="https://github.com/QE-Lab/dqcsim-qx">GitHub</a></li>
+</ul>
+<p>A very lightweight connection to the QuantumSim simulator. Very suitable as a
+more in-depth example for Python plugin development, as it's Python-only.</p>
+<h2><a class="header" href="#openqasm-frontend-work-in-progress" id="openqasm-frontend-work-in-progress">OpenQASM frontend (work in progress)</a></h2>
+<ul>
+<li>Source: currently in the DQCsim main repository; about to be split off,
+though.</li>
+</ul>
+<p>Allows execution of <a href="https://github.com/Qiskit/openqasm">OpenQASM</a> algorithm
+descriptions.</p>
+<h2><a class="header" href="#cqasm-frontend-planned" id="cqasm-frontend-planned">cQASM frontend (planned)</a></h2>
+<p>Allows execution of cQASM algorithm descriptions, giving DQCsim access to the
+full capability of the <a href="https://github.com/QE-Lab/OpenQL">OpenQL compiler</a>, as
+cQASM is its primary output format.</p>
+<h2><a class="header" href="#cqasm-output-operator-planned" id="cqasm-output-operator-planned">cQASM output operator (planned)</a></h2>
+<p>Interprets the gatestream passing through it to write a cQASM file.</p>
+<h2><a class="header" href="#metrics-operator-planned" id="metrics-operator-planned">Metrics operator (planned)</a></h2>
+<p>Interprets the gatestream passing through it to calculate statistics, like
+circuit depths, number of swap gates, and so on.</p>
+<h2><a class="header" href="#your-plugin-here" id="your-plugin-here">[Your plugin here]</a></h2>
+<p>Developing plugins for DQCsim is very easy once you get the hang of it! Most of
+the plugins listed above were written in about a day, initial debugging of
+DQCsim aside. Keep reading!</p>
 
                     </main>
 
