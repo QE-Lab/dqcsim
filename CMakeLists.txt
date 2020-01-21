@@ -48,8 +48,24 @@ if (PROJECT_NAME)
             INTERFACE_INCLUDE_DIRECTORIES ${DQCSIM_INC}
             INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${DQCSIM_INC})
     else()
-        find_library(DQCSIM_LIB dqcsim)
-        find_path(DQCSIM_INC dqcsim.h)
+        if(NOT DEFINED DQCSIM_LIB)
+            if(DEFINED ENV{DQCSIM_LIB})
+                set(DQCSIM_LIB $ENV{DQCSIM_LIB})
+            elseif(DEFINED ENV{DQCSIM_PREFIX})
+                set(DQCSIM_LIB $ENV{DQCSIM_PREFIX}/lib/libdqcsim${CMAKE_SHARED_LIBRARY_SUFFIX})
+            else()
+                find_library(DQCSIM_LIB dqcsim)
+            endif()
+        endif()
+        if(NOT DEFINED DQCSIM_INC)
+            if(DEFINED ENV{DQCSIM_INC})
+                set(DQCSIM_INC $ENV{DQCSIM_INC})
+            elseif(DEFINED ENV{DQCSIM_PREFIX})
+                set(DQCSIM_INC $ENV{DQCSIM_PREFIX}/include)
+            else()
+                find_path(DQCSIM_INC dqcsim.h)
+            endif()
+        endif()
         if(NOT DQCSIM_LIB OR NOT DQCSIM_INC)
             message(
                 FATAL_ERROR
@@ -59,9 +75,11 @@ if (PROJECT_NAME)
                 from source using -DDQCSIM_FROM_SOURCE=<src-dir>."
             )
         endif()
+        get_filename_component(DQCSIM_LIB_PATH ${DQCSIM_LIB} DIRECTORY)
+        get_filename_component(DQCSIM_LIB_PATH ${DQCSIM_LIB_PATH} REALPATH)
         add_library(dqcsim INTERFACE IMPORTED GLOBAL)
         set_target_properties(dqcsim PROPERTIES
-            INTERFACE_LINK_OPTIONS -ldqcsim
+            INTERFACE_LINK_OPTIONS "-L${DQCSIM_LIB_PATH};-ldqcsim"
             INTERFACE_INCLUDE_DIRECTORIES ${DQCSIM_INC}
             INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${DQCSIM_INC})
     endif()
