@@ -114,7 +114,7 @@ else()
         SOURCE_DIR "${CMAKE_SOURCE_DIR}/rust"
         BINARY_DIR "${TARGET_DIR}/include"
         BUILD_ALWAYS ON
-        BUILD_COMMAND cargo build ${CARGO_BUILD_TYPE} --all-features
+        BUILD_COMMAND cargo build ${CARGO_BUILD_TYPE} --features bindings
         INSTALL_COMMAND ""
     )
     add_library(dqcsim SHARED IMPORTED)
