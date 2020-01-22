@@ -42,6 +42,11 @@ if (PROJECT_NAME)
         endif()
         set(DQCSIM_INC "${DQCSIM_INSTALL_PREFIX}/include")
         file(MAKE_DIRECTORY ${DQCSIM_INC})
+        add_library(dqcsim SHARED IMPORTED GLOBAL)
+        set_target_properties(dqcsim PROPERTIES
+            IMPORTED_LOCATION ${DQCSIM_LIB}
+            INTERFACE_INCLUDE_DIRECTORIES ${DQCSIM_INC}
+            INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${DQCSIM_INC})
     else()
         if(NOT DEFINED DQCSIM_LIB)
             if(DEFINED ENV{DQCSIM_LIB})
@@ -70,12 +75,15 @@ if (PROJECT_NAME)
                 from source using -DDQCSIM_FROM_SOURCE=<src-dir>."
             )
         endif()
+        get_filename_component(DQCSIM_LIB_PATH ${DQCSIM_LIB} DIRECTORY)
+        get_filename_component(DQCSIM_LIB_PATH ${DQCSIM_LIB_PATH} REALPATH)
+        add_library(dqcsim SHARED IMPORTED GLOBAL)
+        set_target_properties(dqcsim PROPERTIES
+            IMPORTED_LOCATION libdqcsim.so
+            INTERFACE_LINK_LIBRARIES -L${DQCSIM_LIB_PATH}
+            INTERFACE_INCLUDE_DIRECTORIES ${DQCSIM_INC}
+            INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${DQCSIM_INC})
     endif()
-    add_library(dqcsim SHARED IMPORTED GLOBAL)
-    set_target_properties(dqcsim PROPERTIES
-        IMPORTED_LOCATION ${DQCSIM_LIB}
-        INTERFACE_INCLUDE_DIRECTORIES ${DQCSIM_INC}
-        INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${DQCSIM_INC})
 
 else()
 
