@@ -80,7 +80,7 @@ if (PROJECT_NAME)
         add_library(dqcsim SHARED IMPORTED GLOBAL)
         set_target_properties(dqcsim PROPERTIES
             IMPORTED_LOCATION ${DQCSIM_LIB}
-            INTERFACE_LINK_LIBRARIES ${DQCSIM_LIB_PATH}
+            IMPORTED_NO_SONAME YES
             INTERFACE_INCLUDE_DIRECTORIES ${DQCSIM_INC}
             INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${DQCSIM_INC})
     endif()
