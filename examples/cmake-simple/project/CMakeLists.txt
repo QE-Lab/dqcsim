@@ -35,8 +35,7 @@ endif()
 # to find the library as well; there's no good way around this unfortunately.
 # You could also link against ${DQCSIM_LIB} directly, but then the path will be
 # hardcoded, so the binary might not work on other systems.
-get_filename_component(DQCSIM_LIB_PATH ${DQCSIM_LIB} DIRECTORY)
-target_link_options(main PUBLIC "-L${DQCSIM_LIB_PATH};-ldqcsim")
+target_link_libraries(main ${DQCSIM_LIB})
 target_include_directories(main PRIVATE ${DQCSIM_INC})
 
 # While the above works and is relatively easy to understand, you may want to
