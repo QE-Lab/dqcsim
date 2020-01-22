@@ -78,7 +78,7 @@ if (PROJECT_NAME)
         get_filename_component(DQCSIM_LIB_PATH ${DQCSIM_LIB} DIRECTORY)
         get_filename_component(DQCSIM_LIB_PATH ${DQCSIM_LIB_PATH} REALPATH)
         add_library(dqcsim SHARED IMPORTED GLOBAL)
-        target_link_directories(dqcsim PUBLIC ${DQCSIM_LIB_PATH})
+        target_link_directories(dqcsim INTERFACE ${DQCSIM_LIB_PATH})
         set_target_properties(dqcsim PROPERTIES
             IMPORTED_LOCATION libdqcsim.so
             INTERFACE_INCLUDE_DIRECTORIES ${DQCSIM_INC}
