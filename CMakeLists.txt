@@ -77,7 +77,7 @@ if (PROJECT_NAME)
         endif()
         get_filename_component(DQCSIM_LIB_PATH ${DQCSIM_LIB} DIRECTORY)
         get_filename_component(DQCSIM_LIB_PATH ${DQCSIM_LIB_PATH} REALPATH)
-        add_library(dqcsim INTERFACE GLOBAL)
+        add_library(dqcsim INTERFACE)
         set_target_properties(dqcsim PROPERTIES
             INTERFACE_LINK_DIRECTORIES ${DQCSIM_LIB_PATH}
             INTERFACE_LINK_LIBRARIES dqcsim
