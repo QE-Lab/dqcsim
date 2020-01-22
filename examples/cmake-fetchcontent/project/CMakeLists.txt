@@ -6,6 +6,8 @@ project(dqcsim-cmake-example
     LANGUAGES CXX
 )
 
+set(CMAKE_CXX_STANDARD 11)
+
 # You might want to read the simple example first, if you haven't already.
 
 # You can use the FetchContent module (added in CMake 3.14!) with DQCsim like
