@@ -29,7 +29,7 @@ the [Installation](https://mbrobbel.github.io/dqcsim/install/) section of the
 
 ### Users
 
-New users are encouraged check out the
+New users are encouraged to check out the
 [documentation](https://mbrobbel.github.io/dqcsim/).
 
 ### Plugin developers
@@ -37,10 +37,10 @@ New users are encouraged check out the
 Plugin developers can check out the [examples](./examples), existing [plugins](#plugins)
 and refer to the API documentation:
 
-- [Python](https://mbrobbel.github.io/dqcsim/py_/dqcsim/)
-- [C++](https://mbrobbel.github.io/dqcsim/cpp_/)
-- [C](https://mbrobbel.github.io/dqcsim/c-api/reference.apigen.html)
-- [Rust](https://mbrobbel.github.io/dqcsim/rust_/dqcsim/)
+- [Python](https://mbrobbel.github.io/dqcsim/python-api/) ([Reference](https://mbrobbel.github.io/dqcsim/py_/dqcsim/))
+- [C++](https://mbrobbel.github.io/dqcsim/cpp-api/) ([Reference](https://mbrobbel.github.io/dqcsim/cpp_/))
+- [C](https://mbrobbel.github.io/dqcsim/c-api/) ([Reference](https://mbrobbel.github.io/dqcsim/c-api/reference.apigen.html))
+- [Rust](https://mbrobbel.github.io/dqcsim/rust-api/) ([Reference](https://mbrobbel.github.io/dqcsim/rust_/dqcsim/))
 
 ## Plugins
 
@@ -138,10 +138,10 @@ Add `--release` for release builds.
 ### Documentation
 
 To build the documentation use the [Makefile](./doc/Makefile) in the
-[doc](./doc) directory:
+[doc](./doc) directory directly from the root of the repository:
 
 ```bash
-make all
+make -C doc
 ```
 
 Documentation output is stored in `target/book`.
@@ -165,10 +165,10 @@ mkdir build
 cd build
 cmake .. -DBUILD_TESTS=ON
 make
-make test
+CTEST_OUTPUT_ON_FAILURE=1 make test
 ```
 
-Add `-DCMAKE_BUILD_TYPE=DEBUG` for debug builds.
+Add `-DCMAKE_BUILD_TYPE=DEBUG` to CMake for debug builds.
 
 #### Python
 

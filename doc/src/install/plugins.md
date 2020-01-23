@@ -24,17 +24,17 @@ qubits in the outgoing gatestream, inserting swaps and moves along the way to
 satisfy configurable connectivity constraints, using the
 [OpenQL](https://github.com/QE-Lab/OpenQL) mapper.
 
-## QX backend (work in progress)
+## QX backend
 
+ - Install: `sudo pip3 install dqcsim-qx`
  - Source/docs: [GitHub](https://github.com/QE-Lab/dqcsim-qx)
 
-A very lightweight connection to the QuantumSim simulator. Very suitable as a
-more in-depth example for Python plugin development, as it's Python-only.
+A connection to the [QX](https://github.com/QE-Lab/qx-simulator/) simulator.
 
-## OpenQASM frontend (work in progress)
+## OpenQASM frontend
 
- - Source: currently in the DQCsim main repository; about to be split off,
-   though.
+ - Install: `cargo install dqcsim-openqasm`
+ - Source: [Github](https://github.com/mbrobbel/dqcsim-openqasm)
 
 Allows execution of [OpenQASM](https://github.com/Qiskit/openqasm) algorithm
 descriptions.
