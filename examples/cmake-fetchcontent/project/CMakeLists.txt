@@ -6,16 +6,18 @@ project(dqcsim-cmake-example
     LANGUAGES CXX
 )
 
-set(CMAKE_CXX_STANDARD 11)
-
 # You might want to read the simple example first, if you haven't already.
+
+# First things first: DQCsim's C++ header requires C++11. So unless you're only
+# using the C interface, you'll need to set this.
+set(CMAKE_CXX_STANDARD 11)
 
 # You can use the FetchContent module (added in CMake 3.14!) with DQCsim like
 # this:
 include(FetchContent)
 FetchContent_Declare(dqcsim
   GIT_REPOSITORY  https://github.com/mbrobbel/dqcsim.git
-  GIT_TAG         master
+  GIT_TAG         initial-release
 )
 FetchContent_MakeAvailable(dqcsim)
 
