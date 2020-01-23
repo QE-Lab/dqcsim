@@ -59,9 +59,9 @@ class build(_build):
                 cargo = local.get('cargo', os.environ.get('HOME', 'root') + '/.cargo/bin/cargo')
             finally:
                 if debug:
-                    cargo["build"]["--features"]["bindings"] & FG
+                    cargo["build"]["--features"]["bindings cli null-plugins"] & FG
                 else:
-                    cargo["build"]["--release"]["--features"]["bindings"] & FG
+                    cargo["build"]["--release"]["--features"]["bindings cli null-plugins"] & FG
 
         local['mkdir']("-p", py_target_dir)
         sys.path.append("python/tools")

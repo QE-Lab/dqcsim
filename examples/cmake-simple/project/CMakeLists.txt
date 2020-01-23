@@ -6,7 +6,8 @@ project(dqcsim-cmake-example
     LANGUAGES CXX
 )
 
-# Let's say you have an executable that needs DQCsim...
+# Let's say you have a C++ executable that needs DQCsim...
+set(CMAKE_CXX_STANDARD 11) # <-- DQCsim's header needs C++11
 add_executable(main main.cpp)
 # ... then the most straightforward way to make it depend on DQCsim is as
 # follows.
@@ -33,7 +34,7 @@ endif()
 # to find the library as well; there's no good way around this unfortunately.
 # You could also link against ${DQCSIM_LIB} directly, but then the path will be
 # hardcoded, so the binary might not work on other systems.
-target_link_options(main PUBLIC -ldqcsim)
+target_link_libraries(main ${DQCSIM_LIB})
 target_include_directories(main PRIVATE ${DQCSIM_INC})
 
 # While the above works and is relatively easy to understand, you may want to

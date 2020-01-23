@@ -1,13 +1,11 @@
 # DQCsim
 
-[![Crates.io](https://badgen.net/crates/v/dqcsim)](https://crates.io/crates/dqcsim/)
 [![PyPi](https://badgen.net/pypi/v/dqcsim)](https://pypi.org/project/dqcsim/)
-
+[![Crates.io](https://badgen.net/crates/v/dqcsim)](https://crates.io/crates/dqcsim/)
 [![Rust workflow](https://github.com/mbrobbel/dqcsim/workflows/Rust/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3ARust)
 [![Python workflow](https://github.com/mbrobbel/dqcsim/workflows/Python/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3APython)
 [![C++ workflow](https://github.com/mbrobbel/dqcsim/workflows/C++/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3AC++)
-[![Documentation workflow](https://github.com/mbrobbel/dqcsim/workflows/Documentation/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3ADocumentation)
-[![Coverage workflow](https://github.com/mbrobbel/dqcsim/workflows/Coverage/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3ACoverage)
+[![Documentation workflow](https://github.com/mbrobbel/dqcsim/workflows/Documentation/badge.svg)](https://mbrobbel.github.io/dqcsim/)
 [![Codecov.io](https://codecov.io/gh/mbrobbel/dqcsim/branch/master/graph/badge.svg)](https://codecov.io/gh/mbrobbel/dqcsim)
 
 DQCsim, short for Delft Quantum & Classical simulator, is a *framework* that
@@ -15,112 +13,167 @@ can be used to tie *components* of quantum computer simulators together in a
 *standardized* yet *flexible*, *developer-friendly*, and *reproducible* way.
 Click [here](https://mbrobbel.github.io/dqcsim/) for more information!
 
-## Installation
+## Install
 
-If you're a user or a plugin developer (Python, C, or C++), the recommended
-way to install DQCsim is through Python's package manager:
+The recommended method to install DQCsim is through Python's package manager:
 
-    sudo pip3 install dqcsim
+```bash
+sudo pip3 install dqcsim
+```
 
-This will install just the DQCsim core files and so-called "null" plugins for
-testing. So you'll also want to install plugins in addition. This is currently
-TODO, because there are no supported plugins yet. However, the current idea is
-that these will also be distributed through pip, with a dependency on
-`dqcsim`. For instance, you should be able to install `dqcsim-qx` through pip
-to get the QX simulator with appropriate DQCsim bindings.
-
-You can find more information
-[here](https://mbrobbel.github.io/dqcsim/install/).
+This installs DQCsim's core files and plugins. More information is available in
+the [Installation](https://mbrobbel.github.io/dqcsim/install/) section of the
+[documentation](https://mbrobbel.github.io/dqcsim/).
 
 ## Getting started
 
-Read the [documentation](https://mbrobbel.github.io/dqcsim/)!
+### Users
 
-## Reporting bugs
+New users are encouraged to check out the
+[documentation](https://mbrobbel.github.io/dqcsim/).
 
-We use github's issue tracker. Click
-[here](https://github.com/mbrobbel/dqcsim/issues/new) to open a new issue.
+### Plugin developers
 
-## Contributing to DQCsim
+Plugin developers can check out the [examples](./examples), existing [plugins](#plugins)
+and refer to the API documentation:
 
-TODO: until we (jvanstraten and mbrobbel) get a first release going,
-contributing is probably more trouble than it's worth.
+- [Python](https://mbrobbel.github.io/dqcsim/python-api/) ([Reference](https://mbrobbel.github.io/dqcsim/py_/dqcsim/))
+- [C++](https://mbrobbel.github.io/dqcsim/cpp-api/) ([Reference](https://mbrobbel.github.io/dqcsim/cpp_/))
+- [C](https://mbrobbel.github.io/dqcsim/c-api/) ([Reference](https://mbrobbel.github.io/dqcsim/c-api/reference.apigen.html))
+- [Rust](https://mbrobbel.github.io/dqcsim/rust-api/) ([Reference](https://mbrobbel.github.io/dqcsim/rust_/dqcsim/))
 
-### What to contribute?
+## Plugins
 
-Check github's [issue tracker](https://github.com/mbrobbel/dqcsim/issues) to
-see what we're working on and what needs to be done.
+### Frontend
 
-### Code style
+| Plugin | Description | Download | License | Platforms | Language |
+|:-------|:------------|:---------|:--------|:----------|:---------|
+| [openqasm](https://github.com/mbrobbel/dqcsim-openqasm) | OpenQASM 2.0 frontend | [![Crates.io](https://badgen.net/crates/v/dqcsim-openqasm)](https://crates.io/crates/dqcsim-openqasm/) | Apache-2.0 | Linux, macOS | Rust |
+| [null](rust/src/bin/null/) | No-op frontend | [![PyPi](https://badgen.net/pypi/v/dqcsim)](https://pypi.org/project/dqcsim/) | Apache-2.0 | Linux, macOS | Rust |
 
-For Rust code this is simple: always apply `cargo format` and
-`cargo clippy -Dwarnings` before committing. The CI will fail if your code does
-not comply. For C, C++, and Python, there isn't really a specific code style
-defined right now; please just try to mimic the existing code.
+### Operator
 
-Any tab character that isn't required by the language (looking at you, Make)
-will be shot on sight. Trailing whitespace is also frowned upon.
+| Plugin | Description | Download | License | Platforms | Language |
+|:-------|:------------|:---------|:--------|:----------|:---------|
+| [openql-mapper](https://github.com/QE-LAB/dqcsim-openql-mapper) | OpenQL mapper operator | [![PyPi](https://badgen.net/pypi/v/dqcsim-openql-mapper)](https://pypi.org/project/dqcsim-openql-mapper/) | Apache-2.0 | Linux | C++ |
+| [null](rust/src/bin/null/) | No-op operator | [![PyPi](https://badgen.net/pypi/v/dqcsim)](https://pypi.org/project/dqcsim/) | Apache-2.0 | Linux, macOS | Rust |
 
-### Building
+### Backend
 
-Within the root directory of the repository resides a Cargo workspace, a Python
-`setup.py` (using `setuptools`), and a CMake buildsystem. Since we're using pip
-for distribution, `setup.py` is the master: running `python3 setup.py build`
-will chain to Cargo to build the Rust modules before building the
-Python-specific things. The C/C++ API is currently header-only, so it doesn't
-need to do anything with CMake. Note that the headers are generated by Rust's
-`build.rs` script, though. Running `python3 setup.py bdist_wheel` after the
-build will produce a wheel file in `target/python/dist`, which you can then
-install into a Python venv using pip; just replace `dqcsim` in the install
-notes above with the wheel file.
+| Plugin | Description | Download | License | Platforms | Language |
+|:-------|:------------|:---------|:--------|:----------|:---------|
+| [quantumsim](https://github.com/QE-LAB/dqcsim-quantumsim) | Quantumsim backend | [![PyPi](https://badgen.net/pypi/v/dqcsim-quantumsim)](https://pypi.org/project/dqcsim-quantumsim/) | GPL-3.0 | Linux, macOS | Python |
+| [qx](https://github.com/QE-LAB/dqcsim-qx) | QX backend | [![PyPi](https://badgen.net/pypi/v/dqcsim-qx)](https://pypi.org/project/dqcsim-qx/) | Apache-2.0 | Linux, macOS | C++ |
+| [null](rust/src/bin/null/) | No-op backend | [![PyPi](https://badgen.net/pypi/v/dqcsim)](https://pypi.org/project/dqcsim/) | Apache-2.0 | Linux, macOS | Rust |
 
-The documentation is built seperately using the `doc` folder. It relies on
-`mdbook` for the main tutorial-style documentation, `cargo` for the Rust
-reference, `doxygen` for the C++ reference, and `pdoc3` for the Python
-reference. If you have all those, you can just run `make` in the `doc` folder,
-and the documentation will appear in `target/book`. You can also run
-`make open`, which will try to open the index in a browser when the build
-completes.
+Please open a PR to have your plugin added to this list.
 
-If you're stuck on something build-related, it might be useful to check out how
-the CI pipelines handle the build. You can find this in the `.github` folder, as
-we currently use Github actions. The yaml files should be pretty
-self-explanatory when it comes to the build command lines.
+## Build and test from source
 
-### Testing
+**Setup**
 
-Testing is done by the buildsystem associated with the language.
+The core of DQCsim is written in Rust. The crate defines a set of C-bindings to
+support plugin development in other languages. DQCsim is distributed as a
+*batteries included* Python package that includes the shared library and
+headers for C and C++ plugin development.
+
+**Requirements**
+
+- [Rust](https://rustup.rs/) (stable)
+
+Python support:
+
+- [Python](https://www.python.org/downloads/) (3.5+)
+- [Swig](https://github.com/swig/swig/)
+
+C/C++ tests:
+
+- [CMake](https://github.com/Kitware/CMake) (3.14+)
+
+Documentation:
+
+- [mdbook](https://github.com/rust-lang/mdBook)
+- [pdoc](https://pypi.org/project/pdoc/)
+- [Doxygen](https://github.com/doxygen/doxygen)
+
+### Python
+
+To build the `dqcsim` Python package:
+
+```bash
+python3 setup.py bdist_wheel
+```
+
+This builds a release wheel to `target/python/dist/`. For debug builds set the
+`DQCSIM_DEBUG` environment variable.
+
+### C/C++
+
+To build the C and C++ headers build the `dqcsim` Rust crate with the
+`bindings` feature enabled:
+
+```bash
+cargo build --manifest-path=rust/Cargo.toml --features=bindings
+```
+
+The generated headers are stored in `target/include`.
+
+### Rust
+
+The `dqcsim` crate can be built with the following (non-default) features:
+
+- `cli`:  the command-line interface binary
+- `null-plugins`: the null (no-op) plugin binaries
+- `bindings`: genertion of headers required for C, C++ and Python plugin
+  development
+
+To build all targets and features:
+
+```bash
+cargo build --all-targets --all-features
+```
+
+Add `--release` for release builds.
+
+### Documentation
+
+To build the documentation use the [Makefile](./doc/Makefile) in the
+[doc](./doc) directory directly from the root of the repository:
+
+```bash
+make -C doc
+```
+
+Documentation output is stored in `target/book`.
+
+### Test
 
 #### Rust
 
-To run the core test suite for DQCsim and its command-line interface:
+To test all targets and features:
 
-    cargo test
-
-#### Python
-
-To run the Python API test suite:
-
-    python3 setup.py test
-
-This will automatically chain to Cargo if needed.
+```bash
+cargo test --all-targets --all-features
+```
 
 #### C/C++
 
-To run the C/C++ API test suite:
+To test the C-bindings and C++ wrapper:
 
-    mkdir -p build
-    cd build
-    cmake .. -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=debug
-    make -j
-    CTEST_OUTPUT_ON_FAILURE=1 make test
+```bash
+mkdir build
+cd build
+cmake .. -DBUILD_TESTS=ON
+make
+CTEST_OUTPUT_ON_FAILURE=1 make test
+```
 
-This will automatically chain to Cargo if needed.
+Add `-DCMAKE_BUILD_TYPE=DEBUG` to CMake for debug builds.
 
-### Cleaning
+#### Python
 
-The Rust, Python, and documentation build systems are configured to output all
-build artifacts in the `target` directory. The C/C++ tests output to wherever
-you ran CMake from. Thus, if you need to clean everything due to a broken
-buildsystem state (this can happen for instance when you switch branches) all
-you should have to do is delete those directories.
+To test the Python package:
+
+```bash
+python3 setup.py build test
+```

@@ -77,9 +77,10 @@ if (PROJECT_NAME)
         endif()
         get_filename_component(DQCSIM_LIB_PATH ${DQCSIM_LIB} DIRECTORY)
         get_filename_component(DQCSIM_LIB_PATH ${DQCSIM_LIB_PATH} REALPATH)
-        add_library(dqcsim INTERFACE IMPORTED GLOBAL)
+        add_library(dqcsim SHARED IMPORTED GLOBAL)
         set_target_properties(dqcsim PROPERTIES
-            INTERFACE_LINK_OPTIONS "-L${DQCSIM_LIB_PATH};-ldqcsim"
+            IMPORTED_LOCATION ${DQCSIM_LIB}
+            IMPORTED_NO_SONAME YES
             INTERFACE_INCLUDE_DIRECTORIES ${DQCSIM_INC}
             INTERFACE_SYSTEM_INCLUDE_DIRECTORIES ${DQCSIM_INC})
     endif()
@@ -114,7 +115,7 @@ else()
         SOURCE_DIR "${CMAKE_SOURCE_DIR}/rust"
         BINARY_DIR "${TARGET_DIR}/include"
         BUILD_ALWAYS ON
-        BUILD_COMMAND cargo build ${CARGO_BUILD_TYPE} --all-features
+        BUILD_COMMAND cargo build ${CARGO_BUILD_TYPE} --manifest-path=${CMAKE_SOURCE_DIR}/rust/Cargo.toml --features=bindings
         INSTALL_COMMAND ""
     )
     add_library(dqcsim SHARED IMPORTED)

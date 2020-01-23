@@ -60,3 +60,5 @@
   - [Host/simulation anatomy](./cpp-api/sim.md)
   - [Reference](./cpp-api/reference.md)
 - [Rust API](./rust-api/index.md)
+
+[Release](./release.md)

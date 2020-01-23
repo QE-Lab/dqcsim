@@ -118,17 +118,5 @@ class Tests(unittest.TestCase):
             with open(base + '/test.repro', 'r') as f:
                 self.assertTrue(len(f.read()) > 0)
 
-    def test_default_backend(self):
-        sim = Simulator(
-            p+'null_frontend.py',
-            repro=None, stderr_verbosity=Loglevel.ERROR
-        )
-        try:
-            sim.simulate()
-            sim.stop(base + '/test.repro')
-        except RuntimeError as e:
-            if "could not find plugin executable 'dqcsbeqx'" not in str(e):
-                raise
-
 if __name__ == '__main__':
     unittest.main()
