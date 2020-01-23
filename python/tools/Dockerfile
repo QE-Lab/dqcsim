@@ -12,7 +12,7 @@ RUN curl -sSf https://sh.rustup.rs | sh -s -- -y && \
 	./configure --without-pcre && \
 	make && \
 	make install && \
-	${PYBIN}/pip3 install auditwheel
+	${PYBIN}/pip3 install -U setuptools wheel auditwheel
 
 ENV PATH=$PATH:/root/.cargo/bin
 
