@@ -17,7 +17,7 @@ set(CMAKE_CXX_STANDARD 11)
 include(FetchContent)
 FetchContent_Declare(dqcsim
   GIT_REPOSITORY  https://github.com/mbrobbel/dqcsim.git
-  GIT_TAG         initial-release
+  GIT_TAG         master
 )
 FetchContent_MakeAvailable(dqcsim)
 
