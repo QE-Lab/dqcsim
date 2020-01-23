@@ -1,5 +1,10 @@
+# [0.1.1] - 2020-01-23
+
+- Fix PyPi wheel upload
+
 # [0.1.0] - 2020-01-23
 
-Initial release
+- Initial release
 
+[0.1.1]: https://github.com/mbrobbel/dqcsim/releases/tag/0.1.1
 [0.1.0]: https://github.com/mbrobbel/dqcsim/releases/tag/0.1.0

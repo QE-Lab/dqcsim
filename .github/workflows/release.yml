@@ -53,7 +53,7 @@ jobs:
     - name: Install Swig
       run: brew install swig
     - name: Install dependencies
-      run: python -m pip install wheel
+      run: python3 -m pip install -U setuptools wheel
     - name: Build wheel
       run: python3 setup.py bdist_wheel
     - uses: actions/upload-artifact@v1
