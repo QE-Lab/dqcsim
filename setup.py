@@ -43,6 +43,9 @@ class build(_build):
         self.build_base = build_dir
 
     def run(self):
+        if 'MACOSX_DEPLOYMENT_TARGET' in os.environ:
+            del os.environ['MACOSX_DEPLOYMENT_TARGET']
+
         from plumbum import local, FG
         with local.cwd("rust"):
             try:
@@ -79,6 +82,8 @@ class bdist(_bdist):
 
 class bdist_wheel(_bdist_wheel):
     def run(self):
+        if platform.system() == "Darwin":
+            os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10_13'
         _bdist_wheel.run(self)
         impl_tag, abi_tag, plat_tag = self.get_tag()
         archive_basename = "{}-{}-{}-{}".format(self.wheel_dist_name, impl_tag, abi_tag, plat_tag)
