@@ -1,3 +1,7 @@
+# [0.2.0] - 2020-01-29
+
+- Allow Python plugins to access gate ArbData
+
 # [0.1.1] - 2020-01-23
 
 - Fix PyPi wheel upload
@@ -6,5 +10,6 @@
 
 - Initial release
 
+[0.2.0]: https://github.com/mbrobbel/dqcsim/releases/tag/0.2.0
 [0.1.1]: https://github.com/mbrobbel/dqcsim/releases/tag/0.1.1
 [0.1.0]: https://github.com/mbrobbel/dqcsim/releases/tag/0.1.0
