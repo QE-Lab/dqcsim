@@ -51,14 +51,14 @@ class TestBackendUnitary(Backend):
         super().__init__()
         self.call_log = []
 
-    def handle_unitary_gate(self, targets, matrix):
+    def handle_unitary_gate(self, targets, matrix, arb):
         self.call_log.append({
             'cmd': 'unitary',
             'targets': targets,
             'matrix': pickle.dumps(matrix),
         })
 
-    def handle_measurement_gate(self, measures, matrix):
+    def handle_measurement_gate(self, measures, matrix, arb):
         self.call_log.append({
             'cmd': 'measurement',
             'measures': measures,
@@ -66,7 +66,7 @@ class TestBackendUnitary(Backend):
         })
         return [Measurement(qubit, qubit % 2) for qubit in measures]
 
-    def handle_prepare_gate(self, targets, matrix):
+    def handle_prepare_gate(self, targets, matrix, arb):
         self.call_log.append({
             'cmd': 'prepare',
             'targets': targets,
@@ -104,7 +104,7 @@ class TestBackendUnitary(Backend):
 
 @plugin("Test backend plugin", "Test", "0.2")
 class TestBackendControlled(TestBackendUnitary):
-    def handle_controlled_gate(self, targets, controls, matrix):
+    def handle_controlled_gate(self, targets, controls, matrix, arb):
         self.call_log.append({
             'cmd': 'controlled',
             'targets': targets,
@@ -118,11 +118,11 @@ class NullOperator(Operator):
 
 @plugin("Test operator 1", "Test", "0.1")
 class Operator1(Operator):
-    def handle_unitary_gate(self, targets, matrix):
+    def handle_unitary_gate(self, targets, matrix, arb):
         self.trace('unitary: {} {}', targets, matrix)
         self.unitary([q+1 for q in targets], matrix)
 
-    def handle_measurement_gate(self, measures, matrix):
+    def handle_measurement_gate(self, measures, matrix, arb):
         self.trace('measurement: {}', measures)
         self.measure([q+2 for q in measures], basis=matrix)
 
@@ -135,15 +135,15 @@ class Operator2(Operator):
             [q+1 for q in measures],
             matrix, *args, **kwargs)
 
-    def handle_controlled_gate(self, targets, controls, matrix):
+    def handle_controlled_gate(self, targets, controls, matrix, arb):
         self.unitary([q+2 for q in targets], matrix, controls=[q+2 for q in controls])
 
 @plugin("Test operator 3", "Test", "0.1")
 class Operator3(Operator):
-    def handle_unitary_gate(self, targets, matrix):
+    def handle_unitary_gate(self, targets, matrix, arb):
         self.unitary([q+1 for q in targets], matrix)
 
-    def handle_controlled_gate(self, targets, controls, matrix):
+    def handle_controlled_gate(self, targets, controls, matrix, arb):
         self.unitary([q+2 for q in targets], matrix, controls=[q+2 for q in controls])
 
 
