@@ -93,7 +93,7 @@ else()
     cmake_minimum_required(VERSION 3.14.0 FATAL_ERROR)
 
     project(dqcsim
-        VERSION 0.1.1
+        VERSION 0.2.0
         DESCRIPTION "C++ bindings for the Delft Quantum & Classical Simulator"
         LANGUAGES CXX
     )
