@@ -447,7 +447,7 @@ class GateStreamSource(Plugin):
         with QubitSet._to_raw(*qubits) as qubits:
             self._pc(raw.dqcs_plugin_free, qubits)
 
-    def unitary(self, targets, matrix, controls=[]):
+    def unitary(self, targets, matrix, controls=[], arb=None):
         """Instructs the downstream plugin to execute a unitary quantum gate.
 
         `targets` must be a non-empty iterable of qubits or a single qubit,
@@ -463,40 +463,45 @@ class GateStreamSource(Plugin):
         with QubitSet._to_raw(targets) as targets:
             with QubitSet._to_raw(controls) as controls:
                 with Handle(raw.dqcs_mat_new(matrix)) as mat:
-                    with Handle(raw.dqcs_gate_new_unitary(targets, controls, mat)) as gate:
-                        self._pc(raw.dqcs_plugin_gate, gate)
+                    gate = Handle(raw.dqcs_gate_new_unitary(targets, controls, mat))
+                    if arb is not None:
+                        if not isinstance(arb, ArbData):
+                            raise TypeError('arb must be None or an instance of ArbData')
+                        arb._to_raw(gate)
+                    with gate as gate_raw:
+                        self._pc(raw.dqcs_plugin_gate, gate_raw)
 
-    def i_gate(self, target):
+    def i_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute an I gate.
 
         `target` is the targetted qubit."""
-        self.unitary(target, [1.0, 0.0, 0.0, 1.0])
+        self.unitary(target, [1.0, 0.0, 0.0, 1.0], arb=arb)
 
-    def rx_gate(self, target, theta):
+    def rx_gate(self, target, theta, arb=None):
         """Instructs the downstream plugin to perform an arbitrary X rotation.
 
         `target` is the targetted qubit. `theta` is the angle in radians."""
         a = math.cos(0.5 * theta)
         b = -1.0j * math.sin(0.5 * theta)
-        self.unitary(target, [a, b, b, a])
+        self.unitary(target, [a, b, b, a], arb=arb)
 
-    def ry_gate(self, target, theta):
+    def ry_gate(self, target, theta, arb=None):
         """Instructs the downstream plugin to perform an arbitrary Y rotation.
 
         `target` is the targetted qubit. `theta` is the angle in radians."""
         a = math.cos(0.5 * theta)
         b = math.sin(0.5 * theta)
-        self.unitary(target, [a, -b, b, a])
+        self.unitary(target, [a, -b, b, a], arb=arb)
 
-    def rz_gate(self, target, theta):
+    def rz_gate(self, target, theta, arb=None):
         """Instructs the downstream plugin to perform an arbitrary Z rotation.
 
         `target` is the targetted qubit. `theta` is the angle in radians."""
         a = cmath.exp(-0.5j * theta)
         b = cmath.exp(0.5j * theta)
-        self.unitary(target, [a, 0.0, 0.0, b])
+        self.unitary(target, [a, 0.0, 0.0, b], arb=arb)
 
-    def r_gate(self, target, theta, phi, lambd):
+    def r_gate(self, target, theta, phi, lambd, arb=None):
         """Instructs the downstream plugin to perform a number of rotations at
         once.
 
@@ -509,9 +514,9 @@ class GateStreamSource(Plugin):
             -b * cmath.exp(1.0j * lambd),
             b * cmath.exp(1.0j * phi),
             a * cmath.exp(1.0j * (phi + lambd)),
-        ])
+        ], arb=arb)
 
-    def swap_gate(self, a, b):
+    def swap_gate(self, a, b, arb=None):
         """Instructs the downstream plugin to execute a swap gate.
 
         `a` and `b` are the targetted qubits."""
@@ -520,9 +525,9 @@ class GateStreamSource(Plugin):
             0.0, 0.0, 1.0, 0.0,
             0.0, 1.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 1.0,
-        ]) #@
+        ], arb=arb) #@
 
-    def sqswap_gate(self, a, b):
+    def sqswap_gate(self, a, b, arb=None):
         """Instructs the downstream plugin to execute a square-root-of-swap
         gate.
 
@@ -532,112 +537,112 @@ class GateStreamSource(Plugin):
             0.0, 0.5+0.5j, 0.5-0.5j, 0.0,
             0.0, 0.5-0.5j, 0.5+0.5j, 0.0,
             0.0, 0.0,      0.0,      1.0,
-        ]) #@
+        ], arb=arb) #@
 
-    def x_gate(self, target):
+    def x_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute an X gate.
 
         `target` is the targetted qubit."""
-        self.rx_gate(target, math.pi)
+        self.rx_gate(target, math.pi, arb=arb)
 
-    def x90_gate(self, target):
+    def x90_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute a 90-degree X gate.
 
         `target` is the targetted qubit."""
-        self.rx_gate(target, 0.5 * math.pi)
+        self.rx_gate(target, 0.5 * math.pi, arb=arb)
 
-    def mx90_gate(self, target):
+    def mx90_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute a negative 90-degree X
         gate.
 
         `target` is the targetted qubit."""
-        self.rx_gate(target, -0.5 * math.pi)
+        self.rx_gate(target, -0.5 * math.pi, arb=arb)
 
-    def y_gate(self, target):
+    def y_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute a Y gate.
 
         `target` is the targetted qubit."""
-        self.ry_gate(target, math.pi)
+        self.ry_gate(target, math.pi, arb=arb)
 
-    def y90_gate(self, target):
+    def y90_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute a 90-degree Y gate.
 
         `target` is the targetted qubit."""
-        self.ry_gate(target, 0.5 * math.pi)
+        self.ry_gate(target, 0.5 * math.pi, arb=arb)
 
-    def my90_gate(self, target):
+    def my90_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute a negative 90-degree Y
         gate.
 
         `target` is the targetted qubit."""
-        self.ry_gate(target, -0.5 * math.pi)
+        self.ry_gate(target, -0.5 * math.pi, arb=arb)
 
-    def z_gate(self, target):
+    def z_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute a Z gate.
 
         `target` is the targetted qubit."""
-        self.rz_gate(target, math.pi)
+        self.rz_gate(target, math.pi, arb=arb)
 
-    def z90_gate(self, target):
+    def z90_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute a 90-degree Z gate, also
         known as an S gate.
 
         `target` is the targetted qubit."""
-        self.rz_gate(target, 0.5 * math.pi)
+        self.rz_gate(target, 0.5 * math.pi, arb=arb)
 
-    def mz90_gate(self, target):
+    def mz90_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute a negative 90-degree Z
         gate, also known as an S-dagger gate.
 
         `target` is the targetted qubit."""
-        self.rz_gate(target, -0.5 * math.pi)
+        self.rz_gate(target, -0.5 * math.pi, arb=arb)
 
     s_gate = z90_gate
     sdag_gate = mz90_gate
 
-    def t_gate(self, target):
+    def t_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute a T gate.
 
         `target` is the targetted qubit."""
-        self.rz_gate(target, 0.25 * math.pi)
+        self.rz_gate(target, 0.25 * math.pi, arb=arb)
 
-    def tdag_gate(self, target):
+    def tdag_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute a T-dagger gate.
 
         `target` is the targetted qubit."""
-        self.rz_gate(target, -0.25 * math.pi)
+        self.rz_gate(target, -0.25 * math.pi, arb=arb)
 
-    def h_gate(self, target):
+    def h_gate(self, target, arb=None):
         """Instructs the downstream plugin to execute a Hadamard gate.
 
         `target` is the targetted qubit."""
         x = 1 / math.sqrt(2.0)
-        self.unitary([target], [x, x, x, -x])
+        self.unitary([target], [x, x, x, -x], arb=arb)
 
-    def cnot_gate(self, control, target):
+    def cnot_gate(self, control, target, arb=None):
         """Instructs the downstream plugin to execute a CNOT gate."""
         self.unitary([target], [
             0.0, 1.0,
             1.0, 0.0,
-        ], controls=[control]) #@
+        ], controls=[control], arb=arb) #@
 
-    def toffoli_gate(self, c1, c2, target):
+    def toffoli_gate(self, c1, c2, target, arb=None):
         """Instructs the downstream plugin to execute a Toffoli gate."""
         self.unitary([target], [
             0.0, 1.0,
             1.0, 0.0,
-        ], controls=[c1, c2]) #@
+        ], controls=[c1, c2], arb=arb) #@
 
-    def fredkin_gate(self, control, a, b):
+    def fredkin_gate(self, control, a, b, arb=None):
         """Instructs the downstream plugin to execute a Fredkin gate."""
         self.unitary([a, b], [
             1.0, 0.0, 0.0, 0.0,
             0.0, 0.0, 1.0, 0.0,
             0.0, 1.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 1.0,
-        ], controls=[control]) #@
+        ], controls=[control], arb=arb) #@
 
-    def measure(self, *qubits, basis='Z'):
+    def measure(self, *qubits, basis='Z', arb=None):
         """Instructs the downstream plugin to measure the given qubits in the
         given basis.
 
@@ -664,37 +669,42 @@ class GateStreamSource(Plugin):
             qubits = list(qubits[0])
         with QubitSet._to_raw(qubits) as qubits:
             with basis as mat:
-                with Handle(raw.dqcs_gate_new_measurement(qubits, mat)) as gate:
-                    self._pc(raw.dqcs_plugin_gate, gate)
+                gate = Handle(raw.dqcs_gate_new_measurement(qubits, mat))
+                if arb is not None:
+                    if not isinstance(arb, ArbData):
+                        raise TypeError('arb must be None or an instance of ArbData')
+                    arb._to_raw(gate)
+                with gate as gate_raw:
+                    self._pc(raw.dqcs_plugin_gate, gate_raw)
 
-    def measure_x(self, *qubits):
+    def measure_x(self, *qubits, arb=None):
         """Instructs the downstream plugin to measure the given qubits in the
         X basis.
 
         This function takes either one or more qubits as its positional
         arguments, or an iterable of qubits as its first and only argument.
         """
-        self.measure(*qubits, basis='X')
+        self.measure(*qubits, basis='X', arb=arb)
 
-    def measure_y(self, *qubits):
+    def measure_y(self, *qubits, arb=None):
         """Instructs the downstream plugin to measure the given qubits in the
         Y basis.
 
         This function takes either one or more qubits as its positional
         arguments, or an iterable of qubits as its first and only argument.
         """
-        self.measure(*qubits, basis='Y')
+        self.measure(*qubits, basis='Y', arb=arb)
 
-    def measure_z(self, *qubits):
+    def measure_z(self, *qubits, arb=None):
         """Instructs the downstream plugin to measure the given qubits in the
         Z basis.
 
         This function takes either one or more qubits as its positional
         arguments, or an iterable of qubits as its first and only argument.
         """
-        self.measure(*qubits, basis='Z')
+        self.measure(*qubits, basis='Z', arb=arb)
 
-    def prepare(self, *qubits, basis='Z'):
+    def prepare(self, *qubits, basis='Z', arb=None):
         """Instructs the downstream plugin to force the given qubits into the
         base state for the given basis.
 
@@ -720,35 +730,40 @@ class GateStreamSource(Plugin):
             qubits = list(qubits[0])
         with QubitSet._to_raw(qubits) as qubits:
             with basis as mat:
-                with Handle(raw.dqcs_gate_new_prep(qubits, mat)) as gate:
-                    self._pc(raw.dqcs_plugin_gate, gate)
+                gate = Handle(raw.dqcs_gate_new_prep(qubits, mat))
+                if arb is not None:
+                    if not isinstance(arb, ArbData):
+                        raise TypeError('arb must be None or an instance of ArbData')
+                    arb._to_raw(gate)
+                with gate as gate_raw:
+                    self._pc(raw.dqcs_plugin_gate, gate_raw)
 
-    def prepare_x(self, *qubits):
+    def prepare_x(self, *qubits, arb=None):
         """Instructs the downstream plugin to force the given qubits into the
         base state for the X basis.
 
         This function takes either one or more qubits as its positional
         arguments, or an iterable of qubits as its first and only argument.
         """
-        self.prepare(*qubits, basis='X')
+        self.prepare(*qubits, basis='X', arb=arb)
 
-    def prepare_y(self, *qubits):
+    def prepare_y(self, *qubits, arb=None):
         """Instructs the downstream plugin to force the given qubits into the
         base state for the Y basis.
 
         This function takes either one or more qubits as its positional
         arguments, or an iterable of qubits as its first and only argument.
         """
-        self.prepare(*qubits, basis='Y')
+        self.prepare(*qubits, basis='Y', arb=arb)
 
-    def prepare_z(self, *qubits):
+    def prepare_z(self, *qubits, arb=None):
         """Instructs the downstream plugin to force the given qubits into the
         base state for the Z basis, being |0>.
 
         This function takes either one or more qubits as its positional
         arguments, or an iterable of qubits as its first and only argument.
         """
-        self.prepare(*qubits, basis='Z')
+        self.prepare(*qubits, basis='Z', arb=arb)
 
     def custom_gate(self, name, targets=[], controls=[], measures=[], matrix=None, *args, **kwargs):
         """Instructs the downstream plugin to execute a custom gate.
@@ -972,7 +987,11 @@ class Operator(GateStreamSource):
         qubit list. If the handler is not specified, the deallocation is
         forwarded automatically.
 
-     - `handle_unitary_gate(targets: [Qubit], matrix: [complex]) -> None`
+     - `handle_unitary_gate(
+            targets: [Qubit],
+            matrix: [complex],
+            arb: ArbData
+        ) -> None`
 
         Called when the upstream plugin wants to execute a non-controlled
         unitary gate. The gate is normally forwarded downstream using
@@ -981,7 +1000,12 @@ class Operator(GateStreamSource):
         If that callback is also not defined, the gate is forwarded downstream
         automatically.
 
-     - `handle_controlled_gate(targets: [Qubit], controls: [Qubit], matrix: [complex]) -> None`
+     - `handle_controlled_gate(
+            targets: [Qubit],
+            controls: [Qubit],
+            matrix: [complex],
+            arb: ArbData
+        ) -> None`
 
         Called when the upstream plugin wants to execute a controlled unitary
         gate, or a non-controlled gate if `handle_unitary_gate()` is not
@@ -989,7 +1013,11 @@ class Operator(GateStreamSource):
         If this handler is not defined, the gate is forwarded downstream
         automatically.
 
-     - `handle_measurement_gate(meas: [Qubit], basis: [complex]) -> [Measurement]`
+     - `handle_measurement_gate(
+            meas: [Qubit],
+            basis: [complex],
+            arb: ArbData
+        ) -> [Measurement]`
 
         Called when the upstream plugin wants to execute a basic measurement on
         the given set of qubits. The gate is normally forwarded downstream using
@@ -1014,7 +1042,11 @@ class Operator(GateStreamSource):
         combination of the two). The latter might negatively impact simulation
         speed, though.
 
-     - `handle_prepare_gate(target: [Qubit], basis: [complex])`
+     - `handle_prepare_gate(
+            target: [Qubit],
+            basis: [complex],
+            arb: ArbData
+        ) -> None`
 
         Called when the upstream plugin wants to reset the state for the given
         qubits. The gate is normally forwarded downstream using `prepare()`. If
@@ -1093,14 +1125,14 @@ class Operator(GateStreamSource):
         qubits = QubitSet._from_raw(Handle(qubits_handle))
         self._cb(state_handle, 'handle_free', qubits)
 
-    def _forward_unitary_gate(self, targets, controls, matrix):
-        self.unitary(targets, matrix, controls)
+    def _forward_unitary_gate(self, targets, controls, matrix, arb):
+        self.unitary(targets, matrix, controls, arb)
 
-    def _forward_measurement_gate(self, qubits, basis):
-        self.measure(qubits, basis=basis)
+    def _forward_measurement_gate(self, qubits, basis, arb):
+        self.measure(qubits, basis=basis, arb=arb)
 
-    def _forward_prepare_gate(self, qubits, basis):
-        self.prepare(qubits, basis=basis)
+    def _forward_prepare_gate(self, qubits, basis, arb):
+        self.prepare(qubits, basis=basis, arb=arb)
 
     def _route_gate(self, state_handle, gate_handle):
         """Routes the gate callback to user code."""
@@ -1141,27 +1173,27 @@ class Operator(GateStreamSource):
 
         # Route to the user's callback functions or execute the default
         # actions.
+        data = ArbData._from_raw(Handle(gate_handle))
         measurements = []
         if typ == raw.DQCS_GATE_TYPE_UNITARY:
             try:
                 if not controls and hasattr(self, 'handle_unitary_gate'):
-                    self._cb(state_handle, 'handle_unitary_gate', targets, matrix)
+                    self._cb(state_handle, 'handle_unitary_gate', targets, matrix, data)
                 else:
-                    self._cb(state_handle, 'handle_controlled_gate', targets, controls, matrix)
+                    self._cb(state_handle, 'handle_controlled_gate', targets, controls, matrix, data)
             except NotImplementedError:
-                self._cb(state_handle, '_forward_unitary_gate', targets, controls, matrix)
+                self._cb(state_handle, '_forward_unitary_gate', targets, controls, matrix, data)
         elif typ == raw.DQCS_GATE_TYPE_MEASUREMENT:
             try:
-                measurements = self._cb(state_handle, 'handle_measurement_gate', measures, matrix)
+                measurements = self._cb(state_handle, 'handle_measurement_gate', measures, matrix, data)
             except NotImplementedError:
-                self._cb(state_handle, '_forward_measurement_gate', measures, matrix)
+                self._cb(state_handle, '_forward_measurement_gate', measures, matrix, data)
         elif typ == raw.DQCS_GATE_TYPE_PREP:
             try:
-                self._cb(state_handle, 'handle_prepare_gate', targets, matrix)
+                self._cb(state_handle, 'handle_prepare_gate', targets, matrix, data)
             except NotImplementedError:
-                self._cb(state_handle, '_forward_prepare_gate', targets, matrix)
+                self._cb(state_handle, '_forward_prepare_gate', targets, matrix, data)
         elif typ == raw.DQCS_GATE_TYPE_CUSTOM:
-            data = ArbData._from_raw(Handle(gate_handle))
             # Note that `handle_<name>_gate` must exist at this point,
             # otherwise it would have been forwarded earlier.
             cb_name = 'handle_{}_gate'.format(name)
@@ -1247,12 +1279,20 @@ class Backend(Plugin):
 
         Must return the plugin's version string.
 
-     - `handle_unitary_gate(targets: [Qubit], matrix: [complex]) -> None`
+     - `handle_unitary_gate(
+            targets: [Qubit],
+            matrix: [complex],
+            arb: ArbData
+        ) -> None`
 
         Called when a unitary gate must be handled: it must apply the given
         unitary matrix to the given list of qubits.
 
-     - `handle_measurement_gate(qubits: [Qubit]) -> [Measurement]`
+     - `handle_measurement_gate(
+            qubits: [Qubit],
+            basis: [complex],
+            arb: ArbData
+        ) -> [Measurement]`
 
         Called when a measurement must be performed. The returned list must
         contain measurement data for exactly those qubits specified by the
@@ -1265,7 +1305,11 @@ class Backend(Plugin):
          - do a Z measurement for each qubit
          - rotate each qubit by the given matrix
 
-     - `handle_prepare_gate(target: [Qubit], basis: [complex])`
+     - `handle_prepare_gate(
+            target: [Qubit],
+            basis: [complex],
+            arb: ArbData
+        ) -> None`
 
         Called when the upstream plugin wants to reset the state for the given
         qubits. The basis is a 2x2 matrix. The semantics are as follows:
@@ -1301,7 +1345,12 @@ class Backend(Plugin):
         Called when the upstream plugin doesn't need the specified qubits
         anymore.
 
-     - `handle_controlled_gate(targets: [Qubit], controls: [Qubit], matrix: [complex]) -> None`
+     - `handle_controlled_gate(
+            targets: [Qubit],
+            controls: [Qubit],
+            matrix: [complex],
+            arb: ArbData
+        ) -> None`
 
         Called when a controlled gate must be handled: it must apply the given
         unitary matrix to the target qubits "if the control qubits are set". In
@@ -1379,11 +1428,12 @@ class Backend(Plugin):
         else:
             matrix = None
 
+        data = ArbData._from_raw(Handle(gate_handle))
         measurements = []
         if typ == raw.DQCS_GATE_TYPE_UNITARY:
             if controls:
                 try:
-                    self._cb(state_handle, 'handle_controlled_gate', targets, controls, matrix)
+                    self._cb(state_handle, 'handle_controlled_gate', targets, controls, matrix, data)
                     return MeasurementSet._to_raw([]).take()
                 except NotImplementedError:
                     pass
@@ -1412,13 +1462,12 @@ class Backend(Plugin):
                 matrix = ext_matrix
                 targets = controls + targets
 
-            self._cb(state_handle, 'handle_unitary_gate', targets, matrix)
+            self._cb(state_handle, 'handle_unitary_gate', targets, matrix, data)
         elif typ == raw.DQCS_GATE_TYPE_MEASUREMENT:
-            measurements = self._cb(state_handle, 'handle_measurement_gate', measures, matrix)
+            measurements = self._cb(state_handle, 'handle_measurement_gate', measures, matrix, data)
         elif typ == raw.DQCS_GATE_TYPE_PREP:
-            self._cb(state_handle, 'handle_prepare_gate', targets, matrix)
+            self._cb(state_handle, 'handle_prepare_gate', targets, matrix, data)
         elif typ == raw.DQCS_GATE_TYPE_CUSTOM:
-            data = ArbData._from_raw(Handle(gate_handle))
             try:
                 measurements = self._cb(state_handle,
                     'handle_{}_gate'.format(name),
