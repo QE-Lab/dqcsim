@@ -49,6 +49,7 @@ and refer to the API documentation:
 | Plugin | Description | Download | License | Platforms | Language |
 |:-------|:------------|:---------|:--------|:----------|:---------|
 | [openqasm](https://github.com/mbrobbel/dqcsim-openqasm) | OpenQASM 2.0 frontend | [![Crates.io](https://badgen.net/crates/v/dqcsim-openqasm)](https://crates.io/crates/dqcsim-openqasm/) | Apache-2.0 | Linux, macOS | Rust |
+| [cqasm](https://github.com/jvanstraten/dqcsim-cqasm) | cQASM 1.0 frontend | [![PyPi](https://badgen.net/pypi/v/dqcsim-cqasm)](https://pypi.org/project/dqcsim-cqasm/) | Apache-2.0 | Linux, macOS | C++ |
 | [null](rust/src/bin/null/) | No-op frontend | [![PyPi](https://badgen.net/pypi/v/dqcsim)](https://pypi.org/project/dqcsim/) | Apache-2.0 | Linux, macOS | Rust |
 
 ### Operator

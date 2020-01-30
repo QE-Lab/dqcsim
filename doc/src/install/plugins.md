@@ -39,7 +39,10 @@ A connection to the [QX](https://github.com/QE-Lab/qx-simulator/) simulator.
 Allows execution of [OpenQASM](https://github.com/Qiskit/openqasm) algorithm
 descriptions.
 
-## cQASM frontend (planned)
+## cQASM frontend
+
+ - Install: `sudo pip3 install dqcsim-cqasm`
+ - Source: [Github](https://github.com/jvanstraten/dqcsim-cqasm)
 
 Allows execution of cQASM algorithm descriptions, giving DQCsim access to the
 full capability of the [OpenQL compiler](https://github.com/QE-Lab/OpenQL), as
