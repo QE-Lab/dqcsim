@@ -13,6 +13,7 @@ use std::{
 static CARGOENV: &str = "cargo:rustc-env=";
 
 #[cfg(feature = "bindings")]
+#[allow(clippy::trivial_regex)]
 fn prepreprocess(path: &path::Path) -> io::Result<String> {
     use lazy_static::lazy_static;
     use regex::{Captures, Regex, RegexBuilder, Replacer};
@@ -51,7 +52,7 @@ fn prepreprocess(path: &path::Path) -> io::Result<String> {
         .replace_all(
             &contents,
             PrePreprocessReplacer {
-                base: path.parent().unwrap_or(path::Path::new(".")),
+                base: path.parent().unwrap_or_else(|| path::Path::new(".")),
             },
         )
         .to_string())
@@ -103,9 +104,9 @@ fn cbindgen() {
 
     // Generate SWIG header.
     cbindgen::Builder::new()
-        .with_crate(crate_dir.clone())
+        .with_crate(crate_dir)
         .with_language(cbindgen::Language::C)
-        .with_line_length(100000)
+        .with_line_length(100_000)
         .with_documentation(false)
         .generate()
         .expect("Unable to generate bindings")
