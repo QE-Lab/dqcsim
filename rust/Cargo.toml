@@ -83,6 +83,6 @@ git-testament = { version = "0.1", optional = true }
 libc = { version = "0.2", optional = true }
 
 [build-dependencies]
-cbindgen = { version = "0.12", optional = true }
+cbindgen = { version = "0.13", optional = true }
 regex = { version = "1", optional = true }
 lazy_static = { version = "1.4", optional = true }
