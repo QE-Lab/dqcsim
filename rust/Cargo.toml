@@ -52,7 +52,7 @@ bindings = ["cbindgen", "libc", "regex", "lazy_static"]
 
 [dependencies]
 strum = "0.18"
-strum_macros = "0.17"
+strum_macros = "0.18"
 named_type = "0.2"
 named_type_derive = "0.2"
 serde = { version = "1.0", features = ["derive"] }
