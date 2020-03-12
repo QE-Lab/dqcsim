@@ -1,3 +1,7 @@
+# [0.2.1] - 2020-03-12
+
+- Repository moved to qe-lab
+
 # [0.2.0] - 2020-01-29
 
 - Allow Python plugins to access gate ArbData
@@ -10,6 +14,7 @@
 
 - Initial release
 
+[0.2.1]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.1
 [0.2.0]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.0
 [0.1.1]: https://github.com/qe-lab/dqcsim/releases/tag/0.1.1
 [0.1.0]: https://github.com/qe-lab/dqcsim/releases/tag/0.1.0
