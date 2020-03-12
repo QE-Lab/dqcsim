@@ -1,6 +1,6 @@
 //! This module provides a C interface to the DQCsim simulator.
 //!
-//! Refer to [the generated API docs](https://mbrobbel.github.io/dqcsim/c-api/c-api.apigen.html)
+//! Refer to [the generated API docs](https://qe-lab.github.io/dqcsim/c-api/c-api.apigen.html)
 //! for more information.
 
 use super::*;
