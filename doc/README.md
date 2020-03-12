@@ -2,7 +2,7 @@
 
 This directory contains the source files for the documentation. **You can find
 the documentation for the latest version
-[here](https://mbrobbel.github.io/dqcsim/index.html).**
+[here](https://qe-lab.github.io/dqcsim/index.html).**
 
 The following tools are used to generate the documentation:
 

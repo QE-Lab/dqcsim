@@ -2,16 +2,16 @@
 
 [![PyPi](https://badgen.net/pypi/v/dqcsim)](https://pypi.org/project/dqcsim/)
 [![Crates.io](https://badgen.net/crates/v/dqcsim)](https://crates.io/crates/dqcsim/)
-[![Rust workflow](https://github.com/mbrobbel/dqcsim/workflows/Rust/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3ARust)
-[![Python workflow](https://github.com/mbrobbel/dqcsim/workflows/Python/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3APython)
-[![C++ workflow](https://github.com/mbrobbel/dqcsim/workflows/C++/badge.svg)](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3AC++)
-[![Documentation workflow](https://github.com/mbrobbel/dqcsim/workflows/Documentation/badge.svg)](https://mbrobbel.github.io/dqcsim/)
-[![Codecov.io](https://codecov.io/gh/mbrobbel/dqcsim/branch/master/graph/badge.svg)](https://codecov.io/gh/mbrobbel/dqcsim)
+[![Rust workflow](https://github.com/qe-lab/dqcsim/workflows/Rust/badge.svg)](https://github.com/qe-lab/dqcsim/actions?query=workflow%3ARust)
+[![Python workflow](https://github.com/qe-lab/dqcsim/workflows/Python/badge.svg)](https://github.com/qe-lab/dqcsim/actions?query=workflow%3APython)
+[![C++ workflow](https://github.com/qe-lab/dqcsim/workflows/C++/badge.svg)](https://github.com/qe-lab/dqcsim/actions?query=workflow%3AC++)
+[![Documentation workflow](https://github.com/qe-lab/dqcsim/workflows/Documentation/badge.svg)](https://qe-lab.github.io/dqcsim/)
+[![Codecov.io](https://codecov.io/gh/qe-lab/dqcsim/branch/master/graph/badge.svg)](https://codecov.io/gh/qe-lab/dqcsim)
 
 DQCsim, short for Delft Quantum & Classical simulator, is a *framework* that
 can be used to tie *components* of quantum computer simulators together in a
 *standardized* yet *flexible*, *developer-friendly*, and *reproducible* way.
-Click [here](https://mbrobbel.github.io/dqcsim/) for more information!
+Click [here](https://qe-lab.github.io/dqcsim/) for more information!
 
 ## Install
 
@@ -22,25 +22,25 @@ sudo pip3 install dqcsim
 ```
 
 This installs DQCsim's core files and plugins. More information is available in
-the [Installation](https://mbrobbel.github.io/dqcsim/install/) section of the
-[documentation](https://mbrobbel.github.io/dqcsim/).
+the [Installation](https://qe-lab.github.io/dqcsim/install/) section of the
+[documentation](https://qe-lab.github.io/dqcsim/).
 
 ## Getting started
 
 ### Users
 
 New users are encouraged to check out the
-[documentation](https://mbrobbel.github.io/dqcsim/).
+[documentation](https://qe-lab.github.io/dqcsim/).
 
 ### Plugin developers
 
 Plugin developers can check out the [examples](./examples), existing [plugins](#plugins)
 and refer to the API documentation:
 
-- [Python](https://mbrobbel.github.io/dqcsim/python-api/) ([Reference](https://mbrobbel.github.io/dqcsim/py_/dqcsim/))
-- [C++](https://mbrobbel.github.io/dqcsim/cpp-api/) ([Reference](https://mbrobbel.github.io/dqcsim/cpp_/))
-- [C](https://mbrobbel.github.io/dqcsim/c-api/) ([Reference](https://mbrobbel.github.io/dqcsim/c-api/reference.apigen.html))
-- [Rust](https://mbrobbel.github.io/dqcsim/rust-api/) ([Reference](https://mbrobbel.github.io/dqcsim/rust_/dqcsim/))
+- [Python](https://qe-lab.github.io/dqcsim/python-api/) ([Reference](https://qe-lab.github.io/dqcsim/py_/dqcsim/))
+- [C++](https://qe-lab.github.io/dqcsim/cpp-api/) ([Reference](https://qe-lab.github.io/dqcsim/cpp_/))
+- [C](https://qe-lab.github.io/dqcsim/c-api/) ([Reference](https://qe-lab.github.io/dqcsim/c-api/reference.apigen.html))
+- [Rust](https://qe-lab.github.io/dqcsim/rust-api/) ([Reference](https://qe-lab.github.io/dqcsim/rust_/dqcsim/))
 
 ## Plugins
 

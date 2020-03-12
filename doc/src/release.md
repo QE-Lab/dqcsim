@@ -1,6 +1,6 @@
 # Release
 
-This chapter documents the release procedure of DQCsim. A release consists of a git tag object and an accompanying GitHub release. Build artifacts for the tag reference are generated and published by the [Release](https://github.com/mbrobbel/dqcsim/actions?query=workflow%3ARelease) workflow.
+This chapter documents the release procedure of DQCsim. A release consists of a git tag object and an accompanying GitHub release. Build artifacts for the tag reference are generated and published by the [Release](https://github.com/qe-lab/dqcsim/actions?query=workflow%3ARelease) workflow.
 
 ## Prepare
 

@@ -6,8 +6,8 @@ edition = '2018'
 build = "tools/build.rs"
 description = "DQCsim: Delft Quantum Classical Simulator"
 documentation = "http://docs.rs/dqcsim/"
-homepage = "https://mbrobbel.github.io/dqcsim/"
-repository = "https://github.com/mbrobbel/dqcsim"
+homepage = "https://qe-lab.github.io/dqcsim/"
+repository = "https://github.com/qe-lab/dqcsim"
 readme = "../README.md"
 keywords = ["quantum", "simulation", "framework"]
 categories = ["simulation", "science"]
@@ -16,7 +16,7 @@ default-run = "dqcsim"
 include = ["**/*.rs"]
 
 [badges]
-codecov = { repository = "mbrobbel/dqcsim" }
+codecov = { repository = "qe-lab/dqcsim" }
 
 [lib]
 crate-type = ["lib", "cdylib"]

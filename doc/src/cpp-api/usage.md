@@ -50,7 +50,7 @@ search path as well, using the `LD_LIBRARY_PATH` environment variable.
 ## Usage after building from source
 
 If you've built DQCsim from its
-[source repository](https://github.com/mbrobbel/dqcsim-rs), you need to use
+[source repository](https://github.com/qe-lab/dqcsim), you need to use
 the following paths:
 
  - `-I <dqcsim-repo>/target/include` for the header file;
