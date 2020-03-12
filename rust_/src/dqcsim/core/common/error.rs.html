@@ -268,6 +268,19 @@
 <span id="268">268</span>
 <span id="269">269</span>
 <span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Error-handling.</span>
 <span class="doccomment">//!</span>
@@ -462,6 +475,19 @@
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">ipc_channel</span>::<span class="ident">Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">ipc_channel</span>::<span class="ident">Error</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
         <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">error</span>.<span class="ident">to_string</span>();
+        <span class="ident">Error</span> {
+            <span class="ident">ctx</span>: <span class="ident">Context</span>::<span class="ident">new</span>(<span class="ident">ErrorKind</span>::<span class="ident">IPCError</span>(<span class="ident">msg</span>)),
+        }
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">ipc_channel</span>::<span class="ident">ipc</span>::<span class="ident">IpcError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">ipc_channel</span>::<span class="ident">ipc</span>::<span class="ident">IpcError</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
+        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">error</span> {
+            <span class="ident">ipc_channel</span>::<span class="ident">ipc</span>::<span class="ident">IpcError</span>::<span class="ident">Bincode</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">err</span>.<span class="ident">to_string</span>(),
+            <span class="ident">ipc_channel</span>::<span class="ident">ipc</span>::<span class="ident">IpcError</span>::<span class="ident">Io</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">err</span>.<span class="ident">to_string</span>(),
+            <span class="ident">ipc_channel</span>::<span class="ident">ipc</span>::<span class="ident">IpcError</span>::<span class="ident">Disconnected</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;disconnected&quot;</span>.<span class="ident">to_string</span>(),
+        };
         <span class="ident">Error</span> {
             <span class="ident">ctx</span>: <span class="ident">Context</span>::<span class="ident">new</span>(<span class="ident">ErrorKind</span>::<span class="ident">IPCError</span>(<span class="ident">msg</span>)),
         }
