@@ -197,6 +197,19 @@ impl From<ipc_channel::Error> for Error {
     }
 }
 
+impl From<ipc_channel::ipc::IpcError> for Error {
+    fn from(error: ipc_channel::ipc::IpcError) -> Error {
+        let msg = match error {
+            ipc_channel::ipc::IpcError::Bincode(err) => err.to_string(),
+            ipc_channel::ipc::IpcError::Io(err) => err.to_string(),
+            ipc_channel::ipc::IpcError::Disconnected => "disconnected".to_string(),
+        };
+        Error {
+            ctx: Context::new(ErrorKind::IPCError(msg)),
+        }
+    }
+}
+
 impl From<strum::ParseError> for Error {
     fn from(error: strum::ParseError) -> Error {
         let msg = error.to_string();
