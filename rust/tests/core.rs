@@ -565,15 +565,9 @@ fn bad_simulation_pipeline_fe_op_only() {
 
     let simulation = Simulation::new(pipeline, Seed::default(), None, &log_thread);
     assert!(simulation.is_err());
-    #[cfg(target_os = "macos")]
     assert_eq!(
         simulation.unwrap_err().to_string(),
-        "Interprocess communication error: io error: No senders exist for this port."
-    );
-    #[cfg(target_os = "linux")]
-    assert_eq!(
-        simulation.unwrap_err().to_string(),
-        "Interprocess communication error: io error: All senders for this socket closed"
+        "Interprocess communication error: disconnected"
     );
 }
 
@@ -603,15 +597,9 @@ fn bad_simulation_pipeline_be_op_only() {
 
     let simulation = Simulation::new(pipeline, Seed::default(), None, &log_thread);
     assert!(simulation.is_err());
-    #[cfg(target_os = "macos")]
     assert_eq!(
         simulation.unwrap_err().to_string(),
-        "Interprocess communication error: io error: No senders exist for this port."
-    );
-    #[cfg(target_os = "linux")]
-    assert_eq!(
-        simulation.unwrap_err().to_string(),
-        "Interprocess communication error: io error: All senders for this socket closed"
+        "Interprocess communication error: disconnected"
     );
 }
 
