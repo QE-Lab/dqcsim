@@ -362,10 +362,10 @@ impl LogRecord {
         self.metadata.level
     }
     pub fn module_path(&self) -> Option<&str> {
-        self.metadata.module_path.as_ref().map(String::as_str)
+        self.metadata.module_path.as_deref()
     }
     pub fn file(&self) -> Option<&str> {
-        self.metadata.file.as_ref().map(String::as_str)
+        self.metadata.file.as_deref()
     }
     pub fn line(&self) -> Option<u32> {
         self.metadata.line
