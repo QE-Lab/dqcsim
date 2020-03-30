@@ -53,21 +53,21 @@ jobs:
 
   rustfmt:
     name: Rustfmt
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
         components: rustfmt
-    - uses: actions-rs/cargo@v1
+    - uses: mbrobbel/rustfmt-check@master
       with:
-        command: fmt
-        args: --all -- --check
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: --all
 
   clippy:
     name: Clippy
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
