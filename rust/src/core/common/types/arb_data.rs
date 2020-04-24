@@ -253,7 +253,6 @@ mod cbor_canon {
     mod tests {
         // Note this useful idiom: importing names from outer (for mod tests) scope.
         use super::*;
-        use serde_cbor;
 
         fn cbor_cmp_golden(a: &[u8], b: &[u8]) {
             let a: serde_cbor::value::Value = serde_cbor::from_slice(a).unwrap();
