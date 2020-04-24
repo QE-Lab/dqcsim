@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.7.5" />
+<meta name="generator" content="pdoc 0.8.1" />
 <title>dqcsim.plugin API documentation</title>
 <meta name="description" content="Contains the base classes for implementing DQCsim plugins …" />
 <link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
 <link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
-<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
-<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 </head>
 <body>
@@ -21,7 +21,7 @@
 </header>
 <section id="section-intro">
 <p>Contains the base classes for implementing DQCsim plugins.</p>
-<p>You should be implementing one of <a title="dqcsim.plugin.Frontend" href="#dqcsim.plugin.Frontend"><code>Frontend</code></a>, <a title="dqcsim.plugin.Operator" href="#dqcsim.plugin.Operator"><code>Operator</code></a>, or <a title="dqcsim.plugin.Backend" href="#dqcsim.plugin.Backend"><code>Backend</code></a>. The
+<p>You should be implementing one of <code><a title="dqcsim.plugin.Frontend" href="#dqcsim.plugin.Frontend">Frontend</a></code>, <code><a title="dqcsim.plugin.Operator" href="#dqcsim.plugin.Operator">Operator</a></code>, or <code><a title="dqcsim.plugin.Backend" href="#dqcsim.plugin.Backend">Backend</a></code>. The
 documentation of these classes indicates which functions you should implement
 to specify the plugin's functionality. Overriding <code>__init__()</code> is also allowed,
 but if you do this you must call <code>super().__init__()</code>.</p>
@@ -1579,7 +1579,7 @@ class Backend(Plugin):
 <span>(</span><span>host_arb_ifaces=None, upstream_arb_ifaces=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Implements a backend plugin.</p>
+<div class="desc"><p>Implements a backend plugin.</p>
 <p>Backends consume a quantum gate stream, simulate the gates and qubits, and
 return measurement data to the upstream plugin.</p>
 <p>The following functions MUST be implemented by the user:</p>
@@ -1722,7 +1722,7 @@ will fail if there are underscores in any of the supported interface or
 operation IDs. In this case, you MUST override <code>__init__()</code> and call
 <code>super().__init__(host_arb_ifaces, upstream_arb_ifaces)</code>, where the two
 arguments are lists of strings representing the supported interface
-IDs.</p></section>
+IDs.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1976,17 +1976,6 @@ IDs.</p></section>
 <ul class="hlist">
 <li><a title="dqcsim.plugin.Plugin" href="#dqcsim.plugin.Plugin">Plugin</a></li>
 </ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li>dqcsim.tests.null_backend.NullBackend</li>
-<li>dqcsim.tests.test_allocate_free.NullBackend</li>
-<li>dqcsim.tests.test_allocate_free.TestBackend</li>
-<li>dqcsim.tests.test_gate.InvalidBackend</li>
-<li>dqcsim.tests.test_gate.TestBackendUnitary</li>
-<li>dqcsim.tests.test_gatestream_misc.NullBackend</li>
-<li>dqcsim.tests.test_plugin.NullBackend</li>
-<li>dqcsim.tests.test_simulator.NullBackend</li>
-</ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="dqcsim.plugin.Plugin" href="#dqcsim.plugin.Plugin">Plugin</a></b></code>:
@@ -2014,7 +2003,7 @@ IDs.</p></section>
 <span>(</span><span>host_arb_ifaces=None, upstream_arb_ifaces=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Implements a frontend plugin.</p>
+<div class="desc"><p>Implements a frontend plugin.</p>
 <p>Frontends execute mixed quantum-classical algorithms, turning them into a
 gatestream for a downstream plugin to consume. They run as slaves to the
 host program, with which they can communicate by means of an ArbData queue
@@ -2079,7 +2068,7 @@ will fail if there are underscores in any of the supported interface or
 operation IDs. In this case, you MUST override <code>__init__()</code> and call
 <code>super().__init__(host_arb_ifaces, upstream_arb_ifaces)</code>, where the two
 arguments are lists of strings representing the supported interface
-IDs.</p></section>
+IDs.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2186,24 +2175,15 @@ IDs.</p></section>
 <li><a title="dqcsim.plugin.GateStreamSource" href="#dqcsim.plugin.GateStreamSource">GateStreamSource</a></li>
 <li><a title="dqcsim.plugin.Plugin" href="#dqcsim.plugin.Plugin">Plugin</a></li>
 </ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li>dqcsim.tests.null_frontend.NullFrontend</li>
-<li>dqcsim.tests.test_allocate_free.TestFrontend</li>
-<li>dqcsim.tests.test_gate.TestFrontend</li>
-<li>dqcsim.tests.test_gatestream_misc.TestFrontend</li>
-<li>dqcsim.tests.test_plugin.NullFrontend</li>
-<li>dqcsim.tests.test_simulator.NullFrontend</li>
-</ul>
 <h3>Methods</h3>
 <dl>
 <dt id="dqcsim.plugin.Frontend.recv"><code class="name flex">
 <span>def <span class="ident">recv</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Receives an ArbData object to the host.</p>
+<div class="desc"><p>Receives an ArbData object to the host.</p>
 <p>This blocks until data is received. The data is returned in the form of
-an <code>ArbData</code> object.</p></section>
+an <code>ArbData</code> object.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2221,9 +2201,9 @@ an <code>ArbData</code> object.</p></section>
 <span>def <span class="ident">send</span></span>(<span>self, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Sends an ArbData object to the host.</p>
+<div class="desc"><p>Sends an ArbData object to the host.</p>
 <p>The arguments to this function are passed to the constructor of
-<code>ArbData</code> to produce the object that is to be sent.</p></section>
+<code>ArbData</code> to produce the object that is to be sent.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2308,7 +2288,7 @@ an <code>ArbData</code> object.</p></section>
 <span>(</span><span>host_arb_ifaces=None, upstream_arb_ifaces=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Adds gatestream source functions.</p>
+<div class="desc"><p>Adds gatestream source functions.</p>
 <p>Creates the plugin object.</p>
 <p>Overriding <code>__init__()</code> in your implementation is fine, but you must
 call <code>super().__init__()</code> if you do this.</p>
@@ -2319,7 +2299,7 @@ will fail if there are underscores in any of the supported interface or
 operation IDs. In this case, you MUST override <code>__init__()</code> and call
 <code>super().__init__(host_arb_ifaces, upstream_arb_ifaces)</code>, where the two
 arguments are lists of strings representing the supported interface
-IDs.</p></section>
+IDs.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2756,10 +2736,10 @@ IDs.</p></section>
 <span>def <span class="ident">advance</span></span>(<span>self, cycles)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to advance the simulation time.</p>
+<div class="desc"><p>Instructs the downstream plugin to advance the simulation time.</p>
 <p><code>cycles</code> must be a nonnegative integer, representing the number of
 cycles to advance the simulation by. The simulation time after the
-advancement is returned.</p></section>
+advancement is returned.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2777,14 +2757,14 @@ advancement is returned.</p></section>
 <span>def <span class="ident">allocate</span></span>(<span>self, num_qubits=None, *cmds)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to allocate one or more qubits.</p>
+<div class="desc"><p>Instructs the downstream plugin to allocate one or more qubits.</p>
 <p>If <code>num_qubits</code> is specified, this function returns a list of qubit
 references that you can use to refer to the qubits in later function
 calls. These are just integers. If <code>num_qubits</code> is not specified or
 <code>None</code>, a single qubit is allocated and returned without being wrapped
 in a list.</p>
 <p>Optionally, you can pass (a list of) ArbCmd objects to associate with
-the qubits.</p></section>
+the qubits.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2816,10 +2796,10 @@ the qubits.</p></section>
 <span>def <span class="ident">arb</span></span>(<span>self, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Sends an <code>ArbCmd</code> to the downstream plugin.</p>
+<div class="desc"><p>Sends an <code>ArbCmd</code> to the downstream plugin.</p>
 <p>The arguments passed to this function are forwarded directly to the
 <code>ArbCmd</code> constructor. The return value is an <code>ArbData</code> object
-representing the value returned by the command.</p></section>
+representing the value returned by the command.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2838,7 +2818,7 @@ representing the value returned by the command.</p></section>
 <span>def <span class="ident">cnot_gate</span></span>(<span>self, control, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a CNOT gate.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute a CNOT gate.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2855,7 +2835,7 @@ representing the value returned by the command.</p></section>
 <span>def <span class="ident">custom_gate</span></span>(<span>self, name, targets=[], controls=[], measures=[], matrix=None, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a custom gate.</p>
+<div class="desc"><p>Instructs the downstream plugin to execute a custom gate.</p>
 <p><code>name</code> must be a non-empty string identifying the gate to be performed.
 <code>targets</code>, <code>constrols</code>, and <code>measures</code> must be iterables of qubits or
 singular qubits, representing respectively the set of qubits to operate
@@ -2868,7 +2848,7 @@ row-major one-dimensional list of Python complex numbers. If no matrix
 is applicable or necessary for the custom gate, <code>None</code> can be used
 instead. The remainder of the arguments are passed to the constructor
 for <code>ArbData</code>; the resulting <code>ArbData</code> object is passed along with the
-gate for custom data.</p></section>
+gate for custom data.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2908,7 +2888,7 @@ gate for custom data.</p></section>
 <span>def <span class="ident">fredkin_gate</span></span>(<span>self, control, a, b, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a Fredkin gate.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute a Fredkin gate.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2927,7 +2907,7 @@ gate for custom data.</p></section>
 <span>def <span class="ident">free</span></span>(<span>self, *qubits)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to free the given qubits.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to free the given qubits.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2942,7 +2922,7 @@ gate for custom data.</p></section>
 <span>def <span class="ident">get_cycle</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Returns the current simulation time for the downstream plugin.</p></section>
+<div class="desc"><p>Returns the current simulation time for the downstream plugin.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2956,8 +2936,8 @@ gate for custom data.</p></section>
 <span>def <span class="ident">get_cycles_between_measures</span></span>(<span>self, qubit)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Returns the number of cycles that were advanced between the
-latest measurement of the given downstream qubit and the one before.</p></section>
+<div class="desc"><p>Returns the number of cycles that were advanced between the
+latest measurement of the given downstream qubit and the one before.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2972,8 +2952,8 @@ latest measurement of the given downstream qubit and the one before.</p></sectio
 <span>def <span class="ident">get_cycles_since_measure</span></span>(<span>self, qubit)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Returns the number of cycles that have been advanced since the
-latest measurement of the given downstream qubit.</p></section>
+<div class="desc"><p>Returns the number of cycles that have been advanced since the
+latest measurement of the given downstream qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2988,8 +2968,8 @@ latest measurement of the given downstream qubit.</p></section>
 <span>def <span class="ident">get_measurement</span></span>(<span>self, qubit)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Returns the <code>Measurement</code> representing the latest measurement result
-for the given downstream qubit.</p></section>
+<div class="desc"><p>Returns the <code>Measurement</code> representing the latest measurement result
+for the given downstream qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3004,8 +2984,8 @@ for the given downstream qubit.</p></section>
 <span>def <span class="ident">h_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a Hadamard gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute a Hadamard gate.</p>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3022,8 +3002,8 @@ for the given downstream qubit.</p></section>
 <span>def <span class="ident">i_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute an I gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute an I gate.</p>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3039,7 +3019,7 @@ for the given downstream qubit.</p></section>
 <span>def <span class="ident">measure</span></span>(<span>self, *qubits, basis='Z', arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to measure the given qubits in the
+<div class="desc"><p>Instructs the downstream plugin to measure the given qubits in the
 given basis.</p>
 <p>This function takes either one or more qubits as its positional
 arguments, or an iterable of qubits as its first and only positional
@@ -3050,7 +3030,7 @@ numbers representing a 2x2 matrix with the following semantics:</p>
 <li>the qubits are rotated by the inverse of the matrix</li>
 <li>a Z-axis measurement is performed on each qubit</li>
 <li>the qubits are rotated by the matrix</li>
-</ul></section>
+</ul></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3095,10 +3075,10 @@ numbers representing a 2x2 matrix with the following semantics:</p>
 <span>def <span class="ident">measure_x</span></span>(<span>self, *qubits, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to measure the given qubits in the
+<div class="desc"><p>Instructs the downstream plugin to measure the given qubits in the
 X basis.</p>
 <p>This function takes either one or more qubits as its positional
-arguments, or an iterable of qubits as its first and only argument.</p></section>
+arguments, or an iterable of qubits as its first and only argument.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3117,10 +3097,10 @@ arguments, or an iterable of qubits as its first and only argument.</p></section
 <span>def <span class="ident">measure_y</span></span>(<span>self, *qubits, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to measure the given qubits in the
+<div class="desc"><p>Instructs the downstream plugin to measure the given qubits in the
 Y basis.</p>
 <p>This function takes either one or more qubits as its positional
-arguments, or an iterable of qubits as its first and only argument.</p></section>
+arguments, or an iterable of qubits as its first and only argument.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3139,10 +3119,10 @@ arguments, or an iterable of qubits as its first and only argument.</p></section
 <span>def <span class="ident">measure_z</span></span>(<span>self, *qubits, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to measure the given qubits in the
+<div class="desc"><p>Instructs the downstream plugin to measure the given qubits in the
 Z basis.</p>
 <p>This function takes either one or more qubits as its positional
-arguments, or an iterable of qubits as its first and only argument.</p></section>
+arguments, or an iterable of qubits as its first and only argument.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3161,9 +3141,9 @@ arguments, or an iterable of qubits as its first and only argument.</p></section
 <span>def <span class="ident">mx90_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a negative 90-degree X
+<div class="desc"><p>Instructs the downstream plugin to execute a negative 90-degree X
 gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3180,9 +3160,9 @@ gate.</p>
 <span>def <span class="ident">my90_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a negative 90-degree Y
+<div class="desc"><p>Instructs the downstream plugin to execute a negative 90-degree Y
 gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3199,9 +3179,9 @@ gate.</p>
 <span>def <span class="ident">mz90_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a negative 90-degree Z
+<div class="desc"><p>Instructs the downstream plugin to execute a negative 90-degree Z
 gate, also known as an S-dagger gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3218,7 +3198,7 @@ gate, also known as an S-dagger gate.</p>
 <span>def <span class="ident">prepare</span></span>(<span>self, *qubits, basis='Z', arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to force the given qubits into the
+<div class="desc"><p>Instructs the downstream plugin to force the given qubits into the
 base state for the given basis.</p>
 <p>This function takes either one or more qubits as its positional
 arguments, or an iterable of qubits as its first and only positional
@@ -3228,7 +3208,7 @@ numbers representing a 2x2 matrix with the following semantics:</p>
 <ul>
 <li>the qubits are initialized to |0&gt;</li>
 <li>the qubits are rotated by the matrix</li>
-</ul></section>
+</ul></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3272,10 +3252,10 @@ numbers representing a 2x2 matrix with the following semantics:</p>
 <span>def <span class="ident">prepare_x</span></span>(<span>self, *qubits, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to force the given qubits into the
+<div class="desc"><p>Instructs the downstream plugin to force the given qubits into the
 base state for the X basis.</p>
 <p>This function takes either one or more qubits as its positional
-arguments, or an iterable of qubits as its first and only argument.</p></section>
+arguments, or an iterable of qubits as its first and only argument.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3294,10 +3274,10 @@ arguments, or an iterable of qubits as its first and only argument.</p></section
 <span>def <span class="ident">prepare_y</span></span>(<span>self, *qubits, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to force the given qubits into the
+<div class="desc"><p>Instructs the downstream plugin to force the given qubits into the
 base state for the Y basis.</p>
 <p>This function takes either one or more qubits as its positional
-arguments, or an iterable of qubits as its first and only argument.</p></section>
+arguments, or an iterable of qubits as its first and only argument.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3316,10 +3296,10 @@ arguments, or an iterable of qubits as its first and only argument.</p></section
 <span>def <span class="ident">prepare_z</span></span>(<span>self, *qubits, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to force the given qubits into the
+<div class="desc"><p>Instructs the downstream plugin to force the given qubits into the
 base state for the Z basis, being |0&gt;.</p>
 <p>This function takes either one or more qubits as its positional
-arguments, or an iterable of qubits as its first and only argument.</p></section>
+arguments, or an iterable of qubits as its first and only argument.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3338,10 +3318,10 @@ arguments, or an iterable of qubits as its first and only argument.</p></section
 <span>def <span class="ident">r_gate</span></span>(<span>self, target, theta, phi, lambd, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to perform a number of rotations at
+<div class="desc"><p>Instructs the downstream plugin to perform a number of rotations at
 once.</p>
 <p><code>target</code> is the targetted qubit. <code>theta</code>, <code>phi</code>, and <code>lambd</code> are the
-angles in radians.</p></section>
+angles in radians.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3366,8 +3346,8 @@ angles in radians.</p></section>
 <span>def <span class="ident">rx_gate</span></span>(<span>self, target, theta, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to perform an arbitrary X rotation.</p>
-<p><code>target</code> is the targetted qubit. <code>theta</code> is the angle in radians.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to perform an arbitrary X rotation.</p>
+<p><code>target</code> is the targetted qubit. <code>theta</code> is the angle in radians.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3385,8 +3365,8 @@ angles in radians.</p></section>
 <span>def <span class="ident">ry_gate</span></span>(<span>self, target, theta, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to perform an arbitrary Y rotation.</p>
-<p><code>target</code> is the targetted qubit. <code>theta</code> is the angle in radians.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to perform an arbitrary Y rotation.</p>
+<p><code>target</code> is the targetted qubit. <code>theta</code> is the angle in radians.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3404,8 +3384,8 @@ angles in radians.</p></section>
 <span>def <span class="ident">rz_gate</span></span>(<span>self, target, theta, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to perform an arbitrary Z rotation.</p>
-<p><code>target</code> is the targetted qubit. <code>theta</code> is the angle in radians.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to perform an arbitrary Z rotation.</p>
+<p><code>target</code> is the targetted qubit. <code>theta</code> is the angle in radians.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3423,9 +3403,9 @@ angles in radians.</p></section>
 <span>def <span class="ident">s_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a 90-degree Z gate, also
+<div class="desc"><p>Instructs the downstream plugin to execute a 90-degree Z gate, also
 known as an S gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3442,9 +3422,9 @@ known as an S gate.</p>
 <span>def <span class="ident">sdag_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a negative 90-degree Z
+<div class="desc"><p>Instructs the downstream plugin to execute a negative 90-degree Z
 gate, also known as an S-dagger gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3461,9 +3441,9 @@ gate, also known as an S-dagger gate.</p>
 <span>def <span class="ident">sqswap_gate</span></span>(<span>self, a, b, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a square-root-of-swap
+<div class="desc"><p>Instructs the downstream plugin to execute a square-root-of-swap
 gate.</p>
-<p><code>a</code> and <code>b</code> are the targetted qubits.</p></section>
+<p><code>a</code> and <code>b</code> are the targetted qubits.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3485,8 +3465,8 @@ gate.</p>
 <span>def <span class="ident">swap_gate</span></span>(<span>self, a, b, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a swap gate.</p>
-<p><code>a</code> and <code>b</code> are the targetted qubits.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute a swap gate.</p>
+<p><code>a</code> and <code>b</code> are the targetted qubits.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3507,8 +3487,8 @@ gate.</p>
 <span>def <span class="ident">t_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a T gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute a T gate.</p>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3524,8 +3504,8 @@ gate.</p>
 <span>def <span class="ident">tdag_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a T-dagger gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute a T-dagger gate.</p>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3541,7 +3521,7 @@ gate.</p>
 <span>def <span class="ident">toffoli_gate</span></span>(<span>self, c1, c2, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a Toffoli gate.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute a Toffoli gate.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3558,7 +3538,7 @@ gate.</p>
 <span>def <span class="ident">unitary</span></span>(<span>self, targets, matrix, controls=[], arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a unitary quantum gate.</p>
+<div class="desc"><p>Instructs the downstream plugin to execute a unitary quantum gate.</p>
 <p><code>targets</code> must be a non-empty iterable of qubits or a single qubit,
 representing the qubit(s) targeted by the gate. <code>matrix</code> must be a
 unitary matrix appropriately sized for the number of target qubits,
@@ -3567,7 +3547,7 @@ numbers. <code>controls</code> optionally allows additional control qubits to be
 specified to make controlled gates; these qubits should NOT be
 reflected in the gate matrix. The matrix will automatically be extended
 by the downstream plugin, instead. The <code>targets</code> and <code>controls</code> sets
-must not intersect.</p></section>
+must not intersect.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3601,8 +3581,8 @@ must not intersect.</p></section>
 <span>def <span class="ident">x90_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a 90-degree X gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute a 90-degree X gate.</p>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3618,8 +3598,8 @@ must not intersect.</p></section>
 <span>def <span class="ident">x_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute an X gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute an X gate.</p>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3635,8 +3615,8 @@ must not intersect.</p></section>
 <span>def <span class="ident">y90_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a 90-degree Y gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute a 90-degree Y gate.</p>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3652,8 +3632,8 @@ must not intersect.</p></section>
 <span>def <span class="ident">y_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a Y gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute a Y gate.</p>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3669,9 +3649,9 @@ must not intersect.</p></section>
 <span>def <span class="ident">z90_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a 90-degree Z gate, also
+<div class="desc"><p>Instructs the downstream plugin to execute a 90-degree Z gate, also
 known as an S gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3688,8 +3668,8 @@ known as an S gate.</p>
 <span>def <span class="ident">z_gate</span></span>(<span>self, target, arb=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instructs the downstream plugin to execute a Z gate.</p>
-<p><code>target</code> is the targetted qubit.</p></section>
+<div class="desc"><p>Instructs the downstream plugin to execute a Z gate.</p>
+<p><code>target</code> is the targetted qubit.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3728,7 +3708,7 @@ known as an S gate.</p>
 <span>class <span class="ident">JoinHandle</span></span>
 </code></dt>
 <dd>
-<section class="desc"><p>Returned by <a title="dqcsim.plugin.Plugin.start" href="#dqcsim.plugin.Plugin.start"><code>Plugin.start()</code></a> to allow waiting for completion.</p></section>
+<div class="desc"><p>Returned by <code><a title="dqcsim.plugin.Plugin.start" href="#dqcsim.plugin.Plugin.start">Plugin.start()</a></code> to allow waiting for completion.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3753,7 +3733,7 @@ known as an S gate.</p>
 <span>def <span class="ident">wait</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Waits for the associated plugin to finish executing.</p></section>
+<div class="desc"><p>Waits for the associated plugin to finish executing.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3772,7 +3752,7 @@ known as an S gate.</p>
 <span>(</span><span>host_arb_ifaces=None, upstream_arb_ifaces=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Implements an operator plugin.</p>
+<div class="desc"><p>Implements an operator plugin.</p>
 <p>Operators sit between frontends and backends, allowing them to observe or
 modify the quantum gate and measurement streams between them.</p>
 <p>The following functions MUST be implemented by the user:</p>
@@ -3957,7 +3937,7 @@ will fail if there are underscores in any of the supported interface or
 operation IDs. In this case, you MUST override <code>__init__()</code> and call
 <code>super().__init__(host_arb_ifaces, upstream_arb_ifaces)</code>, where the two
 arguments are lists of strings representing the supported interface
-IDs.</p></section>
+IDs.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4298,19 +4278,6 @@ IDs.</p></section>
 <li><a title="dqcsim.plugin.GateStreamSource" href="#dqcsim.plugin.GateStreamSource">GateStreamSource</a></li>
 <li><a title="dqcsim.plugin.Plugin" href="#dqcsim.plugin.Plugin">Plugin</a></li>
 </ul>
-<h3>Subclasses</h3>
-<ul class="hlist">
-<li>dqcsim.tests.null_operator.NullOperator</li>
-<li>dqcsim.tests.test_allocate_free.NullOperator</li>
-<li>dqcsim.tests.test_allocate_free.TestOperator</li>
-<li>dqcsim.tests.test_gate.NullOperator</li>
-<li>dqcsim.tests.test_gate.Operator1</li>
-<li>dqcsim.tests.test_gate.Operator2</li>
-<li>dqcsim.tests.test_gate.Operator3</li>
-<li>dqcsim.tests.test_gatestream_misc.NullOperator</li>
-<li>dqcsim.tests.test_plugin.NullOperator</li>
-<li>dqcsim.tests.test_simulator.NullOperator</li>
-</ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="dqcsim.plugin.GateStreamSource" href="#dqcsim.plugin.GateStreamSource">GateStreamSource</a></b></code>:
@@ -4380,7 +4347,7 @@ IDs.</p></section>
 <span>(</span><span>host_arb_ifaces=None, upstream_arb_ifaces=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Represents a plugin implementation. Must be subclassed; use Frontend,
+<div class="desc"><p>Represents a plugin implementation. Must be subclassed; use Frontend,
 Operator, or Backend instead.</p>
 <p>Creates the plugin object.</p>
 <p>Overriding <code>__init__()</code> in your implementation is fine, but you must
@@ -4392,7 +4359,7 @@ will fail if there are underscores in any of the supported interface or
 operation IDs. In this case, you MUST override <code>__init__()</code> and call
 <code>super().__init__(host_arb_ifaces, upstream_arb_ifaces)</code>, where the two
 arguments are lists of strings representing the supported interface
-IDs.</p></section>
+IDs.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4734,7 +4701,7 @@ IDs.</p></section>
 <span>def <span class="ident">critical</span></span>(<span>self, msg, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Convenience function for logging fatal messages. See <code>log()</code>.</p></section>
+<div class="desc"><p>Convenience function for logging fatal messages. See <code>log()</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4748,7 +4715,7 @@ IDs.</p></section>
 <span>def <span class="ident">debug</span></span>(<span>self, msg, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Convenience function for logging debug messages. See <code>log()</code>.</p></section>
+<div class="desc"><p>Convenience function for logging debug messages. See <code>log()</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4762,7 +4729,7 @@ IDs.</p></section>
 <span>def <span class="ident">error</span></span>(<span>self, msg, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Convenience function for logging error messages. See <code>log()</code>.</p></section>
+<div class="desc"><p>Convenience function for logging error messages. See <code>log()</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4776,7 +4743,7 @@ IDs.</p></section>
 <span>def <span class="ident">fatal</span></span>(<span>self, msg, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Convenience function for logging fatal messages. See <code>log()</code>.</p></section>
+<div class="desc"><p>Convenience function for logging fatal messages. See <code>log()</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4790,7 +4757,7 @@ IDs.</p></section>
 <span>def <span class="ident">info</span></span>(<span>self, msg, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Convenience function for logging info messages. See <code>log()</code>.</p></section>
+<div class="desc"><p>Convenience function for logging info messages. See <code>log()</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4804,10 +4771,10 @@ IDs.</p></section>
 <span>def <span class="ident">log</span></span>(<span>self, level, msg, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Logs a message with the specified loglevel to DQCsim.</p>
+<div class="desc"><p>Logs a message with the specified loglevel to DQCsim.</p>
 <p>If any additional positional or keyword arguments are specified, the
 message is formatted using <code>str.format()</code>. Otherwise, <code>str()</code> is
-applied to the message.</p></section>
+applied to the message.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4829,7 +4796,7 @@ applied to the message.</p></section>
 <span>def <span class="ident">note</span></span>(<span>self, msg, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Convenience function for logging note messages. See <code>log()</code>.</p></section>
+<div class="desc"><p>Convenience function for logging note messages. See <code>log()</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4843,13 +4810,13 @@ applied to the message.</p></section>
 <span>def <span class="ident">random_float</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Produces a random floating point value between 0 (inclusive) and 1
+<div class="desc"><p>Produces a random floating point value between 0 (inclusive) and 1
 (exclusive).</p>
 <p>This function is guaranteed to return the same result every time as
 long as the random seed allocated to us by DQCsim stays the same. This
 allows simulations to be reproduced using a reproduction file. Without
 such a reproduction file or user-set seed, this is of course properly
-(pseudo)randomized.</p></section>
+(pseudo)randomized.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4870,12 +4837,12 @@ such a reproduction file or user-set seed, this is of course properly
 <span>def <span class="ident">random_long</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Produces a random 64-bit unsigned integer.</p>
+<div class="desc"><p>Produces a random 64-bit unsigned integer.</p>
 <p>This function is guaranteed to return the same result every time as
 long as the random seed allocated to us by DQCsim stays the same. This
 allows simulations to be reproduced using a reproduction file. Without
 such a reproduction file or user-set seed, this is of course properly
-(pseudo)randomized.</p></section>
+(pseudo)randomized.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4895,11 +4862,11 @@ such a reproduction file or user-set seed, this is of course properly
 <span>def <span class="ident">run</span></span>(<span>self, simulator=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instantiates and runs the plugin.</p>
+<div class="desc"><p>Instantiates and runs the plugin.</p>
 <p>simulator represents the DQCsim address that the plugin must connect to
 when initializing. It is usually passed as the first argument to the
 plugin process; therefore, if it is not specified, it is taken directly
-from sys.argv.</p></section>
+from sys.argv.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4921,7 +4888,7 @@ from sys.argv.</p></section>
 <span>def <span class="ident">start</span></span>(<span>self, simulator=None)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Instantiates and starts the plugin.</p>
+<div class="desc"><p>Instantiates and starts the plugin.</p>
 <p>This has the same behavior as run(), except the plugin is started in a
 different thread, so it returns immediately. The returned object is a
 JoinHandle, which contains a wait() method that can be used to wait
@@ -4929,7 +4896,7 @@ until the plugin finishes executing. Alternatively, if this is not
 done, the plugin thread will (try to) survive past even the main
 thread.</p>
 <p>Note that the JoinHandle can NOT be transferred to a different
-thread!</p></section>
+thread!</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4957,7 +4924,7 @@ thread!</p></section>
 <span>def <span class="ident">trace</span></span>(<span>self, msg, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Convenience function for logging trace messages. See <code>log()</code>.</p></section>
+<div class="desc"><p>Convenience function for logging trace messages. See <code>log()</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4971,7 +4938,7 @@ thread!</p></section>
 <span>def <span class="ident">warn</span></span>(<span>self, msg, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Convenience function for logging warning messages. See <code>log()</code>.</p></section>
+<div class="desc"><p>Convenience function for logging warning messages. See <code>log()</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4985,7 +4952,7 @@ thread!</p></section>
 <span>def <span class="ident">warning</span></span>(<span>self, msg, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Convenience function for logging warning messages. See <code>log()</code>.</p></section>
+<div class="desc"><p>Convenience function for logging warning messages. See <code>log()</code>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -5002,8 +4969,8 @@ thread!</p></section>
 <span>(</span><span>name, author, version)</span>
 </code></dt>
 <dd>
-<section class="desc"><p>Decorator for Plugin class implementations to take some of the
-boilerplate code away.</p></section>
+<div class="desc"><p>Decorator for Plugin class implementations to take some of the
+boilerplate code away.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -5135,7 +5102,7 @@ boilerplate code away.</p></section>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.5</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
 </footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad()</script>
