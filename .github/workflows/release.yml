@@ -37,7 +37,6 @@ jobs:
     strategy:
       matrix:
         python:
-        - '3.5'
         - '3.6'
         - '3.7'
         - '3.8'
@@ -66,7 +65,6 @@ jobs:
     strategy:
       matrix:
         python:
-        - '35'
         - '36'
         - '37'
         - '38'
@@ -98,9 +96,6 @@ jobs:
     steps:
     - uses: actions/download-artifact@v1
       with:
-        name: dqcsim-py35-manylinux1
-    - uses: actions/download-artifact@v1
-      with:
         name: dqcsim-py36-manylinux1
     - uses: actions/download-artifact@v1
       with:
@@ -108,9 +103,6 @@ jobs:
     - uses: actions/download-artifact@v1
       with:
         name: dqcsim-py38-manylinux1
-    - uses: actions/download-artifact@v1
-      with:
-        name: dqcsim-py35-manylinux2010
     - uses: actions/download-artifact@v1
       with:
         name: dqcsim-py36-manylinux2010
@@ -122,9 +114,6 @@ jobs:
         name: dqcsim-py38-manylinux2010
     - uses: actions/download-artifact@v1
       with:
-        name: dqcsim-py35-manylinux2014
-    - uses: actions/download-artifact@v1
-      with:
         name: dqcsim-py36-manylinux2014
     - uses: actions/download-artifact@v1
       with:
@@ -132,9 +121,6 @@ jobs:
     - uses: actions/download-artifact@v1
       with:
         name: dqcsim-py38-manylinux2014
-    - uses: actions/download-artifact@v1
-      with:
-        name: dqcsim-py3.5-macos
     - uses: actions/download-artifact@v1
       with:
         name: dqcsim-py3.6-macos
