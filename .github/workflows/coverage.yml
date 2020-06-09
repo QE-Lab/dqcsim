@@ -30,10 +30,7 @@ jobs:
       with:
         command: build
         args: --no-default-features --features null-plugins --bins --manifest-path rust/Cargo.toml
-    - uses: actions-rs/cargo@v1
-      with:
-        command: test
-        args: --no-run --all-features --all-targets
+    - run: cargo test --no-run --all-features --all-targets --message-format=json | jq -r "select(.profile.test == true) | .executable" > test.files
     - uses: docker://kcov/kcov:v37
       with:
         entrypoint: true
@@ -68,7 +65,7 @@ jobs:
           -v "/home/runner/work/dqcsim/dqcsim":"/home/runner/work/dqcsim/dqcsim" \
           --entrypoint "/bin/bash" \
           kcov/kcov:v37 \
-          -c "mkdir -p target/cov/rust && find target/debug/{dqcsim-*,core-*} -type f -executable | xargs -l kcov --include-path=rust/ --exclude-region='#[cfg(test)]' target/cov/rust"
+          -c "mkdir -p target/cov/rust && cat test.files | xargs -l kcov --include-path=rust/ --exclude-region='#[cfg(test)]' target/cov/rust"
     - name: Filter output
       run: |
         mkdir -p rust-cov
