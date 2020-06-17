@@ -1003,7 +1003,7 @@
         <span class="comment">// the phase of the first matrix entry; for any controlled matrix, this</span>
         <span class="comment">// entry will have a unit magnitude.</span>
         <span class="kw">let</span> <span class="ident">phase</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">ignore_global_phase</span> {
-            <span class="ident">Complex64</span>::<span class="ident">from_polar</span>(<span class="kw-2">&amp;</span><span class="number">1.0</span>, <span class="kw-2">&amp;</span><span class="self">self</span>[(<span class="number">0</span>, <span class="number">0</span>)].<span class="ident">arg</span>())
+            <span class="ident">Complex64</span>::<span class="ident">from_polar</span>(<span class="number">1.0</span>, <span class="self">self</span>[(<span class="number">0</span>, <span class="number">0</span>)].<span class="ident">arg</span>())
         } <span class="kw">else</span> {
             <span class="macro">c</span><span class="macro">!</span>(<span class="number">1.0</span>)
         };
