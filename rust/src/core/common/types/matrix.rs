@@ -329,7 +329,7 @@ impl Matrix {
         // the phase of the first matrix entry; for any controlled matrix, this
         // entry will have a unit magnitude.
         let phase = if ignore_global_phase {
-            Complex64::from_polar(&1.0, &self[(0, 0)].arg())
+            Complex64::from_polar(1.0, self[(0, 0)].arg())
         } else {
             c!(1.0)
         };
