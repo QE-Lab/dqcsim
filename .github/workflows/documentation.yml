@@ -24,7 +24,7 @@ jobs:
     - name: Install mdbook
       run: |
         mkdir -p $HOME/mdbook
-        curl -L https://github.com/rust-lang/mdBook/releases/download/v0.3.5/mdbook-v0.3.5-x86_64-apple-darwin.tar.gz | tar xz -C $HOME/mdbook
+        curl -L https://github.com/rust-lang/mdBook/releases/download/v0.4.0/mdbook-v0.4.0-x86_64-apple-darwin.tar.gz | tar xz -C $HOME/mdbook
         echo "::add-path::${HOME}/mdbook/"
     - name: Install dqcsim
       env:
