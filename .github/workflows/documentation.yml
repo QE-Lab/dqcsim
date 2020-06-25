@@ -36,22 +36,21 @@ jobs:
       working-directory: ./doc
       run: |
         make all
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       with:
         name: book
         path: target/book
 
   deploy:
     name: Deploy
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     needs: [build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v2
       with:
         name: book
-    - uses: alex-page/blazing-fast-gh-pages-deploy@v1.1.0
+    - uses: peaceiris/actions-gh-pages@v3
       with:
-        repo-token: ${{ secrets.GH_PAT }}
-        site-directory: ./book
-        commit-message: Deploy to GitHub Pages
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: .
