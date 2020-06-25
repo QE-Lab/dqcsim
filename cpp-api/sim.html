@@ -5,12 +5,19 @@
         <meta charset="UTF-8">
         <title>Host/simulation anatomy - DQCsim</title>
         
+        
+
+
+        <!-- Custom HTML head -->
+        
+
 
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
 
+        <link rel="icon" href="../favicon.svg">
         <link rel="shortcut icon" href="../favicon.png">
         <link rel="stylesheet" href="../css/variables.css">
         <link rel="stylesheet" href="../css/general.css">
@@ -19,8 +26,9 @@
 
         <!-- Fonts -->
         <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+        
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="../highlight.css">
@@ -39,7 +47,7 @@
         <!-- Provide site root to javascript -->
         <script type="text/javascript">
             var path_to_root = "../";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "light" : "light";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
@@ -83,8 +91,8 @@
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <div id="sidebar-scrollbox" class="sidebar-scrollbox">
-                <ol class="chapter"><li class="expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Introduction to DQCsim</a></li><li><ol class="section"><li class="expanded "><a href="../intro/components.html"><strong aria-hidden="true">1.1.</strong> The components of a simulation</a></li><li><ol class="section"><li class="expanded "><a href="../intro/frontend.html"><strong aria-hidden="true">1.1.1.</strong> Frontend use cases</a></li><li class="expanded "><a href="../intro/backend.html"><strong aria-hidden="true">1.1.2.</strong> Backend use cases</a></li><li class="expanded "><a href="../intro/operator.html"><strong aria-hidden="true">1.1.3.</strong> Operator use cases</a></li><li class="expanded "><a href="../intro/host.html"><strong aria-hidden="true">1.1.4.</strong> Host use cases</a></li></ol></li><li class="expanded "><a href="../intro/puzzle.html"><strong aria-hidden="true">1.2.</strong> Jigsaw puzzle analogy</a></li><li class="expanded "><a href="../intro/interfaces.html"><strong aria-hidden="true">1.3.</strong> DQCsim's interfaces</a></li><li><ol class="section"><li class="expanded "><a href="../intro/arbs.html"><strong aria-hidden="true">1.3.1.</strong> ArbData and ArbCmds</a></li><li class="expanded "><a href="../intro/gatestream.html"><strong aria-hidden="true">1.3.2.</strong> Gate- and measurement streams</a></li><li class="expanded "><a href="../intro/host-iface.html"><strong aria-hidden="true">1.3.3.</strong> The host interface</a></li><li class="expanded "><a href="../intro/misc-iface.html"><strong aria-hidden="true">1.3.4.</strong> Miscellaneous interfaces</a></li></ol></li><li class="expanded "><a href="../intro/reproducibility.html"><strong aria-hidden="true">1.4.</strong> Reproducibility</a></li></ol></li><li class="expanded "><a href="../install/index.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="expanded "><a href="../install/plugins.html"><strong aria-hidden="true">2.1.</strong> Plugin distribution</a></li></ol></li><li class="expanded "><a href="../cli/index.html"><strong aria-hidden="true">3.</strong> The command-line interface</a></li><li class="expanded "><a href="../python-api/index.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li><ol class="section"><li class="expanded "><a href="../python-api/hello-world.html"><strong aria-hidden="true">4.1.</strong> Hello, world!</a></li><li class="expanded "><a href="../python-api/debugging.html"><strong aria-hidden="true">4.2.</strong> Debugging</a></li><li class="expanded "><a href="../python-api/sending-gates.html"><strong aria-hidden="true">4.3.</strong> Sending some gates</a></li><li class="expanded "><a href="../python-api/simulations.html"><strong aria-hidden="true">4.4.</strong> Controlling simulations</a></li><li class="expanded "><a href="../python-api/operator.html"><strong aria-hidden="true">4.5.</strong> Inserting an operator</a></li><li class="expanded "><a href="../python-api/reference.html"><strong aria-hidden="true">4.6.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../c-api/index.html"><strong aria-hidden="true">5.</strong> C API</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/usage.html"><strong aria-hidden="true">5.1.</strong> Usage</a></li><li class="expanded "><a href="../c-api/concepts.apigen.html"><strong aria-hidden="true">5.2.</strong> Concepts</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/handle.apigen.html"><strong aria-hidden="true">5.2.1.</strong> Handles: dqcs_handle_*</a></li><li class="expanded "><a href="../c-api/memory-management.apigen.html"><strong aria-hidden="true">5.2.2.</strong> Memory management</a></li><li class="expanded "><a href="../c-api/error.apigen.html"><strong aria-hidden="true">5.2.3.</strong> Error handling: dqcs_error_*</a></li><li class="expanded "><a href="../c-api/callbacks.apigen.html"><strong aria-hidden="true">5.2.4.</strong> Callbacks</a></li></ol></li><li class="expanded "><a href="../c-api/type-definitions.apigen.html"><strong aria-hidden="true">5.3.</strong> Type definitions: dqcs_*_t</a></li><li class="expanded "><a href="../c-api/arb-cmd-cq.apigen.html"><strong aria-hidden="true">5.4.</strong> ArbData and ArbCmd objects</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/arb.apigen.html"><strong aria-hidden="true">5.4.1.</strong> ArbData objects: dqcs_arb_*</a></li><li class="expanded "><a href="../c-api/cmd.apigen.html"><strong aria-hidden="true">5.4.2.</strong> ArbCmd objects: dqcs_cmd_*</a></li><li class="expanded "><a href="../c-api/cq.apigen.html"><strong aria-hidden="true">5.4.3.</strong> ArbCmd queues: dqcs_cq_*</a></li></ol></li><li class="expanded "><a href="../c-api/qbset.apigen.html"><strong aria-hidden="true">5.5.</strong> Qubits: dqcs_qbset_*</a></li><li class="expanded "><a href="../c-api/mat.apigen.html"><strong aria-hidden="true">5.6.</strong> Matrices: dqcs_mat_*</a></li><li class="expanded "><a href="../c-api/gate.apigen.html"><strong aria-hidden="true">5.7.</strong> Gates: dqcs_gate_*</a></li><li class="expanded "><a href="../c-api/gm.apigen.html"><strong aria-hidden="true">5.8.</strong> Gate maps: dqcs_gm_*</a></li><li class="expanded "><a href="../c-api/measurements.apigen.html"><strong aria-hidden="true">5.9.</strong> Measurements</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/meas.apigen.html"><strong aria-hidden="true">5.9.1.</strong> Singular measurements: dqcs_meas_*</a></li><li class="expanded "><a href="../c-api/mset.apigen.html"><strong aria-hidden="true">5.9.2.</strong> Measurement sets: dqcs_mset_*</a></li></ol></li><li class="expanded "><a href="../c-api/plugins.apigen.html"><strong aria-hidden="true">5.10.</strong> Plugins</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pdef.apigen.html"><strong aria-hidden="true">5.10.1.</strong> Defining a plugin: dqcs_pdef_*</a></li><li class="expanded "><a href="../c-api/plugin-run.apigen.html"><strong aria-hidden="true">5.10.2.</strong> Running a plugin: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/plugin-interact.apigen.html"><strong aria-hidden="true">5.10.3.</strong> Interacting with DQCsim: dqcs_plugin_*</a></li><li class="expanded "><a href="../c-api/log.apigen.html"><strong aria-hidden="true">5.10.4.</strong> Logging: dqcs_log_*</a></li></ol></li><li class="expanded "><a href="../c-api/simulations.apigen.html"><strong aria-hidden="true">5.11.</strong> Simulations</a></li><li><ol class="section"><li class="expanded "><a href="../c-api/pcfg.apigen.html"><strong aria-hidden="true">5.11.1.</strong> Configuring plugins: dqcs_pcfg_*</a></li><li class="expanded "><a href="../c-api/tcfg.apigen.html"><strong aria-hidden="true">5.11.2.</strong> Running local plugins: dqcs_tcfg_*</a></li><li class="expanded "><a href="../c-api/scfg.apigen.html"><strong aria-hidden="true">5.11.3.</strong> Configuring a simulation: dqcs_scfg_*</a></li><li class="expanded "><a href="../c-api/sim.apigen.html"><strong aria-hidden="true">5.11.4.</strong> Running a simulation: dqcs_sim_*</a></li></ol></li><li class="expanded "><a href="../c-api/reference.apigen.html"><strong aria-hidden="true">5.12.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../cpp-api/index.html"><strong aria-hidden="true">6.</strong> C++ API</a></li><li><ol class="section"><li class="expanded "><a href="../cpp-api/usage.html"><strong aria-hidden="true">6.1.</strong> Usage</a></li><li class="expanded "><a href="../cpp-api/ccompare.html"><strong aria-hidden="true">6.2.</strong> Comparison to the C API</a></li><li class="expanded "><a href="../cpp-api/plugin.html"><strong aria-hidden="true">6.3.</strong> Plugin anatomy</a></li><li class="expanded "><a href="../cpp-api/sim.html" class="active"><strong aria-hidden="true">6.4.</strong> Host/simulation anatomy</a></li><li class="expanded "><a href="../cpp-api/reference.html"><strong aria-hidden="true">6.5.</strong> Reference</a></li></ol></li><li class="expanded "><a href="../rust-api/index.html"><strong aria-hidden="true">7.</strong> Rust API</a></li><li class="expanded affix "><a href="../release.html">Release</a></li></ol>
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Introduction to DQCsim</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../intro/components.html"><strong aria-hidden="true">1.1.</strong> The components of a simulation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../intro/frontend.html"><strong aria-hidden="true">1.1.1.</strong> Frontend use cases</a></li><li class="chapter-item expanded "><a href="../intro/backend.html"><strong aria-hidden="true">1.1.2.</strong> Backend use cases</a></li><li class="chapter-item expanded "><a href="../intro/operator.html"><strong aria-hidden="true">1.1.3.</strong> Operator use cases</a></li><li class="chapter-item expanded "><a href="../intro/host.html"><strong aria-hidden="true">1.1.4.</strong> Host use cases</a></li></ol></li><li class="chapter-item expanded "><a href="../intro/puzzle.html"><strong aria-hidden="true">1.2.</strong> Jigsaw puzzle analogy</a></li><li class="chapter-item expanded "><a href="../intro/interfaces.html"><strong aria-hidden="true">1.3.</strong> DQCsim's interfaces</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../intro/arbs.html"><strong aria-hidden="true">1.3.1.</strong> ArbData and ArbCmds</a></li><li class="chapter-item expanded "><a href="../intro/gatestream.html"><strong aria-hidden="true">1.3.2.</strong> Gate- and measurement streams</a></li><li class="chapter-item expanded "><a href="../intro/host-iface.html"><strong aria-hidden="true">1.3.3.</strong> The host interface</a></li><li class="chapter-item expanded "><a href="../intro/misc-iface.html"><strong aria-hidden="true">1.3.4.</strong> Miscellaneous interfaces</a></li></ol></li><li class="chapter-item expanded "><a href="../intro/reproducibility.html"><strong aria-hidden="true">1.4.</strong> Reproducibility</a></li></ol></li><li class="chapter-item expanded "><a href="../install/index.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../install/plugins.html"><strong aria-hidden="true">2.1.</strong> Plugin distribution</a></li></ol></li><li class="chapter-item expanded "><a href="../cli/index.html"><strong aria-hidden="true">3.</strong> The command-line interface</a></li><li class="chapter-item expanded "><a href="../python-api/index.html"><strong aria-hidden="true">4.</strong> Python API</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../python-api/hello-world.html"><strong aria-hidden="true">4.1.</strong> Hello, world!</a></li><li class="chapter-item expanded "><a href="../python-api/debugging.html"><strong aria-hidden="true">4.2.</strong> Debugging</a></li><li class="chapter-item expanded "><a href="../python-api/sending-gates.html"><strong aria-hidden="true">4.3.</strong> Sending some gates</a></li><li class="chapter-item expanded "><a href="../python-api/simulations.html"><strong aria-hidden="true">4.4.</strong> Controlling simulations</a></li><li class="chapter-item expanded "><a href="../python-api/operator.html"><strong aria-hidden="true">4.5.</strong> Inserting an operator</a></li><li class="chapter-item expanded "><a href="../python-api/reference.html"><strong aria-hidden="true">4.6.</strong> Reference</a></li></ol></li><li class="chapter-item expanded "><a href="../c-api/index.html"><strong aria-hidden="true">5.</strong> C API</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../c-api/usage.html"><strong aria-hidden="true">5.1.</strong> Usage</a></li><li class="chapter-item expanded "><a href="../c-api/concepts.apigen.html"><strong aria-hidden="true">5.2.</strong> Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../c-api/handle.apigen.html"><strong aria-hidden="true">5.2.1.</strong> Handles: dqcs_handle_*</a></li><li class="chapter-item expanded "><a href="../c-api/memory-management.apigen.html"><strong aria-hidden="true">5.2.2.</strong> Memory management</a></li><li class="chapter-item expanded "><a href="../c-api/error.apigen.html"><strong aria-hidden="true">5.2.3.</strong> Error handling: dqcs_error_*</a></li><li class="chapter-item expanded "><a href="../c-api/callbacks.apigen.html"><strong aria-hidden="true">5.2.4.</strong> Callbacks</a></li></ol></li><li class="chapter-item expanded "><a href="../c-api/type-definitions.apigen.html"><strong aria-hidden="true">5.3.</strong> Type definitions: dqcs_*_t</a></li><li class="chapter-item expanded "><a href="../c-api/arb-cmd-cq.apigen.html"><strong aria-hidden="true">5.4.</strong> ArbData and ArbCmd objects</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../c-api/arb.apigen.html"><strong aria-hidden="true">5.4.1.</strong> ArbData objects: dqcs_arb_*</a></li><li class="chapter-item expanded "><a href="../c-api/cmd.apigen.html"><strong aria-hidden="true">5.4.2.</strong> ArbCmd objects: dqcs_cmd_*</a></li><li class="chapter-item expanded "><a href="../c-api/cq.apigen.html"><strong aria-hidden="true">5.4.3.</strong> ArbCmd queues: dqcs_cq_*</a></li></ol></li><li class="chapter-item expanded "><a href="../c-api/qbset.apigen.html"><strong aria-hidden="true">5.5.</strong> Qubits: dqcs_qbset_*</a></li><li class="chapter-item expanded "><a href="../c-api/mat.apigen.html"><strong aria-hidden="true">5.6.</strong> Matrices: dqcs_mat_*</a></li><li class="chapter-item expanded "><a href="../c-api/gate.apigen.html"><strong aria-hidden="true">5.7.</strong> Gates: dqcs_gate_*</a></li><li class="chapter-item expanded "><a href="../c-api/gm.apigen.html"><strong aria-hidden="true">5.8.</strong> Gate maps: dqcs_gm_*</a></li><li class="chapter-item expanded "><a href="../c-api/measurements.apigen.html"><strong aria-hidden="true">5.9.</strong> Measurements</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../c-api/meas.apigen.html"><strong aria-hidden="true">5.9.1.</strong> Singular measurements: dqcs_meas_*</a></li><li class="chapter-item expanded "><a href="../c-api/mset.apigen.html"><strong aria-hidden="true">5.9.2.</strong> Measurement sets: dqcs_mset_*</a></li></ol></li><li class="chapter-item expanded "><a href="../c-api/plugins.apigen.html"><strong aria-hidden="true">5.10.</strong> Plugins</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../c-api/pdef.apigen.html"><strong aria-hidden="true">5.10.1.</strong> Defining a plugin: dqcs_pdef_*</a></li><li class="chapter-item expanded "><a href="../c-api/plugin-run.apigen.html"><strong aria-hidden="true">5.10.2.</strong> Running a plugin: dqcs_plugin_*</a></li><li class="chapter-item expanded "><a href="../c-api/plugin-interact.apigen.html"><strong aria-hidden="true">5.10.3.</strong> Interacting with DQCsim: dqcs_plugin_*</a></li><li class="chapter-item expanded "><a href="../c-api/log.apigen.html"><strong aria-hidden="true">5.10.4.</strong> Logging: dqcs_log_*</a></li></ol></li><li class="chapter-item expanded "><a href="../c-api/simulations.apigen.html"><strong aria-hidden="true">5.11.</strong> Simulations</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../c-api/pcfg.apigen.html"><strong aria-hidden="true">5.11.1.</strong> Configuring plugins: dqcs_pcfg_*</a></li><li class="chapter-item expanded "><a href="../c-api/tcfg.apigen.html"><strong aria-hidden="true">5.11.2.</strong> Running local plugins: dqcs_tcfg_*</a></li><li class="chapter-item expanded "><a href="../c-api/scfg.apigen.html"><strong aria-hidden="true">5.11.3.</strong> Configuring a simulation: dqcs_scfg_*</a></li><li class="chapter-item expanded "><a href="../c-api/sim.apigen.html"><strong aria-hidden="true">5.11.4.</strong> Running a simulation: dqcs_sim_*</a></li></ol></li><li class="chapter-item expanded "><a href="../c-api/reference.apigen.html"><strong aria-hidden="true">5.12.</strong> Reference</a></li></ol></li><li class="chapter-item expanded "><a href="../cpp-api/index.html"><strong aria-hidden="true">6.</strong> C++ API</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../cpp-api/usage.html"><strong aria-hidden="true">6.1.</strong> Usage</a></li><li class="chapter-item expanded "><a href="../cpp-api/ccompare.html"><strong aria-hidden="true">6.2.</strong> Comparison to the C API</a></li><li class="chapter-item expanded "><a href="../cpp-api/plugin.html"><strong aria-hidden="true">6.3.</strong> Plugin anatomy</a></li><li class="chapter-item expanded "><a href="../cpp-api/sim.html" class="active"><strong aria-hidden="true">6.4.</strong> Host/simulation anatomy</a></li><li class="chapter-item expanded "><a href="../cpp-api/reference.html"><strong aria-hidden="true">6.5.</strong> Reference</a></li></ol></li><li class="chapter-item expanded "><a href="../rust-api/index.html"><strong aria-hidden="true">7.</strong> Rust API</a></li><li class="chapter-item expanded affix "><a href="../release.html">Release</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -93,37 +101,36 @@
 
             <div class="page">
                 
-                <div id="menu-bar" class="menu-bar">
-                    <div id="menu-bar-sticky-container">
-                        <div class="left-buttons">
-                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
-                                <i class="fa fa-bars"></i>
-                            </button>
-                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
-                                <i class="fa fa-paint-brush"></i>
-                            </button>
-                            <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                                <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
-                                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
-                                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
-                                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
-                                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
-                            </ul>
-                            
-                            <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
-                                <i class="fa fa-search"></i>
-                            </button>
-                            
-                        </div>
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        
+                    </div>
 
-                        <h1 class="menu-title">DQCsim</h1>
+                    <h1 class="menu-title">DQCsim</h1>
 
-                        <div class="right-buttons">
-                            <a href="../print.html" title="Print this book" aria-label="Print this book">
-                                <i id="print-button" class="fa fa-print"></i>
-                            </a>
-                            
-                        </div>
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        
                     </div>
                 </div>
 
@@ -237,13 +244,13 @@ reproduction system was turned off here.</p>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a href="../cpp-api/plugin.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../cpp-api/plugin.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a href="../cpp-api/reference.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../cpp-api/reference.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -256,10 +263,10 @@ reproduction system was turned off here.</p>
         
 
         
-        
+
         
         <script type="text/javascript">
-            window.playpen_copyable = true;
+            window.playground_copyable = true;
         </script>
         
 
