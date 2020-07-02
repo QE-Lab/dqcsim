@@ -73,19 +73,15 @@
 <span id="73">73</span>
 <span id="74">74</span>
 <span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::{<span class="ident">error</span>::<span class="ident">Error</span>, <span class="ident">log</span>::<span class="ident">Loglevel</span>, <span class="ident">util</span>::<span class="ident">friendly_enum_parse</span>};
-<span class="kw">use</span> <span class="ident">named_type</span>::<span class="ident">NamedType</span>;
-<span class="kw">use</span> <span class="ident">named_type_derive</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">process</span>::<span class="ident">Stdio</span>;
 <span class="kw">use</span> <span class="ident">strum_macros</span>::{<span class="ident">Display</span>, <span class="ident">EnumIter</span>, <span class="ident">EnumString</span>};
 
 <span class="doccomment">/// All loglevel options plus pass and null, used to specify how a</span>
 <span class="doccomment">/// stdout/stderr stream should be captured.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Display</span>, <span class="ident">EnumIter</span>, <span class="ident">EnumString</span>, <span class="ident">NamedType</span>, <span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Display</span>, <span class="ident">EnumIter</span>, <span class="ident">EnumString</span>, <span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">enum</span> <span class="ident">StreamCaptureOption</span> {
     <span class="ident">Pass</span>,
     <span class="ident">Null</span>,
