@@ -2,6 +2,7 @@ ARG MANYLINUX=1
 FROM quay.io/pypa/manylinux${MANYLINUX}_x86_64
 
 ARG PYTHON_VERSION=36
+ARG AUDITWHEEL_VERSION=3.2
 ENV PYBIN /opt/python/cp${PYTHON_VERSION}-cp${PYTHON_VERSION}*/bin
 
 RUN curl -sSf https://sh.rustup.rs | sh -s -- -y && \
@@ -12,7 +13,7 @@ RUN curl -sSf https://sh.rustup.rs | sh -s -- -y && \
 	./configure --without-pcre && \
 	make && \
 	make install && \
-	${PYBIN}/pip3 install auditwheel
+	${PYBIN}/pip3 install --force-reinstall auditwheel==${AUDITWHEEL_VERSION}
 
 ENV PATH=$PATH:/root/.cargo/bin
 
