@@ -92,7 +92,8 @@ class bdist_wheel(_bdist_wheel):
             # This only works for manylinux
             if 'AUDITWHEEL_PLAT' in os.environ:
                 from auditwheel.repair import repair_wheel
-                repair_wheel(wheel_path, abi=os.environ['AUDITWHEEL_PLAT'], lib_sdir=".libs", out_dir=self.dist_dir, update_tags=True)
+                from auditwheel.patcher import Patchelf
+                repair_wheel(wheel_path, abi=os.environ['AUDITWHEEL_PLAT'], lib_sdir=".libs", out_dir=self.dist_dir, update_tags=True, patcher=Patchelf())
 
 class sdist(_sdist):
     def finalize_options(self):
