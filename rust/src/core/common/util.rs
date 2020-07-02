@@ -209,10 +209,7 @@ pub fn friendly_enumerate(
 /// error messages generated are user-friendly as well.
 pub fn friendly_enum_parse<E, I>(s: &str) -> Result<E>
 where
-    E: std::str::FromStr
-        + strum::IntoEnumIterator<Iterator = I>
-        + named_type::NamedType
-        + std::fmt::Display,
+    E: std::str::FromStr + strum::IntoEnumIterator<Iterator = I> + std::fmt::Display,
     I: Iterator<Item = E>,
 {
     // Match using a lowercase version of the provided string, so we match
@@ -235,7 +232,7 @@ where
         0 => inv_arg(format!(
             "{} is not a valid {}, valid values are {}",
             s,
-            friendly_name(E::short_type_name()),
+            friendly_name(std::any::type_name::<E>().rsplit("::").next().unwrap()),
             friendly_enumerate(
                 E::iter().map(|e| format!("{}", e).to_lowercase()),
                 Some("or")
@@ -245,7 +242,7 @@ where
         _ => inv_arg(format!(
             "{} is an ambiguous {}, it could mean either {}",
             s,
-            friendly_name(E::short_type_name()),
+            friendly_name(std::any::type_name::<E>().rsplit("::").next().unwrap()),
             friendly_enumerate(matches.into_iter().map(|x| x.0), Some("or"))
         )),
     }
@@ -254,13 +251,11 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use named_type::NamedType;
-    use named_type_derive::*;
     use std::str::FromStr;
     use strum::ParseError;
     use strum_macros::{Display, EnumIter, EnumString};
 
-    #[derive(NamedType, Display, EnumIter, EnumString, Clone, PartialEq, Debug)]
+    #[derive(Display, EnumIter, EnumString, Clone, PartialEq, Debug)]
     enum TestEnum {
         #[strum(to_string = "Foo", serialize = "foo", serialize = "f")]
         Foo,

@@ -120,8 +120,6 @@ use crate::common::{
     error::{ErrorKind, ResultExt},
 };
 use lazy_static::lazy_static;
-use named_type::NamedType;
-use named_type_derive::*;
 use ref_thread_local::ref_thread_local;
 use serde::{Deserialize, Serialize};
 use std::{cell::RefCell, fmt};
@@ -194,7 +192,6 @@ ref_thread_local! {
     EnumString,
     Display,
     EnumIter,
-    NamedType,
 )]
 pub enum Loglevel {
     /// This loglevel is to be used for reporting a fatal error, resulting from
@@ -266,7 +263,6 @@ impl Into<term::color::Color> for Loglevel {
     EnumString,
     Display,
     EnumIter,
-    NamedType,
 )]
 pub enum LoglevelFilter {
     /// A level lower than all log levels.
