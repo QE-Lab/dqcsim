@@ -3,13 +3,11 @@ use crate::common::{
     types::{ArbCmd, ArbData},
     util::friendly_enum_parse,
 };
-use named_type::NamedType;
-use named_type_derive::*;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumIter, EnumString};
 
 /// Represents a host API call name.
-#[derive(Display, NamedType, EnumIter, EnumString, Debug, Copy, Clone, PartialEq)]
+#[derive(Display, EnumIter, EnumString, Debug, Copy, Clone, PartialEq)]
 #[strum(serialize_all = "snake_case")]
 enum HostCallFunction {
     Start,

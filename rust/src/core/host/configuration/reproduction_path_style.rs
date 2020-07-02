@@ -1,5 +1,3 @@
-use named_type::NamedType;
-use named_type_derive::*;
 use serde::{Deserialize, Serialize};
 use std::{
     env::current_dir,
@@ -9,9 +7,7 @@ use std::{
 use strum_macros::{Display, EnumIter, EnumString};
 
 /// Represents the style for storing paths in a reproduction file.
-#[derive(
-    Display, EnumIter, EnumString, NamedType, Debug, Clone, Copy, PartialEq, Deserialize, Serialize,
-)]
+#[derive(Display, EnumIter, EnumString, Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
 pub enum ReproductionPathStyle {
     /// Specifies that paths should be saved the same way they were specified
     /// on the command line.

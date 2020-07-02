@@ -1,13 +1,11 @@
 use crate::common::{error::Error, log::Loglevel, util::friendly_enum_parse};
-use named_type::NamedType;
-use named_type_derive::*;
 use serde::{Deserialize, Serialize};
 use std::process::Stdio;
 use strum_macros::{Display, EnumIter, EnumString};
 
 /// All loglevel options plus pass and null, used to specify how a
 /// stdout/stderr stream should be captured.
-#[derive(Display, EnumIter, EnumString, NamedType, Debug, Copy, Clone, PartialEq)]
+#[derive(Display, EnumIter, EnumString, Debug, Copy, Clone, PartialEq)]
 enum StreamCaptureOption {
     Pass,
     Null,
