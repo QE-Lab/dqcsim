@@ -63,14 +63,14 @@ where
     I: IntoIterator<Item = T>,
     T: Into<OsString> + Clone,
 {
-    let mut cfg = CommandLineConfiguration::parse_from(args).or_else(|e| {
+    let mut cfg = CommandLineConfiguration::parse_from(args).map_err(|e| {
         println!("{}", e);
-        Err(e)
+        e
     })?;
 
-    let mut sim = Simulator::new(cfg.dqcsim).or_else(|e| {
+    let mut sim = Simulator::new(cfg.dqcsim).map_err(|e| {
         eprintln!("Failed to construct simulator: {}", e);
-        Err(e)
+        e
     })?;
 
     let sim_result = run(&mut sim, cfg.host_stdout, cfg.host_calls.drain(..));

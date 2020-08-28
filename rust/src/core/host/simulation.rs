@@ -89,12 +89,12 @@ impl AcceleratorState {
     pub fn put_data(&mut self, data: ArbData) -> Result<()> {
         match self {
             AcceleratorState::Idle => {
-                std::mem::replace(self, AcceleratorState::StartPending(data));
+                let _ = std::mem::replace(self, AcceleratorState::StartPending(data));
                 Ok(())
             }
             AcceleratorState::StartPending(_) => inv_op("data is already pending"),
             AcceleratorState::Blocked => {
-                std::mem::replace(self, AcceleratorState::WaitPending(data));
+                let _ = std::mem::replace(self, AcceleratorState::WaitPending(data));
                 Ok(())
             }
             AcceleratorState::WaitPending(_) => inv_op("data is already pending"),
