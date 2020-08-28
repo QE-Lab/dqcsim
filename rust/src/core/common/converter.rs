@@ -1105,9 +1105,9 @@ where
                     .transpose()
             })
             .transpose()
-            .and_then(|output| {
+            .map(|output| {
                 self.cache.borrow_mut().insert(cache_key, output.clone());
-                Ok(output)
+                output
             })
     }
 

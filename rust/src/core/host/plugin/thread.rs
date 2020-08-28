@@ -19,7 +19,7 @@ use crate::{
 use ipc_channel::ipc;
 use std::{fmt, thread};
 
-pub type PluginThreadClosure = Box<dyn Fn(String) -> () + Send>;
+pub type PluginThreadClosure = Box<dyn Fn(String) + Send>;
 
 pub struct PluginThread {
     thread: Option<PluginThreadClosure>,
