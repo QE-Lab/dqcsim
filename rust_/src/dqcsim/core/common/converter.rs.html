@@ -3153,9 +3153,9 @@
                     .<span class="ident">transpose</span>()
             })
             .<span class="ident">transpose</span>()
-            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">output</span><span class="op">|</span> {
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">output</span><span class="op">|</span> {
                 <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">borrow_mut</span>().<span class="ident">insert</span>(<span class="ident">cache_key</span>, <span class="ident">output</span>.<span class="ident">clone</span>());
-                <span class="prelude-val">Ok</span>(<span class="ident">output</span>)
+                <span class="ident">output</span>
             })
     }
 
@@ -4094,4 +4094,4 @@
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../../";window.currentCrate = "dqcsim";</script><script src="../../../../aliases.js"></script><script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script><script defer src="../../../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../../";window.currentCrate = "dqcsim";</script><script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script><script defer src="../../../../search-index.js"></script></body></html>

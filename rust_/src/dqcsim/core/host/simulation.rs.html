@@ -554,12 +554,12 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">put_data</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="ident">ArbData</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">AcceleratorState</span>::<span class="ident">Idle</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">replace</span>(<span class="self">self</span>, <span class="ident">AcceleratorState</span>::<span class="ident">StartPending</span>(<span class="ident">data</span>));
+                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">replace</span>(<span class="self">self</span>, <span class="ident">AcceleratorState</span>::<span class="ident">StartPending</span>(<span class="ident">data</span>));
                 <span class="prelude-val">Ok</span>(())
             }
             <span class="ident">AcceleratorState</span>::<span class="ident">StartPending</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">inv_op</span>(<span class="string">&quot;data is already pending&quot;</span>),
             <span class="ident">AcceleratorState</span>::<span class="ident">Blocked</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">replace</span>(<span class="self">self</span>, <span class="ident">AcceleratorState</span>::<span class="ident">WaitPending</span>(<span class="ident">data</span>));
+                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">replace</span>(<span class="self">self</span>, <span class="ident">AcceleratorState</span>::<span class="ident">WaitPending</span>(<span class="ident">data</span>));
                 <span class="prelude-val">Ok</span>(())
             }
             <span class="ident">AcceleratorState</span>::<span class="ident">WaitPending</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">inv_op</span>(<span class="string">&quot;data is already pending&quot;</span>),
@@ -928,4 +928,4 @@
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../../";window.currentCrate = "dqcsim";</script><script src="../../../../aliases.js"></script><script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script><script defer src="../../../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../../";window.currentCrate = "dqcsim";</script><script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script><script defer src="../../../../search-index.js"></script></body></html>

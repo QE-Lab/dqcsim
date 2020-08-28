@@ -2,7 +2,7 @@ var searchData=
 [
   ['off_433',['Off',['../namespacedqcsim_1_1wrap.html#a489c1f696719c9e5e7b50dc1ec6d4b9bad15305d7a4e34e02489c74a5ef542f36',1,'dqcsim::wrap']]],
   ['one_434',['One',['../namespacedqcsim_1_1wrap.html#a384d84b962f198dfe272c9a114490d2aa06c2cea18679d64399783748fa367bdd',1,'dqcsim::wrap']]],
-  ['operator_435',['Operator',['../classdqcsim_1_1wrap_1_1_plugin.html#aded8a91b9865c39ab1693d9ffb882cc3',1,'dqcsim::wrap::Plugin::Operator()'],['../namespacedqcsim_1_1wrap.html#ab7415047d7a77119ca1f84f1092dcd56',1,'dqcsim::wrap::Operator(const std::string &amp;name=&quot;&quot;) noexcept'],['../namespacedqcsim_1_1wrap.html#aecbb81acf6bb4833801c3c8e8872ff3bae1b3ec89ead7f83a9245ed5c9cacfdbf',1,'dqcsim::wrap::Operator()']]],
+  ['operator_435',['Operator',['../classdqcsim_1_1wrap_1_1_plugin.html#aded8a91b9865c39ab1693d9ffb882cc3',1,'dqcsim::wrap::Plugin::Operator()'],['../namespacedqcsim_1_1wrap.html#aecbb81acf6bb4833801c3c8e8872ff3bae1b3ec89ead7f83a9245ed5c9cacfdbf',1,'dqcsim::wrap::Operator()'],['../namespacedqcsim_1_1wrap.html#ab7415047d7a77119ca1f84f1092dcd56',1,'dqcsim::wrap::Operator(const std::string &amp;name=&quot;&quot;) noexcept']]],
   ['operator_21_3d_436',['operator!=',['../classdqcsim_1_1wrap_1_1_qubit_ref.html#a39d46bdb238835351c5530dff86c3a3c',1,'dqcsim::wrap::QubitRef']]],
   ['operator_22_22_5fq_437',['operator&quot;&quot;_q',['../namespacedqcsim_1_1wrap.html#a4e2c648e0a2cbda1036741d0daf3ecb4',1,'dqcsim::wrap']]],
   ['operator_3c_3c_438',['operator&lt;&lt;',['../classdqcsim_1_1wrap_1_1_handle.html#a4b8680bdabe71b39965a5a35fd0eef5a',1,'dqcsim::wrap::Handle::operator&lt;&lt;()'],['../classdqcsim_1_1wrap_1_1_qubit_ref.html#acf666a02158c672b9b66dc1d5200235f',1,'dqcsim::wrap::QubitRef::operator&lt;&lt;()']]],
