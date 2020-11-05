@@ -33,6 +33,7 @@ if (PROJECT_NAME)
                 "-DCMAKE_INSTALL_PREFIX=${DQCSIM_INSTALL_PREFIX}"
                 "${DQCSIM_OPTIONS}"
         )
+        add_library(dqcsim SHARED IMPORTED GLOBAL)
         add_dependencies(dqcsim dqcsim_build)
         get_property(LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
         if ("${LIB64}" STREQUAL "TRUE")
@@ -42,7 +43,6 @@ if (PROJECT_NAME)
         endif()
         set(DQCSIM_INC "${DQCSIM_INSTALL_PREFIX}/include")
         file(MAKE_DIRECTORY ${DQCSIM_INC})
-        add_library(dqcsim SHARED IMPORTED GLOBAL)
         set_target_properties(dqcsim PROPERTIES
             IMPORTED_LOCATION ${DQCSIM_LIB}
             INTERFACE_INCLUDE_DIRECTORIES ${DQCSIM_INC}
