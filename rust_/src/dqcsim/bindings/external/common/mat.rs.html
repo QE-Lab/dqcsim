@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/bindings/external/common/mat.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mat.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../../../light.css" id="themeStyle"><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/bindings/external/common/mat.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mat.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -390,9 +391,9 @@
 <span class="doccomment">///&gt;</span>
 <span class="doccomment">///&gt; This function returns the handle to the matrix, or 0 to indicate failure.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_new</span>(<span class="ident">num_qubits</span>: <span class="ident">size_t</span>, <span class="ident">matrix</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_double</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
-        <span class="kw">if</span> <span class="ident">num_qubits</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_new</span>(<span class="ident">num_qubits</span>: <span class="ident">size_t</span>, <span class="ident">matrix</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_double</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
+        <span class="kw">if</span> <span class="ident">num_qubits</span> <span class="op">==</span> <span class="number">0</span> {
             <span class="ident">inv_arg</span>(<span class="string">&quot;cannot construct matrix for 0 qubits&quot;</span>)
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">num_entries</span> <span class="op">=</span> <span class="number">4usize</span>.<span class="ident">pow</span>(<span class="ident">num_qubits</span> <span class="kw">as</span> <span class="ident">u32</span>);
@@ -423,8 +424,8 @@
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_predef</span>(
     <span class="ident">gate_type</span>: <span class="ident">dqcs_predefined_gate_t</span>,
     <span class="ident">param_data</span>: <span class="ident">dqcs_handle_t</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
+) <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
         <span class="comment">// Interpret gate type.</span>
         <span class="kw">let</span> <span class="ident">converter</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">MatrixConverterArb</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">UnitaryGateType</span>::<span class="ident">try_from</span>(<span class="ident">gate_type</span>)<span class="question-mark">?</span>.<span class="ident">into</span>();
 
@@ -458,8 +459,8 @@
 <span class="doccomment">///&gt; given basis. Returns a new handle to the constructed matrix or returns</span>
 <span class="doccomment">///&gt; 0 if an error occurs.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_basis</span>(<span class="ident">basis</span>: <span class="ident">dqcs_basis_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_basis</span>(<span class="ident">basis</span>: <span class="ident">dqcs_basis_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
         <span class="kw">let</span> <span class="ident">matrix</span>: <span class="ident">Matrix</span> <span class="op">=</span> <span class="ident">Basis</span>::<span class="ident">try_from</span>(<span class="ident">basis</span>)<span class="question-mark">?</span>.<span class="ident">into</span>();
         <span class="prelude-val">Ok</span>(<span class="ident">insert</span>(<span class="ident">matrix</span>))
     })
@@ -469,8 +470,8 @@
 <span class="doccomment">///&gt;</span>
 <span class="doccomment">///&gt; This function returns -1 when an error occurs.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_len</span>(<span class="ident">mat</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ssize_t</span> {
-    <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1</span>, <span class="op">|</span><span class="op">|</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_len</span>(<span class="ident">mat</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">ssize_t</span> {
+    <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1</span>, <span class="op">||</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">mat</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Matrix</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">mat</span>.<span class="ident">len</span>().<span class="ident">try_into</span>().<span class="ident">unwrap</span>())
     })
@@ -481,8 +482,8 @@
 <span class="doccomment">///&gt;</span>
 <span class="doccomment">///&gt; This function returns -1 when an error occurs.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_dimension</span>(<span class="ident">mat</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ssize_t</span> {
-    <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1</span>, <span class="op">|</span><span class="op">|</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_dimension</span>(<span class="ident">mat</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">ssize_t</span> {
+    <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1</span>, <span class="op">||</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">mat</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Matrix</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">mat</span>.<span class="ident">dimension</span>().<span class="ident">try_into</span>().<span class="ident">unwrap</span>())
     })
@@ -492,8 +493,8 @@
 <span class="doccomment">///&gt;</span>
 <span class="doccomment">///&gt; This function returns -1 when an error occurs.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_num_qubits</span>(<span class="ident">mat</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ssize_t</span> {
-    <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1</span>, <span class="op">|</span><span class="op">|</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_num_qubits</span>(<span class="ident">mat</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">ssize_t</span> {
+    <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1</span>, <span class="op">||</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">mat</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Matrix</span>);
         <span class="kw">let</span> <span class="ident">num_qubits</span> <span class="op">=</span> <span class="ident">mat</span>
             .<span class="ident">num_qubits</span>()
@@ -511,8 +512,8 @@
 <span class="doccomment">///&gt; with `free()` when you&#39;re done with it to avoid memory leaks.** On failure,</span>
 <span class="doccomment">///&gt; this function returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_get</span>(<span class="ident">mat</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_double</span> {
-    <span class="ident">api_return</span>(<span class="ident">null_mut</span>(), <span class="op">|</span><span class="op">|</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_get</span>(<span class="ident">mat</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_double</span> {
+    <span class="ident">api_return</span>(<span class="ident">null_mut</span>(), <span class="op">||</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">mat</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Matrix</span>);
         <span class="kw">let</span> <span class="ident">ffi_matrix</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">calloc</span>(<span class="number">2</span> <span class="op">*</span> <span class="ident">mat</span>.<span class="ident">len</span>(), <span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">c_double</span><span class="op">&gt;</span>()) <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_double</span> };
         <span class="kw">if</span> <span class="ident">ffi_matrix</span>.<span class="ident">is_null</span>() {
@@ -553,8 +554,8 @@
     <span class="ident">b</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">epsilon</span>: <span class="ident">c_double</span>,
     <span class="ident">ignore_gphase</span>: <span class="ident">bool</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_bool_return_t</span> {
-    <span class="ident">api_return_bool</span>(<span class="op">|</span><span class="op">|</span> {
+) <span class="op">-&gt;</span> <span class="ident">dqcs_bool_return_t</span> {
+    <span class="ident">api_return_bool</span>(<span class="op">||</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">a</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Matrix</span>);
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">b</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Matrix</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">a</span>.<span class="ident">approx_eq</span>(<span class="ident">b</span>, <span class="ident">epsilon</span>, <span class="ident">ignore_gphase</span>))
@@ -585,8 +586,8 @@
     <span class="ident">a</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">b</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">epsilon</span>: <span class="ident">c_double</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_bool_return_t</span> {
-    <span class="ident">api_return_bool</span>(<span class="op">|</span><span class="op">|</span> {
+) <span class="op">-&gt;</span> <span class="ident">dqcs_bool_return_t</span> {
+    <span class="ident">api_return_bool</span>(<span class="op">||</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">a</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Matrix</span>);
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">b</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Matrix</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">a</span>.<span class="ident">basis_approx_eq</span>(<span class="ident">b</span>, <span class="ident">epsilon</span>))
@@ -607,8 +608,8 @@
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_approx_unitary</span>(
     <span class="ident">matrix</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">epsilon</span>: <span class="ident">c_double</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_bool_return_t</span> {
-    <span class="ident">api_return_bool</span>(<span class="op">|</span><span class="op">|</span> {
+) <span class="op">-&gt;</span> <span class="ident">dqcs_bool_return_t</span> {
+    <span class="ident">api_return_bool</span>(<span class="op">||</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">matrix</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Matrix</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">matrix</span>.<span class="ident">approx_unitary</span>(<span class="ident">epsilon</span>))
     })
@@ -641,8 +642,8 @@
     <span class="ident">param_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">dqcs_handle_t</span>,
     <span class="ident">epsilon</span>: <span class="ident">c_double</span>,
     <span class="ident">ignore_gphase</span>: <span class="ident">bool</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_bool_return_t</span> {
-    <span class="ident">api_return_bool</span>(<span class="op">|</span><span class="op">|</span> {
+) <span class="op">-&gt;</span> <span class="ident">dqcs_bool_return_t</span> {
+    <span class="ident">api_return_bool</span>(<span class="op">||</span> {
         <span class="kw">if</span> <span class="op">!</span><span class="ident">param_data</span>.<span class="ident">is_null</span>() {
             <span class="kw">unsafe</span> { <span class="kw-2">*</span><span class="ident">param_data</span> <span class="op">=</span> <span class="number">0</span> };
         }
@@ -668,8 +669,8 @@
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_mat_add_controls</span>(
     <span class="ident">mat</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">number_of_controls</span>: <span class="ident">size_t</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
+) <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">mat</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Matrix</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">insert</span>(<span class="ident">mat</span>.<span class="ident">add_controls</span>(<span class="ident">number_of_controls</span>)))
     })
@@ -705,8 +706,8 @@
     <span class="ident">epsilon</span>: <span class="ident">c_double</span>,
     <span class="ident">ignore_global_phase</span>: <span class="ident">bool</span>,
     <span class="ident">control_indices</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ssize_t</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
+) <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">mat</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Matrix</span>);
         <span class="kw">if</span> <span class="ident">control_indices</span>.<span class="ident">is_null</span>() {
             <span class="ident">err</span>(<span class="string">&quot;control_indices cannot be null&quot;</span>)

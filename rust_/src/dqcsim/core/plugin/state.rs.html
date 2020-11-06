@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/core/plugin/state.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>state.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script src="../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../dqcsim/index.html'><div class='logo-container'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/core/plugin/state.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>state.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script src="../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../dqcsim/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1328,7 +1329,7 @@
 <span class="kw">impl</span> <span class="ident">RandomNumberGenerator</span> {
     <span class="doccomment">/// Constructs a random number generator with the specified number of</span>
     <span class="doccomment">/// deterministic streams seeded by the specified seed.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">num_streams</span>: <span class="ident">usize</span>, <span class="ident">seed</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RandomNumberGenerator</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">num_streams</span>: <span class="ident">usize</span>, <span class="ident">seed</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">RandomNumberGenerator</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">ChaChaRng</span>::<span class="ident">seed_from_u64</span>(<span class="ident">seed</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rngs</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">1</span>..<span class="ident">num_streams</span> {
@@ -1345,18 +1346,18 @@
     }
 
     <span class="doccomment">/// Returns the currently selected RNG.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_selected</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_selected</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">selected</span>
     }
 
     <span class="doccomment">/// Generates a random 64-bit number using the active RNG.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">rngs</span>[<span class="self">self</span>.<span class="ident">selected</span>].<span class="ident">next_u64</span>()
     }
 
     <span class="doccomment">/// Generates a random floating point number in the range `[0,1&gt;` using the</span>
     <span class="doccomment">/// active RNG.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random_f64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random_f64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">rngs</span>[<span class="self">self</span>.<span class="ident">selected</span>].<span class="ident">sample</span>(<span class="ident">Standard</span>)
     }
 }
@@ -1495,7 +1496,7 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">PluginState</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Handles a SimulatorToPlugin::Initialize RPC.</span>
-    <span class="kw">fn</span> <span class="ident">handle_init</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">req</span>: <span class="ident">PluginInitializeRequest</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PluginInitializeResponse</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">handle_init</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">req</span>: <span class="ident">PluginInitializeRequest</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PluginInitializeResponse</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">typ</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>();
         <span class="kw">let</span> <span class="ident">seed</span> <span class="op">=</span> <span class="ident">req</span>.<span class="ident">seed</span>;
 
@@ -1510,7 +1511,7 @@
 
         <span class="comment">// Make sure that we&#39;re the type of plugin that the simulator is</span>
         <span class="comment">// expecting.</span>
-        <span class="kw">if</span> <span class="ident">typ</span> <span class="op">!</span><span class="op">=</span> <span class="ident">req</span>.<span class="ident">plugin_type</span> {
+        <span class="kw">if</span> <span class="ident">typ</span> <span class="op">!=</span> <span class="ident">req</span>.<span class="ident">plugin_type</span> {
             <span class="ident">inv_op</span>(<span class="macro">format</span><span class="macro">!</span>(
                 <span class="string">&quot;host is expecting a plugin of type {:?}, but we&#39;re a plugin of type {:?}&quot;</span>,
                 <span class="ident">req</span>.<span class="ident">plugin_type</span>, <span class="ident">typ</span>
@@ -1518,13 +1519,13 @@
         }
 
         <span class="comment">// Connect to downstream plugin, unless we&#39;re a backend.</span>
-        <span class="kw">if</span> <span class="ident">typ</span> <span class="op">!</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
+        <span class="kw">if</span> <span class="ident">typ</span> <span class="op">!=</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
             <span class="self">self</span>.<span class="ident">connection</span>
                 .<span class="ident">connect_downstream</span>(<span class="ident">req</span>.<span class="ident">downstream</span>.<span class="ident">unwrap</span>())<span class="question-mark">?</span>;
         }
 
         <span class="comment">// If we&#39;re not a frontend, initialize an upstream server.</span>
-        <span class="kw">let</span> <span class="ident">upstream</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">typ</span> <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Frontend</span> {
+        <span class="kw">let</span> <span class="ident">upstream</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">typ</span> <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Frontend</span> {
             <span class="prelude-val">None</span>
         } <span class="kw">else</span> {
             <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">serve_upstream</span>()<span class="question-mark">?</span>)
@@ -1539,7 +1540,7 @@
     }
 
     <span class="doccomment">/// Handles a SimulatorToPlugin::AcceptUpstream RPC.</span>
-    <span class="kw">fn</span> <span class="ident">handle_accept_upstream</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">handle_accept_upstream</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;started accept_upstream()!&quot;</span>);
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">accept_upstream</span>();
         <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;finished accept_upstream()!&quot;</span>);
@@ -1547,7 +1548,7 @@
     }
 
     <span class="doccomment">/// Handles a SimulatorToPlugin::Abort RPC.</span>
-    <span class="kw">fn</span> <span class="ident">handle_abort</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">handle_abort</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;started handle_abort()!&quot;</span>);
 
         <span class="comment">// Make sure we receive gatestream acknowledgements for every request</span>
@@ -1567,14 +1568,14 @@
 
     <span class="doccomment">/// Handles a run request while we&#39;re NOT blocked inside the run()</span>
     <span class="doccomment">/// callback.</span>
-    <span class="kw">fn</span> <span class="ident">handle_run</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">req</span>: <span class="ident">FrontendRunRequest</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">FrontendRunResponse</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">handle_run</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">req</span>: <span class="ident">FrontendRunRequest</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">FrontendRunResponse</span><span class="op">&gt;</span> {
         <span class="comment">// If we&#39;re inside a run, some internal logic did something wrong;</span>
         <span class="comment">// FrontendRunRequests must be handled differently in this case.</span>
         <span class="macro">assert</span><span class="macro">!</span>(
             <span class="op">!</span><span class="self">self</span>.<span class="ident">inside_run</span>,
             <span class="string">&quot;handle_run() can only be used outside of the run() callback&quot;</span>
         );
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Frontend</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">!=</span> <span class="ident">PluginType</span>::<span class="ident">Frontend</span> {
             <span class="ident">inv_op</span>(<span class="string">&quot;received run request from simulator, but we&#39;re not a frontend!&quot;</span>)<span class="question-mark">?</span>;
         }
 
@@ -1604,7 +1605,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// That is, saves it to our cache, and forwards it upstream if we&#39;re an</span>
     <span class="doccomment">/// operator.</span>
-    <span class="kw">fn</span> <span class="ident">handle_measurement</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">measurement</span>: <span class="ident">QubitMeasurementResult</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">handle_measurement</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">measurement</span>: <span class="ident">QubitMeasurementResult</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="comment">// Note that it&#39;s not an error if there is no data entry for the</span>
         <span class="comment">// received qubit (anymore). This just means that the qubit has been</span>
         <span class="comment">// freed soon after it was measured, the measurement result was never</span>
@@ -1638,7 +1639,7 @@
 
             <span class="comment">// If we&#39;re an operator, propagate the measurement upstream using</span>
             <span class="comment">// the `modify_measurement()` callback.</span>
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Operator</span> {
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Operator</span> {
                 <span class="kw">let</span> <span class="ident">measurements</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">modify_measurement</span>)(<span class="self">self</span>, <span class="ident">measurement</span>)<span class="question-mark">?</span>;
                 <span class="kw">for</span> <span class="ident">measurement</span> <span class="kw">in</span> <span class="ident">measurements</span> {
                     <span class="self">self</span>.<span class="ident">connection</span>
@@ -1662,7 +1663,7 @@
     <span class="doccomment">/// `CompletedUpTo` message upstream (with the sequence number mapped to</span>
     <span class="doccomment">/// upstream sequence numbers appropriately) if previously postponed</span>
     <span class="doccomment">/// results have been received.</span>
-    <span class="kw">fn</span> <span class="ident">received_downstream_sequence</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">sequence</span>: <span class="ident">SequenceNumber</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">received_downstream_sequence</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">sequence</span>: <span class="ident">SequenceNumber</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Downstream completed up to {}&quot;</span>, <span class="ident">sequence</span>);
         <span class="comment">// Update the sequence number.</span>
         <span class="self">self</span>.<span class="ident">downstream_sequence_rx</span> <span class="op">=</span> <span class="ident">sequence</span>;
@@ -1687,7 +1688,7 @@
             <span class="comment">// Note that we&#39;re using the above two flags to keep Ferris happy;</span>
             <span class="comment">// we can&#39;t use self within the if let due to the mutable borrow.</span>
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">expected</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">downstream_expected_measurements</span>.<span class="ident">front_mut</span>() {
-                <span class="kw">if</span> <span class="ident">sequence</span>.<span class="ident">acknowledges</span>(<span class="ident">expected</span>.<span class="number">0</span>) <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">expected</span>.<span class="number">1</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">measurement</span>.<span class="ident">qubit</span>) {
+                <span class="kw">if</span> <span class="ident">sequence</span>.<span class="ident">acknowledges</span>(<span class="ident">expected</span>.<span class="number">0</span>) <span class="op">&amp;&amp;</span> <span class="ident">expected</span>.<span class="number">1</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">measurement</span>.<span class="ident">qubit</span>) {
                     <span class="ident">ok</span> <span class="op">=</span> <span class="bool-val">true</span>;
                     <span class="ident">pop</span> <span class="op">=</span> <span class="ident">expected</span>.<span class="number">1</span>.<span class="ident">is_empty</span>();
                 }
@@ -1776,7 +1777,7 @@
     }
 
     <span class="doccomment">/// Check whether we can/need to send the next CompletedUpTo message.</span>
-    <span class="kw">fn</span> <span class="ident">check_completed_up_to</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">check_completed_up_to</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">completed_up_to</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">upstream_issued_up_to</span>;
 
         <span class="comment">// Update the upstream_postponed mapping to see if we can propagate the</span>
@@ -1824,17 +1825,17 @@
     }
 
     <span class="doccomment">/// Handle an incoming upstream message from the downstream plugin.</span>
-    <span class="kw">fn</span> <span class="ident">handle_downstream_message</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">message</span>: <span class="ident">GatestreamUp</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">handle_downstream_message</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">message</span>: <span class="ident">GatestreamUp</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">rng</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">rng</span> {
             <span class="ident">rng</span>.<span class="ident">select</span>(<span class="number">2</span>);
         }
         <span class="self">self</span>.<span class="ident">synchronized_to_rpcs</span> <span class="op">=</span> <span class="bool-val">false</span>;
 
         <span class="kw">match</span> <span class="ident">message</span> {
-            <span class="ident">GatestreamUp</span>::<span class="ident">CompletedUpTo</span>(<span class="ident">sequence</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">GatestreamUp</span>::<span class="ident">CompletedUpTo</span>(<span class="ident">sequence</span>) <span class="op">=&gt;</span> {
                 <span class="self">self</span>.<span class="ident">received_downstream_sequence</span>(<span class="ident">sequence</span>)<span class="question-mark">?</span>;
             }
-            <span class="ident">GatestreamUp</span>::<span class="ident">Failure</span>(<span class="ident">sequence</span>, <span class="ident">message</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">GatestreamUp</span>::<span class="ident">Failure</span>(<span class="ident">sequence</span>, <span class="ident">message</span>) <span class="op">=&gt;</span> {
                 <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;Error from downstream plugin: {}&quot;</span>, <span class="ident">message</span>);
                 <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;The sequence number was {}&quot;</span>, <span class="ident">sequence</span>);
                 <span class="macro">fatal</span><span class="macro">!</span>(<span class="string">&quot;Desynchronized with downstream plugin due to downstream error, cannot continue!&quot;</span>);
@@ -1843,17 +1844,17 @@
                     <span class="ident">message</span>
                 ))<span class="question-mark">?</span>;
             }
-            <span class="ident">GatestreamUp</span>::<span class="ident">Measured</span>(<span class="ident">measurement</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">GatestreamUp</span>::<span class="ident">Measured</span>(<span class="ident">measurement</span>) <span class="op">=&gt;</span> {
                 <span class="macro">trace</span><span class="macro">!</span>(
                     <span class="string">&quot;Downstream sent measurement for qubit {}&quot;</span>,
                     <span class="ident">measurement</span>.<span class="ident">qubit</span>
                 );
                 <span class="self">self</span>.<span class="ident">downstream_measurement_queue</span>.<span class="ident">push_back</span>(<span class="ident">measurement</span>);
             }
-            <span class="ident">GatestreamUp</span>::<span class="ident">Advanced</span>(<span class="ident">cycles</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">GatestreamUp</span>::<span class="ident">Advanced</span>(<span class="ident">cycles</span>) <span class="op">=&gt;</span> {
                 <span class="self">self</span>.<span class="ident">downstream_cycle_rx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">downstream_cycle_rx</span>.<span class="ident">advance</span>(<span class="ident">cycles</span>);
             }
-            <span class="ident">x</span> <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">x</span> <span class="op">=&gt;</span> {
                 <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;Unexpected message received from downstream&quot;</span>);
                 <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">x</span>);
                 <span class="ident">err</span>(<span class="string">&quot;unexpected message received from downstream&quot;</span>)<span class="question-mark">?</span>;
@@ -1866,11 +1867,11 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// The returned boolean indicates whether the message was an abort,</span>
     <span class="doccomment">/// implying that we should break out of our run loop.</span>
-    <span class="kw">fn</span> <span class="ident">handle_incoming_message</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">request</span>: <span class="ident">IncomingMessage</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">handle_incoming_message</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">request</span>: <span class="ident">IncomingMessage</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
         <span class="comment">// Don&#39;t handle message after Abort request has been handled.</span>
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">aborted</span> {
             <span class="kw">match</span> <span class="ident">request</span> {
-                <span class="ident">IncomingMessage</span>::<span class="ident">Simulator</span>(<span class="ident">message</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">IncomingMessage</span>::<span class="ident">Simulator</span>(<span class="ident">message</span>) <span class="op">=&gt;</span> {
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">rng</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">rng</span> {
                         <span class="ident">rng</span>.<span class="ident">select</span>(<span class="number">0</span>)
                     }
@@ -1879,55 +1880,55 @@
                     <span class="macro">trace</span><span class="macro">!</span>(<span class="string">&quot;Received a request from the host&quot;</span>);
 
                     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">OutgoingMessage</span>::<span class="ident">Simulator</span>(<span class="kw">match</span> <span class="ident">message</span> {
-                        <span class="ident">SimulatorToPlugin</span>::<span class="ident">Initialize</span>(<span class="ident">req</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">handle_init</span>(<span class="kw-2">*</span><span class="ident">req</span>) {
-                            <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PluginToSimulator</span>::<span class="ident">Initialized</span>(<span class="ident">x</span>),
-                            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="ident">SimulatorToPlugin</span>::<span class="ident">Initialize</span>(<span class="ident">req</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">handle_init</span>(<span class="kw-2">*</span><span class="ident">req</span>) {
+                            <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=&gt;</span> <span class="ident">PluginToSimulator</span>::<span class="ident">Initialized</span>(<span class="ident">x</span>),
+                            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> {
                                 <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">to_string</span>();
                                 <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>);
                                 <span class="ident">PluginToSimulator</span>::<span class="ident">Failure</span>(<span class="ident">e</span>)
                             }
                         },
-                        <span class="ident">SimulatorToPlugin</span>::<span class="ident">AcceptUpstream</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">handle_accept_upstream</span>() {
-                            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PluginToSimulator</span>::<span class="ident">Success</span>,
-                            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="ident">SimulatorToPlugin</span>::<span class="ident">AcceptUpstream</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">handle_accept_upstream</span>() {
+                            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">PluginToSimulator</span>::<span class="ident">Success</span>,
+                            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> {
                                 <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">to_string</span>();
                                 <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>);
                                 <span class="ident">PluginToSimulator</span>::<span class="ident">Failure</span>(<span class="ident">e</span>)
                             }
                         },
-                        <span class="ident">SimulatorToPlugin</span>::<span class="ident">UserInitialize</span>(<span class="ident">req</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="ident">SimulatorToPlugin</span>::<span class="ident">UserInitialize</span>(<span class="ident">req</span>) <span class="op">=&gt;</span> {
                             <span class="kw">match</span> (<span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">initialize</span>)(<span class="self">self</span>, <span class="ident">req</span>.<span class="ident">init_cmds</span>) {
-                                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PluginToSimulator</span>::<span class="ident">Success</span>,
-                                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">PluginToSimulator</span>::<span class="ident">Success</span>,
+                                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> {
                                     <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">to_string</span>();
                                     <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>);
                                     <span class="ident">PluginToSimulator</span>::<span class="ident">Failure</span>(<span class="ident">e</span>)
                                 }
                             }
                         }
-                        <span class="ident">SimulatorToPlugin</span>::<span class="ident">Abort</span> <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="ident">SimulatorToPlugin</span>::<span class="ident">Abort</span> <span class="op">=&gt;</span> {
                             <span class="self">self</span>.<span class="ident">aborted</span> <span class="op">=</span> <span class="bool-val">true</span>;
                             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">handle_abort</span>() {
-                                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PluginToSimulator</span>::<span class="ident">Success</span>,
-                                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                                <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">PluginToSimulator</span>::<span class="ident">Success</span>,
+                                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> {
                                     <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">to_string</span>();
                                     <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>);
                                     <span class="ident">PluginToSimulator</span>::<span class="ident">Failure</span>(<span class="ident">e</span>)
                                 }
                             }
                         }
-                        <span class="ident">SimulatorToPlugin</span>::<span class="ident">RunRequest</span>(<span class="ident">req</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">handle_run</span>(<span class="ident">req</span>) {
-                            <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PluginToSimulator</span>::<span class="ident">RunResponse</span>(<span class="ident">x</span>),
-                            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="ident">SimulatorToPlugin</span>::<span class="ident">RunRequest</span>(<span class="ident">req</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">handle_run</span>(<span class="ident">req</span>) {
+                            <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=&gt;</span> <span class="ident">PluginToSimulator</span>::<span class="ident">RunResponse</span>(<span class="ident">x</span>),
+                            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> {
                                 <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">to_string</span>();
                                 <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>);
                                 <span class="ident">PluginToSimulator</span>::<span class="ident">Failure</span>(<span class="ident">e</span>)
                             }
                         },
-                        <span class="ident">SimulatorToPlugin</span>::<span class="ident">ArbRequest</span>(<span class="ident">req</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="ident">SimulatorToPlugin</span>::<span class="ident">ArbRequest</span>(<span class="ident">req</span>) <span class="op">=&gt;</span> {
                             <span class="kw">match</span> (<span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">host_arb</span>)(<span class="self">self</span>, <span class="ident">req</span>) {
-                                <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">PluginToSimulator</span>::<span class="ident">ArbResponse</span>(<span class="ident">x</span>),
-                                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                                <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=&gt;</span> <span class="ident">PluginToSimulator</span>::<span class="ident">ArbResponse</span>(<span class="ident">x</span>),
+                                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> {
                                     <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">to_string</span>();
                                     <span class="macro">error</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>);
                                     <span class="ident">PluginToSimulator</span>::<span class="ident">Failure</span>(<span class="ident">e</span>)
@@ -1946,7 +1947,7 @@
 
                     <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">send</span>(<span class="ident">response</span>)<span class="question-mark">?</span>;
                 }
-                <span class="ident">IncomingMessage</span>::<span class="ident">Upstream</span>(<span class="ident">GatestreamDown</span>::<span class="ident">Pipelined</span>(<span class="ident">sequence</span>, <span class="ident">message</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">IncomingMessage</span>::<span class="ident">Upstream</span>(<span class="ident">GatestreamDown</span>::<span class="ident">Pipelined</span>(<span class="ident">sequence</span>, <span class="ident">message</span>)) <span class="op">=&gt;</span> {
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">rng</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">rng</span> {
                         <span class="ident">rng</span>.<span class="ident">select</span>(<span class="number">1</span>)
                     }
@@ -1957,15 +1958,15 @@
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">queued_measurements</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
 
                     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">message</span> {
-                        <span class="ident">PipelinedGatestreamDown</span>::<span class="ident">Allocate</span>(<span class="ident">num_qubits</span>, <span class="ident">commands</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="ident">PipelinedGatestreamDown</span>::<span class="ident">Allocate</span>(<span class="ident">num_qubits</span>, <span class="ident">commands</span>) <span class="op">=&gt;</span> {
                             <span class="kw">let</span> <span class="ident">qubits</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">upstream_qubit_ref_generator</span>.<span class="ident">allocate</span>(<span class="ident">num_qubits</span>);
                             (<span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">allocate</span>)(<span class="self">self</span>, <span class="ident">qubits</span>, <span class="ident">commands</span>)
                         }
-                        <span class="ident">PipelinedGatestreamDown</span>::<span class="ident">Free</span>(<span class="ident">qubits</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="ident">PipelinedGatestreamDown</span>::<span class="ident">Free</span>(<span class="ident">qubits</span>) <span class="op">=&gt;</span> {
                             <span class="self">self</span>.<span class="ident">upstream_qubit_ref_generator</span>.<span class="ident">free</span>(<span class="ident">qubits</span>.<span class="ident">clone</span>());
                             (<span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">free</span>)(<span class="self">self</span>, <span class="ident">qubits</span>)
                         }
-                        <span class="ident">PipelinedGatestreamDown</span>::<span class="ident">Gate</span>(<span class="ident">gate</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="ident">PipelinedGatestreamDown</span>::<span class="ident">Gate</span>(<span class="ident">gate</span>) <span class="op">=&gt;</span> {
                             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">measures</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span>
                                 <span class="ident">gate</span>.<span class="ident">get_measures</span>().<span class="ident">iter</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>();
                             (<span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">gate</span>)(<span class="self">self</span>, <span class="ident">gate</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">measurements</span><span class="op">|</span> {
@@ -1980,7 +1981,7 @@
                                 }
                             }
                             <span class="kw">if</span> <span class="op">!</span><span class="ident">measures</span>.<span class="ident">is_empty</span>() {
-                                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Operator</span> {
+                                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Operator</span> {
                                     <span class="comment">// These measurement results are postponed</span>
                                     <span class="comment">// until we receive (and maybe modify) them</span>
                                     <span class="comment">// from downstream.</span>
@@ -1997,7 +1998,7 @@
                             <span class="prelude-val">Ok</span>(())
                         })
                         }
-                        <span class="ident">PipelinedGatestreamDown</span>::<span class="ident">Advance</span>(<span class="ident">cycles</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
+                        <span class="ident">PipelinedGatestreamDown</span>::<span class="ident">Advance</span>(<span class="ident">cycles</span>) <span class="op">=&gt;</span> <span class="self">self</span>
                             .<span class="ident">connection</span>
                             .<span class="ident">send</span>(<span class="ident">OutgoingMessage</span>::<span class="ident">Upstream</span>(<span class="ident">GatestreamUp</span>::<span class="ident">Advanced</span>(<span class="ident">cycles</span>)))
                             .<span class="ident">and_then</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> (<span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">advance</span>)(<span class="self">self</span>, <span class="ident">cycles</span>)),
@@ -2021,7 +2022,7 @@
                     <span class="comment">// Operators need to wait for any downstream requests made</span>
                     <span class="comment">// by user code to be acknowledged before forwarding the</span>
                     <span class="comment">// acknowledgement upstream.</span>
-                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Operator</span> {
+                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Operator</span> {
                         <span class="kw">let</span> <span class="ident">back_sequence</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">downstream_sequence_tx</span>.<span class="ident">get_previous</span>();
                         <span class="self">self</span>.<span class="ident">upstream_postponed</span>.<span class="ident">push_back</span>((
                             <span class="ident">back_sequence</span>,
@@ -2046,19 +2047,19 @@
                     <span class="comment">// message.</span>
                     <span class="self">self</span>.<span class="ident">check_completed_up_to</span>()<span class="question-mark">?</span>;
                 }
-                <span class="ident">IncomingMessage</span>::<span class="ident">Upstream</span>(<span class="ident">GatestreamDown</span>::<span class="ident">ArbRequest</span>(<span class="ident">cmd</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="ident">IncomingMessage</span>::<span class="ident">Upstream</span>(<span class="ident">GatestreamDown</span>::<span class="ident">ArbRequest</span>(<span class="ident">cmd</span>)) <span class="op">=&gt;</span> {
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">rng</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">rng</span> {
                         <span class="ident">rng</span>.<span class="ident">select</span>(<span class="number">1</span>)
                     }
                     <span class="self">self</span>.<span class="ident">synchronized_to_rpcs</span> <span class="op">=</span> <span class="bool-val">true</span>;
 
                     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="kw">match</span> (<span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">upstream_arb</span>)(<span class="self">self</span>, <span class="ident">cmd</span>) {
-                        <span class="prelude-val">Ok</span>(<span class="ident">r</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">GatestreamUp</span>::<span class="ident">ArbSuccess</span>(<span class="ident">r</span>),
-                        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">GatestreamUp</span>::<span class="ident">ArbFailure</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()),
+                        <span class="prelude-val">Ok</span>(<span class="ident">r</span>) <span class="op">=&gt;</span> <span class="ident">GatestreamUp</span>::<span class="ident">ArbSuccess</span>(<span class="ident">r</span>),
+                        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="ident">GatestreamUp</span>::<span class="ident">ArbFailure</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()),
                     };
                     <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">send</span>(<span class="ident">OutgoingMessage</span>::<span class="ident">Upstream</span>(<span class="ident">response</span>))<span class="question-mark">?</span>;
                 }
-                <span class="ident">IncomingMessage</span>::<span class="ident">Downstream</span>(<span class="ident">message</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">handle_downstream_message</span>(<span class="ident">message</span>)<span class="question-mark">?</span>,
+                <span class="ident">IncomingMessage</span>::<span class="ident">Downstream</span>(<span class="ident">message</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">handle_downstream_message</span>(<span class="ident">message</span>)<span class="question-mark">?</span>,
             }
         }
 
@@ -2067,14 +2068,14 @@
 
     <span class="doccomment">/// Helper function for synchronize_downstream_up_to(). Do not call this</span>
     <span class="doccomment">/// directly.</span>
-    <span class="kw">fn</span> <span class="ident">_synchronize_downstream_up_to</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">num</span>: <span class="ident">SequenceNumber</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">_synchronize_downstream_up_to</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">num</span>: <span class="ident">SequenceNumber</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">while</span> <span class="ident">num</span>.<span class="ident">after</span>(<span class="self">self</span>.<span class="ident">downstream_sequence_rx</span>) {
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">next_downstream_request</span>()<span class="question-mark">?</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">IncomingMessage</span>::<span class="ident">Downstream</span>(<span class="ident">message</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">Some</span>(<span class="ident">IncomingMessage</span>::<span class="ident">Downstream</span>(<span class="ident">message</span>)) <span class="op">=&gt;</span> {
                     <span class="self">self</span>.<span class="ident">handle_downstream_message</span>(<span class="ident">message</span>)<span class="question-mark">?</span>
                 }
-                <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;next_downstream_request() returned a non-downstream message&quot;</span>),
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">err</span>(<span class="string">&quot;Simulation aborted&quot;</span>)<span class="question-mark">?</span>,
+                <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;next_downstream_request() returned a non-downstream message&quot;</span>),
+                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">err</span>(<span class="string">&quot;Simulation aborted&quot;</span>)<span class="question-mark">?</span>,
             }
         }
         <span class="prelude-val">Ok</span>(())
@@ -2082,7 +2083,7 @@
 
     <span class="doccomment">/// Blockingly receive messages from downstream until the request with the</span>
     <span class="doccomment">/// specified sequence number has been acknowledged.</span>
-    <span class="kw">fn</span> <span class="ident">synchronize_downstream_up_to</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">num</span>: <span class="ident">SequenceNumber</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">synchronize_downstream_up_to</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">num</span>: <span class="ident">SequenceNumber</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="comment">// While handling downstream messages, we need to select the downstream</span>
         <span class="comment">// PRNG and indicate that we&#39;re not synchronized to the RPCs, because</span>
         <span class="comment">// it&#39;s not deterministic how many downstream messages will end up</span>
@@ -2106,7 +2107,7 @@
 
     <span class="doccomment">/// Blockingly receive messages from downstream until all requests have</span>
     <span class="doccomment">/// been acknowledged.</span>
-    <span class="kw">fn</span> <span class="ident">synchronize_downstream</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">synchronize_downstream</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">synchronize_downstream_up_to</span>(<span class="self">self</span>.<span class="ident">downstream_sequence_tx</span>.<span class="ident">get_previous</span>())
     }
 
@@ -2115,7 +2116,7 @@
     <span class="kw">fn</span> <span class="ident">check_qubits_live</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="lifetime">&#39;c</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="self">self</span>,
         <span class="ident">qubits</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;c</span> <span class="ident">QubitRef</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">for</span> <span class="ident">qubit</span> <span class="kw">in</span> <span class="ident">qubits</span> {
             <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">downstream_qubit_data</span>.<span class="ident">contains_key</span>(<span class="ident">qubit</span>) {
                 <span class="ident">inv_arg</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;qubit {} is not allocated&quot;</span>, <span class="ident">qubit</span>))<span class="question-mark">?</span>;
@@ -2132,7 +2133,7 @@
 
     <span class="doccomment">/// Executes a plugin described by `definition` within the context of the</span>
     <span class="doccomment">/// specified simulator endpoint address.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run</span>(<span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PluginDefinition</span>, <span class="ident">simulator</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">run</span>(<span class="ident">definition</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PluginDefinition</span>, <span class="ident">simulator</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">PluginState</span> {
             <span class="ident">definition</span>,
             <span class="ident">connection</span>: <span class="ident">Connection</span>::<span class="ident">new</span>(<span class="ident">simulator</span>)<span class="question-mark">?</span>,
@@ -2168,7 +2169,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// It is only legal to call this function from within the `run()`</span>
     <span class="doccomment">/// callback. Any other source will result in an `Err` return value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">ArbData</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">ArbData</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">inside_run</span> {
             <span class="ident">inv_op</span>(<span class="string">&quot;send() can only be called from inside the run() callback&quot;</span>)<span class="question-mark">?</span>;
         }
@@ -2180,7 +2181,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// It is only legal to call this function from within the `run()`</span>
     <span class="doccomment">/// callback. Any other source will result in an `Err` return value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">recv</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArbData</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">recv</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArbData</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">inside_run</span> {
             <span class="ident">inv_op</span>(<span class="string">&quot;recv() can only be called from inside the run() callback&quot;</span>)<span class="question-mark">?</span>;
         }
@@ -2247,8 +2248,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in</span>
     <span class="doccomment">/// an `Err` return value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">allocate</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">num_qubits</span>: <span class="ident">usize</span>, <span class="ident">commands</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ArbCmd</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">allocate</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">num_qubits</span>: <span class="ident">usize</span>, <span class="ident">commands</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ArbCmd</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;allocate() is not available for backends&quot;</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">synchronized_to_rpcs</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;allocate() cannot be called while handling a gatestream response&quot;</span>)<span class="question-mark">?</span>;
@@ -2283,8 +2284,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in</span>
     <span class="doccomment">/// an `Err` return value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">free</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">qubits</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">free</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">qubits</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;free() is not available for backends&quot;</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">synchronized_to_rpcs</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;free() cannot be called while handling a gatestream response&quot;</span>)<span class="question-mark">?</span>;
@@ -2313,8 +2314,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in</span>
     <span class="doccomment">/// an `Err` return value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gate</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">gate</span>: <span class="ident">Gate</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gate</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">gate</span>: <span class="ident">Gate</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;gate() is not available for backends&quot;</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">synchronized_to_rpcs</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;gate() cannot be called while handling a gatestream response&quot;</span>)<span class="question-mark">?</span>;
@@ -2355,8 +2356,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in</span>
     <span class="doccomment">/// an `Err` return value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_measurement</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">qubit</span>: <span class="ident">QubitRef</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">QubitMeasurementResult</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_measurement</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">qubit</span>: <span class="ident">QubitRef</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">QubitMeasurementResult</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;get_measurement() is not available for backends&quot;</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">synchronized_to_rpcs</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(
@@ -2395,8 +2396,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in</span>
     <span class="doccomment">/// an `Err` return value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_cycles_since_measure</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">qubit</span>: <span class="ident">QubitRef</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_cycles_since_measure</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">qubit</span>: <span class="ident">QubitRef</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;get_cycles_since_measure() is not available for backends&quot;</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">synchronized_to_rpcs</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(
@@ -2421,7 +2422,7 @@
         <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">downstream_qubit_data</span>[<span class="kw-2">&amp;</span><span class="ident">qubit</span>];
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">measurement</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">data</span>.<span class="ident">measurement</span> {
             <span class="kw">let</span> <span class="ident">delta</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">downstream_cycle_tx</span> <span class="op">-</span> <span class="ident">measurement</span>.<span class="ident">timestamp</span>;
-            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">delta</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span>);
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">delta</span> <span class="op">&gt;=</span> <span class="number">0</span>);
             <span class="prelude-val">Ok</span>(<span class="ident">delta</span> <span class="kw">as</span> <span class="ident">u64</span>)
         } <span class="kw">else</span> {
             <span class="ident">inv_arg</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;qubit {} has not been measured yet&quot;</span>, <span class="ident">qubit</span>))
@@ -2433,8 +2434,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in</span>
     <span class="doccomment">/// an `Err` return value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_cycles_between_measures</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">qubit</span>: <span class="ident">QubitRef</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_cycles_between_measures</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">qubit</span>: <span class="ident">QubitRef</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;get_cycles_between_measures() is not available for backends&quot;</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">synchronized_to_rpcs</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;get_cycles_between_measures() cannot be called while handling a gatestream response&quot;</span>)<span class="question-mark">?</span>;
@@ -2470,8 +2471,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in</span>
     <span class="doccomment">/// an `Err` return value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">advance</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">cycles</span>: <span class="ident">Cycles</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Cycle</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">advance</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">cycles</span>: <span class="ident">Cycles</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Cycle</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;advance() is not available for backends&quot;</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">synchronized_to_rpcs</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;advance() cannot be called while handling a gatestream response&quot;</span>)<span class="question-mark">?</span>;
@@ -2495,8 +2496,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in</span>
     <span class="doccomment">/// an `Err` return value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_cycle</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Cycle</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_cycle</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Cycle</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;get_cycle() is not available for backends&quot;</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">synchronized_to_rpcs</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;get_cycle() cannot be called while handling a gatestream response&quot;</span>)<span class="question-mark">?</span>;
@@ -2508,8 +2509,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Backend plugins are not allowed to call this. Doing so will result in</span>
     <span class="doccomment">/// an `Err` return value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">cmd</span>: <span class="ident">ArbCmd</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArbData</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">cmd</span>: <span class="ident">ArbCmd</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArbData</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">get_type</span>() <span class="op">==</span> <span class="ident">PluginType</span>::<span class="ident">Backend</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;arb() is not available for backends&quot;</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">synchronized_to_rpcs</span> {
             <span class="kw">return</span> <span class="ident">inv_op</span>(<span class="string">&quot;arb() cannot be called while handling a gatestream response&quot;</span>)<span class="question-mark">?</span>;
@@ -2527,13 +2528,13 @@
         <span class="comment">// The next downstream response must either be ArbFailure for an error</span>
         <span class="comment">// or ArbSuccess for success. Any other message is a protocol error.</span>
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">connection</span>.<span class="ident">next_downstream_request</span>()<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">IncomingMessage</span>::<span class="ident">Downstream</span>(<span class="ident">GatestreamUp</span>::<span class="ident">ArbSuccess</span>(<span class="ident">x</span>))) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">IncomingMessage</span>::<span class="ident">Downstream</span>(<span class="ident">GatestreamUp</span>::<span class="ident">ArbFailure</span>(<span class="ident">e</span>))) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">err</span>(<span class="ident">e</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">IncomingMessage</span>::<span class="ident">Downstream</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">IncomingMessage</span>::<span class="ident">Downstream</span>(<span class="ident">GatestreamUp</span>::<span class="ident">ArbSuccess</span>(<span class="ident">x</span>))) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>),
+            <span class="prelude-val">Some</span>(<span class="ident">IncomingMessage</span>::<span class="ident">Downstream</span>(<span class="ident">GatestreamUp</span>::<span class="ident">ArbFailure</span>(<span class="ident">e</span>))) <span class="op">=&gt;</span> <span class="ident">err</span>(<span class="ident">e</span>),
+            <span class="prelude-val">Some</span>(<span class="ident">IncomingMessage</span>::<span class="ident">Downstream</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> {
                 <span class="ident">err</span>(<span class="string">&quot;Protocol error: unexpected message from downstream&quot;</span>)
             }
-            <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;next_downstream_request() returned a non-downstream message&quot;</span>),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">err</span>(<span class="string">&quot;Simulation aborted&quot;</span>),
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;next_downstream_request() returned a non-downstream message&quot;</span>),
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">err</span>(<span class="string">&quot;Simulation aborted&quot;</span>),
         }
     }
 
@@ -2546,7 +2547,7 @@
     <span class="doccomment">/// called by `modify_measurements()`). This is to ensure that the order in</span>
     <span class="doccomment">/// which the RNG functions are called per state does not depend on OS</span>
     <span class="doccomment">/// scheduling.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">rng</span>.<span class="ident">as_mut</span>().<span class="ident">expect</span>(<span class="string">&quot;RNG not initialized&quot;</span>).<span class="ident">random_u64</span>()
     }
 
@@ -2561,7 +2562,7 @@
     <span class="doccomment">/// called by `modify_measurements()`). This is to ensure that the order in</span>
     <span class="doccomment">/// which the RNG functions are called per state does not depend on OS</span>
     <span class="doccomment">/// scheduling.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random_f64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">random_f64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">rng</span>.<span class="ident">as_mut</span>().<span class="ident">expect</span>(<span class="string">&quot;RNG not initialized&quot;</span>).<span class="ident">random_f64</span>()
     }
 }

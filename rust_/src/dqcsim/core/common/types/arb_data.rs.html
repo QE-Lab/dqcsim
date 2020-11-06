@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/core/common/types/arb_data.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>arb_data.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../../../light.css" id="themeStyle"><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/core/common/types/arb_data.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>arb_data.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -911,11 +912,11 @@
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">error</span>::{<span class="ident">inv_arg</span>, <span class="ident">oe_inv_arg</span>, <span class="prelude-ty">Result</span>};
 
     <span class="doccomment">/// Converts a slice of u8&#39;s to an u64 using CBOR byte order.</span>
-    <span class="kw">fn</span> <span class="ident">bytes_as_u64</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">num</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">bytes_as_u64</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">num</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">num</span> {
-            <span class="ident">value</span> <span class="op">&lt;</span><span class="op">&lt;</span><span class="op">=</span> <span class="number">8</span>;
-            <span class="ident">value</span> <span class="op">|</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">input</span>
+            <span class="ident">value</span> <span class="op">&lt;&lt;</span><span class="op">=</span> <span class="number">8</span>;
+            <span class="ident">value</span> <span class="op">|=</span> <span class="kw-2">*</span><span class="ident">input</span>
                 .<span class="ident">get</span>(<span class="ident">i</span>)
                 .<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;invalid CBOR: expected additional tag byte&quot;</span>))<span class="question-mark">?</span>
                 <span class="kw">as</span> <span class="ident">u64</span>;
@@ -926,7 +927,7 @@
     <span class="doccomment">/// Inverse of bytes_as_u64.</span>
     <span class="kw">fn</span> <span class="ident">u64_as_bytes</span>(<span class="ident">input</span>: <span class="ident">u64</span>, <span class="ident">num</span>: <span class="ident">usize</span>, <span class="ident">output</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) {
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">num</span> {
-            <span class="ident">output</span>.<span class="ident">push</span>((<span class="ident">input</span> <span class="op">&gt;</span><span class="op">&gt;</span> ((<span class="ident">num</span> <span class="op">-</span> <span class="ident">i</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">*</span> <span class="number">8</span>)) <span class="kw">as</span> <span class="ident">u8</span>);
+            <span class="ident">output</span>.<span class="ident">push</span>((<span class="ident">input</span> <span class="op">&gt;&gt;</span> ((<span class="ident">num</span> <span class="op">-</span> <span class="ident">i</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">*</span> <span class="number">8</span>)) <span class="kw">as</span> <span class="ident">u8</span>);
         }
     }
 
@@ -934,27 +935,27 @@
     <span class="doccomment">/// additional information value (or `None` to encode an indefinite length),</span>
     <span class="doccomment">/// and the number of bytes read for the tag. Note: 0xFF is not considered</span>
     <span class="doccomment">/// a valid tag; check for this first if you&#39;re expecting it.</span>
-    <span class="kw">fn</span> <span class="ident">read_tag</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">u8</span>, <span class="ident">u8</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">read_tag</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">u8</span>, <span class="ident">u8</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
         <span class="comment">// Read initial byte.</span>
         <span class="kw">let</span> <span class="ident">initial</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">input</span>
             .<span class="ident">get</span>(<span class="number">0</span>)
             .<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;invalid CBOR: expected tag&quot;</span>))<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="ident">initial</span> <span class="op">=</span><span class="op">=</span> <span class="number">0xFF</span> {
+        <span class="kw">if</span> <span class="ident">initial</span> <span class="op">==</span> <span class="number">0xFF</span> {
             <span class="ident">inv_arg</span>(<span class="string">&quot;invalid CBOR: unexpected break&quot;</span>)<span class="question-mark">?</span>;
         }
-        <span class="kw">let</span> <span class="ident">major</span> <span class="op">=</span> <span class="ident">initial</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">5</span>;
+        <span class="kw">let</span> <span class="ident">major</span> <span class="op">=</span> <span class="ident">initial</span> <span class="op">&gt;&gt;</span> <span class="number">5</span>;
         <span class="kw">let</span> <span class="ident">minor</span> <span class="op">=</span> <span class="ident">initial</span> <span class="op">&amp;</span> <span class="number">0x1F</span>;
 
         <span class="comment">// Parse additional information.</span>
         <span class="kw">let</span> (<span class="ident">additional</span>, <span class="ident">index</span>): (<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>, <span class="ident">usize</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">minor</span> {
-            <span class="number">0</span>..<span class="op">=</span><span class="number">23</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="prelude-val">Some</span>(<span class="ident">minor</span> <span class="kw">as</span> <span class="ident">u64</span>), <span class="number">1</span>),
-            <span class="number">24</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="prelude-val">Some</span>(<span class="ident">bytes_as_u64</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">1</span>..], <span class="number">1</span>)<span class="question-mark">?</span>), <span class="number">2</span>),
-            <span class="number">25</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="prelude-val">Some</span>(<span class="ident">bytes_as_u64</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">1</span>..], <span class="number">2</span>)<span class="question-mark">?</span>), <span class="number">3</span>),
-            <span class="number">26</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="prelude-val">Some</span>(<span class="ident">bytes_as_u64</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">1</span>..], <span class="number">4</span>)<span class="question-mark">?</span>), <span class="number">5</span>),
-            <span class="number">27</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="prelude-val">Some</span>(<span class="ident">bytes_as_u64</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">1</span>..], <span class="number">8</span>)<span class="question-mark">?</span>), <span class="number">9</span>),
-            <span class="number">28</span>..<span class="op">=</span><span class="number">30</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">inv_arg</span>(<span class="string">&quot;invalid CBOR: reserved minor tag value&quot;</span>)<span class="question-mark">?</span>,
-            <span class="number">31</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="prelude-val">None</span>, <span class="number">1</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+            <span class="number">0</span>..<span class="op">=</span><span class="number">23</span> <span class="op">=&gt;</span> (<span class="prelude-val">Some</span>(<span class="ident">minor</span> <span class="kw">as</span> <span class="ident">u64</span>), <span class="number">1</span>),
+            <span class="number">24</span> <span class="op">=&gt;</span> (<span class="prelude-val">Some</span>(<span class="ident">bytes_as_u64</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">1</span>..], <span class="number">1</span>)<span class="question-mark">?</span>), <span class="number">2</span>),
+            <span class="number">25</span> <span class="op">=&gt;</span> (<span class="prelude-val">Some</span>(<span class="ident">bytes_as_u64</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">1</span>..], <span class="number">2</span>)<span class="question-mark">?</span>), <span class="number">3</span>),
+            <span class="number">26</span> <span class="op">=&gt;</span> (<span class="prelude-val">Some</span>(<span class="ident">bytes_as_u64</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">1</span>..], <span class="number">4</span>)<span class="question-mark">?</span>), <span class="number">5</span>),
+            <span class="number">27</span> <span class="op">=&gt;</span> (<span class="prelude-val">Some</span>(<span class="ident">bytes_as_u64</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="number">1</span>..], <span class="number">8</span>)<span class="question-mark">?</span>), <span class="number">9</span>),
+            <span class="number">28</span>..<span class="op">=</span><span class="number">30</span> <span class="op">=&gt;</span> <span class="ident">inv_arg</span>(<span class="string">&quot;invalid CBOR: reserved minor tag value&quot;</span>)<span class="question-mark">?</span>,
+            <span class="number">31</span> <span class="op">=&gt;</span> (<span class="prelude-val">None</span>, <span class="number">1</span>),
+            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
         };
 
         <span class="prelude-val">Ok</span>((<span class="ident">major</span>, <span class="ident">minor</span>, <span class="ident">additional</span>, <span class="ident">index</span>))
@@ -962,7 +963,7 @@
 
     <span class="doccomment">/// Canonicalizes the value at the front of the given cbor string. Output is</span>
     <span class="doccomment">/// pushed to the back of `output`. Returns the number of input bytes consumed.</span>
-    <span class="kw">fn</span> <span class="ident">canonicalize_int</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">output</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">canonicalize_int</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">output</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="comment">//eprintln!(&quot;ENTER canonicalize_int({:?}, {:?})&quot;, input, output);</span>
 
         <span class="comment">// Read the tag.</span>
@@ -973,7 +974,7 @@
         <span class="comment">// Parse contents.</span>
         <span class="kw">let</span> (<span class="ident">content</span>, <span class="ident">input_len</span>, <span class="ident">additional</span>) <span class="op">=</span>
             <span class="kw">match</span> <span class="ident">major</span> {
-                <span class="number">0</span> <span class="op">|</span> <span class="number">1</span> <span class="op">|</span> <span class="number">7</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="number">0</span> <span class="op">|</span> <span class="number">1</span> <span class="op">|</span> <span class="number">7</span> <span class="op">=&gt;</span> {
                     <span class="comment">// nothing to do for types without content</span>
                     (
                         <span class="macro">vec</span><span class="macro">!</span>[],
@@ -983,7 +984,7 @@
                         ))<span class="question-mark">?</span>,
                     )
                 }
-                <span class="number">2</span> <span class="op">|</span> <span class="number">3</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="number">2</span> <span class="op">|</span> <span class="number">3</span> <span class="op">=&gt;</span> {
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">content_len</span>) <span class="op">=</span> <span class="ident">additional</span> {
                         <span class="comment">// simple bytes/UTF8: additional value is number of bytes, just</span>
                         <span class="comment">// copy them</span>
@@ -1005,12 +1006,12 @@
                         <span class="kw">while</span> <span class="kw-2">*</span><span class="ident">input</span>
                             .<span class="ident">get</span>(<span class="ident">index</span>)
                             .<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;invalid CBOR: incomplete chunked bytes/utf8&quot;</span>))<span class="question-mark">?</span>
-                            <span class="op">!</span><span class="op">=</span> <span class="number">0xFF</span>
+                            <span class="op">!=</span> <span class="number">0xFF</span>
                         {
                             <span class="kw">let</span> (<span class="ident">chunk_major</span>, <span class="kw">_</span>, <span class="ident">chunk_len</span>, <span class="ident">chunk_tag_len</span>) <span class="op">=</span> <span class="ident">read_tag</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
 
                             <span class="comment">// chunk types must equal the outer type</span>
-                            <span class="kw">if</span> <span class="ident">chunk_major</span> <span class="op">!</span><span class="op">=</span> <span class="ident">major</span> {
+                            <span class="kw">if</span> <span class="ident">chunk_major</span> <span class="op">!=</span> <span class="ident">major</span> {
                                 <span class="ident">inv_arg</span>(<span class="string">&quot;invalid CBOR: illegal non-bytes/utf8 chunk&quot;</span>)<span class="question-mark">?</span>;
                             }
 
@@ -1019,7 +1020,7 @@
                                 .<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(<span class="string">&quot;invalid CBOR: indefinite chunk size&quot;</span>))<span class="question-mark">?</span>;
 
                             <span class="comment">// skip past the chunk tag</span>
-                            <span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="ident">chunk_tag_len</span> <span class="kw">as</span> <span class="ident">usize</span>;
+                            <span class="ident">index</span> <span class="op">+=</span> <span class="ident">chunk_tag_len</span> <span class="kw">as</span> <span class="ident">usize</span>;
 
                             <span class="comment">// copy the chunk data into the output</span>
                             <span class="ident">content</span>.<span class="ident">extend_from_slice</span>(
@@ -1027,20 +1028,20 @@
                                     <span class="ident">oe_inv_arg</span>(<span class="string">&quot;invalid CBOR: incomplete bytes/utf8 chunk&quot;</span>),
                                 )<span class="question-mark">?</span>,
                             );
-                            <span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="ident">chunk_len</span> <span class="kw">as</span> <span class="ident">usize</span>;
+                            <span class="ident">index</span> <span class="op">+=</span> <span class="ident">chunk_len</span> <span class="kw">as</span> <span class="ident">usize</span>;
                         }
-                        <span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>; <span class="comment">// for the 0xFF</span>
+                        <span class="ident">index</span> <span class="op">+=</span> <span class="number">1</span>; <span class="comment">// for the 0xFF</span>
                         <span class="kw">let</span> <span class="ident">additional</span> <span class="op">=</span> <span class="ident">content</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span>;
                         (<span class="ident">content</span>, <span class="ident">index</span>, <span class="ident">additional</span>)
                     }
                 }
-                <span class="number">4</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="number">4</span> <span class="op">=&gt;</span> {
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">index</span> <span class="op">=</span> <span class="number">0</span>;
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">content</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
                     <span class="kw">let</span> <span class="ident">additional</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">count</span>) <span class="op">=</span> <span class="ident">additional</span> {
                         <span class="comment">// array with definite length: copy the (canonicalized) values</span>
                         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">count</span> {
-                            <span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="ident">canonicalize_int</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">index</span>..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">content</span>)<span class="question-mark">?</span>;
+                            <span class="ident">index</span> <span class="op">+=</span> <span class="ident">canonicalize_int</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">index</span>..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">content</span>)<span class="question-mark">?</span>;
                         }
                         <span class="ident">count</span>
                     } <span class="kw">else</span> {
@@ -1050,17 +1051,17 @@
                         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
                         <span class="kw">while</span> <span class="kw-2">*</span><span class="ident">input</span>.<span class="ident">get</span>(<span class="ident">index</span>).<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(
                             <span class="string">&quot;invalid CBOR: incomplete indefinite-length array&quot;</span>,
-                        ))<span class="question-mark">?</span> <span class="op">!</span><span class="op">=</span> <span class="number">0xFF</span>
+                        ))<span class="question-mark">?</span> <span class="op">!=</span> <span class="number">0xFF</span>
                         {
-                            <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                            <span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="ident">canonicalize_int</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">index</span>..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">content</span>)<span class="question-mark">?</span>;
+                            <span class="ident">count</span> <span class="op">+=</span> <span class="number">1</span>;
+                            <span class="ident">index</span> <span class="op">+=</span> <span class="ident">canonicalize_int</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">index</span>..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">content</span>)<span class="question-mark">?</span>;
                         }
-                        <span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>; <span class="comment">// for the 0xFF</span>
+                        <span class="ident">index</span> <span class="op">+=</span> <span class="number">1</span>; <span class="comment">// for the 0xFF</span>
                         <span class="ident">count</span>
                     };
                     (<span class="ident">content</span>, <span class="ident">index</span>, <span class="ident">additional</span>)
                 }
-                <span class="number">5</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="number">5</span> <span class="op">=&gt;</span> {
                     <span class="comment">// copy the (canonicalized) key/value pairs, ordered by their byte</span>
                     <span class="comment">// representations</span>
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">index</span> <span class="op">=</span> <span class="number">0</span>;
@@ -1070,8 +1071,8 @@
                         <span class="comment">// key/value pairs</span>
                         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">count</span> {
                             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pair</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
-                            <span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="ident">canonicalize_int</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">index</span>..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">pair</span>)<span class="question-mark">?</span>;
-                            <span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="ident">canonicalize_int</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">index</span>..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">pair</span>)<span class="question-mark">?</span>;
+                            <span class="ident">index</span> <span class="op">+=</span> <span class="ident">canonicalize_int</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">index</span>..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">pair</span>)<span class="question-mark">?</span>;
+                            <span class="ident">index</span> <span class="op">+=</span> <span class="ident">canonicalize_int</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">index</span>..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">pair</span>)<span class="question-mark">?</span>;
                             <span class="ident">content</span>.<span class="ident">push</span>(<span class="ident">pair</span>);
                         }
                         <span class="ident">count</span>
@@ -1082,21 +1083,21 @@
                         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
                         <span class="kw">while</span> <span class="kw-2">*</span><span class="ident">input</span>.<span class="ident">get</span>(<span class="ident">index</span>).<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(
                             <span class="string">&quot;invalid CBOR: incomplete indefinite-length dict&quot;</span>,
-                        ))<span class="question-mark">?</span> <span class="op">!</span><span class="op">=</span> <span class="number">0xFF</span>
+                        ))<span class="question-mark">?</span> <span class="op">!=</span> <span class="number">0xFF</span>
                         {
-                            <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                            <span class="ident">count</span> <span class="op">+=</span> <span class="number">1</span>;
                             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pair</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
-                            <span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="ident">canonicalize_int</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">index</span>..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">pair</span>)<span class="question-mark">?</span>;
-                            <span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="ident">canonicalize_int</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">index</span>..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">pair</span>)<span class="question-mark">?</span>;
+                            <span class="ident">index</span> <span class="op">+=</span> <span class="ident">canonicalize_int</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">index</span>..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">pair</span>)<span class="question-mark">?</span>;
+                            <span class="ident">index</span> <span class="op">+=</span> <span class="ident">canonicalize_int</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>[<span class="ident">index</span>..], <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">pair</span>)<span class="question-mark">?</span>;
                             <span class="ident">content</span>.<span class="ident">push</span>(<span class="ident">pair</span>);
                         }
-                        <span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>; <span class="comment">// for the 0xFF</span>
+                        <span class="ident">index</span> <span class="op">+=</span> <span class="number">1</span>; <span class="comment">// for the 0xFF</span>
                         <span class="ident">count</span>
                     };
                     <span class="ident">content</span>.<span class="ident">sort</span>();
                     (<span class="ident">content</span>.<span class="ident">into_iter</span>().<span class="ident">flatten</span>().<span class="ident">collect</span>(), <span class="ident">index</span>, <span class="ident">additional</span>)
                 }
-                <span class="number">6</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="number">6</span> <span class="op">=&gt;</span> {
                     <span class="comment">// semantic tag</span>
                     <span class="kw">let</span> <span class="ident">additional</span> <span class="op">=</span> <span class="ident">additional</span>.<span class="ident">ok_or_else</span>(<span class="ident">oe_inv_arg</span>(
                         <span class="string">&quot;invalid CBOR: indefinite length tag for semantic tag&quot;</span>,
@@ -1105,35 +1106,35 @@
                     <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">canonicalize_int</span>(<span class="ident">input</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">content</span>)<span class="question-mark">?</span>;
                     (<span class="ident">content</span>, <span class="ident">len</span>, <span class="ident">additional</span>)
                 }
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
             };
 
         <span class="comment">// Determine with what format we should write the additional data of the</span>
         <span class="comment">// tag. For all but major type 7, we write it in the shortest form</span>
         <span class="comment">// passible; for type 7, the minor type determines which floating point</span>
         <span class="comment">// type is used so we can&#39;t remove this information.</span>
-        <span class="kw">let</span> <span class="ident">minor</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">major</span> <span class="op">=</span><span class="op">=</span> <span class="number">7</span> {
+        <span class="kw">let</span> <span class="ident">minor</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">major</span> <span class="op">==</span> <span class="number">7</span> {
             <span class="ident">minor</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">additional</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">23</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">additional</span> <span class="op">&lt;=</span> <span class="number">23</span> {
             <span class="ident">additional</span> <span class="kw">as</span> <span class="ident">u8</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">additional</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0xFF</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">additional</span> <span class="op">&lt;=</span> <span class="number">0xFF</span> {
             <span class="number">24</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">additional</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0xFFFF</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">additional</span> <span class="op">&lt;=</span> <span class="number">0xFFFF</span> {
             <span class="number">25</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">additional</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0xFFFF_FFFF</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">additional</span> <span class="op">&lt;=</span> <span class="number">0xFFFF_FFFF</span> {
             <span class="number">26</span>
         } <span class="kw">else</span> {
             <span class="number">27</span>
         };
 
         <span class="comment">// Construct the canonicalized tag.</span>
-        <span class="ident">output</span>.<span class="ident">push</span>((<span class="ident">major</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">5</span>) <span class="op">|</span> <span class="ident">minor</span>);
+        <span class="ident">output</span>.<span class="ident">push</span>((<span class="ident">major</span> <span class="op">&lt;&lt;</span> <span class="number">5</span>) <span class="op">|</span> <span class="ident">minor</span>);
         <span class="kw">match</span> <span class="ident">minor</span> {
-            <span class="number">24</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">u64_as_bytes</span>(<span class="ident">additional</span>, <span class="number">1</span>, <span class="ident">output</span>),
-            <span class="number">25</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">u64_as_bytes</span>(<span class="ident">additional</span>, <span class="number">2</span>, <span class="ident">output</span>),
-            <span class="number">26</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">u64_as_bytes</span>(<span class="ident">additional</span>, <span class="number">4</span>, <span class="ident">output</span>),
-            <span class="number">27</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">u64_as_bytes</span>(<span class="ident">additional</span>, <span class="number">8</span>, <span class="ident">output</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
+            <span class="number">24</span> <span class="op">=&gt;</span> <span class="ident">u64_as_bytes</span>(<span class="ident">additional</span>, <span class="number">1</span>, <span class="ident">output</span>),
+            <span class="number">25</span> <span class="op">=&gt;</span> <span class="ident">u64_as_bytes</span>(<span class="ident">additional</span>, <span class="number">2</span>, <span class="ident">output</span>),
+            <span class="number">26</span> <span class="op">=&gt;</span> <span class="ident">u64_as_bytes</span>(<span class="ident">additional</span>, <span class="number">4</span>, <span class="ident">output</span>),
+            <span class="number">27</span> <span class="op">=&gt;</span> <span class="ident">u64_as_bytes</span>(<span class="ident">additional</span>, <span class="number">8</span>, <span class="ident">output</span>),
+            <span class="kw">_</span> <span class="op">=&gt;</span> {}
         }
 
         <span class="comment">// Add the canonicalized content.</span>
@@ -1144,11 +1145,11 @@
     }
 
     <span class="doccomment">/// Canonicalizes the given CBOR value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">canonizalize</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">canonizalize</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> {
         <span class="comment">//eprintln!(&quot;--------------------------&quot;);</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">canonicalize_int</span>(<span class="ident">input</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">output</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="ident">len</span> <span class="op">!</span><span class="op">=</span> <span class="ident">input</span>.<span class="ident">len</span>() {
+        <span class="kw">if</span> <span class="ident">len</span> <span class="op">!=</span> <span class="ident">input</span>.<span class="ident">len</span>() {
             <span class="ident">inv_arg</span>(<span class="string">&quot;invalid CBOR: garbage after end&quot;</span>)<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(<span class="ident">output</span>)
@@ -1349,13 +1350,13 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Deserialize</span>, <span class="ident">Serialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ArbData</span> {
     <span class="ident">cbor</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
-    <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">ArbData</span> {}
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">ArbData</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="comment">/*let mut output: Vec&lt;u8&gt; = vec![];
         let mut de = serde_cbor::de::Deserializer::from_slice(&amp;self.cbor);
         let mut ser = serde_json::Serializer::pretty(&amp;mut output);
@@ -1375,9 +1376,9 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// *Only* the JSON object is taken from the iterator; that is, if there is</span>
     <span class="doccomment">/// additional data behind the JSON object, this data remains.</span>
-    <span class="kw">fn</span> <span class="ident">scan_json_arg</span>(<span class="ident">it</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">char</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">scan_json_arg</span>(<span class="ident">it</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">char</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> {
         <span class="comment">// First character must always be a {</span>
-        <span class="kw">if</span> <span class="ident">it</span>.<span class="ident">next</span>() <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="string">&#39;{&#39;</span>) {
+        <span class="kw">if</span> <span class="ident">it</span>.<span class="ident">next</span>() <span class="op">!=</span> <span class="prelude-val">Some</span>(<span class="string">&#39;{&#39;</span>) {
             <span class="ident">inv_arg</span>(<span class="string">&quot;expected JSON argument while parsing ArbData&quot;</span>)<span class="question-mark">?</span>
         }
 
@@ -1388,16 +1389,16 @@
         <span class="kw">loop</span> {
             <span class="kw">if</span> <span class="ident">in_string</span> {
                 <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-                    <span class="prelude-val">Some</span>(<span class="string">&#39;&quot;&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="string">&#39;&quot;&#39;</span>) <span class="op">=&gt;</span> {
                         <span class="comment">// End of the string.</span>
                         <span class="ident">json</span>.<span class="ident">push</span>(<span class="string">&#39;&quot;&#39;</span>);
                         <span class="ident">in_string</span> <span class="op">=</span> <span class="bool-val">false</span>;
                     }
-                    <span class="prelude-val">Some</span>(<span class="string">&#39;\\&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="string">&#39;\\&#39;</span>) <span class="op">=&gt;</span> {
                         <span class="comment">// Scan escape sequence.</span>
                         <span class="ident">json</span>.<span class="ident">push</span>(<span class="string">&#39;\\&#39;</span>);
                         <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-                            <span class="prelude-val">Some</span>(<span class="string">&#39;u&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">Some</span>(<span class="string">&#39;u&#39;</span>) <span class="op">=&gt;</span> {
                                 <span class="ident">json</span>.<span class="ident">push</span>(<span class="string">&#39;u&#39;</span>);
                                 <span class="comment">// \u takes four hex characters. We just assume</span>
                                 <span class="comment">// that the chars are actually hex.</span>
@@ -1409,54 +1410,54 @@
                                     }
                                 }
                             }
-                            <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=&gt;</span> {
                                 <span class="comment">// Just assume that the escape sequence is OK.</span>
                                 <span class="ident">json</span>.<span class="ident">push</span>(<span class="ident">c</span>);
                             }
-                            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
                                 <span class="ident">inv_arg</span>(<span class="string">&quot;unterminated JSON string while parsing ArbData&quot;</span>)<span class="question-mark">?</span>;
                             }
                         };
                     }
-                    <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=&gt;</span> {
                         <span class="ident">json</span>.<span class="ident">push</span>(<span class="ident">c</span>);
                     }
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
                         <span class="ident">inv_arg</span>(<span class="string">&quot;unterminated JSON string while parsing ArbData&quot;</span>)<span class="question-mark">?</span>;
                     }
                 };
             } <span class="kw">else</span> {
                 <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-                    <span class="prelude-val">Some</span>(<span class="string">&#39;{&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="string">&#39;{&#39;</span>) <span class="op">=&gt;</span> {
                         <span class="ident">json</span>.<span class="ident">push</span>(<span class="string">&#39;{&#39;</span>);
-                        <span class="ident">obj_depth</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                        <span class="ident">obj_depth</span> <span class="op">+=</span> <span class="number">1</span>;
                     }
-                    <span class="prelude-val">Some</span>(<span class="string">&#39;}&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="string">&#39;}&#39;</span>) <span class="op">=&gt;</span> {
                         <span class="ident">json</span>.<span class="ident">push</span>(<span class="string">&#39;}&#39;</span>);
-                        <span class="ident">obj_depth</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
-                        <span class="kw">if</span> <span class="ident">obj_depth</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+                        <span class="ident">obj_depth</span> <span class="op">-=</span> <span class="number">1</span>;
+                        <span class="kw">if</span> <span class="ident">obj_depth</span> <span class="op">==</span> <span class="number">0</span> {
                             <span class="comment">// Finished scanning the JSON string. Now</span>
                             <span class="comment">// transmute it.</span>
                             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cbor</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
                             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">de</span> <span class="op">=</span> <span class="ident">serde_json</span>::<span class="ident">Deserializer</span>::<span class="ident">from_str</span>(<span class="kw-2">&amp;</span><span class="ident">json</span>);
                             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ser</span> <span class="op">=</span> <span class="ident">serde_cbor</span>::<span class="ident">ser</span>::<span class="ident">Serializer</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cbor</span>);
                             <span class="kw">match</span> <span class="ident">serde_transcode</span>::<span class="ident">transcode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">de</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ser</span>) {
-                                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">inv_arg</span>(<span class="macro">format</span><span class="macro">!</span>(
+                                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="ident">inv_arg</span>(<span class="macro">format</span><span class="macro">!</span>(
                                     <span class="string">&quot;error parsing JSON component of ArbData, {}: {}&quot;</span>,
                                     <span class="ident">json</span>, <span class="ident">e</span>
                                 ))<span class="question-mark">?</span>,
-                                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">cbor</span>),
+                                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">cbor</span>),
                             };
                         }
                     }
-                    <span class="prelude-val">Some</span>(<span class="string">&#39;&quot;&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="string">&#39;&quot;&#39;</span>) <span class="op">=&gt;</span> {
                         <span class="ident">json</span>.<span class="ident">push</span>(<span class="string">&#39;&quot;&#39;</span>);
                         <span class="ident">in_string</span> <span class="op">=</span> <span class="bool-val">true</span>;
                     }
-                    <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=&gt;</span> {
                         <span class="ident">json</span>.<span class="ident">push</span>(<span class="ident">c</span>);
                     }
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
                         <span class="ident">inv_arg</span>(<span class="string">&quot;unterminated JSON object while parsing ArbData&quot;</span>)<span class="question-mark">?</span>;
                     }
                 };
@@ -1474,26 +1475,26 @@
     <span class="doccomment">///  - `__` turns into an underscore (`_`).</span>
     <span class="doccomment">///  - `_##` where ## is a 2-digit hexadecimal string turns into a byte</span>
     <span class="doccomment">///    with the respective value.</span>
-    <span class="kw">fn</span> <span class="ident">scan_unstructured_args</span>(<span class="ident">it</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">char</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
+    <span class="kw">fn</span> <span class="ident">scan_unstructured_args</span>(<span class="ident">it</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">char</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
         <span class="kw">loop</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">current</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
             <span class="kw">loop</span> {
                 <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-                    <span class="prelude-val">Some</span>(<span class="string">&#39;_&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="string">&#39;_&#39;</span>) <span class="op">=&gt;</span> {
                         <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-                            <span class="prelude-val">Some</span>(<span class="string">&#39;_&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">Some</span>(<span class="string">&#39;_&#39;</span>) <span class="op">=&gt;</span> {
                                 <span class="ident">current</span>.<span class="ident">push</span>(<span class="string">b&#39;_&#39;</span>);
                             }
-                            <span class="prelude-val">Some</span>(<span class="string">&#39;,&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">Some</span>(<span class="string">&#39;,&#39;</span>) <span class="op">=&gt;</span> {
                                 <span class="ident">current</span>.<span class="ident">push</span>(<span class="string">b&#39;,&#39;</span>);
                             }
-                            <span class="prelude-val">Some</span>(<span class="ident">c1</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">Some</span>(<span class="ident">c1</span>) <span class="op">=&gt;</span> {
                                 <span class="kw">if</span> <span class="op">!</span><span class="ident">c1</span>.<span class="ident">is_ascii_hexdigit</span>() {
                                     <span class="ident">inv_arg</span>(<span class="string">&quot;invalid binary string escape sequence while parsing ArbData&quot;</span>)<span class="question-mark">?</span>;
                                 }
                                 <span class="kw">match</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-                                    <span class="prelude-val">Some</span>(<span class="ident">c2</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                                    <span class="prelude-val">Some</span>(<span class="ident">c2</span>) <span class="op">=&gt;</span> {
                                         <span class="kw">if</span> <span class="op">!</span><span class="ident">c2</span>.<span class="ident">is_ascii_hexdigit</span>() {
                                             <span class="ident">inv_arg</span>(<span class="string">&quot;invalid binary string escape sequence while parsing ArbData&quot;</span>)<span class="question-mark">?</span>;
                                         }
@@ -1501,20 +1502,20 @@
                                         <span class="ident">hex</span>.<span class="ident">push</span>(<span class="ident">c2</span>);
                                         <span class="ident">current</span>.<span class="ident">push</span>(<span class="ident">u8</span>::<span class="ident">from_str_radix</span>(<span class="kw-2">&amp;</span><span class="ident">hex</span>, <span class="number">16</span>).<span class="ident">unwrap</span>());
                                     }
-                                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
                                         <span class="ident">inv_arg</span>(<span class="string">&quot;unterminated binary string escape sequence while parsing ArbData&quot;</span>)<span class="question-mark">?</span>;
                                     }
                                 }
                             }
-                            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                            <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
                                 <span class="ident">inv_arg</span>(<span class="string">&quot;unterminated binary string escape sequence while parsing ArbData&quot;</span>)<span class="question-mark">?</span>;
                             }
                         }
                     }
-                    <span class="prelude-val">Some</span>(<span class="string">&#39;,&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="string">&#39;,&#39;</span>) <span class="op">=&gt;</span> {
                         <span class="kw">break</span>;
                     }
-                    <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=&gt;</span> {
                         <span class="comment">// oh my god rust why can&#39;t you just give me the code</span>
                         <span class="comment">// point...</span>
                         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bytes</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">4</span>];
@@ -1522,7 +1523,7 @@
                             <span class="ident">current</span>.<span class="ident">push</span>(<span class="ident">byte</span>);
                         }
                     }
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
                         <span class="ident">output</span>.<span class="ident">push</span>(<span class="ident">current</span>);
                         <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">output</span>);
                     }
@@ -1545,7 +1546,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// To also parse a JSON object, use `from_str()`. To get an ArbData with</span>
     <span class="doccomment">/// the default JSON object and zero binary arguments, use `default()`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_str_args_only</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_str_args_only</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">ArbData</span> {
             <span class="ident">cbor</span>: <span class="ident">EMPTY_CBOR</span>.<span class="ident">to_owned</span>(),
             <span class="ident">args</span>: <span class="ident">ArbData</span>::<span class="ident">scan_unstructured_args</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">s</span>.<span class="ident">chars</span>())<span class="question-mark">?</span>,
@@ -1554,7 +1555,7 @@
 
     <span class="doccomment">/// Construct an `ArbData` with just binary arguments and {} for the</span>
     <span class="doccomment">/// JSON/CBOR object.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_args</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_args</span>(<span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="ident">ArbData</span> {
             <span class="ident">cbor</span>: <span class="ident">EMPTY_CBOR</span>.<span class="ident">to_owned</span>(),
             <span class="ident">args</span>: <span class="ident">args</span>.<span class="ident">into</span>(),
@@ -1563,7 +1564,7 @@
 
     <span class="doccomment">/// Construct an `ArbData` from a CBOR object and binary arguments, while</span>
     <span class="doccomment">/// ensuring that the CBOR object is valid.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_cbor</span>(<span class="ident">cbor</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>, <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_cbor</span>(<span class="ident">cbor</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>, <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">arb_data</span> <span class="op">=</span> <span class="ident">ArbData</span> {
             <span class="ident">cbor</span>: <span class="macro">vec</span><span class="macro">!</span>[],
             <span class="ident">args</span>: <span class="ident">args</span>.<span class="ident">into</span>(),
@@ -1574,7 +1575,7 @@
 
     <span class="doccomment">/// Construct an `ArbData` from a JSON object and binary arguments, while</span>
     <span class="doccomment">/// ensuring that the JSON object is valid.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_json</span>(<span class="ident">json</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_json</span>(<span class="ident">json</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>, <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">arb_data</span> <span class="op">=</span> <span class="ident">ArbData</span> {
             <span class="ident">cbor</span>: <span class="macro">vec</span><span class="macro">!</span>[],
             <span class="ident">args</span>: <span class="ident">args</span>.<span class="ident">into</span>(),
@@ -1584,7 +1585,7 @@
     }
 
     <span class="doccomment">/// Returns the JSON/CBOR data field as a JSON string.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_json</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_json</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">de</span> <span class="op">=</span> <span class="ident">serde_cbor</span>::<span class="ident">de</span>::<span class="ident">Deserializer</span>::<span class="ident">from_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cbor</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ser</span> <span class="op">=</span> <span class="ident">serde_json</span>::<span class="ident">Serializer</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">output</span>);
@@ -1593,22 +1594,22 @@
     }
 
     <span class="doccomment">/// Returns the JSON/CBOR data field as a CBOR string.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_cbor</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_cbor</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cbor</span>
     }
 
     <span class="doccomment">/// Provides a reference to the binary argument vector.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_args</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_args</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>] {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">args</span>
     }
 
     <span class="doccomment">/// Provides a mutable reference to the binary argument vector.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_args_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_args_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> {
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">args</span>
     }
 
     <span class="doccomment">/// Sets the JSON/CBOR data field by means of a JSON string.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_json</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">json</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_json</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">json</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">de</span> <span class="op">=</span> <span class="ident">serde_json</span>::<span class="ident">Deserializer</span>::<span class="ident">from_str</span>(<span class="ident">json</span>.<span class="ident">as_ref</span>());
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ser</span> <span class="op">=</span> <span class="ident">serde_cbor</span>::<span class="ident">ser</span>::<span class="ident">Serializer</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">output</span>);
@@ -1621,13 +1622,13 @@
     }
 
     <span class="doccomment">/// Sets the JSON/CBOR data field by means of a CBOR string.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_cbor</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">cbor</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_cbor</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">cbor</span>: <span class="kw">impl</span> <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">cbor</span> <span class="op">=</span> <span class="ident">cbor_canon</span>::<span class="ident">canonizalize</span>(<span class="ident">cbor</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Provides a reference to the binary argument vector.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_args</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_args</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>) {
         <span class="self">self</span>.<span class="ident">args</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">into</span>();
     }
 
@@ -1671,22 +1672,22 @@
     <span class="doccomment">/// To omit the JSON object and substitute the default {}, use</span>
     <span class="doccomment">/// `from_str_args_only()`. To get an ArbData with the default JSON object</span>
     <span class="doccomment">/// and zero binary arguments, use `default()`.</span>
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="prelude-val">Err</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="self">Self</span>::<span class="prelude-val">Err</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iterator</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">chars</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">ArbData</span> {
             <span class="ident">cbor</span>: <span class="ident">cbor_canon</span>::<span class="ident">canonizalize</span>(<span class="kw-2">&amp;</span><span class="ident">ArbData</span>::<span class="ident">scan_json_arg</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">iterator</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>,
             <span class="ident">args</span>: <span class="macro">vec</span><span class="macro">!</span>[],
         };
         <span class="kw">match</span> <span class="ident">iterator</span>.<span class="ident">next</span>() {
-            <span class="prelude-val">Some</span>(<span class="string">&#39;,&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="string">&#39;,&#39;</span>) <span class="op">=&gt;</span> {
                 <span class="ident">output</span>.<span class="ident">args</span> <span class="op">=</span> <span class="ident">ArbData</span>::<span class="ident">scan_unstructured_args</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">iterator</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident">output</span>)
             }
-            <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">inv_arg</span>(<span class="macro">format</span><span class="macro">!</span>(
+            <span class="prelude-val">Some</span>(<span class="ident">c</span>) <span class="op">=&gt;</span> <span class="ident">inv_arg</span>(<span class="macro">format</span><span class="macro">!</span>(
                 <span class="string">&quot;expected comma after JSON object in ArbData, received {}&quot;</span>,
                 <span class="ident">c</span>
             )),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">output</span>),
+            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">output</span>),
         }
     }
 }
@@ -1694,20 +1695,20 @@
 <span class="kw">impl</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">ArbData</span> {
     <span class="doccomment">/// Turns the ArbData object into a string representation that can be</span>
     <span class="doccomment">/// parsed by `from_str()`.</span>
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_json</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Error</span>)<span class="question-mark">?</span>;
         <span class="kw">for</span> <span class="ident">arg</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">args</span>.<span class="ident">iter</span>() {
-            <span class="ident">output</span> <span class="op">+</span><span class="op">=</span> <span class="string">&quot;,&quot;</span>;
-            <span class="kw">if</span> <span class="ident">arg</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">byte</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">byte</span> <span class="op">&lt;</span> <span class="number">32</span> <span class="op">|</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">byte</span> <span class="op">&gt;</span> <span class="number">126</span>) {
+            <span class="ident">output</span> <span class="op">+=</span> <span class="string">&quot;,&quot;</span>;
+            <span class="kw">if</span> <span class="ident">arg</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">byte</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">byte</span> <span class="op">&lt;</span> <span class="number">32</span> <span class="op">||</span> <span class="kw-2">*</span><span class="ident">byte</span> <span class="op">&gt;</span> <span class="number">126</span>) {
                 <span class="kw">for</span> <span class="ident">byte</span> <span class="kw">in</span> <span class="ident">arg</span>.<span class="ident">iter</span>() {
-                    <span class="ident">output</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;_{:02X}&quot;</span>, <span class="ident">byte</span>);
+                    <span class="ident">output</span> <span class="op">+=</span> <span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;_{:02X}&quot;</span>, <span class="ident">byte</span>);
                 }
             } <span class="kw">else</span> {
                 <span class="kw">for</span> <span class="ident">byte</span> <span class="kw">in</span> <span class="ident">arg</span>.<span class="ident">iter</span>() {
                     <span class="kw">match</span> <span class="ident">byte</span> {
-                        <span class="string">b&#39;_&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">output</span> <span class="op">+</span><span class="op">=</span> <span class="string">&quot;__&quot;</span>,
-                        <span class="string">b&#39;,&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">output</span> <span class="op">+</span><span class="op">=</span> <span class="string">&quot;_,&quot;</span>,
-                        <span class="ident">b</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">output</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">b</span> <span class="kw">as</span> <span class="ident">char</span>),
+                        <span class="string">b&#39;_&#39;</span> <span class="op">=&gt;</span> <span class="ident">output</span> <span class="op">+=</span> <span class="string">&quot;__&quot;</span>,
+                        <span class="string">b&#39;,&#39;</span> <span class="op">=&gt;</span> <span class="ident">output</span> <span class="op">+=</span> <span class="string">&quot;_,&quot;</span>,
+                        <span class="ident">b</span> <span class="op">=&gt;</span> <span class="ident">output</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">b</span> <span class="kw">as</span> <span class="ident">char</span>),
                     }
                 }
             }
@@ -1719,7 +1720,7 @@
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">ArbData</span> {
     <span class="doccomment">/// Constructs an ArbData with JSON object {} and zero unstructured binary</span>
     <span class="doccomment">/// arguments.</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="ident">ArbData</span> {
             <span class="ident">cbor</span>: <span class="ident">EMPTY_CBOR</span>.<span class="ident">to_owned</span>(),
             <span class="ident">args</span>: <span class="macro">vec</span><span class="macro">!</span>[],
@@ -1735,7 +1736,7 @@
 
     <span class="kw">fn</span> <span class="ident">test_from_str_good</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">exp_json</span>: <span class="ident">serde_json</span>::<span class="ident">Value</span>, <span class="ident">exp_args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>) {
         <span class="kw">let</span> <span class="ident">actual</span> <span class="op">=</span> <span class="ident">ArbData</span>::<span class="ident">from_str</span>(<span class="ident">input</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">exp_args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">exp_args</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">to_vec</span>()).<span class="ident">collect</span>();
+        <span class="kw">let</span> <span class="ident">exp_args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> <span class="op">=</span> <span class="ident">exp_args</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">to_vec</span>()).<span class="ident">collect</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">actual</span>.<span class="ident">get_args</span>(), <span class="kw-2">&amp;</span><span class="ident">exp_args</span>[..]);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">actual</span>.<span class="ident">get_json</span>().<span class="ident">unwrap</span>(), <span class="ident">exp_json</span>.<span class="ident">to_string</span>());
     }
@@ -1774,7 +1775,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">test_to_str</span>(<span class="ident">json</span>: <span class="ident">serde_json</span>::<span class="ident">Value</span>, <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>, <span class="ident">exp_output</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-        <span class="kw">let</span> <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">to_vec</span>()).<span class="ident">collect</span>();
+        <span class="kw">let</span> <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">to_vec</span>()).<span class="ident">collect</span>();
         <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">ArbData</span>::<span class="ident">from_json</span>(<span class="ident">json</span>.<span class="ident">to_string</span>(), <span class="ident">args</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">string</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">to_string</span>();
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">string</span>, <span class="ident">exp_output</span>);
@@ -1798,7 +1799,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">eq</span>() {
-        <span class="kw">let</span> <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="string">b&quot;x&quot;</span>, <span class="string">b&quot;y&quot;</span>, <span class="string">b&quot;z&quot;</span>]
+        <span class="kw">let</span> <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="string">b&quot;x&quot;</span>, <span class="string">b&quot;y&quot;</span>, <span class="string">b&quot;z&quot;</span>]
             .<span class="ident">into_iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">to_vec</span>())
             .<span class="ident">collect</span>();

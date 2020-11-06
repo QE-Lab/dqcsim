@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/core/common/types/matrix.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>matrix.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../../../light.css" id="themeStyle"><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/core/common/types/matrix.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>matrix.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -721,7 +722,7 @@
         <span class="ident">im</span>: <span class="ident">f64</span>,
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span>[<span class="ident">Complex64</span>], <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span>::<span class="prelude-val">Ok</span>, <span class="ident">S</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span>[<span class="ident">Complex64</span>], <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span>::<span class="prelude-val">Ok</span>, <span class="ident">S</span>::<span class="ident">Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Serializer</span>,
     {
@@ -734,7 +735,7 @@
         <span class="ident">seq</span>.<span class="ident">end</span>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Complex64</span><span class="op">&gt;</span>, <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) <span class="op">-&gt;</span> <span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Complex64</span><span class="op">&gt;</span>, <span class="ident">D</span>::<span class="ident">Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
     {
@@ -759,11 +760,11 @@
 
 <span class="comment">// Byte-wise PartialEq for Matrix.</span>
 <span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">Matrix</span> {
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
         <span class="comment">// This is a byte-wise comparison to determine Eq.</span>
-        <span class="self">self</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">other</span>.<span class="ident">len</span>()
-            <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">other</span>.<span class="ident">data</span>.<span class="ident">iter</span>()).<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">x</span>, <span class="ident">y</span>)<span class="op">|</span> {
-                <span class="ident">x</span>.<span class="ident">re</span>.<span class="ident">to_le_bytes</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">y</span>.<span class="ident">re</span>.<span class="ident">to_le_bytes</span>() <span class="kw-2">&amp;</span><span class="op">&amp;</span> <span class="ident">x</span>.<span class="ident">im</span>.<span class="ident">to_le_bytes</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">y</span>.<span class="ident">im</span>.<span class="ident">to_le_bytes</span>()
+        <span class="self">self</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="ident">other</span>.<span class="ident">len</span>()
+            <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">other</span>.<span class="ident">data</span>.<span class="ident">iter</span>()).<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">x</span>, <span class="ident">y</span>)<span class="op">|</span> {
+                <span class="ident">x</span>.<span class="ident">re</span>.<span class="ident">to_le_bytes</span>() <span class="op">==</span> <span class="ident">y</span>.<span class="ident">re</span>.<span class="ident">to_le_bytes</span>() <span class="op">&amp;&amp;</span> <span class="ident">x</span>.<span class="ident">im</span>.<span class="ident">to_le_bytes</span>() <span class="op">==</span> <span class="ident">y</span>.<span class="ident">im</span>.<span class="ident">to_le_bytes</span>()
             })
     }
 }
@@ -773,33 +774,33 @@
 
 <span class="kw">impl</span> <span class="ident">Index</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Matrix</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Complex64</span>;
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: (<span class="ident">usize</span>, <span class="ident">usize</span>)) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Output</span> {
+    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: (<span class="ident">usize</span>, <span class="ident">usize</span>)) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Output</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">data</span>[<span class="ident">index</span>.<span class="number">0</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">dimension</span> <span class="op">+</span> <span class="ident">index</span>.<span class="number">1</span>]
     }
 }
 
 <span class="kw">impl</span> <span class="ident">IndexMut</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Matrix</span> {
-    <span class="kw">fn</span> <span class="ident">index_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: (<span class="ident">usize</span>, <span class="ident">usize</span>)) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>::<span class="ident">Output</span> {
+    <span class="kw">fn</span> <span class="ident">index_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: (<span class="ident">usize</span>, <span class="ident">usize</span>)) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>::<span class="ident">Output</span> {
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">data</span>[<span class="ident">index</span>.<span class="number">0</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">dimension</span> <span class="op">+</span> <span class="ident">index</span>.<span class="number">1</span>]
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Matrix</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Complex64</span>;
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Output</span> {
+    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Output</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">data</span>[<span class="ident">index</span>]
     }
 }
 
 <span class="kw">impl</span> <span class="ident">IndexMut</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Matrix</span> {
-    <span class="kw">fn</span> <span class="ident">index_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>::<span class="ident">Output</span> {
+    <span class="kw">fn</span> <span class="ident">index_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>::<span class="ident">Output</span> {
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">data</span>[<span class="ident">index</span>]
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Complex64</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Matrix</span> {
+<span class="kw">impl</span> <span class="ident">TryFrom</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Complex64</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Matrix</span> {
     <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
-    <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">elements</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Complex64</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">elements</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Complex64</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="ident">Matrix</span>::<span class="ident">new</span>(<span class="ident">elements</span>)
     }
 }
@@ -808,13 +809,13 @@
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">Complex64</span>;
     <span class="kw">type</span> <span class="ident">IntoIter</span> <span class="op">=</span> <span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">IntoIter</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">IntoIter</span> {
+    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">IntoIter</span> {
         <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">into_iter</span>()
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Matrix</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">dimension</span>() {
             <span class="kw">for</span> <span class="ident">col</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">dimension</span>() {
                 <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="self">self</span>[(<span class="ident">row</span>, <span class="ident">col</span>)];
@@ -828,10 +829,10 @@
 
 <span class="kw">impl</span> <span class="ident">Matrix</span> {
     <span class="doccomment">/// Returns a new Matrix with provided elements.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">elements</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Complex64</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">elements</span> <span class="op">=</span> <span class="ident">elements</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Complex64</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">elements</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Complex64</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">elements</span> <span class="op">=</span> <span class="ident">elements</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Complex64</span><span class="op">&gt;&gt;</span>();
         <span class="kw">let</span> <span class="ident">dimension</span> <span class="op">=</span> <span class="ident">elements</span>.<span class="ident">len</span>().<span class="ident">integer_sqrt</span>();
-        <span class="kw">if</span> <span class="ident">elements</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">dimension</span> <span class="op">*</span> <span class="ident">dimension</span> {
+        <span class="kw">if</span> <span class="ident">elements</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="ident">dimension</span> <span class="op">*</span> <span class="ident">dimension</span> {
             <span class="kw">return</span> <span class="ident">inv_arg</span>(<span class="string">&quot;matrix is not square&quot;</span>);
         }
         <span class="prelude-val">Ok</span>(<span class="ident">Matrix</span> {
@@ -841,7 +842,7 @@
     }
 
     <span class="doccomment">/// Returns a new identity Matrix with given dimension.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_identity</span>(<span class="ident">dimension</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_identity</span>(<span class="ident">dimension</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">Matrix</span>::<span class="ident">new</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="macro">c</span><span class="macro">!</span>(<span class="number">0.</span>); <span class="ident">dimension</span>.<span class="ident">pow</span>(<span class="number">2</span>)]).<span class="ident">unwrap</span>();
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">dimension</span> {
             <span class="ident">output</span>[(<span class="ident">i</span>, <span class="ident">i</span>)] <span class="op">=</span> <span class="macro">c</span><span class="macro">!</span>(<span class="number">1.</span>);
@@ -853,9 +854,9 @@
     <span class="doccomment">/// `epsilon` specifies the maximum element-wise root-mean-square error</span>
     <span class="doccomment">/// between the matrices that results in a positive match. `ignore_phase`</span>
     <span class="doccomment">/// specifies whether the aforementioned check should ignore global phase.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">approx_eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">ignore_global_phase</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">approx_eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">ignore_global_phase</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
         <span class="comment">// Sizes must match</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">other</span>.<span class="ident">len</span>() {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="ident">other</span>.<span class="ident">len</span>() {
             <span class="kw">return</span> <span class="bool-val">false</span>;
         }
         <span class="kw">let</span> <span class="ident">phase_delta</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">ignore_global_phase</span> {
@@ -864,7 +865,7 @@
                     .<span class="ident">iter</span>()
                     .<span class="ident">zip</span>(<span class="ident">other</span>.<span class="ident">data</span>.<span class="ident">iter</span>())
                     .<span class="ident">fold</span>(<span class="macro">c</span><span class="macro">!</span>(<span class="number">0.</span>), <span class="op">|</span><span class="kw-2">mut</span> <span class="ident">phase_delta</span>, (<span class="ident">a</span>, <span class="ident">b</span>)<span class="op">|</span> {
-                        <span class="ident">phase_delta</span> <span class="op">+</span><span class="op">=</span> <span class="ident">a</span> <span class="op">*</span> <span class="ident">b</span>.<span class="ident">conj</span>();
+                        <span class="ident">phase_delta</span> <span class="op">+=</span> <span class="ident">a</span> <span class="op">*</span> <span class="ident">b</span>.<span class="ident">conj</span>();
                         <span class="ident">phase_delta</span>
                     });
             <span class="ident">phase_delta</span> <span class="op">/</span> <span class="ident">phase_delta</span>.<span class="ident">norm</span>()
@@ -875,7 +876,7 @@
             .<span class="ident">iter</span>()
             .<span class="ident">zip</span>(<span class="ident">other</span>.<span class="ident">data</span>.<span class="ident">iter</span>())
             .<span class="ident">try_fold</span>(<span class="ident">epsilon</span> <span class="op">*</span> <span class="ident">epsilon</span>, <span class="op">|</span><span class="kw-2">mut</span> <span class="ident">tolerance</span>, (<span class="ident">a</span>, <span class="ident">b</span>)<span class="op">|</span> {
-                <span class="ident">tolerance</span> <span class="op">-</span><span class="op">=</span> (<span class="ident">a</span> <span class="op">-</span> <span class="ident">b</span> <span class="op">*</span> <span class="ident">phase_delta</span>).<span class="ident">norm_sqr</span>();
+                <span class="ident">tolerance</span> <span class="op">-=</span> (<span class="ident">a</span> <span class="op">-</span> <span class="ident">b</span> <span class="op">*</span> <span class="ident">phase_delta</span>).<span class="ident">norm_sqr</span>();
                 <span class="kw">if</span> <span class="ident">tolerance</span>.<span class="ident">is_sign_negative</span>() {
                     <span class="prelude-val">None</span>
                 } <span class="kw">else</span> {
@@ -909,9 +910,9 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// with x and y being free variables.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">basis_approx_eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">epsilon</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">basis_approx_eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Matrix</span>, <span class="ident">epsilon</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
         <span class="comment">// Sizes must both be 2x2</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">dimension</span>() <span class="op">!</span><span class="op">=</span> <span class="number">2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">other</span>.<span class="ident">dimension</span>() <span class="op">!</span><span class="op">=</span> <span class="number">2</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">dimension</span>() <span class="op">!=</span> <span class="number">2</span> <span class="op">||</span> <span class="ident">other</span>.<span class="ident">dimension</span>() <span class="op">!=</span> <span class="number">2</span> {
             <span class="kw">return</span> <span class="bool-val">false</span>;
         }
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tolerance</span> <span class="op">=</span> <span class="ident">epsilon</span> <span class="op">*</span> <span class="ident">epsilon</span>;
@@ -920,7 +921,7 @@
                 <span class="self">self</span>[(<span class="number">0</span>, <span class="ident">col</span>)] <span class="op">*</span> <span class="ident">other</span>[(<span class="number">0</span>, <span class="ident">col</span>)].<span class="ident">conj</span>() <span class="op">+</span> <span class="self">self</span>[(<span class="number">1</span>, <span class="ident">col</span>)] <span class="op">*</span> <span class="ident">other</span>[(<span class="number">1</span>, <span class="ident">col</span>)].<span class="ident">conj</span>();
             <span class="kw">let</span> <span class="ident">phase_delta</span> <span class="op">=</span> <span class="ident">phase_delta</span>.<span class="ident">unscale</span>(<span class="ident">phase_delta</span>.<span class="ident">norm</span>());
             <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">2</span> {
-                <span class="ident">tolerance</span> <span class="op">-</span><span class="op">=</span> (<span class="self">self</span>[(<span class="ident">row</span>, <span class="ident">col</span>)] <span class="op">-</span> <span class="ident">other</span>[(<span class="ident">row</span>, <span class="ident">col</span>)] <span class="op">*</span> <span class="ident">phase_delta</span>).<span class="ident">norm_sqr</span>();
+                <span class="ident">tolerance</span> <span class="op">-=</span> (<span class="self">self</span>[(<span class="ident">row</span>, <span class="ident">col</span>)] <span class="op">-</span> <span class="ident">other</span>[(<span class="ident">row</span>, <span class="ident">col</span>)] <span class="op">*</span> <span class="ident">phase_delta</span>).<span class="ident">norm_sqr</span>();
                 <span class="kw">if</span> <span class="ident">tolerance</span> <span class="op">&lt;</span> <span class="number">0.</span> {
                     <span class="kw">return</span> <span class="bool-val">false</span>;
                 }
@@ -934,7 +935,7 @@
     <span class="doccomment">/// result and the identity matrix. If this difference is more than epsilon</span>
     <span class="doccomment">/// the matrix is not (sufficiently) unitary and this function returns</span>
     <span class="doccomment">/// false, otherwise it returns true.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">approx_unitary</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">epsilon</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">approx_unitary</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">epsilon</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tolerance</span> <span class="op">=</span> <span class="ident">epsilon</span> <span class="op">*</span> <span class="ident">epsilon</span>;
 
         <span class="comment">// Check if result of matrix multiplication of self and our hermetian</span>
@@ -944,12 +945,12 @@
                 <span class="kw">let</span> <span class="ident">element</span> <span class="op">=</span> (<span class="number">0</span>..<span class="self">self</span>.<span class="ident">dimension</span>).<span class="ident">fold</span>(<span class="ident">Complex64</span>::<span class="ident">new</span>(<span class="number">0.</span>, <span class="number">0.</span>), <span class="op">|</span><span class="ident">acc</span>, <span class="ident">k</span><span class="op">|</span> {
                     <span class="ident">acc</span> <span class="op">+</span> (<span class="self">self</span>[<span class="ident">i</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">dimension</span> <span class="op">+</span> <span class="ident">k</span>] <span class="op">*</span> <span class="self">self</span>[<span class="ident">j</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">dimension</span> <span class="op">+</span> <span class="ident">k</span>].<span class="ident">conj</span>())
                 });
-                <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="ident">j</span> {
+                <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="ident">j</span> {
                     <span class="ident">Complex64</span>::<span class="ident">new</span>(<span class="number">1.</span>, <span class="number">0.</span>)
                 } <span class="kw">else</span> {
                     <span class="ident">Complex64</span>::<span class="ident">new</span>(<span class="number">0.</span>, <span class="number">0.</span>)
                 };
-                <span class="ident">tolerance</span> <span class="op">-</span><span class="op">=</span> (<span class="ident">expected</span> <span class="op">-</span> <span class="ident">element</span>).<span class="ident">norm_sqr</span>();
+                <span class="ident">tolerance</span> <span class="op">-=</span> (<span class="ident">expected</span> <span class="op">-</span> <span class="ident">element</span>).<span class="ident">norm_sqr</span>();
                 <span class="kw">if</span> <span class="ident">tolerance</span> <span class="op">&lt;</span> <span class="number">0.</span> {
                     <span class="kw">return</span> <span class="bool-val">false</span>;
                 }
@@ -959,7 +960,7 @@
     }
 
     <span class="doccomment">/// Returns new Matrix with `number_of_control` qubits added.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_controls</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">number_of_controls</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_controls</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">number_of_controls</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">dimension</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dimension</span>() <span class="op">*</span> <span class="number">2usize</span>.<span class="ident">pow</span>(<span class="ident">number_of_controls</span> <span class="kw">as</span> <span class="ident">u32</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">Matrix</span>::<span class="ident">new_identity</span>(<span class="ident">dimension</span>);
         <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">dimension</span>() {
@@ -998,7 +999,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">epsilon</span>: <span class="ident">f64</span>,
         <span class="ident">ignore_global_phase</span>: <span class="ident">bool</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">Matrix</span>) {
+    ) <span class="op">-&gt;</span> (<span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>, <span class="ident">Matrix</span>) {
         <span class="comment">// If we&#39;re to ignore the global phase of the matrix, we dephase using</span>
         <span class="comment">// the phase of the first matrix entry; for any controlled matrix, this</span>
         <span class="comment">// entry will have a unit magnitude.</span>
@@ -1020,14 +1021,14 @@
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">dimension</span>() <span class="op">-</span> <span class="number">1</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">error_sqr</span> <span class="op">=</span> <span class="number">0.0</span>;
             <span class="kw">for</span> <span class="ident">j</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">dimension</span>() {
-                <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="ident">j</span> {
-                    <span class="ident">error_sqr</span> <span class="op">+</span><span class="op">=</span> (<span class="self">self</span>[(<span class="ident">i</span>, <span class="ident">j</span>)] <span class="op">-</span> <span class="ident">phase</span>).<span class="ident">norm_sqr</span>();
+                <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="ident">j</span> {
+                    <span class="ident">error_sqr</span> <span class="op">+=</span> (<span class="self">self</span>[(<span class="ident">i</span>, <span class="ident">j</span>)] <span class="op">-</span> <span class="ident">phase</span>).<span class="ident">norm_sqr</span>();
                 } <span class="kw">else</span> {
-                    <span class="ident">error_sqr</span> <span class="op">+</span><span class="op">=</span> <span class="self">self</span>[(<span class="ident">i</span>, <span class="ident">j</span>)].<span class="ident">norm_sqr</span>();
+                    <span class="ident">error_sqr</span> <span class="op">+=</span> <span class="self">self</span>[(<span class="ident">i</span>, <span class="ident">j</span>)].<span class="ident">norm_sqr</span>();
                 }
                 <span class="kw">if</span> <span class="ident">error_sqr</span> <span class="op">&gt;</span> <span class="ident">epsilon_sqr</span> {
-                    <span class="ident">controls_int</span> <span class="kw-2">&amp;</span><span class="op">=</span> <span class="ident">i</span>;
-                    <span class="kw">if</span> <span class="ident">controls_int</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+                    <span class="ident">controls_int</span> <span class="op">&amp;=</span> <span class="ident">i</span>;
+                    <span class="kw">if</span> <span class="ident">controls_int</span> <span class="op">==</span> <span class="number">0</span> {
                         <span class="kw">return</span> (<span class="ident">HashSet</span>::<span class="ident">new</span>(), <span class="self">self</span>.<span class="ident">clone</span>());
                     }
                     <span class="kw">break</span>;
@@ -1037,7 +1038,7 @@
 
         <span class="comment">// If all qubits could be control qubits, we&#39;re actually dealing with</span>
         <span class="comment">// an identity matrix.</span>
-        <span class="kw">if</span> <span class="ident">controls_int</span> <span class="op">=</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">dimension</span>() <span class="op">-</span> <span class="number">1</span> {
+        <span class="kw">if</span> <span class="ident">controls_int</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">dimension</span>() <span class="op">-</span> <span class="number">1</span> {
             <span class="kw">return</span> (<span class="ident">HashSet</span>::<span class="ident">new</span>(), <span class="self">self</span>.<span class="ident">clone</span>());
         }
 
@@ -1047,7 +1048,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">controls</span> <span class="op">=</span> <span class="ident">HashSet</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="ident">num_qubits</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">num_qubits</span>().<span class="ident">unwrap</span>();
         <span class="kw">for</span> <span class="ident">q</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">num_qubits</span> {
-            <span class="kw">if</span> <span class="ident">controls_int</span> <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">q</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+            <span class="kw">if</span> <span class="ident">controls_int</span> <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="ident">q</span>) <span class="op">!=</span> <span class="number">0</span> {
                 <span class="ident">controls</span>.<span class="ident">insert</span>(<span class="ident">num_qubits</span> <span class="op">-</span> <span class="ident">q</span> <span class="op">-</span> <span class="number">1</span>);
             }
         }
@@ -1056,9 +1057,9 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span> <span class="op">=</span>
             <span class="ident">Vec</span>::<span class="ident">with_capacity</span>((<span class="self">self</span>.<span class="ident">dimension</span>() <span class="op">/</span> <span class="number">2_usize</span>.<span class="ident">pow</span>(<span class="ident">controls</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>)).<span class="ident">pow</span>(<span class="number">2</span>));
         <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">dimension</span>() {
-            <span class="kw">if</span> <span class="ident">row</span> <span class="op">&amp;</span> <span class="ident">controls_int</span> <span class="op">=</span><span class="op">=</span> <span class="ident">controls_int</span> {
+            <span class="kw">if</span> <span class="ident">row</span> <span class="op">&amp;</span> <span class="ident">controls_int</span> <span class="op">==</span> <span class="ident">controls_int</span> {
                 <span class="kw">for</span> <span class="ident">col</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">dimension</span>() {
-                    <span class="kw">if</span> <span class="ident">col</span> <span class="op">&amp;</span> <span class="ident">controls_int</span> <span class="op">=</span><span class="op">=</span> <span class="ident">controls_int</span> {
+                    <span class="kw">if</span> <span class="ident">col</span> <span class="op">&amp;</span> <span class="ident">controls_int</span> <span class="op">==</span> <span class="ident">controls_int</span> {
                         <span class="ident">entries</span>.<span class="ident">push</span>(<span class="self">self</span>[(<span class="ident">row</span>, <span class="ident">col</span>)] <span class="op">*</span> <span class="ident">phase</span>.<span class="ident">conj</span>());
                     }
                 }
@@ -1069,33 +1070,33 @@
     }
 
     <span class="doccomment">/// Returns the number of elements in the Matrix.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">len</span>()
     }
     <span class="doccomment">/// Returns true if the Matrix is empty.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">is_empty</span>()
     }
 
     <span class="doccomment">/// Returns the dimension of the Matrix.</span>
     <span class="doccomment">/// The dimension equals the square root of the number of elements.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimension</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimension</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">dimension</span>
     }
 
     <span class="doccomment">/// Returns the number of qubits for this Matrix.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">num_qubits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">num_qubits</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="ident">log_2</span>(<span class="self">self</span>.<span class="ident">dimension</span>)
     }
 
     <span class="doccomment">/// Returns the element at given row and colum index.</span>
     <span class="doccomment">/// Returns `None` for out of bound indices.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">row</span>: <span class="ident">usize</span>, <span class="ident">column</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Complex64</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">row</span>: <span class="ident">usize</span>, <span class="ident">column</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Complex64</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">get</span>(<span class="ident">row</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">dimension</span> <span class="op">+</span> <span class="ident">column</span>)
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;bindings&quot;</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_double</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_double</span> {
         <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_double</span>
     }
 }
@@ -1109,17 +1110,17 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Basis</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Matrix</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">basis</span>: <span class="ident">Basis</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matrix</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">basis</span>: <span class="ident">Basis</span>) <span class="op">-&gt;</span> <span class="ident">Matrix</span> {
         <span class="kw">match</span> <span class="ident">basis</span> {
-            <span class="ident">Basis</span>::<span class="ident">X</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">matrix</span><span class="macro">!</span>(
+            <span class="ident">Basis</span>::<span class="ident">X</span> <span class="op">=&gt;</span> <span class="macro">matrix</span><span class="macro">!</span>(
                 (<span class="ident">FRAC_1_SQRT_2</span>), (<span class="op">-</span><span class="ident">FRAC_1_SQRT_2</span>);
                 (<span class="ident">FRAC_1_SQRT_2</span>), (<span class="ident">FRAC_1_SQRT_2</span>);
             ),
-            <span class="ident">Basis</span>::<span class="ident">Y</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">matrix</span><span class="macro">!</span>(
+            <span class="ident">Basis</span>::<span class="ident">Y</span> <span class="op">=&gt;</span> <span class="macro">matrix</span><span class="macro">!</span>(
                 (<span class="ident">FRAC_1_SQRT_2</span>), (<span class="number">0.</span>, <span class="ident">FRAC_1_SQRT_2</span>);
                 (<span class="number">0.</span>, <span class="ident">FRAC_1_SQRT_2</span>), (<span class="ident">FRAC_1_SQRT_2</span>);
             ),
-            <span class="ident">Basis</span>::<span class="ident">Z</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">matrix</span><span class="macro">!</span>(
+            <span class="ident">Basis</span>::<span class="ident">Z</span> <span class="op">=&gt;</span> <span class="macro">matrix</span><span class="macro">!</span>(
                 <span class="number">1.</span>, <span class="number">0.</span>;
                 <span class="number">0.</span>, <span class="number">1.</span>;
             ),
