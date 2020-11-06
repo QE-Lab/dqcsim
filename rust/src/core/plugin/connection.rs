@@ -304,10 +304,11 @@ impl Connection {
     /// a new request is available.
     pub fn next_downstream_request(&mut self) -> Result<Option<IncomingMessage>> {
         // Check if there are new downstream messages.
-        if let Some(idx) = self.incoming_buffer.iter().position(|msg| match msg {
-            IncomingMessage::Downstream(_) => true,
-            _ => false,
-        }) {
+        if let Some(idx) = self
+            .incoming_buffer
+            .iter()
+            .position(|msg| matches!(msg, IncomingMessage::Downstream(_)))
+        {
             Ok(Some(self.incoming_buffer.remove(idx).unwrap()))
         } else {
             // Buffer incoming messages.

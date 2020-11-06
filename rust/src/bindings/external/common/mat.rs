@@ -345,7 +345,7 @@ pub extern "C" fn dqcs_mat_strip_control(
             let (control_index_hashset, submatrix) =
                 mat.strip_control(epsilon, ignore_global_phase);
             let mut control_index_vec: Vec<usize> = control_index_hashset.into_iter().collect();
-            control_index_vec.sort();
+            control_index_vec.sort_unstable();
             let control_index_ffi = unsafe {
                 calloc(control_index_vec.len() + 1, size_of::<ssize_t>()) as *mut ssize_t
             };

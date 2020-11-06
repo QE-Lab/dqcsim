@@ -59,11 +59,7 @@ impl AcceleratorState {
     }
 
     pub fn is_start_pending(&self) -> bool {
-        if let AcceleratorState::StartPending(_) = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, AcceleratorState::StartPending(_))
     }
 
     pub fn is_blocked(&self) -> bool {
@@ -71,11 +67,7 @@ impl AcceleratorState {
     }
 
     pub fn is_wait_pending(&self) -> bool {
-        if let AcceleratorState::WaitPending(_) = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, AcceleratorState::WaitPending(_))
     }
 
     fn data(self) -> ArbData {

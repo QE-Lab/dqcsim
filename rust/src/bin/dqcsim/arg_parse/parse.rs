@@ -364,10 +364,11 @@ impl CommandLineConfiguration {
 
             // If the user did not explicitly request a start() host call, add
             // one to the front of the list.
-            let mut running = if !dqcsim_opts.host_calls.iter().any(|x| match x {
-                HostCall::Start(_) => true,
-                _ => false,
-            }) {
+            let mut running = if !dqcsim_opts
+                .host_calls
+                .iter()
+                .any(|x| matches!(x, HostCall::Start(_)))
+            {
                 config.host_calls.push(HostCall::Start(ArbData::default()));
                 true
             } else {
