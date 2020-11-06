@@ -715,7 +715,7 @@
             <span class="kw">let</span> (<span class="ident">control_index_hashset</span>, <span class="ident">submatrix</span>) <span class="op">=</span>
                 <span class="ident">mat</span>.<span class="ident">strip_control</span>(<span class="ident">epsilon</span>, <span class="ident">ignore_global_phase</span>);
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">control_index_vec</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">control_index_hashset</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
-            <span class="ident">control_index_vec</span>.<span class="ident">sort</span>();
+            <span class="ident">control_index_vec</span>.<span class="ident">sort_unstable</span>();
             <span class="kw">let</span> <span class="ident">control_index_ffi</span> <span class="op">=</span> <span class="kw">unsafe</span> {
                 <span class="ident">calloc</span>(<span class="ident">control_index_vec</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="number">1</span>, <span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">ssize_t</span><span class="op">&gt;</span>()) <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ssize_t</span>
             };
