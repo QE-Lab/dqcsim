@@ -17,7 +17,7 @@ set(CMAKE_CXX_STANDARD 11)
 include(FetchContent)
 FetchContent_Declare(dqcsim
   GIT_REPOSITORY  https://github.com/qe-lab/dqcsim.git
-  GIT_TAG         cmake-source-build
+  GIT_TAG         master
 )
 set(DQCSIM_FROM_SOURCE "yes")
 FetchContent_MakeAvailable(dqcsim)
