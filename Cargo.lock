@@ -232,7 +232,7 @@ dependencies = [
 
 [[package]]
 name = "dqcsim"
-version = "0.2.4"
+version = "0.2.5"
 dependencies = [
  "ansi_term 0.12.1",
  "backtrace",

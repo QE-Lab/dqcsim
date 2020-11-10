@@ -1,3 +1,8 @@
+# [0.2.5] - 2020-11-10
+
+- Update dependencies
+- Fix source builds with CMake
+
 # [0.2.4] - 2020-07-02
 
 - Fix manylinux wheels build
@@ -19,6 +24,7 @@
 
 - Initial release
 
+[0.2.5]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.5
 [0.2.4]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.4
 [0.2.1]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.1
 [0.2.0]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.0
