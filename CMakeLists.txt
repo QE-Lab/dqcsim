@@ -11,7 +11,7 @@ add_library(dqcsim SHARED IMPORTED GLOBAL)
 # Build rust project
 # NOTE: crate is built at build-time, not configure-time
 set(TARGET_DIR ${CMAKE_SOURCE_DIR}/target)
-if($<CONFIG:Release>)
+if(CMAKE_BUILD_TYPE STREQUAL Release)
 	set(BUILD_DIR ${TARGET_DIR}/release)
 	# NOTE: Using a gen expr in the call to cargo, makes cargo to crash
 	set(CARGO_BUILD_TYPE --release)
