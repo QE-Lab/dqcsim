@@ -52,3 +52,21 @@ install(
 	FILES ${DQCSIM_LIB}
 	DESTINATION lib
 )
+
+# Install CMake module
+include(CMakePackageConfigHelpers)
+configure_package_config_file(dqcsimConfig.cmake.in
+	${CMAKE_CURRENT_BINARY_DIR}/dqcsimConfig.cmake
+	INSTALL_DESTINATION lib/cmake/dqcsim
+)
+write_basic_package_version_file(
+	${CMAKE_CURRENT_BINARY_DIR}/dqcsimConfigVersion.cmake
+	VERSION
+	COMPATIBILITY SameMajorVersion
+)
+install(
+	FILES
+		${CMAKE_CURRENT_BINARY_DIR}/dqcsimConfig.cmake
+		${CMAKE_CURRENT_BINARY_DIR}/dqcsimConfigVersion.cmake
+	DESTINATION lib/cmake/dqcsim
+)
