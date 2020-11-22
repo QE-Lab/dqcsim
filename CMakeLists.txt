@@ -13,6 +13,7 @@ add_library(dqcsim SHARED IMPORTED GLOBAL)
 set(TARGET_DIR ${CMAKE_SOURCE_DIR}/target)
 if($<CONFIG:Release>)
 	set(BUILD_DIR ${TARGET_DIR}/release)
+	# NOTE: Using a gen expr in the call to cargo, makes cargo to crash
 	set(CARGO_BUILD_TYPE --release)
 else()
 	set(BUILD_DIR ${TARGET_DIR}/debug)
