@@ -41,6 +41,7 @@ set_target_properties(dqcsim PROPERTIES IMPORTED_LOCATION ${BUILD_DIR}/${CMAKE_S
 # Install header files
 install(
 	FILES
+		${TARGET_DIR}/include/dqcsim
 		${TARGET_DIR}/include/cdqcsim
 		${TARGET_DIR}/include/dqcsim.h
 	DESTINATION include

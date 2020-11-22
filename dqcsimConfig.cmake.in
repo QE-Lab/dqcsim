@@ -6,7 +6,7 @@ find_library(DQCSIM_LIB
 )
 
 find_path(DQCSIM_INC
-	dqcsim.h
+	NAMES dqcsim dqcsim.h cdqcsim
 	HINT ENV DQCSIM_INC
 	HINT ENV DQCSIM_PREFIX
 	REQUIRED
