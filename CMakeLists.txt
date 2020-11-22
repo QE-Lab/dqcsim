@@ -39,6 +39,17 @@ target_include_directories(dqcsim INTERFACE
 )
 set_target_properties(dqcsim PROPERTIES IMPORTED_LOCATION ${BUILD_DIR}/${CMAKE_SHARED_MODULE_PREFIX}dqcsim${CMAKE_SHARED_LIBRARY_SUFFIX})
 
+include(FetchContent)
+  FetchContent_Declare(cmake-modules
+  GIT_REPOSITORY  https://github.com/abs-tudelft/cmake-modules.git
+  GIT_TAG         master
+  )
+FetchContent_MakeAvailable(cmake-modules)
+include(CompileUnits)
+
+add_subdirectory(cpp)
+compile_units()
+
 # Install header files
 install(
 	FILES
