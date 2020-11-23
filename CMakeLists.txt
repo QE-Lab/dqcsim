@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 project(dqcsim
-	VERSION 0.2.5
+	VERSION 0.3.0
 	DESCRIPTION "C++ bindings for the Delft Quantum & Classical Simulator"
 	LANGUAGES CXX
 )

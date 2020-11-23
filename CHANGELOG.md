@@ -1,3 +1,7 @@
+# [0.3.0] - 2020-11-23
+
+- [#665](https://github.com/QE-Lab/dqcsim/pull/665) Refactor CMake ([mofeing](https://github.com/mofeing))
+
 # [0.2.5] - 2020-11-10
 
 - Update dependencies
@@ -24,6 +28,7 @@
 
 - Initial release
 
+[0.3.0]: https://github.com/qe-lab/dqcsim/releases/tag/0.3.0
 [0.2.5]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.5
 [0.2.4]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.4
 [0.2.1]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.1
