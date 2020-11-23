@@ -90,7 +90,7 @@ jobs:
       run: |
         mkdir -p $HOME/cmake
         curl -L https://github.com/Kitware/CMake/releases/download/v3.15.5/cmake-3.15.5-Linux-x86_64.tar.gz | tar xz --strip-components=1 -C $HOME/cmake
-        echo "::add-path::${HOME}/cmake/bin"
+        echo "${HOME}/cmake/bin" >> $GITHUB_PATH
     - name: Build
       run: |
         cmake . -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fno-inline -fno-inline-small-functions -fno-default-inline"
