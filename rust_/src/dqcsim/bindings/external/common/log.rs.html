@@ -122,8 +122,8 @@
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">message</span> <span class="op">=</span> <span class="ident">receive_str</span>(<span class="ident">message</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">receive_optional_str</span>(<span class="ident">module</span>)<span class="question-mark">?</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;unknown&quot;</span>);
-        <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">receive_optional_str</span>(<span class="ident">file</span>)<span class="question-mark">?</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;unknown&quot;</span>);
+        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="ident">receive_optional_str</span>(<span class="ident">module</span>)<span class="question-mark">?</span>.<span class="ident">unwrap_or</span>(<span class="string">&quot;unknown&quot;</span>);
+        <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">receive_optional_str</span>(<span class="ident">file</span>)<span class="question-mark">?</span>.<span class="ident">unwrap_or</span>(<span class="string">&quot;unknown&quot;</span>);
         <span class="kw">let</span> <span class="ident">level</span> <span class="op">=</span> <span class="ident">level</span>.<span class="ident">into_loglevel</span>()<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="macro">log</span><span class="macro">!</span>(<span class="question-mark">?</span>
             <span class="ident">target</span>: <span class="ident">module</span>,
