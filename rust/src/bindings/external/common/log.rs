@@ -51,8 +51,8 @@ pub extern "C" fn dqcs_log_raw(
 ) -> dqcs_return_t {
     api_return_none(|| {
         let message = receive_str(message)?;
-        let module = receive_optional_str(module)?.unwrap_or_else(|| "unknown");
-        let file = receive_optional_str(file)?.unwrap_or_else(|| "unknown");
+        let module = receive_optional_str(module)?.unwrap_or("unknown");
+        let file = receive_optional_str(file)?.unwrap_or("unknown");
         let level = level.into_loglevel()?;
         if log!(?
             target: module,

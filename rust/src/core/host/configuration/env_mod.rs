@@ -33,9 +33,9 @@ impl ::std::str::FromStr for EnvMod {
     ///  - `<key>:<value>` - set environment variable `key` to `value`.
     ///  - `~<key>` - remove environment variable `key`.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.starts_with('~') {
+        if let Some(stripped) = s.strip_prefix('~') {
             Ok(EnvMod::Remove {
-                key: s[1..].to_string(),
+                key: stripped.to_string(),
             })
         } else {
             let mut splitter = s.splitn(2, '=');

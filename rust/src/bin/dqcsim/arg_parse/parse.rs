@@ -96,7 +96,7 @@ impl<'a, 'b> PluginConfigParser<'a, 'b> {
         }
 
         // Switch based on whether this is a definition or a modification.
-        if specification.starts_with('@') {
+        if let Some(specification) = specification.strip_prefix('@') {
             // Modifications do not allow renaming the plugin or changing
             // functional arguments. So, report an error if any of these
             // options are present.
@@ -112,7 +112,7 @@ impl<'a, 'b> PluginConfigParser<'a, 'b> {
             // Push the plugin modification.
             let opts = PluginNonfunctionalOpts::from(&opts);
             self.mods.push(PluginModification {
-                name: specification[1..].to_string(),
+                name: specification.to_string(),
                 verbosity: opts.verbosity,
                 tee_files: opts.tee_files,
                 stdout_mode: opts.stdout_mode,
