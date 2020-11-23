@@ -12,8 +12,8 @@ project(dqcsim-cmake-example
 # using the C interface, you'll need to set this.
 set(CMAKE_CXX_STANDARD 11)
 
-if (DEFINED ENV{GITHUB_SHA})
-  set(DQCSIM_TAG $ENV{GITHUB_SHA})
+if (DEFINED ENV{GITHUB_HEAD_REF})
+  set(DQCSIM_TAG $ENV{GITHUB_HEAD_REF})
 else()
   set(DQCSIM_TAG "master")
 endif()
