@@ -10,7 +10,7 @@ add_library(dqcsim SHARED IMPORTED GLOBAL)
 
 # Build rust project
 # NOTE: crate is built at build-time, not configure-time
-set(TARGET_DIR ${CMAKE_SOURCE_DIR}/target)
+set(TARGET_DIR ${CMAKE_CURRENT_SOURCE_DIR}/target)
 if(CMAKE_BUILD_TYPE STREQUAL Release)
 	set(BUILD_DIR ${TARGET_DIR}/release)
 	# NOTE: Using a gen expr in the call to cargo, makes cargo to crash
@@ -24,10 +24,10 @@ ExternalProject_Add(
 	crate
 	DOWNLOAD_COMMAND ""
 	CONFIGURE_COMMAND ""
-	SOURCE_DIR ${CMAKE_SOURCE_DIR}/rust
+	SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/rust
 	BINARY_DIR ${TARGET_DIR}/include
 	BUILD_ALWAYS ON
-	BUILD_COMMAND cargo build ${CARGO_BUILD_TYPE} --manifest-path=${CMAKE_SOURCE_DIR}/rust/Cargo.toml --features=bindings
+	BUILD_COMMAND cargo build ${CARGO_BUILD_TYPE} --manifest-path=${CMAKE_CURRENT_SOURCE_DIR}/rust/Cargo.toml --features=bindings
 	INSTALL_COMMAND ""
 )
 add_dependencies(dqcsim crate)
