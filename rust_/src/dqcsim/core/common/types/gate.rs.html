@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/core/common/types/gate.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gate.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/core/common/types/gate.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gate.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -827,7 +829,7 @@
         <span class="ident">targets</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">QubitRef</span><span class="op">&gt;</span>,
         <span class="ident">controls</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">QubitRef</span><span class="op">&gt;</span>,
         <span class="ident">matrix</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Complex64</span><span class="op">&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Gate</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Gate</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">targets</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">targets</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
         <span class="kw">let</span> <span class="ident">controls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">controls</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
         <span class="kw">let</span> <span class="ident">matrix</span> <span class="op">=</span> <span class="ident">Matrix</span>::<span class="ident">new</span>(<span class="ident">matrix</span>)<span class="question-mark">?</span>;
@@ -846,7 +848,7 @@
         }
 
         <span class="comment">// Check the size of the matrix.</span>
-        <span class="kw">if</span> <span class="ident">matrix</span>.<span class="ident">num_qubits</span>() <span class="op">!=</span> <span class="prelude-val">Some</span>(<span class="ident">targets</span>.<span class="ident">len</span>()) {
+        <span class="kw">if</span> <span class="ident">matrix</span>.<span class="ident">num_qubits</span>() <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">targets</span>.<span class="ident">len</span>()) {
             <span class="kw">return</span> <span class="ident">inv_arg</span>(<span class="macro">format</span><span class="macro">!</span>(
                 <span class="string">&quot;the matrix is expected to be sized for {} qubits but has dimension {}&quot;</span>,
                 <span class="ident">targets</span>.<span class="ident">len</span>(),
@@ -874,7 +876,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_measurement</span>(
         <span class="ident">qubits</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">QubitRef</span><span class="op">&gt;</span>,
         <span class="ident">basis</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Complex64</span><span class="op">&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Gate</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Gate</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">measures</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">qubits</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
         <span class="kw">let</span> <span class="ident">matrix</span> <span class="op">=</span> <span class="ident">Matrix</span>::<span class="ident">new</span>(<span class="ident">basis</span>)<span class="question-mark">?</span>;
 
@@ -887,7 +889,7 @@
         }
 
         <span class="comment">// Check the size of the matrix.</span>
-        <span class="kw">if</span> <span class="ident">matrix</span>.<span class="ident">dimension</span>() <span class="op">!=</span> <span class="number">2</span> {
+        <span class="kw">if</span> <span class="ident">matrix</span>.<span class="ident">dimension</span>() <span class="op">!</span><span class="op">=</span> <span class="number">2</span> {
             <span class="kw">return</span> <span class="ident">inv_arg</span>(<span class="macro">format</span><span class="macro">!</span>(
                 <span class="string">&quot;the matrix is expected to be 2x2 but has dimension {}&quot;</span>,
                 <span class="ident">matrix</span>.<span class="ident">dimension</span>(),
@@ -914,7 +916,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_prep</span>(
         <span class="ident">qubits</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">QubitRef</span><span class="op">&gt;</span>,
         <span class="ident">matrix</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Complex64</span><span class="op">&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Gate</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Gate</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">targets</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">qubits</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
         <span class="kw">let</span> <span class="ident">matrix</span> <span class="op">=</span> <span class="ident">Matrix</span>::<span class="ident">new</span>(<span class="ident">matrix</span>)<span class="question-mark">?</span>;
 
@@ -927,7 +929,7 @@
         }
 
         <span class="comment">// Check the size of the matrix.</span>
-        <span class="kw">if</span> <span class="ident">matrix</span>.<span class="ident">dimension</span>() <span class="op">!=</span> <span class="number">2</span> {
+        <span class="kw">if</span> <span class="ident">matrix</span>.<span class="ident">dimension</span>() <span class="op">!</span><span class="op">=</span> <span class="number">2</span> {
             <span class="kw">return</span> <span class="ident">inv_arg</span>(<span class="macro">format</span><span class="macro">!</span>(
                 <span class="string">&quot;the matrix is expected to be 2x2 but has dimension {}&quot;</span>,
                 <span class="ident">matrix</span>.<span class="ident">dimension</span>(),
@@ -956,9 +958,9 @@
         <span class="ident">targets</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">QubitRef</span><span class="op">&gt;</span>,
         <span class="ident">controls</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">QubitRef</span><span class="op">&gt;</span>,
         <span class="ident">measures</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">QubitRef</span><span class="op">&gt;</span>,
-        <span class="ident">matrix</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Complex64</span><span class="op">&gt;&gt;</span>,
+        <span class="ident">matrix</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Complex64</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="ident">data</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">ArbData</span><span class="op">&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Gate</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Gate</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">name</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">into</span>();
         <span class="kw">let</span> <span class="ident">targets</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">targets</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
         <span class="kw">let</span> <span class="ident">controls</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">QubitRef</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">controls</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
@@ -999,12 +1001,12 @@
     }
 
     <span class="doccomment">/// Returns the gate type.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">GateType</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">GateType</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">typ</span>
     }
 
     <span class="doccomment">/// Returns the name of the gate, if any.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">GateType</span>::<span class="ident">Custom</span>(<span class="ident">name</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">typ</span> {
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>[..])
         } <span class="kw">else</span> {
@@ -1013,29 +1015,29 @@
     }
 
     <span class="doccomment">/// Returns the list of target qubits.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_targets</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">QubitRef</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_targets</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">QubitRef</span>] {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">targets</span>
     }
 
     <span class="doccomment">/// Returns the list of control qubits.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_controls</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">QubitRef</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_controls</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">QubitRef</span>] {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">controls</span>
     }
 
     <span class="doccomment">/// Returns the list of measured qubits.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_measures</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">QubitRef</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_measures</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">QubitRef</span>] {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">measures</span>
     }
 
     <span class="doccomment">/// Returns the gate matrix.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_matrix</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Matrix</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_matrix</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Matrix</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">matrix</span>.<span class="ident">as_ref</span>()
     }
 
     <span class="doccomment">/// Returns a new Gate with its controls moved to the matrix.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_matrix_controls</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_matrix_controls</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">num_controls</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">controls</span>.<span class="ident">len</span>();
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">typ</span> <span class="op">==</span> <span class="ident">GateType</span>::<span class="ident">Unitary</span> <span class="op">&amp;&amp;</span> <span class="ident">num_controls</span> <span class="op">&gt;</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">typ</span> <span class="op">=</span><span class="op">=</span> <span class="ident">GateType</span>::<span class="ident">Unitary</span> <span class="op">&amp;&amp;</span> <span class="ident">num_controls</span> <span class="op">&gt;</span> <span class="number">0</span> {
             <span class="kw">let</span> <span class="ident">matrix</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">matrix</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<span class="ident">add_controls</span>(<span class="ident">num_controls</span>);
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">targets</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">controls</span>.<span class="ident">clone</span>();
             <span class="ident">targets</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">targets</span>.<span class="ident">clone</span>());
@@ -1055,8 +1057,8 @@
     <span class="doccomment">/// Returns a new Gate with controls encoded in the matrix moved to the</span>
     <span class="doccomment">/// Gate controls field. Forwards the epsilon and ignore_global_phase args</span>
     <span class="doccomment">/// to the Matrix::strip_control method.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_gate_controls</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">ignore_global_phase</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">typ</span> <span class="op">==</span> <span class="ident">GateType</span>::<span class="ident">Unitary</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_gate_controls</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">ignore_global_phase</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">typ</span> <span class="op">=</span><span class="op">=</span> <span class="ident">GateType</span>::<span class="ident">Unitary</span> {
             <span class="kw">let</span> <span class="ident">matrix</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">matrix</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>();
             <span class="kw">let</span> (<span class="ident">control_set</span>, <span class="ident">matrix</span>) <span class="op">=</span> <span class="ident">matrix</span>.<span class="ident">strip_control</span>(<span class="ident">epsilon</span>, <span class="ident">ignore_global_phase</span>);
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">targets</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_targets</span>().<span class="ident">to_vec</span>();
@@ -1081,7 +1083,7 @@
     <span class="doccomment">/// is used as a gate detector cache preprocessing step when the detector</span>
     <span class="doccomment">/// functions do not depend on which qubits are bound to the gate, only the</span>
     <span class="doccomment">/// amount of each kind,</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">without_qubit_refs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">without_qubit_refs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Gate</span> {
             <span class="ident">typ</span>: <span class="self">self</span>.<span class="ident">typ</span>.<span class="ident">clone</span>(),
             <span class="ident">targets</span>: <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">QubitRef</span>::<span class="ident">null</span>(); <span class="self">self</span>.<span class="ident">targets</span>.<span class="ident">len</span>()],
@@ -1097,7 +1099,7 @@
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">fn</span> <span class="ident">qref</span>(<span class="ident">q</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">QubitRef</span> {
+    <span class="kw">fn</span> <span class="ident">qref</span>(<span class="ident">q</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">QubitRef</span> {
         <span class="ident">QubitRef</span>::<span class="ident">from_foreign</span>(<span class="ident">q</span>).<span class="ident">unwrap</span>()
     }
 
@@ -1304,7 +1306,7 @@
         <span class="kw">let</span> <span class="ident">targets</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
         <span class="kw">let</span> <span class="ident">controls</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
         <span class="kw">let</span> <span class="ident">measures</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">qref</span>(<span class="number">1</span>), <span class="ident">qref</span>(<span class="number">1</span>)];
-        <span class="kw">let</span> <span class="ident">matrix</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Complex64</span><span class="op">&gt;&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+        <span class="kw">let</span> <span class="ident">matrix</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Complex64</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
         <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">ArbData</span>::<span class="ident">default</span>();
         <span class="kw">let</span> <span class="ident">g</span> <span class="op">=</span> <span class="ident">Gate</span>::<span class="ident">new_custom</span>(<span class="ident">name</span>, <span class="ident">targets</span>, <span class="ident">controls</span>, <span class="ident">measures</span>, <span class="ident">matrix</span>, <span class="ident">data</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">g</span>.<span class="ident">is_err</span>());

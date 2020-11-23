@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/bindings/external/host/scfg.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>scfg.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/bindings/external/host/scfg.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>scfg.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -316,7 +318,7 @@
 <span class="doccomment">/// The default settings correspond to the defaults of the `dqcsim` command</span>
 <span class="doccomment">/// line interface. Refer to its help for more information.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_new</span>() <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
     <span class="ident">insert</span>(<span class="ident">SimulatorConfiguration</span>::<span class="ident">default</span>())
 }
 
@@ -337,8 +339,8 @@
 <span class="doccomment">/// do this for some reason, you should maintain your own data structures, and</span>
 <span class="doccomment">/// only build the DQCsim structures from them when you&#39;re done.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_push_plugin</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">xcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_push_plugin</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">xcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulatorConfiguration</span>);
         <span class="macro">take</span><span class="macro">!</span>(<span class="ident">xcfg</span> <span class="kw">as</span> <span class="ident">BoxedPluginConfiguration</span>);
         <span class="ident">scfg</span>.<span class="ident">plugins</span>.<span class="ident">push</span>(<span class="ident">xcfg</span>);
@@ -350,8 +352,8 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Note that the seed is randomized by default.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_seed_set</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">seed</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_seed_set</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">seed</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulatorConfiguration</span>);
         <span class="ident">scfg</span>.<span class="ident">seed</span>.<span class="ident">value</span> <span class="op">=</span> <span class="ident">seed</span>;
         <span class="prelude-val">Ok</span>(())
@@ -363,8 +365,8 @@
 <span class="doccomment">/// This function will return 0 when it fails, but this can unfortunately not</span>
 <span class="doccomment">/// be reliably distinguished from a seed that was set to 0.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_seed_get</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_seed_get</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">SimulatorConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">scfg</span>.<span class="ident">seed</span>.<span class="ident">value</span>)
     })
@@ -378,8 +380,8 @@
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_stderr_verbosity_set</span>(
     <span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">level</span>: <span class="ident">dqcs_loglevel_t</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulatorConfiguration</span>);
         <span class="ident">scfg</span>.<span class="ident">stderr_level</span> <span class="op">=</span> <span class="ident">level</span>.<span class="ident">into_loglevel_filter</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
@@ -391,8 +393,8 @@
 <span class="doccomment">/// That is, the minimum loglevel that a messages needs to have for it to be</span>
 <span class="doccomment">/// printed to stderr.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_stderr_verbosity_get</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_loglevel_t</span> {
-    <span class="ident">api_return</span>(<span class="ident">dqcs_loglevel_t</span>::<span class="ident">DQCS_LOG_INVALID</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_stderr_verbosity_get</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_loglevel_t</span> {
+    <span class="ident">api_return</span>(<span class="ident">dqcs_loglevel_t</span>::<span class="ident">DQCS_LOG_INVALID</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">SimulatorConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">scfg</span>.<span class="ident">stderr_level</span>.<span class="ident">into</span>())
     })
@@ -406,8 +408,8 @@
     <span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">verbosity</span>: <span class="ident">dqcs_loglevel_t</span>,
     <span class="ident">filename</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulatorConfiguration</span>);
         <span class="ident">scfg</span>.<span class="ident">tee_files</span>.<span class="ident">push</span>(<span class="ident">TeeFileConfiguration</span>::<span class="ident">new</span>(
             <span class="ident">verbosity</span>.<span class="ident">into_loglevel_filter</span>()<span class="question-mark">?</span>,
@@ -482,15 +484,15 @@
     <span class="op">&gt;</span>,
     <span class="ident">user_free</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span>(<span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>)<span class="op">&gt;</span>,
     <span class="ident">user_data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">UserData</span>::<span class="ident">new</span>(<span class="ident">user_free</span>, <span class="ident">user_data</span>);
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulatorConfiguration</span>);
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">callback</span>) <span class="op">=</span> <span class="ident">callback</span> {
             <span class="ident">scfg</span>.<span class="ident">log_callback</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">LogCallback</span> {
                 <span class="ident">callback</span>: <span class="ident">Box</span>::<span class="ident">new</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">record</span>: <span class="kw-2">&amp;</span><span class="ident">log</span>::<span class="ident">LogRecord</span><span class="op">|</span> {
-                    <span class="op">||</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+                    <span class="op">|</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
                         <span class="kw">let</span> <span class="ident">ts_sec</span>;
                         <span class="kw">let</span> <span class="ident">ts_nano</span>;
                         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">ts</span>) <span class="op">=</span> <span class="ident">record</span>.<span class="ident">timestamp</span>().<span class="ident">duration_since</span>(<span class="ident">SystemTime</span>::<span class="ident">UNIX_EPOCH</span>) {
@@ -540,8 +542,8 @@
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_dqcsim_verbosity_set</span>(
     <span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">level</span>: <span class="ident">dqcs_loglevel_t</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulatorConfiguration</span>);
         <span class="ident">scfg</span>.<span class="ident">dqcsim_level</span> <span class="op">=</span> <span class="ident">level</span>.<span class="ident">into_loglevel_filter</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
@@ -550,8 +552,8 @@
 
 <span class="doccomment">/// Returns the configured verbosity for DQCsim&#39;s own messages.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_dqcsim_verbosity_get</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_loglevel_t</span> {
-    <span class="ident">api_return</span>(<span class="ident">dqcs_loglevel_t</span>::<span class="ident">DQCS_LOG_INVALID</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_dqcsim_verbosity_get</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_loglevel_t</span> {
+    <span class="ident">api_return</span>(<span class="ident">dqcs_loglevel_t</span>::<span class="ident">DQCS_LOG_INVALID</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">SimulatorConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">scfg</span>.<span class="ident">dqcsim_level</span>.<span class="ident">into</span>())
     })
@@ -562,8 +564,8 @@
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_repro_path_style_set</span>(
     <span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">path_style</span>: <span class="ident">dqcs_path_style_t</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulatorConfiguration</span>);
         <span class="kw">let</span> <span class="ident">path_style</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ReproductionPathStyle</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">path_style</span>.<span class="ident">into</span>();
         <span class="ident">scfg</span>.<span class="ident">reproduction_path_style</span> <span class="op">=</span>
@@ -574,8 +576,8 @@
 
 <span class="doccomment">/// Returns the path style used when writing reproduction files.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_repro_path_style_get</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_path_style_t</span> {
-    <span class="ident">api_return</span>(<span class="ident">dqcs_path_style_t</span>::<span class="ident">DQCS_PATH_STYLE_INVALID</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_repro_path_style_get</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_path_style_t</span> {
+    <span class="ident">api_return</span>(<span class="ident">dqcs_path_style_t</span>::<span class="ident">DQCS_PATH_STYLE_INVALID</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">SimulatorConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">scfg</span>
             .<span class="ident">reproduction_path_style</span>
@@ -591,8 +593,8 @@
 <span class="doccomment">/// Calling this will disable the warnings printed when a simulation that</span>
 <span class="doccomment">/// cannot be reproduced is constructed.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_repro_disable</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_scfg_repro_disable</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">SimulatorConfiguration</span>);
         <span class="ident">scfg</span>.<span class="ident">reproduction_path_style</span> <span class="op">=</span> <span class="prelude-val">None</span>;
         <span class="prelude-val">Ok</span>(())

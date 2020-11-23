@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/bindings/external/host/pcfg.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>pcfg.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/bindings/external/host/pcfg.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>pcfg.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -362,8 +364,8 @@
     <span class="ident">typ</span>: <span class="ident">dqcs_plugin_type_t</span>,
     <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
     <span class="ident">spec</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">typ</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PluginType</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">typ</span>.<span class="ident">into</span>();
         <span class="kw">let</span> <span class="ident">spec</span> <span class="op">=</span> <span class="ident">receive_optional_str</span>(<span class="ident">spec</span>)<span class="question-mark">?</span>.<span class="ident">filter</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="op">!</span><span class="ident">x</span>.<span class="ident">is_empty</span>());
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">spec</span>) <span class="op">=</span> <span class="ident">spec</span> {
@@ -393,8 +395,8 @@
     <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
     <span class="ident">executable</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
     <span class="ident">script</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">typ</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PluginType</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">typ</span>.<span class="ident">into</span>();
         <span class="kw">let</span> <span class="ident">executable</span> <span class="op">=</span> <span class="ident">receive_optional_str</span>(<span class="ident">executable</span>)<span class="question-mark">?</span>.<span class="ident">filter</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="op">!</span><span class="ident">x</span>.<span class="ident">is_empty</span>());
         <span class="kw">let</span> <span class="ident">script</span> <span class="op">=</span> <span class="ident">receive_optional_str</span>(<span class="ident">script</span>)<span class="question-mark">?</span>.<span class="ident">filter</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="op">!</span><span class="ident">x</span>.<span class="ident">is_empty</span>());
@@ -411,8 +413,8 @@
 
 <span class="doccomment">/// Returns the type of the given plugin process configuration.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_type</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_plugin_type_t</span> {
-    <span class="ident">api_return</span>(<span class="ident">dqcs_plugin_type_t</span>::<span class="ident">DQCS_PTYPE_INVALID</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_type</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_plugin_type_t</span> {
+    <span class="ident">api_return</span>(<span class="ident">dqcs_plugin_type_t</span>::<span class="ident">DQCS_PTYPE_INVALID</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">PluginProcessConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">pcfg</span>.<span class="ident">specification</span>.<span class="ident">typ</span>.<span class="ident">into</span>())
     })
@@ -424,8 +426,8 @@
 <span class="doccomment">/// name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
 <span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_name</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
-    <span class="ident">api_return_string</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_name</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
+    <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">PluginProcessConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">pcfg</span>.<span class="ident">name</span>.<span class="ident">to_string</span>())
     })
@@ -438,8 +440,8 @@
 <span class="doccomment">/// memory leaks.** On failure (i.e., the handle is invalid) this returns</span>
 <span class="doccomment">/// `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_executable</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
-    <span class="ident">api_return_string</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_executable</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
+    <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">PluginProcessConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">pcfg</span>.<span class="ident">specification</span>.<span class="ident">executable</span>.<span class="ident">to_string_lossy</span>().<span class="ident">to_string</span>())
     })
@@ -453,8 +455,8 @@
 <span class="doccomment">/// empty string will be returned if no script is configured to distinguish it</span>
 <span class="doccomment">/// from failure.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_script</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
-    <span class="ident">api_return_string</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_script</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
+    <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">PluginProcessConfiguration</span>);
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">script</span>) <span class="op">=</span> <span class="ident">pcfg</span>.<span class="ident">specification</span>.<span class="ident">script</span>.<span class="ident">as_ref</span>() {
             <span class="prelude-val">Ok</span>(<span class="ident">script</span>.<span class="ident">to_string_lossy</span>().<span class="ident">to_string</span>())
@@ -470,8 +472,8 @@
 <span class="doccomment">/// The `ArbCmd` handle is consumed by this function, and is thus invalidated,</span>
 <span class="doccomment">/// if and only if it is successful.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_init_cmd</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">cmd</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_init_cmd</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">cmd</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginProcessConfiguration</span>);
         <span class="macro">take</span><span class="macro">!</span>(<span class="ident">cmd</span> <span class="kw">as</span> <span class="ident">ArbCmd</span>);
         <span class="ident">pcfg</span>.<span class="ident">functional</span>.<span class="ident">init</span>.<span class="ident">push</span>(<span class="ident">cmd</span>);
@@ -490,8 +492,8 @@
     <span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">key</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
     <span class="ident">value</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginProcessConfiguration</span>);
         <span class="kw">if</span> <span class="ident">value</span>.<span class="ident">is_null</span>() {
             <span class="ident">pcfg</span>.<span class="ident">functional</span>.<span class="ident">env</span>.<span class="ident">push</span>(<span class="ident">EnvMod</span>::<span class="ident">remove</span>(<span class="ident">receive_str</span>(<span class="ident">key</span>)<span class="question-mark">?</span>));
@@ -509,14 +511,14 @@
 <span class="doccomment">/// The environment variable `key` is unset regardless of whether it exists in</span>
 <span class="doccomment">/// the parent environment variable scope.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_env_unset</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">key</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_env_unset</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">key</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
     <span class="ident">dqcs_pcfg_env_set</span>(<span class="ident">pcfg</span>, <span class="ident">key</span>, <span class="ident">null</span>())
 }
 
 <span class="doccomment">/// Overrides the working directory for the plugin process.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_work_set</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">work</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_work_set</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">work</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginProcessConfiguration</span>);
         <span class="kw">let</span> <span class="ident">work</span>: <span class="ident">std</span>::<span class="ident">path</span>::<span class="ident">PathBuf</span> <span class="op">=</span> <span class="ident">receive_str</span>(<span class="ident">work</span>)<span class="question-mark">?</span>.<span class="ident">into</span>();
         <span class="kw">if</span> <span class="op">!</span><span class="ident">work</span>.<span class="ident">is_dir</span>() {
@@ -535,8 +537,8 @@
 <span class="doccomment">/// memory leaks.** On failure (i.e., the handle is invalid) this returns</span>
 <span class="doccomment">/// `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_work_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
-    <span class="ident">api_return_string</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_work_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
+    <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">PluginProcessConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">pcfg</span>.<span class="ident">functional</span>.<span class="ident">work</span>.<span class="ident">to_string_lossy</span>().<span class="ident">to_string</span>())
     })
@@ -547,8 +549,8 @@
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_verbosity_set</span>(
     <span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">level</span>: <span class="ident">dqcs_loglevel_t</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginProcessConfiguration</span>);
         <span class="ident">pcfg</span>.<span class="ident">nonfunctional</span>.<span class="ident">verbosity</span> <span class="op">=</span> <span class="ident">level</span>.<span class="ident">into_loglevel_filter</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
@@ -557,8 +559,8 @@
 
 <span class="doccomment">/// Returns the configured verbosity for the given plugin process.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_verbosity_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_loglevel_t</span> {
-    <span class="ident">api_return</span>(<span class="ident">dqcs_loglevel_t</span>::<span class="ident">DQCS_LOG_INVALID</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_verbosity_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_loglevel_t</span> {
+    <span class="ident">api_return</span>(<span class="ident">dqcs_loglevel_t</span>::<span class="ident">DQCS_LOG_INVALID</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">PluginProcessConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">pcfg</span>.<span class="ident">nonfunctional</span>.<span class="ident">verbosity</span>.<span class="ident">into</span>())
     })
@@ -572,8 +574,8 @@
     <span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">verbosity</span>: <span class="ident">dqcs_loglevel_t</span>,
     <span class="ident">filename</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginProcessConfiguration</span>);
         <span class="ident">pcfg</span>.<span class="ident">nonfunctional</span>.<span class="ident">tee_files</span>.<span class="ident">push</span>(<span class="ident">TeeFileConfiguration</span>::<span class="ident">new</span>(
             <span class="ident">verbosity</span>.<span class="ident">into_loglevel_filter</span>()<span class="question-mark">?</span>,
@@ -589,8 +591,8 @@
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_stdout_mode_set</span>(
     <span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">level</span>: <span class="ident">dqcs_loglevel_t</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginProcessConfiguration</span>);
         <span class="ident">pcfg</span>.<span class="ident">nonfunctional</span>.<span class="ident">stdout_mode</span> <span class="op">=</span> <span class="ident">level</span>.<span class="ident">into_capture_mode</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
@@ -600,8 +602,8 @@
 <span class="doccomment">/// Returns the configured stdout capture mode for the specified plugin</span>
 <span class="doccomment">/// process.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_stdout_mode_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_loglevel_t</span> {
-    <span class="ident">api_return</span>(<span class="ident">dqcs_loglevel_t</span>::<span class="ident">DQCS_LOG_INVALID</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_stdout_mode_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_loglevel_t</span> {
+    <span class="ident">api_return</span>(<span class="ident">dqcs_loglevel_t</span>::<span class="ident">DQCS_LOG_INVALID</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">PluginProcessConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">pcfg</span>.<span class="ident">nonfunctional</span>.<span class="ident">stdout_mode</span>.<span class="ident">clone</span>().<span class="ident">into</span>())
     })
@@ -613,8 +615,8 @@
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_stderr_mode_set</span>(
     <span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">level</span>: <span class="ident">dqcs_loglevel_t</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginProcessConfiguration</span>);
         <span class="ident">pcfg</span>.<span class="ident">nonfunctional</span>.<span class="ident">stderr_mode</span> <span class="op">=</span> <span class="ident">level</span>.<span class="ident">into_capture_mode</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
@@ -624,8 +626,8 @@
 <span class="doccomment">/// Returns the configured stderr capture mode for the specified plugin</span>
 <span class="doccomment">/// process.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_stderr_mode_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_loglevel_t</span> {
-    <span class="ident">api_return</span>(<span class="ident">dqcs_loglevel_t</span>::<span class="ident">DQCS_LOG_INVALID</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_stderr_mode_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_loglevel_t</span> {
+    <span class="ident">api_return</span>(<span class="ident">dqcs_loglevel_t</span>::<span class="ident">DQCS_LOG_INVALID</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">PluginProcessConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">pcfg</span>.<span class="ident">nonfunctional</span>.<span class="ident">stderr_mode</span>.<span class="ident">clone</span>().<span class="ident">into</span>())
     })
@@ -639,8 +641,8 @@
 <span class="doccomment">/// The time unit is seconds. Use IEEE positive infinity to specify an infinite</span>
 <span class="doccomment">/// timeout.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_accept_timeout_set</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">timeout</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_accept_timeout_set</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">timeout</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginProcessConfiguration</span>);
         <span class="ident">pcfg</span>.<span class="ident">nonfunctional</span>.<span class="ident">accept_timeout</span> <span class="op">=</span> <span class="ident">Timeout</span>::<span class="ident">try_from_double</span>(<span class="ident">timeout</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
@@ -652,8 +654,8 @@
 <span class="doccomment">/// The time unit is in seconds. Returns positive inifinity for an infinite</span>
 <span class="doccomment">/// timeout. Returns -1 when the function fails.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_accept_timeout_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
-    <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1.0</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_accept_timeout_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1.0</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">PluginProcessConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">pcfg</span>.<span class="ident">nonfunctional</span>.<span class="ident">accept_timeout</span>.<span class="ident">to_double</span>())
     })
@@ -670,8 +672,8 @@
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_shutdown_timeout_set</span>(
     <span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">timeout</span>: <span class="ident">f64</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">PluginProcessConfiguration</span>);
         <span class="ident">pcfg</span>.<span class="ident">nonfunctional</span>.<span class="ident">shutdown_timeout</span> <span class="op">=</span> <span class="ident">Timeout</span>::<span class="ident">try_from_double</span>(<span class="ident">timeout</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
@@ -684,8 +686,8 @@
 <span class="doccomment">/// The time unit is in seconds. Returns positive inifinity for an infinite</span>
 <span class="doccomment">/// timeout. Returns -1 when the function fails.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_shutdown_timeout_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
-    <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1.0</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_pcfg_shutdown_timeout_get</span>(<span class="ident">pcfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="ident">api_return</span>(<span class="op">-</span><span class="number">1.0</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">pcfg</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">PluginProcessConfiguration</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">pcfg</span>.<span class="ident">nonfunctional</span>.<span class="ident">shutdown_timeout</span>.<span class="ident">to_double</span>())
     })

@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/bindings/external/host/sim.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>sim.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `rust/src/bindings/external/host/sim.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>sim.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled ><script src="../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../dqcsim/index.html'><div class='logo-container rust-logo'><img src='../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../../../settings.html"><img src="../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -298,8 +300,8 @@
 <span class="doccomment">/// The provided handle is consumed if it is a simulation configuration,</span>
 <span class="doccomment">/// regardless of whether simulation construction succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_new</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_new</span>(<span class="ident">scfg</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">take</span><span class="macro">!</span>(<span class="ident">scfg</span> <span class="kw">as</span> <span class="ident">SimulatorConfiguration</span>);
         <span class="ident">API_STATE</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">state</span><span class="op">|</span> <span class="ident">state</span>.<span class="ident">borrow</span>().<span class="ident">thread_locals_assert_free</span>())<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">sim</span> <span class="op">=</span> <span class="ident">Simulator</span>::<span class="ident">new</span>(<span class="ident">scfg</span>)<span class="question-mark">?</span>;
@@ -318,10 +320,10 @@
 <span class="doccomment">/// used. If a handle is passed, it is consumed if and only if the API call</span>
 <span class="doccomment">/// succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_start</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">data</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_start</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">data</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Simulator</span>);
-        <span class="kw">if</span> <span class="ident">data</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="ident">data</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="ident">sim</span>.<span class="ident">simulation</span>.<span class="ident">start</span>(<span class="ident">ArbData</span>::<span class="ident">default</span>())<span class="question-mark">?</span>;
         } <span class="kw">else</span> {
             <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">data</span> <span class="kw">as</span> <span class="ident">pending</span> <span class="ident">ArbData</span>);
@@ -344,8 +346,8 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Deadlocks are detected and prevented by returning an error.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_wait</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_wait</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Simulator</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">insert</span>(<span class="ident">sim</span>.<span class="ident">simulation</span>.<span class="ident">wait</span>()<span class="question-mark">?</span>))
     })
@@ -360,8 +362,8 @@
 <span class="doccomment">/// used. If a handle is passed, it is consumed if and only if the API call</span>
 <span class="doccomment">/// succeeds.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_send</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">data</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_send</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">data</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Simulator</span>);
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">data</span> <span class="kw">as</span> <span class="ident">pending</span> <span class="ident">ArbData</span>);
         <span class="kw">let</span> <span class="ident">data_ob</span> <span class="op">=</span> {
@@ -381,8 +383,8 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Deadlocks are detected and prevented by returning an error.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_recv</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_recv</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Simulator</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">insert</span>(<span class="ident">sim</span>.<span class="ident">simulation</span>.<span class="ident">recv</span>()<span class="question-mark">?</span>))
     })
@@ -398,8 +400,8 @@
 <span class="doccomment">/// pending or if the simulator is waiting for something that has not been</span>
 <span class="doccomment">/// sent yet.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_yield</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_yield</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Simulator</span>);
         <span class="ident">sim</span>.<span class="ident">simulation</span>.<span class="ident">yield_to_accelerator</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
@@ -421,8 +423,8 @@
     <span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
     <span class="ident">cmd</span>: <span class="ident">dqcs_handle_t</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Simulator</span>);
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">cmd</span> <span class="kw">as</span> <span class="ident">pending</span> <span class="ident">ArbCmd</span>);
         <span class="macro">clone</span><span class="macro">!</span>(<span class="ident">cmd_ob</span>: <span class="ident">ArbCmd</span> <span class="op">=</span> <span class="ident">resolved</span> <span class="ident">cmd</span>);
@@ -454,8 +456,8 @@
     <span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">index</span>: <span class="ident">ssize_t</span>,
     <span class="ident">cmd</span>: <span class="ident">dqcs_handle_t</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_handle_t</span> {
-    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_handle_t</span> {
+    <span class="ident">api_return</span>(<span class="number">0</span>, <span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Simulator</span>);
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">cmd</span> <span class="kw">as</span> <span class="ident">pending</span> <span class="ident">ArbCmd</span>);
         <span class="macro">clone</span><span class="macro">!</span>(<span class="ident">cmd_ob</span>: <span class="ident">ArbCmd</span> <span class="op">=</span> <span class="ident">resolved</span> <span class="ident">cmd</span>);
@@ -472,8 +474,8 @@
 <span class="doccomment">/// name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
 <span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_name</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
-    <span class="ident">api_return_string</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_name</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
+    <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Simulator</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">sim</span>
             .<span class="ident">simulation</span>
@@ -489,8 +491,8 @@
 <span class="doccomment">/// name. Free it with `free()` when you&#39;re done with it to avoid memory</span>
 <span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_name_idx</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">index</span>: <span class="ident">ssize_t</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
-    <span class="ident">api_return_string</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_name_idx</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">index</span>: <span class="ident">ssize_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
+    <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Simulator</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">sim</span>
             .<span class="ident">simulation</span>
@@ -506,8 +508,8 @@
 <span class="doccomment">/// author. Free it with `free()` when you&#39;re done with it to avoid memory</span>
 <span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_author</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
-    <span class="ident">api_return_string</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_author</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
+    <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Simulator</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">sim</span>
             .<span class="ident">simulation</span>
@@ -523,8 +525,8 @@
 <span class="doccomment">/// author. Free it with `free()` when you&#39;re done with it to avoid memory</span>
 <span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_author_idx</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">index</span>: <span class="ident">ssize_t</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
-    <span class="ident">api_return_string</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_author_idx</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">index</span>: <span class="ident">ssize_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
+    <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Simulator</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">sim</span>
             .<span class="ident">simulation</span>
@@ -540,8 +542,8 @@
 <span class="doccomment">/// version. Free it with `free()` when you&#39;re done with it to avoid memory</span>
 <span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_version</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
-    <span class="ident">api_return_string</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_version</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">name</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
+    <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Simulator</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">sim</span>
             .<span class="ident">simulation</span>
@@ -557,8 +559,8 @@
 <span class="doccomment">/// version. Free it with `free()` when you&#39;re done with it to avoid memory</span>
 <span class="doccomment">/// leaks.** On failure (i.e., the handle is invalid) this returns `NULL`.</span>
 <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
-<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_version_idx</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">index</span>: <span class="ident">ssize_t</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
-    <span class="ident">api_return_string</span>(<span class="op">||</span> {
+<span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_get_version_idx</span>(<span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>, <span class="ident">index</span>: <span class="ident">ssize_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span> {
+    <span class="ident">api_return_string</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Simulator</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">sim</span>
             .<span class="ident">simulation</span>
@@ -573,8 +575,8 @@
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">dqcs_sim_write_reproduction_file</span>(
     <span class="ident">sim</span>: <span class="ident">dqcs_handle_t</span>,
     <span class="ident">filename</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_char</span>,
-) <span class="op">-&gt;</span> <span class="ident">dqcs_return_t</span> {
-    <span class="ident">api_return_none</span>(<span class="op">||</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dqcs_return_t</span> {
+    <span class="ident">api_return_none</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="macro">resolve</span><span class="macro">!</span>(<span class="ident">sim</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="ident">Simulator</span>);
         <span class="ident">sim</span>.<span class="ident">simulation</span>
             .<span class="ident">write_reproduction_file</span>(<span class="ident">receive_str</span>(<span class="ident">filename</span>)<span class="question-mark">?</span>)
