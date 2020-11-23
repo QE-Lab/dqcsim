@@ -19,3 +19,6 @@ cover/
 
 # Tools
 release.sh
+
+# CMake
+build/
