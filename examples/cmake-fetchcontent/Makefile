@@ -6,7 +6,7 @@ all: run clean
 
 .PHONY: run
 run: build/main
-	build/main
+	cd build && ./main
 
 build/main:
 	mkdir -p build
