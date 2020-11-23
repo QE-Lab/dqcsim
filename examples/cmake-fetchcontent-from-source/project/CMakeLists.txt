@@ -12,12 +12,18 @@ project(dqcsim-cmake-example
 # using the C interface, you'll need to set this.
 set(CMAKE_CXX_STANDARD 11)
 
+if (DEFINED ENV{GITHUB_SHA})
+  set(DQCSIM_TAG $ENV{GITHUB_SHA})
+else()
+  set(DQCSIM_TAG "master")
+endif()
+
 # You can use the FetchContent module (added in CMake 3.14!) with DQCsim like
 # this:
 include(FetchContent)
 FetchContent_Declare(dqcsim
   GIT_REPOSITORY  https://github.com/qe-lab/dqcsim.git
-  GIT_TAG         master
+  GIT_TAG         ${DQCSIM_TAG}
 )
 set(DQCSIM_FROM_SOURCE "yes")
 FetchContent_MakeAvailable(dqcsim)
