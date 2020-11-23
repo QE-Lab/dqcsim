@@ -1,6 +1,6 @@
 [package]
 name = "dqcsim"
-version = "0.2.5"
+version = "0.3.0"
 authors = ["Quantum Computer Architectures, Quantum & Computer Engineering, QuTech, Delft University of Technology"]
 edition = '2018'
 build = "tools/build.rs"
@@ -13,7 +13,7 @@ keywords = ["quantum", "simulation", "framework"]
 categories = ["simulation", "science"]
 license = "Apache-2.0"
 default-run = "dqcsim"
-include = ["**/*.rs"]
+include = ["**/*.rs", "**/*.txt"]
 
 [badges]
 codecov = { repository = "qe-lab/dqcsim" }
