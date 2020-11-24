@@ -66,6 +66,7 @@ and refer to the API documentation:
 | [quantumsim](https://github.com/QE-LAB/dqcsim-quantumsim) | Quantumsim backend | [![PyPi](https://badgen.net/pypi/v/dqcsim-quantumsim)](https://pypi.org/project/dqcsim-quantumsim/) | GPL-3.0 | Linux, macOS | Python |
 | [qx](https://github.com/QE-LAB/dqcsim-qx) | QX backend | [![PyPi](https://badgen.net/pypi/v/dqcsim-qx)](https://pypi.org/project/dqcsim-qx/) | Apache-2.0 | Linux, macOS | C++ |
 | [null](rust/src/bin/null/) | No-op backend | [![PyPi](https://badgen.net/pypi/v/dqcsim)](https://pypi.org/project/dqcsim/) | Apache-2.0 | Linux, macOS | Rust |
+| [iqs](https://github.com/UB-Quantic/dqcsim-iqs) | Intel QS backend | [![GitHub](https://badgen.net/github/release/UB-Quantic/dqcsim-iqs)](https://github.com/UB-Quantic/dqcsim-iqs/releases/latest) | Apache-2.0 | Linux, macOS | C++ |
 
 Please open a PR to have your plugin added to this list.
 
