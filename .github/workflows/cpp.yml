@@ -11,6 +11,7 @@ on:
     - 'Cargo.lock'
     - 'cpp/**'
     - '**/CMakeLists.txt'
+    - '**/dqcsimConfig.cmake.in'
 
 jobs:
   test:
