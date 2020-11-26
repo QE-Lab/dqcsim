@@ -13,7 +13,8 @@ RUN curl -sSf https://sh.rustup.rs | sh -s -- -y && \
 	./configure --without-pcre && \
 	make && \
 	make install && \
-	${PYBIN}/pip3 install --force-reinstall auditwheel==${AUDITWHEEL_VERSION}
+	${PYBIN}/pip3 install --force-reinstall auditwheel==${AUDITWHEEL_VERSION} && \
+	yum install -y cmake3 && ln -s /usr/bin/cmake3 /usr/bin/cmake
 
 ENV PATH=$PATH:/root/.cargo/bin
 
