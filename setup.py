@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
-import os, platform, shutil, sys, subprocess
+import os
+import platform
+import shutil
+import sys
+import subprocess
 from distutils.command.bdist import bdist as _bdist
 from distutils.command.sdist import sdist as _sdist
 from distutils.command.build import build as _build
@@ -12,13 +16,15 @@ from setuptools import setup, Extension, find_packages
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 
 with open('rust/Cargo.toml', 'r') as f:
-    version = next(filter(lambda x: x.startswith('version = '), f.readlines()), 'version = "?.?.?"').split('"')[1]
+    version = next(filter(lambda x: x.startswith('version = '),
+                          f.readlines()), 'version = "?.?.?"').split('"')[1]
 
 debug = 'DQCSIM_DEBUG' in os.environ
 
 target_dir = os.getcwd() + "/target"
 py_bin_dir = os.getcwd() + "/python/bin"
 py_target_dir = target_dir + "/python"
+cmake_target_dir = target_dir + "/cmake"
 include_dir = target_dir + "/include"
 output_dir = target_dir + ("/debug" if debug else "/release")
 build_dir = py_target_dir + "/build"
@@ -28,14 +34,17 @@ dist_dir = py_target_dir + "/dist"
 if py_bin_dir not in os.environ['PATH']:
     os.environ['PATH'] = os.environ['PATH'] + ':' + py_bin_dir
 
+
 def read(fname):
     with open(os.path.join(os.path.dirname(__file__), fname)) as f:
         return f.read()
+
 
 class clean(_clean):
     def run(self):
         _clean.run(self)
         shutil.rmtree(py_target_dir)
+
 
 class build(_build):
     def initialize_options(self):
@@ -56,7 +65,8 @@ class build(_build):
                     (rustup | sh) & FG
                 else:
                     (rustup | sh['-s']['--']['-y'])()
-                cargo = local.get('cargo', os.environ.get('HOME', 'root') + '/.cargo/bin/cargo')
+                cargo = local.get('cargo', os.environ.get(
+                    'HOME', 'root') + '/.cargo/bin/cargo')
             finally:
                 if debug:
                     cargo["build"]["--features"]["bindings cli null-plugins"] & FG
@@ -66,16 +76,22 @@ class build(_build):
         local['mkdir']("-p", py_target_dir)
         sys.path.append("python/tools")
         import add_swig_directives
-        add_swig_directives.run(include_dir + "/dqcsim-py.h", py_target_dir + "/dqcsim.i")
+        add_swig_directives.run(
+            include_dir + "/dqcsim-py.h", py_target_dir + "/dqcsim.i")
 
-        local["swig"]["-v"]["-python"]["-py3"]["-outdir"][py_target_dir]["-o"][py_target_dir + "/dqcsim.c"][py_target_dir + "/dqcsim.i"] & FG
+        local["swig"]["-v"]["-python"]["-py3"]["-outdir"][py_target_dir]["-o"][py_target_dir +
+                                                                               "/dqcsim.c"][py_target_dir + "/dqcsim.i"] & FG
+
+        local["cmake"]["-B"][cmake_target_dir]["."] & FG
 
         _build.run(self)
+
 
 class bdist(_bdist):
     def finalize_options(self):
         _bdist.finalize_options(self)
         self.dist_dir = dist_dir
+
 
 class bdist_wheel(_bdist_wheel):
     def run(self):
@@ -83,7 +99,8 @@ class bdist_wheel(_bdist_wheel):
             os.environ['MACOSX_DEPLOYMENT_TARGET'] = '10.15'
         _bdist_wheel.run(self)
         impl_tag, abi_tag, plat_tag = self.get_tag()
-        archive_basename = "{}-{}-{}-{}".format(self.wheel_dist_name, impl_tag, abi_tag, plat_tag)
+        archive_basename = "{}-{}-{}-{}".format(
+            self.wheel_dist_name, impl_tag, abi_tag, plat_tag)
         wheel_path = os.path.join(self.dist_dir, archive_basename + '.whl')
         if platform.system() == "Darwin":
             from delocate.delocating import delocate_wheel
@@ -93,12 +110,15 @@ class bdist_wheel(_bdist_wheel):
             if 'AUDITWHEEL_PLAT' in os.environ:
                 from auditwheel.repair import repair_wheel
                 from auditwheel.patcher import Patchelf
-                repair_wheel(wheel_path, abi=os.environ['AUDITWHEEL_PLAT'], lib_sdir=".libs", out_dir=self.dist_dir, update_tags=True, patcher=Patchelf())
+                repair_wheel(wheel_path, abi=os.environ['AUDITWHEEL_PLAT'], lib_sdir=".libs",
+                             out_dir=self.dist_dir, update_tags=True, patcher=Patchelf())
+
 
 class sdist(_sdist):
     def finalize_options(self):
         _sdist.finalize_options(self)
         self.dist_dir = dist_dir
+
 
 class egg_info(_egg_info):
     def initialize_options(self):
@@ -128,30 +148,31 @@ class KCovCommand(distutils.cmd.Command):
             level=distutils.log.INFO)
         subprocess.check_call(command, env=kcov_env)
 
+
 include_files = {}
-#for root, _, files in os.walk('cpp/include'):
-    #assert root.startswith('cpp/')
-    #include_files[root[4:]] = list(map(lambda name: os.path.join(root, name), files))
+# for root, _, files in os.walk('cpp/include'):
+#assert root.startswith('cpp/')
+#include_files[root[4:]] = list(map(lambda name: os.path.join(root, name), files))
 
 setup(
-    name = 'dqcsim',
-    version = version,
+    name='dqcsim',
+    version=version,
 
-    author = 'Quantum Computer Architectures, Quantum & Computer Engineering, QuTech, Delft University of Technology',
-    author_email = '',
-    description = 'Python bindings for DQCsim',
-    license = "Apache-2.0",
-    url = "https://github.com/qe-lab/dqcsim",
-    project_urls = {
+    author='Quantum Computer Architectures, Quantum & Computer Engineering, QuTech, Delft University of Technology',
+    author_email='',
+    description='Python bindings for DQCsim',
+    license="Apache-2.0",
+    url="https://github.com/qe-lab/dqcsim",
+    project_urls={
         "Bug Tracker": "https://github.com/qe-lab/dqcsim/issues",
         "Documentation": "https://qe-lab.github.io/dqcsim/",
         "Source Code": "https://github.com/qe-lab/dqcsim/",
     },
 
-    long_description = read('README.md'),
-    long_description_content_type = 'text/markdown',
+    long_description=read('README.md'),
+    long_description_content_type='text/markdown',
 
-    classifiers = [
+    classifiers=[
         "License :: OSI Approved :: Apache Software License",
 
         "Operating System :: POSIX :: Linux",
@@ -169,7 +190,7 @@ setup(
         "Topic :: Scientific/Engineering"
     ],
 
-    data_files = [
+    data_files=[
         ('bin', [
             output_dir + '/dqcsim',
             output_dir + '/dqcsfenull',
@@ -184,8 +205,13 @@ setup(
             'target/include/cdqcsim',
             'target/include/dqcsim',
         ] + include_files.pop('include', [])),
+        ('lib/cmake/dqcsim', [
+            cmake_target_dir + '/dqcsimConfig.cmake',
+            cmake_target_dir + '/dqcsimConfigVersion.cmake'
+        ]),
         ('lib', [
-            output_dir + '/libdqcsim.' + ('so' if platform.system() == "Linux" else 'dylib')
+            output_dir + '/libdqcsim.' +
+            ('so' if platform.system() == "Linux" else 'dylib')
         ])
     ] + (
         [
@@ -195,12 +221,12 @@ setup(
         ] if platform.system() == "Linux" else []
     ) + list(include_files.items()),
 
-    packages = find_packages('python'),
-    package_dir = {
+    packages=find_packages('python'),
+    package_dir={
         '': 'python',
     },
 
-    cmdclass = {
+    cmdclass={
         'bdist': bdist,
         'bdist_wheel': bdist_wheel,
         'build': build,
@@ -210,31 +236,31 @@ setup(
         'kcov': KCovCommand,
     },
 
-    ext_modules = [
+    ext_modules=[
         Extension(
             'dqcsim._dqcsim',
             [py_target_dir + "/dqcsim.c"],
-            libraries = ['dqcsim'],
-            library_dirs = [output_dir],
-            runtime_library_dirs = [output_dir],
-            include_dirs = [include_dir],
-            extra_compile_args = ['-std=c99']
+            libraries=['dqcsim'],
+            library_dirs=[output_dir],
+            runtime_library_dirs=[output_dir],
+            include_dirs=[include_dir],
+            extra_compile_args=['-std=c99']
         )
     ],
 
-    setup_requires = [
+    setup_requires=[
         'plumbum',
         'delocate; platform_system == "Darwin"',
     ],
 
-    install_requires = [
+    install_requires=[
         'cbor',
     ],
 
-    tests_require = [
+    tests_require=[
         'nose'
     ],
-    test_suite = 'nose.collector',
+    test_suite='nose.collector',
 
-    zip_safe = False,
+    zip_safe=False,
 )
