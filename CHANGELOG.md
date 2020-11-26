@@ -1,3 +1,7 @@
+# [0.4.1] - 2020-11-26
+
+- [#674](https://github.com/QE-Lab/dqcsim/pull/674) Remove manylinux 2010 wheels and add python 3.9 wheels
+
 # [0.4.0] - 2020-11-26
 
 - [#672](https://github.com/QE-Lab/dqcsim/pull/672) Include CMake config files in wheels
@@ -33,6 +37,7 @@
 
 - Initial release
 
+[0.4.1]: https://github.com/qe-lab/dqcsim/releases/tag/0.4.1
 [0.4.0]: https://github.com/qe-lab/dqcsim/releases/tag/0.4.0
 [0.3.0]: https://github.com/qe-lab/dqcsim/releases/tag/0.3.0
 [0.2.5]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.5
