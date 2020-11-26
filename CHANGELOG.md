@@ -1,6 +1,11 @@
+# [0.4.0] - 2020-11-26
+
+- [#672](https://github.com/QE-Lab/dqcsim/pull/672) Include CMake config files in wheels
+- [#669](https://github.com/QE-Lab/dqcsim/pull/669) Fix CMake conflict on find_package ([mofeing])
+
 # [0.3.0] - 2020-11-23
 
-- [#665](https://github.com/QE-Lab/dqcsim/pull/665) Refactor CMake ([mofeing](https://github.com/mofeing))
+- [#665](https://github.com/QE-Lab/dqcsim/pull/665) Refactor CMake ([mofeing])
 
 # [0.2.5] - 2020-11-10
 
@@ -28,6 +33,7 @@
 
 - Initial release
 
+[0.4.0]: https://github.com/qe-lab/dqcsim/releases/tag/0.4.0
 [0.3.0]: https://github.com/qe-lab/dqcsim/releases/tag/0.3.0
 [0.2.5]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.5
 [0.2.4]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.4
@@ -35,3 +41,4 @@
 [0.2.0]: https://github.com/qe-lab/dqcsim/releases/tag/0.2.0
 [0.1.1]: https://github.com/qe-lab/dqcsim/releases/tag/0.1.1
 [0.1.0]: https://github.com/qe-lab/dqcsim/releases/tag/0.1.0
+[mofeing]: (https://github.com/mofeing)
