@@ -12,6 +12,12 @@ project(dqcsim-cmake-example
 # using the C interface, you'll need to set this.
 set(CMAKE_CXX_STANDARD 11)
 
+# This is added to support running examples on forks in our GitHub actions workflow.
+if (DEFINED ENV{GITHUB_REPOSITORY})
+  set(DQCSIM_REPO "$ENV{GITHUB_SERVER_URL}/$ENV{GITHUB_REPOSITORY}.git")
+else()
+  set(DQCSIM_REPO "https://github.com/qe-lab/dqcsim.git")
+endif()
 if (DEFINED ENV{GITHUB_HEAD_REF})
   set(DQCSIM_TAG $ENV{GITHUB_HEAD_REF})
 else()
@@ -22,7 +28,7 @@ endif()
 # this:
 include(FetchContent)
 FetchContent_Declare(dqcsim
-  GIT_REPOSITORY  https://github.com/qe-lab/dqcsim.git
+  GIT_REPOSITORY  ${DQCSIM_REPO}
   GIT_TAG         ${DQCSIM_TAG}
 )
 FetchContent_MakeAvailable(dqcsim)
