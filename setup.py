@@ -255,6 +255,7 @@ setup(
 
     install_requires=[
         'cbor',
+        'cmake>=3.14'
     ],
 
     tests_require=[
