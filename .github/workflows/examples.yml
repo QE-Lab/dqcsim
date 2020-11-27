@@ -48,5 +48,7 @@ jobs:
         sudo -H python3 -m pip install target/python/dist/dqcsim*manylinux*.whl
         sudo ldconfig
     - name: Examples
+      env:
+        REPO_OWNER: ${{ github.repository_owner }}
       run: make
       working-directory: examples

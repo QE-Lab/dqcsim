@@ -13,8 +13,8 @@ project(dqcsim-cmake-example
 set(CMAKE_CXX_STANDARD 11)
 
 # This is added to support running examples on forks in our GitHub actions workflow.
-if (DEFINED ENV{GITHUB_REPOSITORY})
-  set(DQCSIM_REPO "$ENV{GITHUB_SERVER_URL}/$ENV{GITHUB_REPOSITORY}.git")
+if (DEFINED ENV{REPO_OWNER})
+  set(DQCSIM_REPO "$ENV{GITHUB_SERVER_URL}/$ENV{REPO_OWNER}/dqcsim.git")
 else()
   set(DQCSIM_REPO "https://github.com/qe-lab/dqcsim.git")
 endif()
