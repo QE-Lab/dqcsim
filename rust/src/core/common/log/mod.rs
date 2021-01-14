@@ -291,11 +291,22 @@ pub enum LoglevelFilter {
     Trace,
 }
 
+#[derive(Debug)]
+pub struct NoLoglevel;
+
+impl fmt::Display for NoLoglevel {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "No suitable Loglevel for LoglevelFilter::Off")
+    }
+}
+
+impl std::error::Error for NoLoglevel {}
+
 impl Loglevel {
     /// Attempt to convert a LoglevelFilter to a Loglevel.
     ///
     /// Until std::convert::TryFrom is stable. (rust-lang/rust #33417)
-    pub fn try_from(levelfilter: LoglevelFilter) -> Result<Loglevel, ()> {
+    pub fn try_from(levelfilter: LoglevelFilter) -> Result<Loglevel, NoLoglevel> {
         match levelfilter {
             LoglevelFilter::Fatal => Ok(Loglevel::Fatal),
             LoglevelFilter::Error => Ok(Loglevel::Error),
@@ -304,7 +315,7 @@ impl Loglevel {
             LoglevelFilter::Info => Ok(Loglevel::Info),
             LoglevelFilter::Debug => Ok(Loglevel::Debug),
             LoglevelFilter::Trace => Ok(Loglevel::Trace),
-            LoglevelFilter::Off => Err(()),
+            LoglevelFilter::Off => Err(NoLoglevel),
         }
     }
 }

@@ -138,6 +138,6 @@ mod tests {
         assert_eq!(a - b, Cycle(0));
         assert_eq!(a + c, Cycle(19));
         assert_eq!(a - c, Cycle(23));
-        assert_eq!(a - a, 0 as CycleDelta);
+        assert_eq!(a - a, 0_i64);
     }
 }

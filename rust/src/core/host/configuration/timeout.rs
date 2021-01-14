@@ -88,7 +88,7 @@ impl ::std::str::FromStr for Timeout {
     /// "m" (minutes), "s" (seconds), or "ms" (milliseconds) which are added
     /// together.
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        if s == "" {
+        if s.is_empty() {
             return inv_arg("expected a timeout parameter");
         }
         let s = s.to_ascii_lowercase();
