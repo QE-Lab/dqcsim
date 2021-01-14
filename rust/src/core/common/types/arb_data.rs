@@ -897,8 +897,8 @@ mod test {
             .into_iter()
             .map(|x| x.to_vec())
             .collect();
-        let data = ArbData::from_json(json!({"test": 42}).to_string(), args).unwrap();
-        assert_eq!(data, data);
-        assert_eq!(ArbData::default(), ArbData::default());
+        let data = ArbData::from_json(json!({"test": 42}).to_string(), args.clone()).unwrap();
+        let data_ = ArbData::from_json(json!({"test": 42}).to_string(), args).unwrap();
+        assert_eq!(data, data_);
     }
 }

@@ -473,9 +473,6 @@ mod tests {
             1., (-1., -1.);
             (0., 1.), 0.;
         );
-        assert_eq!(a, a);
-        assert_eq!(b, b);
-        assert_eq!(c, c);
         assert_ne!(a, b);
         assert_ne!(a, c);
         assert_ne!(b, c);

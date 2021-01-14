@@ -21,7 +21,7 @@ impl ArbCmd {
                 "\"{}\" is not a valid identifier; it contains characters outside [a-zA-Z0-9_]",
                 id
             ))?
-        } else if id == "" {
+        } else if id.is_empty() {
             inv_arg("identifiers must not be empty")?
         } else {
             Ok(id)
