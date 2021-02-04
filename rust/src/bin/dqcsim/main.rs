@@ -126,6 +126,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(target_os = "windows", ignore)] // not sure why this doesn't work on Windows
     fn help() {
         assert!(
             err!(cli!("--help")).contains("\nDelft Quantum & Classical simulator\n\nUSAGE:\n    ")

@@ -135,6 +135,7 @@ mod test {
     }
 
     #[test]
+    #[cfg_attr(target_os = "windows", ignore)] // /dev/zero does not exist, obviously
     fn debug() {
         let tf = TeeFileConfiguration::new(LoglevelFilter::Info, "hello:/there");
         assert_eq!(
@@ -172,6 +173,7 @@ mod test {
     }
 
     #[test]
+    #[cfg_attr(target_os = "windows", ignore)] // /tmp does not exist, obviously
     fn log() {
         let tfc = TeeFileConfiguration::new(LoglevelFilter::Info, "/tmp/log.info");
         let tf = TeeFile::new(tfc);

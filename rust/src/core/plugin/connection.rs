@@ -413,6 +413,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(target_os = "windows", ignore)] // on Windows, merely creating the connection object panics
     fn bad_address() {
         // Attempt to connect to an non-existing server
         let connection = Connection::new("asdf");

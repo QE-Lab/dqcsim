@@ -17,7 +17,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::{
     env::{current_exe, split_paths, var_os},
-    ffi::OsString,
+    ffi::{OsStr, OsString},
     path::PathBuf,
 };
 
@@ -85,10 +85,10 @@ impl PluginProcessSpecification {
             typ,
         };
 
-        // Handle the simple cases, where the specification is a path to an
-        // existing file.
         if specification.executable.exists() {
-            if specification.executable.extension().is_some() {
+            if specification.executable.extension().is_some()
+                && specification.executable.extension() != Some(OsStr::new("exe"))
+            {
                 // The file that we assumed to be the executable is actually a
                 // script file. Set the executable to just the file extension;
                 // we desugar that later.
@@ -104,17 +104,19 @@ impl PluginProcessSpecification {
                 // Our assumptions appear to be correct.
                 return Ok(specification);
             }
+        } else if specification.executable.with_extension("exe").exists() {
+            // For Windows, we should be lenient about a lack of a .exe file
+            // extension in a path, in order to be compatible with Linux/Mac
+            // command lines.
+            specification.executable = specification.executable.with_extension("exe");
+            return Ok(specification);
         } else {
             // The executable does not exist. If it doesn't contain slashes,
             // we interpret it as a sugared plugin name. If it does contain
             // slashes, the user probably tried to give us an existing path
             // but made a mistake, so we return an error.
-            if specification
-                .executable
-                .as_os_str()
-                .to_string_lossy()
-                .contains('/')
-            {
+            let executable_str = specification.executable.as_os_str().to_string_lossy();
+            if executable_str.contains('/') || executable_str.contains('\\') {
                 return inv_arg(format!(
                     "the plugin specification '{}' appears to be a path, \
                      but the referenced file does not exist",
@@ -134,6 +136,10 @@ impl PluginProcessSpecification {
         .into();
         prefix.push(specification.executable.as_os_str());
         specification.executable = prefix.into();
+        #[cfg(target_os = "windows")]
+        {
+            specification.executable = specification.executable.with_extension("exe");
+        }
 
         // If the executable exists now, i.e. there is a file with the right
         // name in the working directory, we're done.
