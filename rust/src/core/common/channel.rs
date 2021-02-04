@@ -108,7 +108,7 @@ where
     T: Serialize + for<'de> Deserialize<'de>,
 {
     type Item = T;
-    type Error = ipc_channel::ipc::IpcError;
+    type Error = ipc_channel::Error;
 
     fn recv(&self) -> Result<Self::Item, Self::Error> {
         self.recv()
