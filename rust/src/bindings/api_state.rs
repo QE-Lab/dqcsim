@@ -215,7 +215,7 @@ pub fn api_return_string(call: impl FnOnce() -> Result<String>) -> *mut c_char {
     api_return(null_mut(), || {
         call().and_then(|s| {
             let s = CString::new(&s[..])?;
-            let s = unsafe { strdup(s.as_ptr()) as *mut c_char };
+            let s = unsafe { /*strdup(s.as_ptr())*/ 0 as *mut c_char };
             if s.is_null() {
                 err("failed to allocate return value")
             } else {
