@@ -188,6 +188,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(target_os = "windows", ignore)] // /bin/echo obviously doesn't exist
     fn into_def_conf() {
         let p = PluginDefinition {
             name: "name".to_string(),
@@ -216,6 +217,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(target_os = "windows", ignore)] // /bin/echo obviously doesn't exist
     fn debug() {
         let p = PluginDefinition {
             name: "name".to_string(),
