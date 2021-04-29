@@ -1,0 +1,20 @@
+version: 2
+updates:
+- package-ecosystem: cargo
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  assignees:
+  - mbrobbel
+  allow:
+  - dependency-type: direct
+  - dependency-type: indirect
+  ignore:
+  - dependency-name: serde_yaml
+    versions:
+    - 0.8.15
+    - 0.8.16
+  - dependency-name: crossbeam-channel
+    versions:
+    - 0.5.0
